@@ -1,8 +1,6 @@
-GitPython>=2.1.11
 jupyterlab>=0.35.4
 
 [dev]
-GitPython>=2.1.11
 jupyterlab>=0.35.4
 pytest
 pytest-cov
