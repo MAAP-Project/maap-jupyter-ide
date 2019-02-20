@@ -14,6 +14,7 @@ setup(
     name='display_ssh_info',
     version='0.1.0',
     description='Display kubernetes ssh info from JupyterLab',
+    long_description=long_description,
     author='Maya DeBellis',
     author_email='maya.debellis@jpl.nasa.gov',
     license='Apache 2.0',
