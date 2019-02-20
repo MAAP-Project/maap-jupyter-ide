@@ -1,0 +1,42 @@
+{
+  "name": "display_ssh_info",
+  "version": "0.0.3",
+  "description": "A JupyterLab extension.",
+  "author": "Maya DeBellis",
+  "main": "lib/index.js",
+  "keywords": [
+    "jupyter",
+    "jupyterlab",
+    "jupyterlab-extension"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "clean": "rimraf lib",
+    "prepublish": "npm run build",
+    "test": "jest --coverage --collectCoverageFrom=src/*.{ts}"
+  },
+  "files": [
+    "lib/**/*.{d.ts,eot,gif,html,jpg,js,js.map,json,png,svg,woff2,ttf}",
+    "style/**/*.css"
+  ],
+  "jupyterlab": {
+    "extension": true
+  },
+  "dependencies": {
+    "@jupyterlab/application": "^0.19.1",
+    "@jupyterlab/apputils": "^0.19.1",
+    "@jupyterlab/coreutils": "^2.2.1",
+    "@jupyterlab/docmanager": "^0.19.1",
+    "@jupyterlab/filebrowser": "^0.19.3",
+    "@jupyterlab/launcher": "^0.19.1",
+    "@jupyterlab/mainmenu": "^0.8.1"
+  },
+  "devDependencies": {
+    "@types/jest": "^23.3.9",
+    "jest": "^23.6.0",
+    "jest-transform-css": "^2.0.0",
+    "rimraf": "^2.6.1",
+    "ts-jest": "^23.10.4",
+    "typescript": "^3.1.6"
+  }
+}

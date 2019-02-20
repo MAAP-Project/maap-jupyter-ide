@@ -1,0 +1,19 @@
+Metadata-Version: 2.1
+Name: display-ssh-info
+Version: 0.1.0
+Summary: Display kubernetes ssh info from JupyterLab
+Home-page: UNKNOWN
+Author: Maya DeBellis
+Author-email: maya.debellis@jpl.nasa.gov
+License: Apache 2.0
+Description: UNKNOWN
+Keywords: jupyter jupyterlab
+Platform: UNKNOWN
+Classifier: Development Status :: 3 - Alpha
+Classifier: Programming Language :: Python :: 3
+Classifier: Programming Language :: Python :: 3.3
+Classifier: Programming Language :: Python :: 3.4
+Classifier: Programming Language :: Python :: 3.5
+Classifier: Programming Language :: Python :: 3.6
+Classifier: Programming Language :: Python :: 3.7
+Provides-Extra: dev
