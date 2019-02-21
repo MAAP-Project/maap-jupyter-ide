@@ -61,7 +61,7 @@ class SshWidget extends Widget {
         let json_results:any = res.json();
         let ip = json_results['ip'];
         let port = json_results['port']
-        let message = "ssh -i <path_to_your_key> " + ip + " -p " + port;
+        let message = "ssh -i <path_to_your_key> root@" + ip + " -p " + port;
         let contents = document.createTextNode(message);
         body.appendChild(contents);
       }
