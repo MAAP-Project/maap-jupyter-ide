@@ -5,6 +5,12 @@ from notebook.utils import url_path_join
 
 from .handlers import ListProjectsHandler, GetProjectHandler, GetAllProjectsHandler
 
+def _jupyter_labextension_paths():
+    return [{
+        'name': 'pull_projects',
+        'src': 'static',
+    }]
+
 def _jupyter_server_extension_paths():
     return [{
         "module": "pull_projects"
@@ -22,13 +28,19 @@ def load_jupyter_server_extension(nb_server_app):
     host_pattern = '.*$'
 
 
-    print('Installing jupyterlab_projects handler on path %s' % url_path_join(base_url, 'projects'))
+    print('Installing jupyterlab pull_projects handler on path %s' % url_path_join(base_url, 'search'))
     print('base_url is '+base_url)
 
-    web_app.add_handlers(host_pattern, [(url_path_join(base_url, 'pull_projects/listProjects'), ListProjectsHandler)])
+    # ws_url = os.environ['PREVIEW_URL']
+    # ws_ind = ws_url.find('/server')
+    # che_url = 'https://che-k8s.maap.xyz'+ws_url[ws_ind:]
+    # che_url = ws_url[ws_ind:]
+    #http://0.0.0.0:3100/serverlx80f9ci-ws-jupyter/server-3100/
+    #https://che-k8s.maap.xyz/serverlx80f9ci-ws-jupyter/server-3100/
+
+    web_app.add_handlers(host_pattern, [(url_path_join(base_url, 'pull_projects/listAllProjects'), ListProjectsHandler)])
     web_app.add_handlers(host_pattern, [(url_path_join(base_url, 'pull_projects/getProject'), GetProjectHandler)])
-    web_app.add_handlers(host_pattern, [(url_path_join(base_url, 'pull_projects/getProject'), GetAllProjectsHandler)])
+    web_app.add_handlers(host_pattern, [(url_path_join(base_url, 'pull_projects/getAllProjects'), GetAllProjectsHandler)])
     # web_app.add_handlers(host_pattern, [(url_path_join(base_url, 'pull_projects/putProject'), PutProjectHandler)])
     # web_app.add_handlers(host_pattern, [(url_path_join(base_url, 'pull_projects/deleteProject'), DeleteProjectsHandler)])
 
-    print(ListProjectsHandler().get())
