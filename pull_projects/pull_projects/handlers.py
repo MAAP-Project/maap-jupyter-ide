@@ -114,10 +114,10 @@ class GetAllProjectsHandler(IPythonHandler):
                         shutil.copyfileobj(response, out_file)
 
             # return when done
-            self.finish({"message": "done importing projects"+dl_loc})
+            self.finish({"status": "done importing projects"})
 
         except:
-            self.finish({"message": "project import failed;"+str(project)})
+            self.finish({"status": "project import failed"})
 
 class PutProjectHandler(IPythonHandler):
     def __init__(self):
