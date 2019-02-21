@@ -1,8 +1,0 @@
-jupyterlab>=0.35.4
-
-[dev]
-jupyterlab>=0.35.4
-pytest
-pytest-cov
-pylint
-flake8
