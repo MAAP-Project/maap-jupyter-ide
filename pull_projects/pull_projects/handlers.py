@@ -33,10 +33,18 @@ class ListProjectsHandler(IPythonHandler):
         try:
             resp = json.loads(r.text)               # JSON response to dict
             projects = resp['config']['projects']   # gets list of projects, each is dict with project properties
+            result = ''
 
-            self.finish(json.dumps(projects))
+            for project in projects:
+                project_name = project['name']
+                location = project['source']['location']
+                src_type = project['source']['type']
+                result += 'name: {project_name}, \rsource: {src_type}, \rfrom {location}'.format(project_name=project_name, src_type=src_type, location=location)
+                result += '\r\r'
+
+            self.finish({"status_code": r.status_code, "result": result})
         except:
-            self.finish({"status_code": r.status_code, "reason": r.reason})
+            self.finish({"status_code": r.status_code, "result": r.reason})
 
 class GetProjectHandler(IPythonHandler):
     def get(self, project_name=None, location=None, src_type=None):
@@ -96,19 +104,19 @@ class GetAllProjectsHandler(IPythonHandler):
             resp = json.loads(r.text)               # JSON response to dict
             project_list = resp['config']['projects']   # gets list of projects, each is dict with project properties
 
-            project= ''
             # get projects
             for project in project_list:
 
                 project_name = project['name']
+                path = project['path']
                 src_type = project['source']['type']
                 location = project['source']['location']
 
                 dl_loc = '/projects/'+project_name
 
                 if src_type == 'git':
-                    project='git'
-                    Repo.clone_from(location,dl_loc)
+                    if not os.path.exists('/projects'+path):
+                        Repo.clone_from(location,dl_loc)
                 elif src_type == 'zip':
                     with urllib.urlopen(location) as response, open(dl_loc+'.zip', 'w+') as out_file:
                         shutil.copyfileobj(response, out_file)
@@ -119,10 +127,16 @@ class GetAllProjectsHandler(IPythonHandler):
         except:
             self.finish({"status": "project import failed"})
 
-class PutProjectHandler(IPythonHandler):
-    def __init__(self):
-        self.getproject_handler = GetProjectHandler()
+# class PutProjectHandler(IPythonHandler):
+#     def put(self,project_name, location, src_type):
+#         # add the project in jupyter
+#         dl_loc = '/projects/'+project_name
+#         if src_type == 'git':
+#             Repo.clone_from(location,dl_loc)
+#         elif src_type == 'zip':
+#             with urllib.urlopen(location) as response, open(dl_loc+'.zip', 'w+') as out_file:
+#                 shutil.copyfileobj(response, out_file)
+        
+#         # do something with workspace tracking
 
-    def put(self,project_name, location, src_type):
-        # do something with workspace tracking
-        self.getproject_handler.get(project_name,location,src_type)
+# class DeleteProjectHandler(IPythonHandler):
