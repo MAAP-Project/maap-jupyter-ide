@@ -1,0 +1,55 @@
+{
+  "description": "JupyterLab Only",
+  "scope": "general",
+  "tags": [],
+  "creator": "d74d3d91-6cdd-4150-ba4f-a0b58d3dc708",
+  "workspaceConfig": {
+    "environments": {
+      "default": {
+        "recipe": {
+          "contentType": "text/x-yaml",
+          "type": "kubernetes",
+          "content": "kind: List\nitems:\n - \n  apiVersion: v1\n  kind: Pod\n  metadata:\n   name: ws\n   labels:\n    name: ws\n  spec:\n   containers:\n    - \n     name: jupyter\n     image: 'localhost:32000/che-jupyterlab-extensions:latest'\n     resources:\n      limits:\n       memory: 1024Mi\n - \n  apiVersion: v1\n  kind: Service\n  metadata:\n   name: ws\n  spec:\n   type: NodePort\n   ports:\n    - \n     port: 22\n   selector:\n    name: ws\n"
+        },
+        "machines": {
+          "ws/jupyter": {
+            "volumes": {
+              "projects": {
+                "path": "/projects"
+              }
+            },
+            "env": {
+              "MACHINE_NAME": "WS_JUPYTER"
+            },
+            "installers": [
+            	"org.eclipse.che.exec",
+            	"org.eclipse.che.ssh"
+            ],
+            "servers": {
+              "jupyter": {
+                "path": "/",
+                "attributes": {
+                  "cookiesAuthEnabled": "true",
+                  "type": "ide",
+                  "secure": "true"
+                },
+                "protocol": "http",
+                "port": "3100"
+              }
+            },
+            "attributes": {}
+          }
+        }
+      }
+    },
+    "projects": [],
+    "commands": [],
+    "defaultEnv": "default",
+    "name": "default",
+    "attributes": {},
+    "links": []
+  },
+  "components": [],
+  "name": "JupyterLab Extensions",
+  "id": "stackyfns92cj5ebr2dia"
+}
