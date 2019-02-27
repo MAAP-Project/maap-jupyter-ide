@@ -73,6 +73,8 @@ function activate_pull(app: JupyterLab,
   palette.addItem({command: open_command, category: 'Projects'});
 
   console.log('JupyterLab pull is activated!');
+  popup(new ProjectsPull());
+  console.log('Autopulled projects');
 };
 
 function activate_list(app: JupyterLab,
