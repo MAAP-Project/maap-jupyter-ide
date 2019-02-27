@@ -2,9 +2,14 @@
   "private": true,
   "name": "pull_projects",
   "version": "0.0.1",
-  "description": "pull che workspace project into jupyter",
+  "description": "pull projects from che to jlab",
   "author": "Elizabeth Yam",
-  "main": "lib/plugin.js",
+  "files": [
+    "lib/**/*.{d.ts,eot,gif,html,jpg,js,js.map,json,png,svg,woff2,ttf}",
+    "style/**/*.{css,eot,gif,html,jpg,json,png,svg,woff2,ttf}"
+  ],
+  "main": "lib/index.js",
+  "types": "lib/index.d.ts",
   "keywords": [
     "jupyter",
     "jupyterlab",
@@ -13,7 +18,18 @@
   "jupyterlab": {
     "extension": true
   },
-  "scripts": {},
-  "dependencies": {},
+  "scripts": {
+    "build": "tsc",
+    "clean": "rimraf lib",
+    "prepare": "npm run clean && npm run build",
+    "watch": "tsc -w"
+  },
+  "dependencies": {
+    "@jupyterlab/application": "^0.19.1",
+    "@jupyterlab/launcher": "^0.19.1",
+    "@phosphor/widgets": "^1.6.0",
+    "@types/node": "^11.9.4",
+    "typescript": "^3.3.3333"
+  },
   "devDependencies": {}
 }
