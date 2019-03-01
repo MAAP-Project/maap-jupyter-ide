@@ -27,6 +27,8 @@ import {
   request, RequestResult
 } from './request';
 
+import * as $ from "jquery";
+
 import '../style/index.css';
 
 let unique = 0;
@@ -121,14 +123,54 @@ class ParamsPopupWidget extends Widget {
 }
 
 function copySearchQuery() {
-  //let temp = new MimeData()
-  //temp.setData('text', JSON.stringify(params) + " QUERY")
-  //Clipboard.setInstance(temp);
-  Clipboard.copyToSystem(JSON.stringify(params) + " QUERY");
+  // let temp = new MimeData()
+  // temp.setData('text', JSON.stringify(params) + " QUERY")
+  // Clipboard.setInstance(temp);
+
+  //Construct call
+  let call:string = "maap.searchGranule(" 
+  for (let key in params){
+
+    if (Array.isArray(params[key])){
+      if (key == "instrument_h"){
+       call += "instrument=";
+      }
+      if (key == "platform_h"){
+        call += "platform_h";
+      }
+      for (let i in params[key]){
+         call+= params[key][i] + ',';
+      }
+      call = call.slice(0, -1);
+    }
+  }
+  call += ")";
+  console.log(call);
+  Clipboard.copyToSystem(call);
 }
 
 function copySearchResults() {
-  Clipboard.copyToSystem(JSON.stringify(params) + " RESULTS");
+  // Construct url to hit backend
+  var getUrl = new URL(PageConfig.getBaseUrl() + 'iframes/getGranules');
+
+  getUrl.searchParams.append("instrument", params["instrument_h"][0]);
+
+  // Make call to back end
+  var xhr = new XMLHttpRequest();
+  xhr.open("GET", getUrl.href, true);
+
+  xhr.onload = function() {
+      let response:any = $.parseJSON(xhr.response);
+      let response_text:any = response.granule_urls;
+      if (response_text == "" ) { response_text = "No results found."; }
+      console.log(response_text);
+      Clipboard.copyToSystem(JSON.stringify(response_text));
+    }
+
+  xhr.send(null);
+
+  // Paste Results
+  //Clipboard.copyToSystem(JSON.stringify(params) + " RESULTS");
 }
 
 function displaySearchParams() {
@@ -165,7 +207,7 @@ function activate(app: JupyterLab, docManager: IDocumentManager, palette: IComma
     label: 'Open EarthData Search',
     isEnabled: () => true,
     execute: args => {
-      widget = new IFrameWidget('http://localhost:9001/');
+      widget = new IFrameWidget('https://che-k8s.maap.xyz:3052/search');
       app.shell.addToMainArea(widget);
       app.shell.activateById(widget.id);
     }
