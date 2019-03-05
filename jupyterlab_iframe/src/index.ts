@@ -135,15 +135,38 @@ function copySearchQuery() {
       if (key == "instrument_h"){
        call += "instrument=";
       }
-      if (key == "platform_h"){
-        call += "platform_h";
+      else if (key == "platform_h"){
+        call += "platform=";
       }
-      for (let i in params[key]){
-         call+= params[key][i] + ',';
+      else if (key == "data_center_h"){
+        call += "datacenter=";
       }
-      call = call.slice(0, -1);
+      else if (key == "project_h"){
+        call += "project=";
+      }
+      else {
+        break;
+      }
+      call += '"' + params[key].join(",") + '"';
     }
+
+    else {
+      if (key == "bounding_box"){
+        call += "bounding_box=" + '"' + params[key] + '"';
+      }
+      if (key == "polygon"){
+        call += "polygon=" + '"' + params[key] + '"';
+      }
+      if (key == "p"){
+        let tmp = params[key].split("!").filter(String);
+        call += "collection_concept_id="
+        call += '"' + tmp.join(",") + '"';
+      }
+    }
+
+    call += ", ";
   }
+  call = call.slice(0, -2);
   call += ")";
   console.log(call);
   Clipboard.copyToSystem(call);
@@ -152,25 +175,55 @@ function copySearchQuery() {
 function copySearchResults() {
   // Construct url to hit backend
   var getUrl = new URL(PageConfig.getBaseUrl() + 'iframes/getGranules');
+  for (let key in params){
 
-  getUrl.searchParams.append("instrument", params["instrument_h"][0]);
+    // Check array parameters
+    if (Array.isArray(params[key])){
+      let search_key = key;
+      if (key == "instrument_h"){
+       search_key = "instrument";
+      }
+      else if (key == "platform_h"){
+        search_key = "platform";
+      }
+      else {
+        break;
+      }
+      let search_str = params[key].join(",");
+      getUrl.searchParams.append(search_key, search_str);
+    }
+    if (key == "bounding_box"){
+      getUrl.searchParams.append("bounding_box", params[key]);
+    }
+    else if (key == "polygon"){
+      getUrl.searchParams.append("polygon", params[key]);
+    }
+
+    else if (key == "p"){
+        let tmp = params[key].split("!").filter(String);
+        let search_str = tmp.join(",");
+        getUrl.searchParams.append("collection_concept_id", search_str);   
+    }
+
+
+    // Check single parameters
+
+  }
+  console.log(getUrl);
 
   // Make call to back end
   var xhr = new XMLHttpRequest();
-  xhr.open("GET", getUrl.href, true);
 
   xhr.onload = function() {
       let response:any = $.parseJSON(xhr.response);
       let response_text:any = response.granule_urls;
       if (response_text == "" ) { response_text = "No results found."; }
       console.log(response_text);
-      Clipboard.copyToSystem(JSON.stringify(response_text));
-    }
+      Clipboard.copyToSystem(response_text);
+  }
 
+  xhr.open("GET", getUrl.href, true);
   xhr.send(null);
-
-  // Paste Results
-  //Clipboard.copyToSystem(JSON.stringify(params) + " RESULTS");
 }
 
 function displaySearchParams() {
@@ -182,13 +235,6 @@ function displaySearchParams() {
     });
 
 }
-
-
-// function copySearchParams() {
-//   console.log("search copied. url is: ", searchParamURL);
-//   params = searchParamURL;
-// }
-
 
 
 function activate(app: JupyterLab, docManager: IDocumentManager, palette: ICommandPalette, restorer: ILayoutRestorer, mainMenu: IMainMenu) {
