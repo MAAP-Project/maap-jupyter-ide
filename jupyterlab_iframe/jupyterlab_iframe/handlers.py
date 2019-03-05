@@ -70,22 +70,24 @@ class GetGranulesHandler(IPythonHandler):
         return url_list
 
     def get(self):
-        print(subprocess.check_output('ls',shell=True))
-        print(subprocess.check_output('pwd',shell=True))
-        # do stuff
         maap = MAAP(PATH_TO_MAAP_CFG)
-        #maap = MAAP('/home/ubuntu/extensions/search/search/maap-py/maap.cfg')
-
         query_result = ''
 
-        try:
-            instr = self.get_argument('instrument', '')
-            site = self.get_argument('sitename', '')
-            platform = self.get_argument('platform', '')
-            granules = maap.searchGranule(sitename=site, instrument=instr, platform=platform)
-            query_result = self.printUrls(granules)
-        except:
-            instr = ''
+        instr = self.get_argument('instrument', '')
+        site = self.get_argument('sitename', '')
+        bounding_box = self.get_argument('bounding_box', '')
+        polygon = self.get_argument('polygon', '')
+        platform = self.get_argument('platform', '')
+        collection_concept_id = self.get_argument('collection_concept_id', '')
+        granules = maap.searchGranule(sitename=site, 
+                                    instrument=instr, 
+                                    platform=platform, 
+                                    bounding_box=bounding_box, 
+                                    polygon=polygon,
+                                    collection_concept_id=collection_concept_id)
+        query_result = self.printUrls(granules)
 
         self.finish({"granule_urls": query_result})
+
+
 
