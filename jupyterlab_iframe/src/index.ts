@@ -247,6 +247,26 @@ function activate(app: JupyterLab, docManager: IDocumentManager, palette: IComma
     console.log("at event listen: ", event.data);
   });
 
+  // const toolbar = new Toolbar();
+  // toolbar.id = 'ESDS-TOOLBAR-1'
+  // toolbar.addItem(
+  //     'Copy search Query',
+  //     new ToolbarButton({
+  //       iconClassName: 'jp-RefreshIcon jp-Icon jp-Icon-16',
+  //       onClick: () => {
+  //         copySearchQuery();
+  //       },
+  //       tooltip: 'Copy Search Query'
+  //     })
+  //   );
+
+  // const panel = new BoxPanel();
+  // panel.id = 'main';
+  // panel.direction = 'top-to-bottom';
+  // panel.spacing = 0;
+  // panel.addWidget(toolbar);
+  // Widget.attach(panel, window);
+
   // Add an application command to open ESDS
   const open_command = 'iframe:open';
   app.commands.addCommand(open_command, {
