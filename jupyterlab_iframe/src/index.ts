@@ -3,7 +3,7 @@ import {
 } from '@jupyterlab/application';
 
 import {
-  ICommandPalette, Clipboard
+  ICommandPalette, Clipboard, showDialog, Dialog
 } from '@jupyterlab/apputils';
 
 import {
@@ -14,24 +14,31 @@ import {
   IDocumentManager
 } from '@jupyterlab/docmanager';
 
+import { IMainMenu } from '@jupyterlab/mainmenu';
+import { Menu } from '@phosphor/widgets';
+
 import {
   Widget
 } from '@phosphor/widgets';
+
+// import { MimeData } from '@phosphor/coreutils';
 
 import {
   request, RequestResult
 } from './request';
 
+import * as $ from "jquery";
+
 import '../style/index.css';
 
 let unique = 0;
-let searchParamURL = "test";
+// let searchParamURL = "test";
 let params:any = {};
 
 const extension: JupyterLabPlugin<void> = {
   id: 'jupyterlab_iframe',
   autoStart: true,
-  requires: [IDocumentManager, ICommandPalette, ILayoutRestorer],
+  requires: [IDocumentManager, ICommandPalette, ILayoutRestorer, IMainMenu],
   activate: activate
 };
 
@@ -93,8 +100,6 @@ class IFrameWidget extends Widget {
     viewParamsBtn.addEventListener('click', displaySearchParams, false);
     this.node.appendChild(viewParamsBtn);
 
-    // var x = document.createElement("BR");
-    // this.node.appendChild(x);
 
     div.appendChild(iframe);
     this.node.appendChild(div);
@@ -102,19 +107,15 @@ class IFrameWidget extends Widget {
   }
 };
 
-export
-class SshWidget extends Widget {
+export 
+class ParamsPopupWidget extends Widget {
   constructor() {
-    console.log("in construct");
     let body = document.createElement('div');
     body.style.display = 'flex';
     body.style.flexDirection = 'column';
-
-    // let type = document.createElement('select');
-
-    let message = "search params";
-    let contents = document.createTextNode(message);
-    body.appendChild(contents);
+    body.innerHTML = "<pre>" + JSON.stringify(params, null, " ") + "</pre>";
+    //let contents = document.createTextNode(JSON.stringify(params, null, " "));
+    //body.appendChild(contents);
 
     super({ node: body });
   }
@@ -122,164 +123,137 @@ class SshWidget extends Widget {
 }
 
 function copySearchQuery() {
-  copySearchParams();
-  Clipboard.copyToSystem(JSON.stringify(params) + " QUERY");
+  // let temp = new MimeData()
+  // temp.setData('text', JSON.stringify(params) + " QUERY")
+  // Clipboard.setInstance(temp);
+
+  //Construct call
+  let call:string = "maap.searchGranule(" 
+  for (let key in params){
+
+    if (Array.isArray(params[key])){
+      if (key == "instrument_h"){
+       call += "instrument=";
+      }
+      else if (key == "platform_h"){
+        call += "platform=";
+      }
+      else if (key == "data_center_h"){
+        call += "datacenter=";
+      }
+      else if (key == "project_h"){
+        call += "project=";
+      }
+      else {
+        break;
+      }
+      call += '"' + params[key].join(",") + '"';
+    }
+
+    else {
+      if (key == "bounding_box"){
+        call += "bounding_box=" + '"' + params[key] + '"';
+      }
+      if (key == "polygon"){
+        call += "polygon=" + '"' + params[key] + '"';
+      }
+      if (key == "p"){
+        let tmp = params[key].split("!").filter(String);
+        call += "collection_concept_id="
+        call += '"' + tmp.join(",") + '"';
+      }
+    }
+
+    call += ", ";
+  }
+  call = call.slice(0, -2);
+  call += ")";
+  console.log(call);
+  Clipboard.copyToSystem(call);
 }
 
 function copySearchResults() {
-  copySearchParams();
-  Clipboard.copyToSystem(JSON.stringify(params) + " RESULTS");
+  // Construct url to hit backend
+  var getUrl = new URL(PageConfig.getBaseUrl() + 'iframes/getGranules');
+  for (let key in params){
+
+    // Check array parameters
+    if (Array.isArray(params[key])){
+      let search_key = key;
+      if (key == "instrument_h"){
+       search_key = "instrument";
+      }
+      else if (key == "platform_h"){
+        search_key = "platform";
+      }
+      else {
+        break;
+      }
+      let search_str = params[key].join(",");
+      getUrl.searchParams.append(search_key, search_str);
+    }
+    if (key == "bounding_box"){
+      getUrl.searchParams.append("bounding_box", params[key]);
+    }
+    else if (key == "polygon"){
+      getUrl.searchParams.append("polygon", params[key]);
+    }
+
+    else if (key == "p"){
+        let tmp = params[key].split("!").filter(String);
+        let search_str = tmp.join(",");
+        getUrl.searchParams.append("collection_concept_id", search_str);   
+    }
+
+
+    // Check single parameters
+
+  }
+  console.log(getUrl);
+
+  // Make call to back end
+  var xhr = new XMLHttpRequest();
+
+  xhr.onload = function() {
+      let response:any = $.parseJSON(xhr.response);
+      let response_text:any = response.granule_urls;
+      if (response_text == "" ) { response_text = "No results found."; }
+      console.log(response_text);
+      Clipboard.copyToSystem(response_text);
+  }
+
+  xhr.open("GET", getUrl.href, true);
+  xhr.send(null);
 }
 
 function displaySearchParams() {
-  copySearchParams();
-  new SshWidget();
-  // Create new popup widget
+  showDialog({
+        title: 'Current Search Parameters:',
+        body: new ParamsPopupWidget(),
+        focusNodeSelector: 'input',
+        buttons: [Dialog.okButton({ label: 'Ok' })]
+    });
 
 }
 
-// class SearchResultsWidget extends Widget {
 
-//   constructor() {
-//     super();
-//     this.id = "testid"
-//     this.title.label = "Search Parameters";
-//     this.title.closable = true;
+function activate(app: JupyterLab, docManager: IDocumentManager, palette: ICommandPalette, restorer: ILayoutRestorer, mainMenu: IMainMenu) {
 
-//     // var x = document.createElement("searchResults");
-//     var contents = document.createTextNode(JSON.stringify(params));
-
-//     this.node.appendChild(contents);
-
-//     Clipboard.copyToSystem(JSON.stringify(params));
-
-//   }
-// };
-
-function copySearchParams() {
-  console.log("search copied. url is: ", searchParamURL);
-
-
-  // Parse URL into JSON
-  params = getAllUrlParams(searchParamURL);
-
-  // If the URL is too long and converts to a project ID, make the request for the json
-  // associated with the project ID
-  if (params['projectid']) {
-    
-    var path = 'http://localhost:9001/projects/' + params['projectid'] + '.json';
-    request('get', path).then((res: RequestResult) => {
-
-      var temp_json:any = res.json();
-      var temp_path:string = temp_json['path'];
-
-      // Convert the path with all parameters into a json object
-      params = getAllUrlParams(temp_path);
-    })
-  }
-  console.log(params);
-
-  // Clipboard.copyToSystem(JSON.stringify(params));
-
-  // // Copy to clipboard!
-  // const el = document.createElement('textarea');
-  // el.value = JSON.stringify(params);
-  // // el.setAttribute('readonly', '');
-  // // el.style.position = 'absolute';
-  // // el.style.left = '-9999px';
-  // document.body.appendChild(el);
-  // el.select();
-  // document.execCommand('copy');
-  // document.body.removeChild(el);
-  // alert("copied");
-}
-
-
-/* from https://www.sitepoint.com/get-url-parameters-with-javascript/ */
-function getAllUrlParams(url: string) {
-
-  // get query string from url (optional) or window
-  var queryString = url ? url.split('?')[1] : window.location.search.slice(1);
-
-  // we'll store the parameters here
-  var obj:any = {};
-
-  // if query string exists
-  if (queryString) {
-
-    // stuff after # is not part of query string, so get rid of it
-    queryString = queryString.split('#')[0];
-
-    // split our query string into its component parts
-    var arr = queryString.split('&');
-
-    for (var i = 0; i < arr.length; i++) {
-      // separate the keys and the values
-      var a = arr[i].split('=');
-
-      // set parameter name and value (use 'true' if empty)
-      var paramName = a[0];
-      var paramValue = typeof (a[1]) === 'undefined' ? true : a[1];
-
-      // (optional) keep case consistent
-      paramName = paramName.toLowerCase();
-      if (typeof paramValue === 'string') paramValue = paramValue.toLowerCase();
-
-      // if the paramName ends with square brackets, e.g. colors[] or colors[2]
-      if (paramName.match(/\[(\d+)?\]$/)) {
-
-        // create key if it doesn't exist
-        var key = paramName.replace(/\[(\d+)?\]/, '');
-        if (!obj[key]) obj[key] = [];
-
-        // if it's an indexed array e.g. colors[2]
-        if (paramName.match(/\[\d+\]$/)) {
-          // get the index value and add the entry at the appropriate position
-          var index = /\[(\d+)\]/.exec(paramName)[1];
-          obj[key][index] = paramValue;
-        } else {
-          // otherwise add the value to the end of the array
-          obj[key].push(paramValue);
-        }
-      } else {
-        // we're dealing with a string
-        if (!obj[paramName]) {
-          // if it doesn't exist, create property
-          obj[paramName] = paramValue;
-        } else if (obj[paramName] && typeof obj[paramName] === 'string'){
-          // if property does exist and it's a string, convert it to an array
-          obj[paramName] = [obj[paramName]];
-          obj[paramName].push(paramValue);
-        } else {
-          // otherwise add the property
-          obj[paramName].push(paramValue);
-        }
-      }
-    }
-  }
-
-  return obj;
-}
-
-function activate(app: JupyterLab, docManager: IDocumentManager, palette: ICommandPalette, restorer: ILayoutRestorer) {
-
-  // Declare a widget variable
   let widget: IFrameWidget;
-  //let pasted_widget: SearchResultsWidget;
 
+  // Listen for messages being sent by the iframe
   window.addEventListener("message", (event: MessageEvent) => {
-    searchParamURL = event.data;
+    params = event.data;
     console.log("at event listen: ", event.data);
   });
 
-  // Add an application command
+  // Add an application command to open ESDS
   const open_command = 'iframe:open';
-
   app.commands.addCommand(open_command, {
     label: 'Open EarthData Search',
     isEnabled: () => true,
     execute: args => {
-      widget = new IFrameWidget('http://localhost:9001/');
+      widget = new IFrameWidget('https://che-k8s.maap.xyz:3052/search');
       app.shell.addToMainArea(widget);
       app.shell.activateById(widget.id);
     }
@@ -288,20 +262,53 @@ function activate(app: JupyterLab, docManager: IDocumentManager, palette: IComma
   // Add the command to the palette.
   palette.addItem({command: open_command, category: 'Search'});
 
-  // app.commands.addCommand('search:paste', {
-  //   label: 'Copy Search To Clipboard',
-  //   isEnabled: () => true,
-  //   execute: args => {
-  //     pasted_widget = new SearchResultsWidget();
-  //     app.shell.addToMainArea(pasted_widget);
-  //     app.shell.activateById(pasted_widget.id);
-  //   }
-  // });
-  // palette.addItem({command: 'search:paste', category: 'Search'});
+  // Add copy commands to the command palette
+  app.commands.addCommand('search:copyQuery', {
+    label: 'Copy Search Query To Clipboard',
+    isEnabled: () => true,
+    execute: args => {
+      copySearchQuery();
+    }
+  });
+  palette.addItem({command: 'search:copyQuery', category: 'Search'});
+
+
+  app.commands.addCommand('search:copyResult', {
+    label: 'Copy Search Result To Clipboard',
+    isEnabled: () => true,
+    execute: args => {
+      copySearchResults();
+    }
+  });
+  palette.addItem({command: 'search:copyResult', category: 'Search'});
+
+  app.commands.addCommand('search:displayParams', {
+    label: 'Display selected search parameters',
+    isEnabled: () => true,
+    execute: args => {
+      displaySearchParams();
+    }
+  });
+  palette.addItem({command: 'search:displayParams', category: 'Search'});
+
+  const { commands } = app;
+  let searchMenu = new Menu({ commands })
+  searchMenu.title.label = 'Data Search';
+  [
+    open_command,
+    'search:copyQuery',
+    'search:copyResult',
+    'search:displayParams'
+  ].forEach(command => {
+    searchMenu.addItem({ command });
+  });
+  mainMenu.addMenu(searchMenu, { rank: 100 });
+
 
 
   console.log('JupyterLab extension jupyterlab_iframe is activated!');
 };
+
 
 export default extension;
 export {activate as _activate};
