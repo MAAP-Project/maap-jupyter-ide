@@ -70,24 +70,26 @@ class GetGranulesHandler(IPythonHandler):
         return url_list
 
     def get(self):
+
         maap = MAAP(PATH_TO_MAAP_CFG)
-        query_result = ''
+        json_obj = self.get_argument('json_obj', '')
+        print("json obj", json_obj)
 
-        instr = self.get_argument('instrument', '')
-        site = self.get_argument('sitename', '')
-        bounding_box = self.get_argument('bounding_box', '')
-        polygon = self.get_argument('polygon', '')
-        platform = self.get_argument('platform', '')
-        collection_concept_id = self.get_argument('collection_concept_id', '')
-        granules = maap.searchGranule(sitename=site, 
-                                    instrument=instr, 
-                                    platform=platform, 
-                                    bounding_box=bounding_box, 
-                                    polygon=polygon,
-                                    collection_concept_id=collection_concept_id)
+        query_string = maap.getCallFromEarthdataQuery(json_obj)
+        granules = eval(query_string)
         query_result = self.printUrls(granules)
-
+        print("Response is: ", query_result)
         self.finish({"granule_urls": query_result})
 
+
+class GetQueryHandler(IPythonHandler):
+    def get(self):
+        maap = MAAP(PATH_TO_MAAP_CFG)
+        json_obj = self.get_argument('json_obj', '')
+        print("json obj", json_obj)
+
+        query_string = maap.getCallFromEarthdataQuery(json_obj)
+        print("Response is: ", query_string)
+        self.finish({"query_string": query_string})
 
 
