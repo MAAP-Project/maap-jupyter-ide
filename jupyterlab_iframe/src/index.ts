@@ -123,93 +123,32 @@ class ParamsPopupWidget extends Widget {
 }
 
 function copySearchQuery() {
-  // let temp = new MimeData()
-  // temp.setData('text', JSON.stringify(params) + " QUERY")
-  // Clipboard.setInstance(temp);
 
-  //Construct call
-  let call:string = "maap.searchGranule(" 
-  for (let key in params){
+  var getUrl = new URL(PageConfig.getBaseUrl() + 'iframes/getQuery');
+  getUrl.searchParams.append("json_obj", JSON.stringify(params));
 
-    if (Array.isArray(params[key])){
-      if (key == "instrument_h"){
-       call += "instrument=";
-      }
-      else if (key == "platform_h"){
-        call += "platform=";
-      }
-      else if (key == "data_center_h"){
-        call += "datacenter=";
-      }
-      else if (key == "project_h"){
-        call += "project=";
-      }
-      else {
-        break;
-      }
-      call += '"' + params[key].join(",") + '"';
-    }
+  // Make call to back end
+  var xhr = new XMLHttpRequest();
 
-    else {
-      if (key == "bounding_box"){
-        call += "bounding_box=" + '"' + params[key] + '"';
-      }
-      if (key == "polygon"){
-        call += "polygon=" + '"' + params[key] + '"';
-      }
-      if (key == "p"){
-        let tmp = params[key].split("!").filter(String);
-        call += "collection_concept_id="
-        call += '"' + tmp.join(",") + '"';
-      }
-    }
-
-    call += ", ";
+  xhr.onload = function() {
+      let response:any = $.parseJSON(xhr.response);
+      console.log(response);
+      let response_text:any = response.query_string;
+      if (response_text == "" ) { response_text = "No results found."; }
+      console.log(response_text);
+      Clipboard.copyToSystem(response_text);
   }
-  call = call.slice(0, -2);
-  call += ")";
-  console.log(call);
-  Clipboard.copyToSystem(call);
+
+  xhr.open("GET", getUrl.href, true);
+  xhr.send(null);
 }
+
 
 function copySearchResults() {
   // Construct url to hit backend
   var getUrl = new URL(PageConfig.getBaseUrl() + 'iframes/getGranules');
-  for (let key in params){
+  getUrl.searchParams.append("json_obj", JSON.stringify(params));
 
-    // Check array parameters
-    if (Array.isArray(params[key])){
-      let search_key = key;
-      if (key == "instrument_h"){
-       search_key = "instrument";
-      }
-      else if (key == "platform_h"){
-        search_key = "platform";
-      }
-      else {
-        break;
-      }
-      let search_str = params[key].join(",");
-      getUrl.searchParams.append(search_key, search_str);
-    }
-    if (key == "bounding_box"){
-      getUrl.searchParams.append("bounding_box", params[key]);
-    }
-    else if (key == "polygon"){
-      getUrl.searchParams.append("polygon", params[key]);
-    }
-
-    else if (key == "p"){
-        let tmp = params[key].split("!").filter(String);
-        let search_str = tmp.join(",");
-        getUrl.searchParams.append("collection_concept_id", search_str);   
-    }
-
-
-    // Check single parameters
-
-  }
-  console.log(getUrl);
 
   // Make call to back end
   var xhr = new XMLHttpRequest();
@@ -225,6 +164,7 @@ function copySearchResults() {
   xhr.open("GET", getUrl.href, true);
   xhr.send(null);
 }
+
 
 function displaySearchParams() {
   showDialog({

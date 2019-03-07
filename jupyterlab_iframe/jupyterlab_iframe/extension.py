@@ -2,7 +2,7 @@ import json
 from notebook.base.handlers import IPythonHandler
 from notebook.utils import url_path_join
 from .proxy import IFrameProxyHandler
-from .handlers import GetCollectionsHandler,GetGranulesHandler
+from .handlers import GetCollectionsHandler,GetGranulesHandler, GetQueryHandler
 
 
 class IFrameHandler(IPythonHandler):
@@ -36,3 +36,4 @@ def load_jupyter_server_extension(nb_server_app):
 
     web_app.add_handlers(host_pattern, [(url_path_join(base_url, 'iframes/getCollections'), GetCollectionsHandler)])
     web_app.add_handlers(host_pattern, [(url_path_join(base_url, 'iframes/getGranules'), GetGranulesHandler)])
+    web_app.add_handlers(host_pattern, [(url_path_join(base_url, 'iframes/getQuery'), GetQueryHandler)])
