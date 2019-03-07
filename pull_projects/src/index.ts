@@ -66,8 +66,7 @@ function activate_pull(app: JupyterLab,
     label: 'Pull All Projects',
     isEnabled: () => true,
     execute: args => {
-      setTimeout(popup(new ProjectsPull());}, 1000);
-      // popup(new ProjectsPull());
+      popup(new ProjectsPull());
     }
   });
 
@@ -115,4 +114,5 @@ const get_extension: JupyterLabPlugin<void> = {
 };
 
 export default [pull_extension,get_extension];
+
 

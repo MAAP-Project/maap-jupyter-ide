@@ -1,6 +1,6 @@
 # pull_projects
 
-pull che workspace project into jupyter
+pull projects from che to jlab
 
 
 ## Prerequisites
