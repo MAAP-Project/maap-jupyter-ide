@@ -1,4 +1,4 @@
-import { ICommandPalette, showDialog, Dialog } from '@jupyterlab/apputils';
+import { ICommandPalette, Dialog } from '@jupyterlab/apputils';
 import { PageConfig } from '@jupyterlab/coreutils'
 import { JupyterLab, JupyterLabPlugin } from '@jupyterlab/application';
 import { ILauncher } from '@jupyterlab/launcher';
@@ -46,13 +46,22 @@ export class ProjectsList extends Widget {
   }
 }
 
+export function showDialog<T>(
+  options: Partial<Dialog.IOptions<T>> = {}
+): void {
+  let dialog = new Dialog(options);
+  dialog.launch();
+  setTimeout(function(){console.log('go away'); dialog.resolve(0);}, 3000);
+  return;
+}
+
 export function popup(b:any): void {
-    showDialog({
-        title: 'Pull All Projects:',
-        body: b,
-        focusNodeSelector: 'input',
-        buttons: [Dialog.okButton({ label: 'Ok' })]
-    });
+  showDialog({
+    title: 'Pull All Projects:',
+    body: b,
+    focusNodeSelector: 'input',
+    buttons: [Dialog.okButton({ label: 'Ok' })]
+  });
 }
 
 function activate_pull(app: JupyterLab,
@@ -114,5 +123,3 @@ const get_extension: JupyterLabPlugin<void> = {
 };
 
 export default [pull_extension,get_extension];
-
-
