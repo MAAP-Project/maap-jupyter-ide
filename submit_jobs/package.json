@@ -1,0 +1,40 @@
+{
+  "private": true,
+  "name": "submit_jobs",
+  "version": "0.0.1",
+  "description": "UI form for users to submit jobs to HySDS/DPS",
+  "author": "Elizabeth Yam",
+  "files": [
+    "lib/**/*.{d.ts,eot,gif,html,jpg,js,js.map,json,png,svg,woff2,ttf}",
+    "style/**/*.{css,eot,gif,html,jpg,json,png,svg,woff2,ttf}"
+  ],
+  "main": "lib/index.js",
+  "types": "lib/index.d.ts",
+  "keywords": [
+    "jupyter",
+    "jupyterlab",
+    "jupyterlab-extension"
+  ],
+  "jupyterlab": {
+    "extension": true
+  },
+  "scripts": {
+    "build": "tsc",
+    "clean": "rimraf lib",
+    "prepare": "npm run clean && npm run build",
+    "watch": "tsc -w"
+  },
+  "dependencies": {
+    "@jupyterlab/application": "^0.19.1",
+    "@jupyterlab/apputils": "^0.19.1",
+    "@jupyterlab/coreutils": "^2.2.1",
+    "@jupyterlab/launcher": "^0.19.1",
+    "@phosphor/widgets": "^1.6.0",
+    "@types/node": "^11.10.5",
+    "tsc": "^1.20150623.0"
+  },
+  "devDependencies": {
+    "rimraf": "^2.6.3",
+    "typescript": "^3.1.6"
+  }
+}
