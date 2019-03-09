@@ -21,7 +21,7 @@ class HySDSWidget extends Widget {
     this.fields = ['Title', 'Identifier', 'Metadata'];
 
     // bind method definitions of "this" to refer to class instance
-    this.sendJob = this.sendJob.bind(this);
+    this.getValue = this.getValue.bind(this);
     this.updateSearchResults = this.updateSearchResults.bind(this);
 
     // list all the fields of the job
@@ -76,9 +76,11 @@ class HySDSWidget extends Widget {
     }
   }
 
-  sendJob() {
+  // submit the job
+  // overrides the resolution of popup dialog
+  getValue() {
     // var me = this;
-    var getUrl = new URL(PageConfig.getBaseUrl() + 'hysds/submit');
+    var getUrl = new URL(PageConfig.getBaseUrl() + 'hysds/submit'); // REMINDER: hack this url until fixed
 
     for (var field of this.fields) {
       var fieldText = (<HTMLInputElement>document.getElementById(field.toLowerCase()+'-input')).value;
@@ -86,11 +88,13 @@ class HySDSWidget extends Widget {
     }
 
     console.log(getUrl.href);
+    // console.log('show url?');
 
     // Send Job as Request
     // var xhr = new XMLHttpRequest();
     // xhr.open("GET", getUrl.href, true);
 
+    // Handle Request Result
     // xhr.onload = function() {
     //   let response = $.parseJSON(xhr.response);
     //   me.response_text = response.granule_urls;
