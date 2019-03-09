@@ -3,23 +3,29 @@
 pull projects from che to jlab
 
 
-## Prerequisites
-
-* JupyterLab
-
-## Installation
-
-To install using pip:
-
-```bash
-jupyter labextension install pull_projects
-```
-
 ## Development
 
+#### Lab extension
 For a development install (requires npm version 4 or later), do the following in the repository directory:
 
 ```bash
 npm install
+npm run build
 jupyter labextension link .
 ```
+
+To rebuild the package and the JupyterLab app:
+
+```bash
+npm run build
+jupyter labextension link .
+```
+
+#### Server extension
+
+```bash
+pip install -e .
+jupyter serverextension enable --py pull_projects --sys-prefix
+
+```
+
