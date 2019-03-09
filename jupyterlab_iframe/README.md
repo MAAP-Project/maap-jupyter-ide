@@ -1,43 +1,34 @@
-# jupyterlab_iframe
-Open a site in a widget, or add a set of "quicklinks".
+# esdc_iframe
 
-[![Build Status](https://travis-ci.org/timkpaine/jupyterlab_iframe.svg?branch=master)](https://travis-ci.org/timkpaine/jupyterlab_iframe)
-[![GitHub issues](https://img.shields.io/github/issues/timkpaine/jupyterlab_iframe.svg)]()
-[![codecov](https://codecov.io/gh/timkpaine/jupyterlab_iframe/branch/master/graph/badge.svg)](https://codecov.io/gh/timkpaine/jupyterlab_iframe)
-[![PyPI](https://img.shields.io/pypi/l/jupyterlab_iframe.svg)](https://pypi.python.org/pypi/jupyterlab_iframe)
-[![PyPI](https://img.shields.io/pypi/v/jupyterlab_iframe.svg)](https://pypi.python.org/pypi/jupyterlab_iframe)
-[![npm](https://img.shields.io/npm/v/jupyterlab_iframe.svg)](https://www.npmjs.com/package/jupyterlab_iframe)
+Injects Earthdata Search Client into Jupyter Lab interface. Uses an iframe to display esdc. This functions through a proxy that is hosted on the che server that sends the webpage back information on the paramters the user has selected in the iframe.
 
-![](https://raw.githubusercontent.com/timkpaine/jupyterlab_iframe/master/docs/example1.gif)
+Users can then use the information selected in ESDC to make calls to the MAAP API. This is done through the [maap-py](https://github.com/MAAP-Project/maap-py) library. Users can copy the results of a search, or copy the search query itself to paste into their notebooks.
 
-## Install
+
+## Development
+
+#### Lab extension
+For a development install (requires npm version 4 or later), do the following in the repository directory:
+
 ```bash
-pip install jupyterlab_iframe
-jupyter labextension install jupyterlab_iframe
-jupyter serverextension enable --py jupyterlab_iframe
+npm install
+npm run build
+jupyter labextension link .
 ```
 
-## Options
-### Example
-install the server extension, and add the following to `jupyter_notebook_config.py`
+To rebuild the package and the JupyterLab app:
 
-```python3
-c.JupyterLabIFrame.iframes = ['list', 'of', 'sites']
-c.JupyterLabIFrame.welcome = 'a site'
+```bash
+npm run build
+jupyter labextension link .
 ```
 
-In this example, `list`, `of`, and `sites` will be available as links in the command palette, and `a site` will open by default the first time JupyterLab is opened.
+#### Server extension
 
+```bash
+pip install -e .
+jupyter serverextension enable --py jupyterlab_iframe --sys-prefix
 
-## Caveats
-This package uses iframes, so is subject to a few restrictions:
-- If Jlab is served over SSL, so must the sites (http/https must match)
-- If the underlying site enforces same-origin, then we cannot navigate to them (e.g. google)
+```
 
-### Working around the caveats
-See issue #31
-
-## Similar Packages
-- [Jupyterlab-html](https://github.com/mflevine/jupyterlab_html) displays local html files as websites in an iframe
-- [Jupyterlab-sandbox](https://github.com/canavandl/jupyterlab_sandbox)
-- [Main JLab Issue](https://github.com/jupyterlab/jupyterlab/issues/2369)
+This extension was built off of [jupyterlab_iframe](https://github.com/timkpaine/jupyterlab_iframe).
