@@ -38,6 +38,9 @@ Once on the che server:
     ```
 - If your extension includes a server extension you also need to modify `entrypoint.sh`. This is because jupyter server extensions function off of having a standard base url, but in the context of che the url is not what jupyter thinks it is.
 - Here is some magic that fixes it (add this line and replace with the path to where your `load_jupyter_server_extension` function is)
-```bash
-perl -pi -e "s|web_app.settings\['base_url'\]|'/'|g" /show_ssh_info/show_ssh_info/__init__.py
-```
+    ```bash
+    perl -pi -e "s|web_app.settings\['base_url'\]|'/'|g" /show_ssh_info/show_ssh_info/__init__.py
+    ```
+- Then rebuild the docker image. `microk8s.docker build -t localhost:32000/che-jupyterlab-extensions .`
+- Push! `microk8s.docker push localhost:32000/che-jupyterlab-extensions `
+- Now when you build a new workspace with the `localhost:32000/che-jupyterlab-extensions` image it will automatically fetch the new image. 
