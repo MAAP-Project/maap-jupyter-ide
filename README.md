@@ -21,7 +21,7 @@ Some Jupyter Extensions/Resources we have found helpful:
 * [Jupyterlab-html](https://github.com/mflevine/jupyterlab_html) 
 * [Jupyterlab-sandbox](https://github.com/canavandl/jupyterlab_sandbox)
 
-#####(The following documentation should probably move somewhere else but I am going to leave it here for now)
+##### (The following documentation should probably move somewhere else but I am going to leave it here for now)
 Our development proccess involves building and running an extension locally in a conda env before installing it on the che server. Then packaging it into a docker image with the rest of the extensions. At the point of incorperating the extension into the Docker image, some minor changes may have to be made (mainly path issues).
 
 Once on the che server:
