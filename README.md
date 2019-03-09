@@ -8,7 +8,6 @@ These extensions have been developed on `Jupyter 4.4.0` and `Jupyter Lab 0.32.1`
 
 To build additional extensions for the project, it is recommended to start from a [cookie-cutter](https://github.com/jupyterlab/extension-cookiecutter-ts) or off a previouslt built extension.
 
-All extensions follow a similar pattern
 
 Some Jupyter Extensions/Resources we have found helpful:
 * [xkcd tutorial](https://jupyterlab.readthedocs.io/en/stable/developer/xkcd_extension_tutorial.html) Great place to start for extending JupyterLab
