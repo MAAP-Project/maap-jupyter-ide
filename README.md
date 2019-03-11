@@ -26,7 +26,20 @@ Our development proccess involves building and running an extension locally in a
 
 Once on the che server:
 - Under `~/che/dockerfiles/jupyterlab-extensions` install your extension.
-- Attempt to build both server and lab extension locally on this machine. Install any of the packages it is yelling about.
+    - You can create a separate stack to test the extension on che first before integrating with the others
+- Attempt to build both server and lab extension locally on this machine. Install any of the packages it is yelling about.  Here are some common ones:
+    ```bash
+    npm install typescript
+    npm install tsc
+
+    npm install @jupyterlab/application
+    npm install @jupyterlab/launcher
+    npm install @phosphor/widgets
+    npm install @jupyterlab/apputils
+    npm install @jupyterlab/coreutils
+    npm install @types/node --save
+    npm install @types/jquery --save
+    ```
 - Add your install to the Dockerfile. For example:
     ```bash
     # jlab pull projects into /projects directory
@@ -43,4 +56,4 @@ Once on the che server:
     ```
 - Then rebuild the docker image. `microk8s.docker build -t localhost:32000/che-jupyterlab-extensions .`
 - Push! `microk8s.docker push localhost:32000/che-jupyterlab-extensions `
-- Now when you build a new workspace with the `localhost:32000/che-jupyterlab-extensions` image it will automatically fetch the new image. 
+- Now when you build a new workspace with the `localhost:32000/che-jupyterlab-extensions` image it will automatically fetch the new image. (found in the stack's `Recipe` or `Raw Configuration`)
