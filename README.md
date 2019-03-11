@@ -6,7 +6,7 @@ In order to use each of these extensions they must be installed and enabled. Ins
 
 These extensions have been developed on `Jupyter 4.4.0` and `Jupyter Lab 0.32.1`.
 
-To build additional extensions for the project, it is recommended to start from a [cookie-cutter](https://github.com/jupyterlab/extension-cookiecutter-ts) or off a previouslt built extension.
+To build additional extensions for the project, it is recommended to start from a [cookie-cutter](https://github.com/jupyterlab/extension-cookiecutter-ts) or off a previously built extension.
 
 Some Jupyter Extensions/Resources we have found helpful:
 * [xkcd tutorial](https://jupyterlab.readthedocs.io/en/stable/developer/xkcd_extension_tutorial.html) Great place to start for extending JupyterLab
@@ -57,3 +57,4 @@ Once on the che server:
 - Then rebuild the docker image. `microk8s.docker build -t localhost:32000/che-jupyterlab-extensions .`
 - Push! `microk8s.docker push localhost:32000/che-jupyterlab-extensions `
 - Now when you build a new workspace with the `localhost:32000/che-jupyterlab-extensions` image it will automatically fetch the new image. (found in the stack's `Recipe` or `Raw Configuration`)
+    - you can also specify the image tag to use in your build on the stack if you want to use a previous build
