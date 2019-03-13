@@ -1,2 +1,4 @@
 .ipynb_checkpoints/
 jupyterlab_iframe/maap-py/
+.idea/
+*.pyc
