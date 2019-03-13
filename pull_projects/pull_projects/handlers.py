@@ -1,6 +1,5 @@
 import os.path
 import sys
-import nbformat
 from notebook.base.handlers import IPythonHandler
 
 import os
