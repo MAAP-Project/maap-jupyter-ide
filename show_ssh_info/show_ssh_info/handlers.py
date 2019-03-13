@@ -2,6 +2,7 @@ import os
 import requests
 from requests import get
 from notebook.base.handlers import IPythonHandler
+import subprocess
 
 class GetHandler(IPythonHandler):
     def get(self):
@@ -32,3 +33,9 @@ class GetHandler(IPythonHandler):
         return
 
 
+class AddKeyHandler(IPythonHandler):
+    def get(self):
+        public_key = self.get_argument('public_key', '')
+        cmd = "echo " + public_key + " >> ~/.ssh/authorized_keys"
+        print(cmd)
+        subprocess.check_output(cmd, shell=True)
