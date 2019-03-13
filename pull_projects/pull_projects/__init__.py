@@ -28,7 +28,7 @@ def load_jupyter_server_extension(nb_server_app):
     host_pattern = '.*$'
 
 
-    print('Installing jupyterlab pull_projects handler on path %s' % url_path_join(base_url, 'search'))
+    print('Installing jupyterlab pull_projects handler on path %s' % url_path_join(base_url, 'pull_projects'))
     print('base_url is '+base_url)
 
     # ws_url = os.environ['PREVIEW_URL']
