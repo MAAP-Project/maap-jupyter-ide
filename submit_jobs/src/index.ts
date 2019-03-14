@@ -3,6 +3,7 @@ import { Widget } from '@phosphor/widgets';
 import { ICommandPalette, Dialog } from '@jupyterlab/apputils';
 import { PageConfig } from '@jupyterlab/coreutils'
 import { ILauncher } from '@jupyterlab/launcher';
+import { request, RequestResult } from './request';
 // import * as $ from "jquery";
 import * as data from './fields.json';
 
@@ -24,7 +25,11 @@ class HySDSWidget extends Widget {
   public readonly fields: string[];
 
   constructor(req:string) {
-    super();
+    let body = document.createElement('div');
+    body.style.display = 'flex';
+    body.style.flexDirection = 'column';
+    super({node: body});
+
      // Default text
     this.response_text = "";
     this.req = req;
@@ -66,9 +71,9 @@ class HySDSWidget extends Widget {
 
     // ************ Search granule fields ********** //
     // Display search query result
-    var granuleInfo = document.createElement('granule-info');
-    granuleInfo.innerHTML = this.popup_title+"\n";
-    this.node.appendChild(granuleInfo);
+    var title = document.createElement('div');
+    title.innerHTML = this.popup_title+"\n";
+    this.node.appendChild(title);
 
     // BREAK
     var x = document.createElement("BR");
@@ -89,35 +94,39 @@ class HySDSWidget extends Widget {
       this.node.appendChild(x)
     }
 
-    // let graunuleBtn = document.createElement('button');
-    // graunuleBtn.id = "SearchCMRGranule";
-    // graunuleBtn.className = "btn";
-    // graunuleBtn.innerHTML = "Search";
-    // graunuleBtn.addEventListener('click', this.sendJob, false);
-    // this.node.appendChild(graunuleBtn);
-
   }
 
   updateSearchResults(): void {
+    // var me = this;
     // document.getElementById('search-text').innerHTML = this.response_text;
+    // console.log(this.response_text);
 
     if (document.getElementById('result-text') != null){
-      (<HTMLTextAreaElement>document.getElementById('result-text')).value = this.response_text;
+      // console.log('using textarea');
+      (<HTMLDivElement>document.getElementById('result-text')).innerHTML = "<pre>" + this.response_text + "</pre>";
     } else {
-      var textarea = document.createElement("TEXTAREA");
+      // console.log('create textarea');
+      let body = document.createElement('div');
+      body.style.display = 'flex';
+      body.style.flexDirection = 'column';
+
+      var textarea = document.createElement("div");
       textarea.id = 'result-text';
-      (<HTMLTextAreaElement>textarea).readOnly = true;
-      (<HTMLTextAreaElement>textarea).cols = 40;
-      (<HTMLTextAreaElement>textarea).rows = 50;
-      (<HTMLTextAreaElement>textarea).value = this.response_text;
-      this.node.appendChild(textarea);
+      textarea.style.display = 'flex';
+      textarea.style.flexDirection = 'column';
+      textarea.innerHTML = "<pre>" + this.response_text + "</pre>";
+
+      body.appendChild(textarea);
+      // this.node.appendChild(textarea);
+      // this.node = body;
+      popupResult(new WidgetResult(body));
     }
   }
 
   // submit the job
   // overrides the resolution of popup dialog
   getValue() {
-    // var me = this;
+    var me = this;
     var getUrl = new URL(PageConfig.getBaseUrl() + 'hysds/'+this.req); // REMINDER: hack this url until fixed
 
     for (var field of this.fields) {
@@ -126,22 +135,28 @@ class HySDSWidget extends Widget {
     }
 
     console.log(getUrl.href);
-    // console.log('show url?');
 
     // Send Job as Request
-    // var xhr = new XMLHttpRequest();
-    // xhr.open("GET", getUrl.href, true);
-
-    // Handle Request Result
-    // xhr.onload = function() {
-    //   let response = $.parseJSON(xhr.response);
-    //   me.response_text = response.granule_urls;
-    //   if (me.response_text == "" ) { me.response_text = "No results found."; }
-    //   me.updateSearchResults();
-    // }
-
-    // xhr.send(null);
+    if (me.req == 'getCapabilities'){
+      request('get', getUrl.href).then((res: RequestResult) => {
+        if(res.ok){
+          let json_response:any = res.json();
+          // me.response_text = json_response;
+          me.response_text = json_response['result'];
+        } else {
+          me.response_text = "Error Sending Request.";
+        }
+        // console.log(me.response_text);
+        me.updateSearchResults();
+      });
+    }
     return;
+  }
+}
+
+class WidgetResult extends Widget {
+  constructor(b: any) {
+    super({node: b});
   }
 }
 
@@ -156,10 +171,19 @@ export function showDialog<T>(
 
 export function popup(b:any): void {
   showDialog({
-    title: 'Submit Job:',
+    title: 'Submit Request:',
     body: b,
     focusNodeSelector: 'input',
     buttons: [Dialog.okButton({ label: 'Ok' }), Dialog.cancelButton({ label : 'Cancel'})]
+  });
+}
+
+export function popupResult(b:any): void {
+  showDialog({
+    title: 'Results:',
+    body: b,
+    focusNodeSelector: 'input',
+    buttons: [Dialog.okButton({ label: 'Ok' })]
   });
 }
 
