@@ -4,6 +4,13 @@ import { ICommandPalette, Dialog } from '@jupyterlab/apputils';
 import { PageConfig } from '@jupyterlab/coreutils'
 import { ILauncher } from '@jupyterlab/launcher';
 // import * as $ from "jquery";
+import * as data from './fields.json';
+
+const getCapabilitiesFields = data.getCapabilities;
+const executeFields = data.execute;
+const getStatusFields = data.getStatus;
+const getResultFields = data.getResult;
+const dismissFields = data.dismiss;
 
 // -----------------------
 // HySDS stuff
@@ -12,8 +19,9 @@ class HySDSWidget extends Widget {
 
   // TODO: protect instance vars
   public readonly req: string;
+  public readonly popup_title: string;
   public response_text: string;
-  public fields: string[];
+  public readonly fields: string[];
 
   constructor(req:string) {
     super();
@@ -23,22 +31,32 @@ class HySDSWidget extends Widget {
 
     switch (req) {
       case 'getCapabilities':
+        this.popup_title = "Get List of Capabilities";
+        this.fields = getCapabilitiesFields; // no params
         console.log('getCapabilities');
         break;
       case 'getStatus':
+        this.popup_title = "Get Job Status";
+        this.fields = getStatusFields;
         console.log('getStatus');
         break;
       case 'getResult':
+        this.popup_title = "Get Job Result";
+        this.fields = getResultFields;
         console.log('getResult');
         break;
       case 'execute':
-        this.fields = ['Title', 'Identifier', 'Metadata'];
+        this.popup_title = "Execute Job";
+        this.fields = executeFields;
         console.log('execute');
         break;
       case 'dismiss':
+        this.popup_title = "Dismiss Job";
+        this.fields = dismissFields;
         console.log('dismiss');
         break;
     }
+    console.log(this.fields);
 
     // bind method definitions of "this" to refer to class instance
     this.getValue = this.getValue.bind(this);
@@ -49,7 +67,7 @@ class HySDSWidget extends Widget {
     // ************ Search granule fields ********** //
     // Display search query result
     var granuleInfo = document.createElement('granule-info');
-    granuleInfo.innerHTML = "Submit Job to DPS\n";
+    granuleInfo.innerHTML = this.popup_title+"\n";
     this.node.appendChild(granuleInfo);
 
     // BREAK
