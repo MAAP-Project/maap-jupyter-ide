@@ -27,7 +27,6 @@ def load_jupyter_server_extension(nb_server_app):
     base_url = web_app.settings['base_url']
     host_pattern = '.*$'
 
-
     print('Installing jupyterlab pull_projects handler on path %s' % url_path_join(base_url, 'inject_ssh'))
     print('base_url is '+base_url)
 

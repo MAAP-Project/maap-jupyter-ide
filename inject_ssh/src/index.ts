@@ -48,17 +48,17 @@ function activate_inject(app: JupyterLab,
                   launcher: ILauncher | null) {
 
    // Add an application command
-  // const open_command = 'inject_ssh:inject';
-  //
-  // app.commands.addCommand(open_command, {
-  //   label: 'Inject User SSH Key',
-  //   isEnabled: () => true,
-  //   execute: args => {
-  //     new InjectSSH();
-  //   }
-  // });
-  //
-  // palette.addItem({command: open_command, category: 'SSH'});
+  const open_command = 'inject_ssh:inject';
+
+  app.commands.addCommand(open_command, {
+    label: 'Inject User SSH Key',
+    isEnabled: () => true,
+    execute: args => {
+      new InjectSSH();
+    }
+  });
+
+  palette.addItem({command: open_command, category: 'SSH'});
   new InjectSSH();
   console.log('JupyterLab inject ssh is activated!');
 };
