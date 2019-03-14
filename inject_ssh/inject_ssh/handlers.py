@@ -25,18 +25,17 @@ class InjectKeyHandler(IPythonHandler):
             verify=False
         )
         print("====== IN SSH INJECT ========")
+        resp = json.loads(r.text)               # JSON response to dict
+        public_key = resp['attributes']['public_ssh_keys']   # gets ssh key from dict
 
-        try:
-            resp = json.loads(r.text)               # JSON response to dict
-            public_key = resp['attributes']['public_ssh_keys']   # gets ssh key from dict
 
-            # Inject key into authorized keys
-            cmd = "echo " + public_key + " >> ~/.ssh/authorized_keys"
-            print(cmd)
-            subprocess.check_output(cmd, shell=True)
+        os.chdir('/root')
+        if not os.path.exists(".ssh"):
+            os.makedirs(".ssh")
 
-            print("====== SUCCESS ========")
-            self.finish({"status_code": r.status_code})
-        except:
-            print("====== FAILURE ========")
-            self.finish({"status_code": r.status_code})
+        # Inject key into authorized keys
+        cmd = "echo " + public_key + " >> .ssh/authorized_keys"
+        print(cmd)
+        subprocess.check_output(cmd, shell=True)
+        os.chdir('/projects')
+        print("====== SUCCESS ========")
