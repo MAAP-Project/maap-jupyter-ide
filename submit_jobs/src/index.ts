@@ -14,7 +14,7 @@ const getResultFields = data.getResult;
 const dismissFields = data.dismiss;
 const describeProcessFields = data.describeProcess;
 // const resultFields: string[] = ['status_code', 'result'];
-const notImplemented = ['getResult','execute','dismiss','getStatus'];
+const notImplemented = ['execute'];
 
 // -----------------------
 // HySDS stuff
@@ -158,6 +158,8 @@ class HySDSWidget extends Widget {
         console.log("updating");
         me.updateSearchResults();
       });
+    } else {
+      console.log("not implemented yet");
     }
     return;
   }
