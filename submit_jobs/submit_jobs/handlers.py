@@ -18,13 +18,13 @@ class GetCapabilitiesHandler(IPythonHandler):
 			except:
 				pass
 
-		params['url'] = 'http://geoprocessing.demo.52north.org:8080/wps/WebProcessingService'
+		url = 'http://geoprocessing.demo.52north.org:8080/wps/WebProcessingService'
 		params['service'] = 'WPS'
 		params['version'] = '2.0.0'
 		params['request'] = 'GetCapabilities'
 
 		# http://geoprocessing.demo.52north.org:8080/wps/WebProcessingService?service=WPS&version=2.0.0&request=GetCapabilities
-		url = params.pop('url',None)
+		# url = params.pop('url',None)
 		r = requests.get(
 			url,
 			params=params
@@ -57,7 +57,7 @@ class ExecuteHandler(IPythonHandler):
 		)
 		try:
 			resp = json.loads(r.text)
-			self.finish({"status_code": r.status_code, "result": result})
+			self.finish({"status_code": r.status_code, "result": r.text})
 		except:
 			self.finish({"status_code": r.status_code, "result": r.reason})
 
@@ -80,8 +80,8 @@ class GetStatusHandler(IPythonHandler):
 			params=params
 		)
 		try:
-			resp = json.loads(r.text)
-			self.finish({"status_code": r.status_code, "result": result})
+			# resp = json.loads(r.text)
+			self.finish({"status_code": r.status_code, "result": r.text})
 		except:
 			self.finish({"status_code": r.status_code, "result": r.reason})
 
@@ -108,8 +108,8 @@ class GetStatusHandler(IPythonHandler):
 # 	def post(self):
 
 class DescribeProcessHandler(IPythonHandler):
-	def post(self):
-		fields = getFields('describe')
+	def get(self):
+		fields = getFields('describeProcess')
 		params = {}
 
 		for f in fields:
@@ -124,14 +124,16 @@ class DescribeProcessHandler(IPythonHandler):
 		params['service'] = 'WPS'
 		params['version'] = '2.0.0'
 		params['request'] = 'DescribeProcess'
+		print(params)
 		# params['identifier']= 'all'
 		r = requests.get(
 			url,
 			params=params
 		)
+		print(r)
 
 		try:
-			resp = json.loads(r.text)
-			self.finish({"status_code": r.status_code, "result": result})
+			# resp = json.loads(r.text)
+			self.finish({"status_code": r.status_code, "result": r.text})
 		except:
 			self.finish({"status_code": r.status_code, "result": r.reason})

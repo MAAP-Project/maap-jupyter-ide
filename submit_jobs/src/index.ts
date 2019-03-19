@@ -12,7 +12,9 @@ const executeFields = data.execute;
 const getStatusFields = data.getStatus;
 const getResultFields = data.getResult;
 const dismissFields = data.dismiss;
-const describeFields = data.describe;
+const describeProcessFields = data.describeProcess;
+// const resultFields: string[] = ['status_code', 'result'];
+const notImplemented = ['getResult','execute','dismiss','getStatus'];
 
 // -----------------------
 // HySDS stuff
@@ -61,10 +63,10 @@ class HySDSWidget extends Widget {
         this.fields = dismissFields;
         console.log('dismiss');
         break;
-      case 'describe':
-        this.popup_title = "Describe Capability";
-        this.fields = describeFields;
-        console.log('describe');
+      case 'describeProcess':
+        this.popup_title = "Describe Process";
+        this.fields = describeProcessFields;
+        console.log('describeProcess');
     }
     console.log(this.fields);
 
@@ -107,10 +109,10 @@ class HySDSWidget extends Widget {
     // console.log(this.response_text);
 
     if (document.getElementById('result-text') != null){
-      // console.log('using textarea');
+      console.log('using textarea');
       (<HTMLDivElement>document.getElementById('result-text')).innerHTML = "<pre>" + this.response_text + "</pre>";
     } else {
-      // console.log('create textarea');
+      console.log('create textarea');
       let body = document.createElement('div');
       body.style.display = 'flex';
       body.style.flexDirection = 'column';
@@ -132,6 +134,8 @@ class HySDSWidget extends Widget {
   // overrides the resolution of popup dialog
   getValue() {
     var me = this;
+
+    // create API call to server extension
     var getUrl = new URL(PageConfig.getBaseUrl() + 'hysds/'+this.req); // REMINDER: hack this url until fixed
 
     for (var field of this.fields) {
@@ -142,7 +146,7 @@ class HySDSWidget extends Widget {
     console.log(getUrl.href);
 
     // Send Job as Request
-    if (me.req == 'getCapabilities'){
+    if ( !(notImplemented.includes(me.req) )){
       request('get', getUrl.href).then((res: RequestResult) => {
         if(res.ok){
           let json_response:any = res.json();
@@ -151,7 +155,7 @@ class HySDSWidget extends Widget {
         } else {
           me.response_text = "Error Sending Request.";
         }
-        // console.log(me.response_text);
+        console.log("updating");
         me.updateSearchResults();
       });
     }
@@ -276,7 +280,7 @@ export function activateDescribe(app: JupyterLab,
     label: 'Describe DPS Job',
     isEnabled: () => true,
     execute: args => {
-      popup(new HySDSWidget('describe'));
+      popup(new HySDSWidget('describeProcess'));
     }
   });
   palette.addItem({command: open_command, category: 'DPS'});
