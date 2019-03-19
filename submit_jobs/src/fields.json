@@ -3,5 +3,6 @@
 	"execute": ["algorithm","data"],
 	"getStatus": ["job_id"],
 	"getResult": ["job_id"],
-	"dismiss": ["job_id"]
+	"dismiss": ["job_id"],
+	"describe": ["identifier"]
 }
