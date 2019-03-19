@@ -12,6 +12,7 @@ const executeFields = data.execute;
 const getStatusFields = data.getStatus;
 const getResultFields = data.getResult;
 const dismissFields = data.dismiss;
+const describeFields = data.describe;
 
 // -----------------------
 // HySDS stuff
@@ -60,6 +61,10 @@ class HySDSWidget extends Widget {
         this.fields = dismissFields;
         console.log('dismiss');
         break;
+      case 'describe':
+        this.popup_title = "Describe Capability";
+        this.fields = describeFields;
+        console.log('describe');
     }
     console.log(this.fields);
 
@@ -262,6 +267,21 @@ export function activateDismiss(app: JupyterLab,
   palette.addItem({command: open_command, category: 'DPS'});
   console.log('HySDS Dismiss Job is activated!');
 }
+export function activateDescribe(app: JupyterLab, 
+                        palette: ICommandPalette, 
+                        restorer: ILauncher | null): void{
+  const open_command = 'hysds: describe-job';
+
+  app.commands.addCommand(open_command, {
+    label: 'Describe DPS Job',
+    isEnabled: () => true,
+    execute: args => {
+      popup(new HySDSWidget('describe'));
+    }
+  });
+  palette.addItem({command: open_command, category: 'DPS'});
+  console.log('HySDS Describe Job is activated!');
+}
 
 // export extensions
 const extensionCapabilities: JupyterLabPlugin<void> = {
@@ -299,5 +319,12 @@ const extensionDismiss: JupyterLabPlugin<void> = {
   optional: [ILauncher],
   activate: activateDismiss
 };
+const extensionDescribe: JupyterLabPlugin<void> = {
+  id: 'dps-job-describe',
+  autoStart: true,
+  requires: [ICommandPalette],
+  optional: [ILauncher],
+  activate: activateDescribe
+};
 
-export default [extensionCapabilities,extensionStatus,extensionResult,extensionExecute,extensionDismiss];
+export default [extensionCapabilities,extensionStatus,extensionResult,extensionExecute,extensionDismiss,extensionDescribe];
