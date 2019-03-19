@@ -75,6 +75,9 @@ class GetStatusHandler(IPythonHandler):
 
 		# url = params.pop('url',None)
 		url = 'http://geoprocessing.demo.52north.org:8080/wps/WebProcessingService'
+		params['service'] = 'WPS'
+		params['version'] = '2.0.0'
+		params['request'] = 'GetStatus'
 		r = requests.get(
 			url,
 			params=params
@@ -85,27 +88,49 @@ class GetStatusHandler(IPythonHandler):
 		except:
 			self.finish({"status_code": r.status_code, "result": r.reason})
 
-# class GetResultHandler(IPythonHandler):
-# 	def get(self):
-		# fields = getFields('getResult')
-		# params = {}
+class GetResultHandler(IPythonHandler):
+	def get(self):
+		fields = getFields('getResult')
+		params = {}
 
-		# for f in fields:
-		# 	try:
-		# 		arg = self.get_argument(f.lower(), '')
-		# 		params[f] = arg
-		# 	except:
-		# 		pass
+		for f in fields:
+			try:
+				arg = self.get_argument(f.lower(), '')
+				params[f] = arg
+			except:
+				pass
 
-		# url = params.pop('url',None)
-		# url = 'http://geoprocessing.demo.52north.org:8080/wps/WebProcessingService'
-		# r.requests.get(
-		# 	url,
-		# 	params=params
-		# )
+		url = params.pop('url',None)
+		url = 'http://geoprocessing.demo.52north.org:8080/wps/WebProcessingService'
+		params['service'] = 'WPS'
+		params['version'] = '2.0.0'
+		params['request'] = 'GetResult'
+		r.requests.get(
+			url,
+			params=params
+		)
 
-# class DismissHandler(IPythonHandler):
-# 	def post(self):
+class DismissHandler(IPythonHandler):
+	def post(self):
+		fields = getFields('getResult')
+		params = {}
+
+		for f in fields:
+			try:
+				arg = self.get_argument(f.lower(), '')
+				params[f] = arg
+			except:
+				pass
+
+		url = params.pop('url',None)
+		url = 'http://geoprocessing.demo.52north.org:8080/wps/WebProcessingService'
+		params['service'] = 'WPS'
+		params['version'] = '2.0.0'
+		params['request'] = 'Dismiss'
+		r.requests.get(
+			url,
+			params=params
+		)
 
 class DescribeProcessHandler(IPythonHandler):
 	def get(self):
