@@ -3,8 +3,14 @@ import requests
 from requests import get
 from notebook.base.handlers import IPythonHandler
 import subprocess
+import json
+
 
 class GetHandler(IPythonHandler):
+    """
+    Get ssh information for user - IP and Port.
+    Port comes from querying the kubernetes API
+    """
     def get(self):
 
         # Get Port from Kubernetes
@@ -33,9 +39,75 @@ class GetHandler(IPythonHandler):
         return
 
 
-class AddKeyHandler(IPythonHandler):
+class CheckInstallersHandler(IPythonHandler):
+    """
+    Check if SSH and exec Che Installers are enabled. If they are not, a user would not be able to ssh in becuase there
+    would be no SSH agent.
+    """
     def get(self):
-        public_key = self.get_argument('public_key', '')
-        cmd = "echo " + public_key + " >> ~/.ssh/authorized_keys"
-        print(cmd)
-        subprocess.check_output(cmd, shell=True)
+        #
+        # TODO: DELTE THIS LINE!!!!! IT MAKES THE CHECK NOT HAPPEN!!!
+        #
+        self.finish({'status': True})
+
+        che_machine_token = os.environ['CHE_MACHINE_TOKEN']
+        url = 'https://che-k8s.maap.xyz/api/workspace/' + os.environ.get('CHE_WORKSPACE_ID')
+        # --------------------------------------------------
+        # TODO: FIGURE OUT AUTH KEY & verify
+        # --------------------------------------------------
+        headers = {
+            'Accept': 'application/json',
+            'Authorization': 'Bearer {token}'.format(token=che_machine_token)
+        }
+        r = requests.get(
+            url,
+            headers=headers,
+            verify=False
+        )
+
+        resp = json.loads(r.text)               # JSON response to dict
+        installers = resp['config']['environments']["default"]["machines"]["ws/jupyter"]['installers']
+        # Check installers
+        if 'org.eclipse.che.ssh' in installers and 'org.eclipse.che.exec' in installers:
+            self.finish({'status': True})
+        else:
+            self.finish({'status': False})
+
+
+class InstallHandler(IPythonHandler):
+    """
+    Update workspace config to enable SSH and exec installers. Not sure if the workspace has to be maunually restarted
+    at this point or if I can restart it.
+    """
+    def get(self):
+
+        che_machine_token = os.environ['CHE_MACHINE_TOKEN']
+        url = 'https://che-k8s.maap.xyz/api/workspace/' + os.environ.get('CHE_WORKSPACE_ID')
+        # --------------------------------------------------
+        # TODO: FIGURE OUT AUTH KEY & verify
+        # --------------------------------------------------
+        headers = {
+            'Accept': 'application/json',
+            'Authorization': 'Bearer {token}'.format(token=che_machine_token)
+        }
+        r = requests.get(
+            url,
+            headers=headers,
+            verify=False
+        )
+
+        installers = ['org.eclipse.che.ssh', 'org.eclipse.che.exec']
+        workspace_config = json.loads(r.text)    # JSON response to dict
+
+        # Update workspace config with new installers
+        workspace_config['config']['environments']["default"]["machines"]["ws/jupyter"]['installers'] = installers
+
+        put_url = 'https://che-k8s.maap.xyz/api/workspace/' + os.environ.get('CHE_WORKSPACE_ID')
+
+        r = requests.put(
+            url,
+            headers=headers,
+            verify=False
+        )
+
+        self.finish(r.status_code)
