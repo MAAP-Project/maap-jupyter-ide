@@ -1,7 +1,7 @@
 {
 	"getCapabilities": [],
 	"execute": ["Identifier","Data"],
-	"getStatus": ["JobID"],
+	"getStatus": ["job_id"],
 	"getResult": ["JobID"],
 	"dismiss": ["JobID"],
 	"describeProcess": ["algo_id"]
