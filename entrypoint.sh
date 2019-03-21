@@ -15,7 +15,8 @@ perl -pi -e "s|web_app.settings\['base_url'\]|'/'|g" $JUPYTERLABSERVERLIBPATH/ha
 perl -pi -e "s|pattern = url_path_join\(settings\['base_url'\], handler\[0\]\)|pattern = url_path_join('/', handler[0])|g" $NOTEBOOKLIBPATH/notebookapp.py
 perl -pi -e "s|web_app.settings\['base_url'\]|'/'|g" /pull_projects/pull_projects/__init__.py
 perl -pi -e "s|web_app.settings\['base_url'\]|'/'|g" /show_ssh_info/show_ssh_info/__init__.py
-perl -pi -e "s|web_app.settings\['base_url'\]|'/'|g" /jupyterlab_iframe/jupyterlab_iframe/__init__.py
+perl -pi -e "s|web_app.settings\['base_url'\]|'/'|g" /edsc_extension/edsc_extension/__init__.py
+#perl -pi -e "s|web_app.settings\['base_url'\]|'/'|g" /jupyterlab_iframe/jupyterlab_iframe/__init__.py
 perl -pi -e "s|web_app.settings\[\"base_url\"\]|'/'|g" /jupyterlab-git/jupyterlab_git/handlers.py
 
 # Dump all env variables into file so they exist still though SSH
