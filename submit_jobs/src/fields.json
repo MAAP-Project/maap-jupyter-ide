@@ -4,5 +4,5 @@
 	"getStatus": ["JobID"],
 	"getResult": ["JobID"],
 	"dismiss": ["JobID"],
-	"describeProcess": ["Identifier"]
+	"describeProcess": ["algo_id"]
 }
