@@ -1,9 +1,19 @@
 from notebook.base.handlers import IPythonHandler
 import requests
+import xml.etree.ElementTree as ET
 import json
 import os
 
 from .fields import getFields
+
+def dig(node):
+	# print("dig!")
+	if len(node) > 1:
+		return {node.tag[node.tag.index('}')+1:]:[dig(e) for e in node]}
+	elif len(node) == 1:
+		return {node.tag[node.tag.index('}')+1:]:dig(node[0])}
+	else:
+		return {node.tag[node.tag.index('}')+1:]:node.text.split(' ')}
 
 class GetCapabilitiesHandler(IPythonHandler):
 	def get(self):
@@ -50,6 +60,8 @@ class ExecuteHandler(IPythonHandler):
 			except:
 				pass
 		params['data_value'] = float(params['data_value'])
+		# params['algo_id'] = 'org.n52.wps.server.algorithm.SimpleBufferAlgorithm'
+		# params['data_value'] = 5.0
 
 		# http://geoprocessing.demo.52north.org:8080/wps/WebProcessingService?service=WPS&version=2.0.0&request=GetCapabilities
 		url = 'http://geoprocessing.demo.52north.org:8080/wps/WebProcessingService'
@@ -66,8 +78,15 @@ class ExecuteHandler(IPythonHandler):
 			headers=headers
 		)
 		try:
-			print(r.text)
-			resp = json.loads(r.text)
+			# rt = ET.fromstring(r.text)
+			# job_id = rt[0].text
+			# # print(job_id)
+			# data = dig(rt[1])
+			# # print(data)
+			# result = job_id+'\n '+str(data)
+			# # print(result)
+			# print("success!")
+			# self.finish({"status_code": r.status_code, "result": result})
 			self.finish({"status_code": r.status_code, "result": r.text})
 		except:
 			self.finish({"status_code": r.status_code, "result": r.reason})
