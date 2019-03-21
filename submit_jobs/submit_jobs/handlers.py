@@ -96,9 +96,10 @@ class GetStatusHandler(IPythonHandler):
 
 class GetResultHandler(IPythonHandler):
 	def get(self):
+		xml_file = "./submit_jobs/getResult.xml"
 		fields = getFields('getResult')
-		params = {}
 
+		params = {}
 		for f in fields:
 			try:
 				arg = self.get_argument(f.lower(), '')
@@ -106,19 +107,23 @@ class GetResultHandler(IPythonHandler):
 			except:
 				pass
 
-		url = params.pop('url',None)
 		url = 'http://geoprocessing.demo.52north.org:8080/wps/WebProcessingService'
-		params['service'] = 'WPS'
-		params['version'] = '2.0.0'
-		params['request'] = 'GetResult'
-		r.requests.get(
+		headers = {'Content-Type':'text/xml',}
+		# print(params)
+		with open(xml_file) as xml:
+			req_xml = xml.read()
+
+		req_xml = req_xml.format(**params)
+		# print(req_xml)
+		r = requests.post(
 			url,
-			params=params
+			data=req_xml,
+			headers=headers
 		)
 		try:
+			# resp = json.loads(r.text)
 			self.finish({"status_code": r.status_code, "result": r.text})
 		except:
-			print('failed')
 			self.finish({"status_code": r.status_code, "result": r.reason})
 
 class DismissHandler(IPythonHandler):
