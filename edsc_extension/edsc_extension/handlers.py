@@ -9,7 +9,11 @@ print(subprocess.check_output('pwd',shell=True))
 import maap
 from maap.maap import MAAP
 
+# In local Config
 PATH_TO_MAAP_CFG = './maap-py/maap.cfg'
+
+# In Docker Image Che Config
+#PATH_TO_MAAP_CFG = '/edsc_extension/maap-py/maap.cfg'
 
 # Set selected ADE Docker Image 
 class GetCollectionsHandler(IPythonHandler):
