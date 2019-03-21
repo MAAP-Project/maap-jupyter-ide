@@ -4,30 +4,35 @@ RUN conda install -c conda-forge jupyterlab
 RUN conda install -c conda-forge nodejs 
 RUN conda install -c conda-forge gitpython
 
-COPY show_ssh_info /show_ssh_info
-COPY pull_projects /pull_projects
-
 # jlab show ssh extension
+COPY show_ssh_info /show_ssh_info
 RUN cd /show_ssh_info && npm run build
 RUN cd /show_ssh_info && jupyter labextension link .
 RUN cd /show_ssh_info && pip install -e .
 RUN cd /show_ssh_info && jupyter serverextension enable --py show_ssh_info --sys-prefix
 
 # jlab pull projects into /projects directory
+COPY pull_projects /pull_projects
 RUN cd /pull_projects && pip install -e .
 RUN cd /pull_projects && jupyter serverextension enable --py pull_projects --sys-prefix
 RUN cd /pull_projects && npm run build
 RUN cd /pull_projects && jupyter labextension link .
 
 # jlab earthdata search extension
-COPY jupyterlab_iframe /jupyterlab_iframe
-RUN cd /jupyterlab_iframe && npm run build
-RUN cd /jupyterlab_iframe && jupyter labextension link .
-RUN cd /jupyterlab_iframe && pip install -e .
-RUN cd /jupyterlab_iframe/maap-py && python setup.py install
-RUN cd /jupyterlab_iframe && jupyter serverextension enable --py jupyterlab_iframe --sys-prefix
+#COPY jupyterlab_iframe /jupyterlab_iframe
+#RUN cd /jupyterlab_iframe && npm run build
+#RUN cd /jupyterlab_iframe && jupyter labextension link .
+#RUN cd /jupyterlab_iframe && pip install -e .
+#RUN cd /jupyterlab_iframe/maap-py && python setup.py install
+#RUN cd /jupyterlab_iframe && jupyter serverextension enable --py jupyterlab_iframe --sys-prefix
 
-
+# jlab earthdata search extension
+COPY edsc_extension /edsc_extension
+RUN cd /edsc_extension && npm run build
+RUN cd /edsc_extension && jupyter labextension link .
+RUN cd /edsc_extension && pip install -e .
+RUN cd /edsc_extension/maap-py && python setup.py install
+RUN cd /edsc_extension && jupyter serverextension enable --py edsc_extension --sys-prefix
 
 # install git extension
 COPY jupyterlab-git /jupyterlab-git

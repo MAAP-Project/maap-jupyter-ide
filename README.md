@@ -43,6 +43,7 @@ Once on the che server:
 - Add your install to the Dockerfile. For example:
     ```bash
     # jlab pull projects into /projects directory
+    COPY pull_projects /pull_projects
     RUN cd /pull_projects && npm run build
     RUN cd /pull_projects && jupyter labextension link .
     RUN cd /pull_projects && pip install -e .
