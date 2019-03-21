@@ -1,6 +1,6 @@
 {
 	"getCapabilities": [],
-	"execute": ["Identifier","Data"],
+	"execute": ["algo_id","data_value"],
 	"getStatus": ["job_id"],
 	"getResult": ["job_id"],
 	"dismiss": ["job_id"],
