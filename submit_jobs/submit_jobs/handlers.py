@@ -109,6 +109,11 @@ class GetResultHandler(IPythonHandler):
 			url,
 			params=params
 		)
+		try:
+			self.finish({"status_code": r.status_code, "result": r.text})
+		except:
+			print('failed')
+			self.finish({"status_code": r.status_code, "result": r.reason})
 
 class DismissHandler(IPythonHandler):
 	def post(self):
@@ -131,6 +136,11 @@ class DismissHandler(IPythonHandler):
 			url,
 			params=params
 		)
+		try:
+			self.finish({"status_code": r.status_code, "result": r.text})
+		except:
+			print('failed')
+			self.finish({"status_code": r.status_code, "result": r.reason})
 
 class DescribeProcessHandler(IPythonHandler):
 	def get(self):
@@ -150,7 +160,7 @@ class DescribeProcessHandler(IPythonHandler):
 		params['version'] = '2.0.0'
 		params['request'] = 'DescribeProcess'
 		print(params)
-		# params['identifier']= 'all'
+		params['identifier']= 'org.n52.wps.server.algorithm.r.AnnotationValidation'
 		r = requests.get(
 			url,
 			params=params
