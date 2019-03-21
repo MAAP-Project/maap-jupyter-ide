@@ -64,9 +64,10 @@ class ExecuteHandler(IPythonHandler):
 
 class GetStatusHandler(IPythonHandler):
 	def get(self):
+		xml_file = "./submit_jobs/getStatus.xml"
 		fields = getFields('getStatus')
-		params = {}
 
+		params = {}
 		for f in fields:
 			try:
 				arg = self.get_argument(f.lower(), '')
@@ -74,14 +75,18 @@ class GetStatusHandler(IPythonHandler):
 			except:
 				pass
 
-		# url = params.pop('url',None)
 		url = 'http://geoprocessing.demo.52north.org:8080/wps/WebProcessingService'
-		params['service'] = 'WPS'
-		params['version'] = '2.0.0'
-		params['request'] = 'GetStatus'
-		r = requests.get(
+		headers = {'Content-Type':'text/xml',}
+		# print(params)
+		with open(xml_file) as xml:
+			req_xml = xml.read()
+
+		req_xml = req_xml.format(**params)
+		# print(req_xml)
+		r = requests.post(
 			url,
-			params=params
+			data=req_xml,
+			headers=headers
 		)
 		try:
 			# resp = json.loads(r.text)
@@ -145,10 +150,8 @@ class DismissHandler(IPythonHandler):
 
 class DescribeProcessHandler(IPythonHandler):
 	def get(self):
-		print(os.getcwd())
 		xml_file = "./submit_jobs/describe.xml"
 		fields = getFields('describeProcess')
-		print(fields)
 
 		params = {}
 		for f in fields:
