@@ -14,7 +14,7 @@ const getResultFields = data.getResult;
 const dismissFields = data.dismiss;
 const describeProcessFields = data.describeProcess;
 // const resultFields: string[] = ['status_code', 'result'];
-const notImplemented = ['execute'];
+const notImplemented: string[] = [];
 
 // -----------------------
 // HySDS stuff

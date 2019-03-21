@@ -37,26 +37,36 @@ class GetCapabilitiesHandler(IPythonHandler):
 			self.finish({"status_code": r.status_code, "result": r.reason})
 
 class ExecuteHandler(IPythonHandler):
-	def post(self):
+	def get(self):
 		# submit job
+		xml_file = "./submit_jobs/execute.xml"
 		fields = getFields('execute')
+
 		params = {}
-		
 		for f in fields:
 			try:
 				arg = self.get_argument(f.lower(), '')
 				params[f] = arg
 			except:
 				pass
+		params['data_value'] = float(params['data_value'])
 
 		# http://geoprocessing.demo.52north.org:8080/wps/WebProcessingService?service=WPS&version=2.0.0&request=GetCapabilities
-		# url = params.pop('url',None)
 		url = 'http://geoprocessing.demo.52north.org:8080/wps/WebProcessingService'
-		r = requests.get(
-			url,
-			params=params
+		headers = {'Content-Type':'text/xml'}
+		# print(params)
+		with open(xml_file) as xml:
+			req_xml = xml.read()
+
+		req_xml = req_xml.format(**params)
+		# print(req_xml)
+		r = requests.post(
+			url=url, 
+			data=req_xml, 
+			headers=headers
 		)
 		try:
+			print(r.text)
 			resp = json.loads(r.text)
 			self.finish({"status_code": r.status_code, "result": r.text})
 		except:
@@ -108,7 +118,7 @@ class GetResultHandler(IPythonHandler):
 				pass
 
 		url = 'http://geoprocessing.demo.52north.org:8080/wps/WebProcessingService'
-		headers = {'Content-Type':'text/xml',}
+		headers = {'Content-Type':'text/xml'}
 		# print(params)
 		with open(xml_file) as xml:
 			req_xml = xml.read()
@@ -128,7 +138,7 @@ class GetResultHandler(IPythonHandler):
 
 class DismissHandler(IPythonHandler):
 	def post(self):
-		fields = getFields('getResult')
+		fields = getFields('dismiss')
 		params = {}
 
 		for f in fields:
