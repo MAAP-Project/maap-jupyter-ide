@@ -48,7 +48,7 @@ class CheckInstallersHandler(IPythonHandler):
         #
         # TODO: DELTE THIS LINE!!!!! IT MAKES THE CHECK NOT HAPPEN!!!
         #
-        self.finish({'status': True})
+        # self.finish({'status': True})
 
         che_machine_token = os.environ['CHE_MACHINE_TOKEN']
         url = 'https://che-k8s.maap.xyz/api/workspace/' + os.environ.get('CHE_WORKSPACE_ID')
