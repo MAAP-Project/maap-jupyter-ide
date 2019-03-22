@@ -5,6 +5,7 @@ import { PageConfig } from '@jupyterlab/coreutils'
 import { ILauncher } from '@jupyterlab/launcher';
 import { request, RequestResult } from './request';
 // import * as $ from "jquery";
+// import { format } from "xml-formatter";
 import * as data from './fields.json';
 
 const getCapabilitiesFields = data.getCapabilities;
@@ -121,7 +122,13 @@ class HySDSWidget extends Widget {
       textarea.id = 'result-text';
       textarea.style.display = 'flex';
       textarea.style.flexDirection = 'column';
-      textarea.innerHTML = "<pre>" + this.response_text + "</pre>";
+      var format = require('xml-formatter');
+      // var xml = "<pre>" + this.response_text + "</pre>";
+      var xml = this.response_text;
+      var options = {indentation: '  ', stripComments: true, collapseContent: false};
+      var formattedXML = format(xml,options);
+      textarea.innerText = formattedXML;
+      console.log(formattedXML)
 
       body.appendChild(textarea);
       // this.node.appendChild(textarea);
