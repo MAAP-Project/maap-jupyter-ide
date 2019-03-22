@@ -142,14 +142,10 @@ class MAAP(object):
         params = []
 
         for key, value in y.items():
-            if key == "platform_h":
-                params.append("platform=\"" + "|".join(value) + "\"")
-            elif key == "instrument_h":
-                params.append("instrument=\"" + "|".join(value) + "\"")
-            elif key == "data_center_h":
-                params.append("data_center=\"" + "|".join(value) + "\"")
+            if key.endswith("_h"):
+                params.append(key[:-2] + "=\"" + "|".join(value) + "\"")
             elif key == "bounding_box":
-                params.append("bounding_box=\"" + value + "\"")
+                params.append(key + "=\"" + value + "\"")
 
         result = variable_name + ".searchGranule(" + ", ".join(params) + ")"
 
