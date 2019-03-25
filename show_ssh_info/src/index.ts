@@ -59,8 +59,8 @@ class SshWidget extends Widget {
         let json_results:any = res.json();
         let ip = json_results['ip'];
         let port = json_results['port'];
-        // let message = "ssh root@" + ip + " -p " + port;
-        let message = "ssh -i <path_to_your_key> root@" + ip + " -p " + port;
+        let message = "ssh root@" + ip + " -p " + port;
+        // let message = "ssh -i <path_to_your_key> root@" + ip + " -p " + port;
         let contents = document.createTextNode(message);
         body.appendChild(contents);
       }
@@ -76,7 +76,7 @@ class InstallSshWidget extends Widget {
     body.style.display = 'flex';
     body.style.flexDirection = 'column';
 
-    let message = "SSH has not been enabled in your workspace. In order to install SSH, your workspace will be restarted."
+    let message = "SSH has not been enabled in your workspace. In order to enable SSH navigate to your workspace admin page. Under the tab Installers, turn on SSH and EXEC and click apply. NOTE: This will restart your workspace and take a few minutes.";
     let contents = document.createTextNode(message);
     body.appendChild(contents);
     super({ node: body });
@@ -168,7 +168,8 @@ function checkSSH(): void {
                         title: 'SSH Info:',
                         body: new InstallSshWidget(),
                         focusNodeSelector: 'input',
-                        buttons: [Dialog.okButton({ label: 'Activate SSH' }), Dialog.cancelButton()]
+                        buttons: [Dialog.okButton({ label: 'Ok' }),]
+                        // buttons: [Dialog.okButton({ label: 'Activate SSH' }), Dialog.cancelButton()]
                     }).then(result => {
                         if (result.button.label === 'Activate SSH') {
                             // Make Call To Activate
