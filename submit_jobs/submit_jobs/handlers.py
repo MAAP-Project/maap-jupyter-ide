@@ -2,6 +2,7 @@ from notebook.base.handlers import IPythonHandler
 import requests
 import xml.etree.ElementTree as ET
 import json
+import datetime
 import os
 
 from .fields import getFields
@@ -17,14 +18,53 @@ def dig(node):
 
 class RegisterAlgorithmHandler(IPythonHandler):
 	def get(self):
-		self.finish({"status_code": 200, "result": 'hi'})
+		json_file = "./submit_jobs/register.json"
+		fields = getFields('register')
+
+		params = {}
+		# params['url_list'] = []
+		# params['timestamp'] = str(datetime.datetime.today())
+		for f in fields:
+			try:
+				arg = self.get_argument(f.lower(), '')
+				params[f] = arg
+			except:
+				pass
+		# params['run_cmd'] = 'python /app/plant.py'
+		# params['algo_name'] = 'plant_test'
+		# params['algo_desc'] = 'test plant'
+		print(params)
+
+		url = 'http://localhost:5000/api/mas/algorithm'
+		headers = {'Content-Type':'application/json'}
+
+		with open(json_file) as jso:
+			req_json = jso.read()
+
+		req_json = req_json.format(**params)
+
+		print(req_json)
+
+		r = requests.post(
+			url=url,
+			data=req_json,
+			headers=headers
+		)
+		try:
+			print(r.text)
+			try:
+				resp = json.loads(r.text)
+				self.finish({"status_code": resp['code'], "result": resp['message']})
+			except:
+				self.finish({"status_code": 200, "result": r.text})
+		except:
+			print('failed')
+			self.finish({"status_code": r.status_code, "result": r.reason})
 
 class GetCapabilitiesHandler(IPythonHandler):
 	def get(self):
 		# submit job
 		# fields = ['service', 'version','url']
-		# template_file = "./submit_jobs/capabilities_template.html"
-		# template_data_file = "./submit_jobs/capabilities_template_data.html"
 		fields = getFields('getCapabilities')
 		params = {}
 		
@@ -49,25 +89,13 @@ class GetCapabilitiesHandler(IPythonHandler):
 
 		try:
 			try:
+				# parse out algorithm titles & names
 				rt = ET.fromstring(r.text)
 				algo_lst = rt[4]
 				algo_info = [(n[0].text, n[1].text) for n in algo_lst]
 				result = ''
 
-				# Table Output
-				# body = ''
-				# data_templ = ''
-
-				# with open(template_data_file) as tdf:
-				# 	data_templ = tdf.read()
-
-				# for (title,algo_id) in algo_info:
-				# 	body += data_templ.format(algo_id=algo_id,title=title)
-
-				# with open(template_file) as tf:
-				# 	result = tf.read().format(data=body)
-
-				# replace \t with &emsp;
+				# print algorithm name in indented new line below algorithm title
 				for (title, algo_id) in algo_info:
 					result += '{title}\n	{algo_id}\n\n'.format(title=title,algo_id=algo_id)
 
@@ -94,7 +122,9 @@ class ExecuteHandler(IPythonHandler):
 			except:
 				pass
 		# params['algo_id'] = 'org.n52.wps.server.algorithm.SimpleBufferAlgorithm'
+		# params['version'] = 'master'
 		# params['data_value'] = 5.0
+		params['timestamp'] = str(datetime.datetime.today())
 
 		# http://geoprocessing.demo.52north.org:8080/wps/WebProcessingService?service=WPS&version=2.0.0&request=GetCapabilities
 		url = 'http://geoprocessing.demo.52north.org:8080/wps/WebProcessingService'
@@ -139,7 +169,7 @@ class GetStatusHandler(IPythonHandler):
 				pass
 
 		url = 'http://geoprocessing.demo.52north.org:8080/wps/WebProcessingService'
-		# params['job_id'] = 'random_job'
+		# params['job_id'] = 'random_job_id'
 		headers = {'Content-Type':'text/xml',}
 		# print(params)
 		with open(xml_file) as xml:
@@ -232,6 +262,7 @@ class DescribeProcessHandler(IPythonHandler):
 
 		url = 'http://geoprocessing.demo.52north.org:8080/wps/WebProcessingService'
 		# params['algo_id'] = 'org.n52.wps.server.algorithm.SimpleBufferAlgorithm'
+		# params['version'] = 'master'
 		headers = {'Content-Type':'text/xml',}
 		# print(params)
 		with open(xml_file) as xml:

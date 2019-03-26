@@ -16,7 +16,8 @@ const getResultFields = data.getResult;
 const dismissFields = data.dismiss;
 const describeProcessFields = data.describeProcess;
 // const resultFields: string[] = ['status_code', 'result'];
-const notImplemented: string[] = [];
+const notImplemented: string[] = ['dismiss','getResult'];
+const nonXML: string[] = ['getCapabilities','register'];
 
 // -----------------------
 // HySDS stuff
@@ -131,14 +132,14 @@ class HySDSWidget extends Widget {
       var format = require('xml-formatter');
       // var xml = "<pre>" + this.response_text + "</pre>";
 
-      if (me.req != "getCapabilities") {
+      if ( nonXML.includes(me.req) ){ 
+        textarea.innerHTML = "<pre>" + this.response_text + "</pre>";
+        console.log(textarea);
+      } else {
         var xml = this.response_text;
         var options = {indentation: '  ', stripComments: true, collapseContent: false};
         var formattedXML = format(xml,options); 
         textarea.innerText = formattedXML;
-        console.log(textarea);
-      } else {
-        textarea.innerHTML = "<pre>" + this.response_text + "</pre>";
         console.log(textarea);
       }
 
@@ -200,12 +201,17 @@ export function showDialog<T>(
 }
 
 export function popup(b:any): void {
-  showDialog({
-    title: 'Submit Request:',
-    body: b,
-    focusNodeSelector: 'input',
-    buttons: [Dialog.okButton({ label: 'Ok' }), Dialog.cancelButton({ label : 'Cancel'})]
-  });
+  if ( !(notImplemented.includes(b.req) )){ 
+    showDialog({
+      title: 'Submit Request:',
+      body: b,
+      focusNodeSelector: 'input',
+      buttons: [Dialog.okButton({ label: 'Ok' }), Dialog.cancelButton({ label : 'Cancel'})]
+    });
+  } else {
+    console.log("not implemented yet");
+    popupResult("Not Implemented yet")
+  }
 }
 
 export function popupResult(b:any): void {
