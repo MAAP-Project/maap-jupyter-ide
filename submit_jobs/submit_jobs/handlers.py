@@ -15,10 +15,16 @@ def dig(node):
 	else:
 		return {node.tag[node.tag.index('}')+1:]:node.text.split(' ')}
 
+class RegisterAlgorithmHandler(IPythonHandler):
+	def get(self):
+		self.finish({"status_code": 200, "result": 'hi'})
+
 class GetCapabilitiesHandler(IPythonHandler):
 	def get(self):
 		# submit job
 		# fields = ['service', 'version','url']
+		# template_file = "./submit_jobs/capabilities_template.html"
+		# template_data_file = "./submit_jobs/capabilities_template_data.html"
 		fields = getFields('getCapabilities')
 		params = {}
 		
@@ -40,8 +46,36 @@ class GetCapabilitiesHandler(IPythonHandler):
 			url,
 			params=params
 		)
+
 		try:
-			self.finish({"status_code": r.status_code, "result": r.text})
+			try:
+				rt = ET.fromstring(r.text)
+				algo_lst = rt[4]
+				algo_info = [(n[0].text, n[1].text) for n in algo_lst]
+				result = ''
+
+				# Table Output
+				# body = ''
+				# data_templ = ''
+
+				# with open(template_data_file) as tdf:
+				# 	data_templ = tdf.read()
+
+				# for (title,algo_id) in algo_info:
+				# 	body += data_templ.format(algo_id=algo_id,title=title)
+
+				# with open(template_file) as tf:
+				# 	result = tf.read().format(data=body)
+
+				# replace \t with &emsp;
+				for (title, algo_id) in algo_info:
+					result += '{title}\n	{algo_id}\n\n'.format(title=title,algo_id=algo_id)
+
+				print(result)
+				self.finish({"status_code": r.status_code, "result": result})
+
+			except:
+				self.finish({"status_code": r.status_code, "result": r.text})
 		except:
 			print('failed')
 			self.finish({"status_code": r.status_code, "result": r.reason})
@@ -59,7 +93,6 @@ class ExecuteHandler(IPythonHandler):
 				params[f] = arg
 			except:
 				pass
-		params['data_value'] = float(params['data_value'])
 		# params['algo_id'] = 'org.n52.wps.server.algorithm.SimpleBufferAlgorithm'
 		# params['data_value'] = 5.0
 
@@ -84,11 +117,12 @@ class ExecuteHandler(IPythonHandler):
 			# data = dig(rt[1])
 			# # print(data)
 			# result = job_id+'\n '+str(data)
-			# # print(result)
-			# print("success!")
+			# print(result)
+			print("success!")
 			# self.finish({"status_code": r.status_code, "result": result})
 			self.finish({"status_code": r.status_code, "result": r.text})
 		except:
+			print("failed")
 			self.finish({"status_code": r.status_code, "result": r.reason})
 
 class GetStatusHandler(IPythonHandler):
@@ -105,6 +139,7 @@ class GetStatusHandler(IPythonHandler):
 				pass
 
 		url = 'http://geoprocessing.demo.52north.org:8080/wps/WebProcessingService'
+		# params['job_id'] = 'random_job'
 		headers = {'Content-Type':'text/xml',}
 		# print(params)
 		with open(xml_file) as xml:
@@ -196,6 +231,7 @@ class DescribeProcessHandler(IPythonHandler):
 				pass
 
 		url = 'http://geoprocessing.demo.52north.org:8080/wps/WebProcessingService'
+		# params['algo_id'] = 'org.n52.wps.server.algorithm.SimpleBufferAlgorithm'
 		headers = {'Content-Type':'text/xml',}
 		# print(params)
 		with open(xml_file) as xml:
