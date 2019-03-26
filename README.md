@@ -59,3 +59,62 @@ Once on the che server:
 - Push! `microk8s.docker push localhost:32000/che-jupyterlab-extensions `
 - Now when you build a new workspace with the `localhost:32000/che-jupyterlab-extensions` image it will automatically fetch the new image. (found in the stack's `Recipe` or `Raw Configuration`)
     - you can also specify the image tag to use in your build on the stack if you want to use a previous build
+
+##### Che Stack Raw Configuration
+```
+{
+  "description": "JupyterLab Extension",
+  "scope": "general",
+  "creator": "b07e3a58-ed50-4a6e-be17-fcf49ff8b242",
+  "workspaceConfig": {
+    "defaultEnv": "default",
+    "environments": {
+      "default": {
+        "recipe": {
+          "contentType": "text/x-yaml",
+          "type": "kubernetes",
+          "content": "kind: List\nitems:\n - \n  apiVersion: v1\n  kind: Pod\n  metadata:\n   name: ws\n   labels:\n    name: ws\n  spec:\n   containers:\n    - \n     name: jupyter\n     image: 'localhost:32000/che-jupyterlab-extensions:latest'\n     resources:\n      limits:\n       memory: 1024Mi\n - \n  apiVersion: v1\n  kind: Service\n  metadata:\n   name: ws\n  spec:\n   type: NodePort\n   ports:\n    - \n     port: 22\n   selector:\n    name: ws\n"
+        },
+        "machines": {
+          "ws/jupyter": {
+            "env": {
+              "MACHINE_NAME": "WS_JUPYTER"
+            },
+            "servers": {
+              "jupyter": {
+                "path": "/",
+                "attributes": {
+                  "cookiesAuthEnabled": "true",
+                  "type": "ide",
+                  "secure": "true"
+                },
+                "protocol": "http",
+                "port": "3100"
+              }
+            },
+            "installers": [
+              "org.eclipse.che.exec",
+              "org.eclipse.che.ssh"
+            ],
+            "volumes": {
+              "projects": {
+                "path": "/projects"
+              }
+            },
+            "attributes": {}
+          }
+        }
+      }
+    },
+    "commands": [],
+    "projects": [],
+    "name": "default",
+    "attributes": {},
+    "links": []
+  },
+  "components": [],
+  "tags": [],
+  "name": "JupyterLab Extensions",
+  "id": "stackjfbf5pwojopvx4e7"
+}
+```
