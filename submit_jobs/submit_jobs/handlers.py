@@ -6,6 +6,7 @@ import datetime
 import os
 
 from .fields import getFields
+BASE_URL = "http://localhost:5000/api"
 
 def dig(node):
 	# print("dig!")
@@ -14,7 +15,8 @@ def dig(node):
 	elif len(node) == 1:
 		return {node.tag[node.tag.index('}')+1:]:dig(node[0])}
 	else:
-		return {node.tag[node.tag.index('}')+1:]:node.text.split(' ')}
+		# return {node.tag[node.tag.index('}')+1:]:node.text.split(' ')}
+		return {node.tag[node.tag.index('}')+1:]:node.text}
 
 class RegisterAlgorithmHandler(IPythonHandler):
 	def get(self):
@@ -30,12 +32,12 @@ class RegisterAlgorithmHandler(IPythonHandler):
 				params[f] = arg
 			except:
 				pass
-		# params['run_cmd'] = 'python /app/plant.py'
-		# params['algo_name'] = 'plant_test'
-		# params['algo_desc'] = 'test plant'
-		print(params)
+		params['run_cmd'] = 'python /app/plant.py'
+		params['algo_name'] = 'plant_test'
+		params['algo_desc'] = 'test plant'
+		# print(params)
 
-		url = 'http://localhost:5000/api/mas/algorithm'
+		url = BASE_URL+'/mas/algorithm'
 		headers = {'Content-Type':'application/json'}
 
 		with open(json_file) as jso:
@@ -43,7 +45,7 @@ class RegisterAlgorithmHandler(IPythonHandler):
 
 		req_json = req_json.format(**params)
 
-		print(req_json)
+		# print(req_json)
 
 		r = requests.post(
 			url=url,
@@ -51,7 +53,7 @@ class RegisterAlgorithmHandler(IPythonHandler):
 			headers=headers
 		)
 		try:
-			print(r.text)
+			# print(r.text)
 			try:
 				resp = json.loads(r.text)
 				self.finish({"status_code": resp['code'], "result": resp['message']})
@@ -63,41 +65,38 @@ class RegisterAlgorithmHandler(IPythonHandler):
 
 class GetCapabilitiesHandler(IPythonHandler):
 	def get(self):
-		# submit job
-		# fields = ['service', 'version','url']
 		fields = getFields('getCapabilities')
-		params = {}
-		
-		for f in fields:
-			try:
-				arg = self.get_argument(f.lower(), '')
-				params[f] = arg
-			except:
-				pass
 
-		url = 'http://geoprocessing.demo.52north.org:8080/wps/WebProcessingService'
-		params['service'] = 'WPS'
-		params['version'] = '2.0.0'
-		params['request'] = 'GetCapabilities'
+		url = BASE_URL+'/dps/job'
+		headers = {'Content-Type':'application/json'}
 
-		# http://geoprocessing.demo.52north.org:8080/wps/WebProcessingService?service=WPS&version=2.0.0&request=GetCapabilities
-		# url = params.pop('url',None)
 		r = requests.get(
 			url,
-			params=params
+			headers=headers
 		)
 
 		try:
 			try:
-				# parse out algorithm titles & names
+				# parse out capability names & request info
 				rt = ET.fromstring(r.text)
-				algo_lst = rt[4]
-				algo_info = [(n[0].text, n[1].text) for n in algo_lst]
 				result = ''
 
-				# print algorithm name in indented new line below algorithm title
-				for (title, algo_id) in algo_info:
-					result += '{title}\n	{algo_id}\n\n'.format(title=title,algo_id=algo_id)
+				meta = rt[0]
+				info = [(n.tag[n.tag.index('}')+1:], n.text) for n in meta]
+				for (tag,txt) in info:
+					result += '{tag}: {txt}\n'.format(tag=tag,txt=txt)
+				result += '\n'
+
+				cap = rt[2]
+				cap_info = [ \
+					( e.attrib['name'], \
+						e[0][0][0].tag[ e[0][0][0].tag.index('}')+1 : ], \
+						list(e[0][0][0].attrib.values())[0] \
+					) for e in cap ]
+
+				# print request type and url in indented new line below capability name
+				for (title, req_type, req_url) in cap_info:
+					result += '{title}\n	{req_type}\n	{req_url}\n\n'.format(title=title,req_type=req_type,req_url=req_url)
 
 				print(result)
 				self.finish({"status_code": r.status_code, "result": result})
