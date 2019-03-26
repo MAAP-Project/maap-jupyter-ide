@@ -1,9 +1,9 @@
 {
 	"getCapabilities": [],
-	"execute": ["algo_id","data_value"],
+	"execute": ["algo_id","version","data_value"],
 	"getStatus": ["job_id"],
 	"getResult": ["job_id"],
 	"dismiss": ["job_id"],
-	"describeProcess": ["algo_id"],
-	"register": ["run_cmd","algo_name","algo_desc","url_list","timestamp"]
+	"describeProcess": ["algo_id","version"],
+	"register": ["run_cmd","algo_name","algo_desc"]
 }
