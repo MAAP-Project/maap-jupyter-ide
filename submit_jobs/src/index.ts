@@ -8,6 +8,7 @@ import { request, RequestResult } from './request';
 // import { format } from "xml-formatter";
 import * as data from './fields.json';
 
+const registerFields = data.register;
 const getCapabilitiesFields = data.getCapabilities;
 const executeFields = data.execute;
 const getStatusFields = data.getStatus;
@@ -39,6 +40,11 @@ class HySDSWidget extends Widget {
     this.req = req;
 
     switch (req) {
+      case 'register':
+        this.popup_title = "Register Algorithm";
+        this.fields = registerFields;
+        console.log('register');
+        break;
       case 'getCapabilities':
         this.popup_title = "Get List of Capabilities";
         this.fields = getCapabilitiesFields; // no params
@@ -105,7 +111,7 @@ class HySDSWidget extends Widget {
   }
 
   updateSearchResults(): void {
-    // var me = this;
+    var me = this;
     // document.getElementById('search-text').innerHTML = this.response_text;
     // console.log(this.response_text);
 
@@ -124,11 +130,17 @@ class HySDSWidget extends Widget {
       textarea.style.flexDirection = 'column';
       var format = require('xml-formatter');
       // var xml = "<pre>" + this.response_text + "</pre>";
-      var xml = this.response_text;
-      var options = {indentation: '  ', stripComments: true, collapseContent: false};
-      var formattedXML = format(xml,options);
-      textarea.innerText = formattedXML;
-      console.log(formattedXML)
+
+      if (me.req != "getCapabilities") {
+        var xml = this.response_text;
+        var options = {indentation: '  ', stripComments: true, collapseContent: false};
+        var formattedXML = format(xml,options); 
+        textarea.innerText = formattedXML;
+        console.log(textarea);
+      } else {
+        textarea.innerHTML = "<pre>" + this.response_text + "</pre>";
+        console.log(textarea);
+      }
 
       body.appendChild(textarea);
       // this.node.appendChild(textarea);
@@ -205,6 +217,21 @@ export function popupResult(b:any): void {
   });
 }
 
+export function activateRegister(app: JupyterLab, 
+                        palette: ICommandPalette, 
+                        restorer: ILauncher | null): void{
+  const open_command = 'hysds: register';
+
+  app.commands.addCommand(open_command, {
+    label: 'Register Algorithm',
+    isEnabled: () => true,
+    execute: args => {
+      popup(new HySDSWidget('register'));
+    }
+  });
+  palette.addItem({command: open_command, category: 'DPS'});
+  console.log('HySDS Register Algorithm is activated!');
+}
 export function activateGetCapabilities(app: JupyterLab, 
                         palette: ICommandPalette, 
                         restorer: ILauncher | null): void{
@@ -297,6 +324,13 @@ export function activateDescribe(app: JupyterLab,
 }
 
 // export extensions
+const extensionRegister: JupyterLabPlugin<void> = {
+  id: 'dps-register',
+  autoStart: true,
+  requires: [ICommandPalette],
+  optional: [ILauncher],
+  activate: activateRegister
+};
 const extensionCapabilities: JupyterLabPlugin<void> = {
   id: 'dps-capabilities',
   autoStart: true,
@@ -340,4 +374,4 @@ const extensionDescribe: JupyterLabPlugin<void> = {
   activate: activateDescribe
 };
 
-export default [extensionCapabilities,extensionStatus,extensionResult,extensionExecute,extensionDismiss,extensionDescribe];
+export default [extensionRegister,extensionCapabilities,extensionStatus,extensionResult,extensionExecute,extensionDismiss,extensionDescribe];

@@ -4,5 +4,6 @@
 	"getStatus": ["job_id"],
 	"getResult": ["job_id"],
 	"dismiss": ["job_id"],
-	"describeProcess": ["algo_id"]
+	"describeProcess": ["algo_id"],
+	"register": ["run_cmd","algo_name","algo_desc","url_list","timestamp"]
 }
