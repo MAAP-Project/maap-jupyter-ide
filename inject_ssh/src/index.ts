@@ -8,10 +8,11 @@ import { request, RequestResult } from './request';
 export class InjectSSH extends Widget {
   constructor() {
 
-    let key = "err"
-    Window._keycloak.loadUserInfo().success(function(profile) {
+    let key = "err";
+    (<any>window)._keycloak.loadUserInfo().success(function(profile:any) {
       console.log(profile);
-      key = profile['public_ssh_keys'];
+      let userinfo:any = profile;
+      key = userinfo['public_ssh_keys'];
     }).error(function() {
       console.log('Failed to load profile.');
     });
