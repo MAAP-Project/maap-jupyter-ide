@@ -7,11 +7,25 @@ import { request, RequestResult } from './request';
 
 export class InjectSSH extends Widget {
   constructor() {
+
+    let key = "err";
+    (<any>window)._keycloak.loadUserInfo().success(function(profile:any) {
+      console.log(profile);
+      let userinfo:any = profile;
+      key = userinfo['public_ssh_keys'];
+    }).error(function() {
+      console.log('Failed to load profile.');
+    });
+
+    // let token = Window._keycloak.token;
+    // console.log(token)
+
     let body = document.createElement('div');
     body.style.display = 'flex';
     body.style.flexDirection = 'column';
     console.log("going to call backend in key injection");
-    request('get', PageConfig.getBaseUrl() + "inject_ssh/inject_public_key").then((res: RequestResult) => {
+    request('get', PageConfig.getBaseUrl() + "inject_ssh/inject_public_key", {"key": key})
+        .then((res: RequestResult) => {
       if(res.ok){
         console.log("SSH Key injected")
         // let json_response:any = res.json();
