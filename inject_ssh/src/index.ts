@@ -5,11 +5,17 @@ import { ILauncher } from '@jupyterlab/launcher';
 import { Widget } from '@phosphor/widgets';
 import { request, RequestResult } from './request';
 
+declare global {
+    interface Window {
+        _keycloak: any;
+    }
+}
+
 export class InjectSSH extends Widget {
   constructor() {
 
     let key = "err";
-    (<any>window)._keycloak.loadUserInfo().success(function(profile:any) {
+    window._keycloak.loadUserInfo().success(function(profile:any) {
       console.log(profile);
       let userinfo:any = profile;
       key = userinfo['public_ssh_keys'];
