@@ -45,9 +45,9 @@ class RegisterAlgorithmHandler(IPythonHandler):
 				params[f] = arg
 			except:
 				pass
-		params['run_cmd'] = 'python /app/plant.py'
-		params['algo_name'] = 'plant_test'
-		params['algo_desc'] = 'test plant'
+		# params['run_cmd'] = 'python /app/plant.py'
+		# params['algo_name'] = 'plant_test'
+		# params['algo_desc'] = 'test plant'
 		# print(params)
 
 		url = BASE_URL+'/mas/algorithm'
@@ -272,8 +272,8 @@ class DescribeProcessHandler(IPythonHandler):
 			except:
 				pass
 
-		params['algo_id'] = 'plant_test'
-		params['version'] = 'master'
+		# params['algo_id'] = 'plant_test'
+		# params['version'] = 'master'
 		# print(params)
 		# url = BASE_URL+'/mas/algorithm/{algo_id}:{version}'.format(**params)
 		url = 'http://localhost:5000/api/mas/algorithm/{algo_id}:{version}'.format(**params)
