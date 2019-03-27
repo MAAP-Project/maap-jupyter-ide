@@ -17,7 +17,7 @@ const dismissFields = data.dismiss;
 const describeProcessFields = data.describeProcess;
 // const resultFields: string[] = ['status_code', 'result'];
 const notImplemented: string[] = ['dismiss','getResult'];
-const nonXML: string[] = ['getCapabilities','register'];
+const nonXML: string[] = ['describeProcess','getCapabilities','register'];
 
 // -----------------------
 // HySDS stuff
@@ -244,7 +244,7 @@ export function activateGetCapabilities(app: JupyterLab,
   const open_command = 'hysds: get-capabilities';
 
   app.commands.addCommand(open_command, {
-    label: 'Get DPS Capabilities',
+    label: 'Get Capabilities',
     isEnabled: () => true,
     execute: args => {
       popup(new HySDSWidget('getCapabilities'));
@@ -319,7 +319,7 @@ export function activateDescribe(app: JupyterLab,
   const open_command = 'hysds: describe-job';
 
   app.commands.addCommand(open_command, {
-    label: 'Describe DPS Job',
+    label: 'Describe Algorithm',
     isEnabled: () => true,
     execute: args => {
       popup(new HySDSWidget('describeProcess'));
