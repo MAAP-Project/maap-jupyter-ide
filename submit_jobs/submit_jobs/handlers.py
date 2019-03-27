@@ -6,6 +6,7 @@ import datetime
 import os
 
 from .fields import getFields
+# USE https when pointing to actual MAAP API server
 BASE_URL = "http://localhost:5000/api"
 
 def dig(node):
@@ -17,6 +18,18 @@ def dig(node):
 	else:
 		# return {node.tag[node.tag.index('}')+1:]:node.text.split(' ')}
 		return {node.tag[node.tag.index('}')+1:]:node.text}
+
+def getParams(node):
+	tag = node.tag[node.tag.index('}')+1:]
+	if tag in ['Title','Identifier']:
+		# print('title')
+		return (tag,node.text)
+	elif tag == 'LiteralData':
+		# print('literaldata')
+		return (node[1][1].tag.split('}')[-1],list(node[1][1].attrib.values())[0].split(':')[-1])
+	else:
+		# print('other')
+		return (tag,[getParams(e) for e in node])
 
 class RegisterAlgorithmHandler(IPythonHandler):
 	def get(self):
@@ -98,7 +111,7 @@ class GetCapabilitiesHandler(IPythonHandler):
 				for (title, req_type, req_url) in cap_info:
 					result += '{title}\n	{req_type}\n	{req_url}\n\n'.format(title=title,req_type=req_type,req_url=req_url)
 
-				print(result)
+				# print(result)
 				self.finish({"status_code": r.status_code, "result": result})
 
 			except:
@@ -248,7 +261,7 @@ class DismissHandler(IPythonHandler):
 
 class DescribeProcessHandler(IPythonHandler):
 	def get(self):
-		xml_file = "./submit_jobs/describe.xml"
+		# xml_file = "./submit_jobs/describe.xml"
 		fields = getFields('describeProcess')
 
 		params = {}
@@ -259,25 +272,40 @@ class DescribeProcessHandler(IPythonHandler):
 			except:
 				pass
 
-		url = 'http://geoprocessing.demo.52north.org:8080/wps/WebProcessingService'
-		# params['algo_id'] = 'org.n52.wps.server.algorithm.SimpleBufferAlgorithm'
-		# params['version'] = 'master'
-		headers = {'Content-Type':'text/xml',}
+		params['algo_id'] = 'plant_test'
+		params['version'] = 'master'
 		# print(params)
-		with open(xml_file) as xml:
-			req_xml = xml.read()
-
-		req_xml = req_xml.format(**params)
-		# print(req_xml)
-		r = requests.post(
+		# url = BASE_URL+'/mas/algorithm/{algo_id}:{version}'.format(**params)
+		url = 'http://localhost:5000/api/mas/algorithm/{algo_id}:{version}'.format(**params)
+		headers = {'Content-Type':'application/json'}
+		
+		r = requests.get(
 			url,
-			data=req_xml,
 			headers=headers
 		)
 		# print(r)
+		# print(r.text)
 
 		try:
-			# resp = json.loads(r.text)
-			self.finish({"status_code": r.status_code, "result": r.text})
+			try:
+				# parse out capability names & request info
+				rt = ET.fromstring(r.text)
+				attrib = [getParams(e) for e in rt[0][0]]
+
+				result = ''
+				for (tag,txt) in attrib:
+					if tag == 'Input':
+						result += '{}\n'.format(tag)
+						for (tag1,txt1) in txt:
+							result += '\t{tag1}:\t{txt1}\n'.format(tag1=tag1,txt1=txt1)
+						result += '\n'
+					else:
+						result += '{tag}:\t{txt}\n'.format(tag=tag,txt=txt)
+
+				# print(result)
+				self.finish({"status_code": r.status_code, "result": result})
+			except:
+				# resp = json.loads(r.text)
+				self.finish({"status_code": r.status_code, "result": r.text})
 		except:
 			self.finish({"status_code": r.status_code, "result": r.reason})
