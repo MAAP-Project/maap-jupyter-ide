@@ -15,10 +15,11 @@ export class InjectSSH extends Widget {
   constructor() {
 
     let key = "err";
+    console.log(window);
+    console.log(window._keycloak);
     window._keycloak.loadUserInfo().success(function(profile:any) {
       console.log(profile);
-      let userinfo:any = profile;
-      key = userinfo['public_ssh_keys'];
+      key = profile['public_ssh_keys'];
     }).error(function() {
       console.log('Failed to load profile.');
     });
