@@ -41,10 +41,10 @@ class RegisterAlgorithmHandler(IPythonHandler):
 		# params['timestamp'] = str(datetime.datetime.today())
 		for f in fields:
 			try:
-				arg = self.get_argument(f.lower(), '')
+				arg = self.get_argument(f.lower(), '').strip()
 				params[f] = arg
 			except:
-				pass
+				params[f] = ''
 		# params['run_cmd'] = 'python /app/plant.py'
 		# params['algo_name'] = 'plant_test'
 		# params['algo_desc'] = 'test plant'
@@ -57,24 +57,27 @@ class RegisterAlgorithmHandler(IPythonHandler):
 			req_json = jso.read()
 
 		req_json = req_json.format(**params)
-
 		# print(req_json)
 
-		r = requests.post(
-			url=url,
-			data=req_json,
-			headers=headers
-		)
 		try:
-			# print(r.text)
-			try:
-				resp = json.loads(r.text)
-				self.finish({"status_code": resp['code'], "result": resp['message']})
-			except:
-				self.finish({"status_code": 200, "result": r.text})
+			r = requests.post(
+				url=url,
+				data=req_json,
+				headers=headers
+			)
+			if r.status_code == 200:
+				# print(r.text)
+				try:
+					# empty
+					resp = json.loads(r.text)
+					self.finish({"status_code": resp['code'], "result": resp['message']})
+				except:
+					self.finish({"status_code": r.status_code, "result": r.text})
+			else:
+				print('failed')
+				self.finish({"status_code": r.status_code, "result": r.reason})
 		except:
-			print('failed')
-			self.finish({"status_code": r.status_code, "result": r.reason})
+			self.finish({"status_code": 400, "result": "Bad Request"})
 
 class GetCapabilitiesHandler(IPythonHandler):
 	def get(self):
@@ -129,43 +132,67 @@ class ExecuteHandler(IPythonHandler):
 		params = {}
 		for f in fields:
 			try:
-				arg = self.get_argument(f.lower(), '')
+				arg = self.get_argument(f.lower(), '').strip()
 				params[f] = arg
 			except:
-				pass
-		# params['algo_id'] = 'org.n52.wps.server.algorithm.SimpleBufferAlgorithm'
-		# params['version'] = 'master'
-		# params['data_value'] = 5.0
-		params['timestamp'] = str(datetime.datetime.today())
+				params[f] = ''
 
-		# http://geoprocessing.demo.52north.org:8080/wps/WebProcessingService?service=WPS&version=2.0.0&request=GetCapabilities
-		url = 'http://geoprocessing.demo.52north.org:8080/wps/WebProcessingService'
-		headers = {'Content-Type':'text/xml'}
+		# params['identifier'] = 'org.n52.wps.server.algorithm.SimpleBufferAlgorithm'
+		# params['algo_id'] = 'plant_test'
+		# params['version'] = 'master'
+		# params['url_list'] = []
+		params['timestamp'] = str(datetime.datetime.today())
+		if params['url_list'] == '':
+			params['url_list'] = []
 		# print(params)
+
+		url = BASE_URL+'/dps/job'
+		headers = {'Content-Type':'application/xml'}
 		with open(xml_file) as xml:
 			req_xml = xml.read()
 
 		req_xml = req_xml.format(**params)
+		# print(url)
 		# print(req_xml)
-		r = requests.post(
-			url=url, 
-			data=req_xml, 
-			headers=headers
-		)
+
 		try:
-			# rt = ET.fromstring(r.text)
-			# job_id = rt[0].text
-			# # print(job_id)
-			# data = dig(rt[1])
-			# # print(data)
-			# result = job_id+'\n '+str(data)
-			# print(result)
-			print("success!")
-			# self.finish({"status_code": r.status_code, "result": result})
-			self.finish({"status_code": r.status_code, "result": r.text})
+			r = requests.post(
+				url=url, 
+				data=req_xml, 
+				headers=headers
+			)
+			# print(r.status_code)
+			# print(r.text)
+
+			# malformed request will still give 200
+			if r.status_code == 200:
+				try:
+					# parse out JobID from response
+					rt = ET.fromstring(r.text)
+
+					# if bad request, show provided parameters
+					if 'Exception' in r.text:
+						result = 'Exception: {}\n'.format(rt[0].attrib['exceptionCode'])
+						result += 'Bad Request\nThe provided parameters were:\n'
+						for f in fields:
+							result += '\t{}: {}\n'.format(f,params[f])
+						result += '\n'
+						self.finish({"status_code": 400, "result": result})
+
+					else:
+						job_id = rt[0].text
+						# print(job_id)
+
+						result = 'JobID is {}'.format(job_id)
+						# print("success!")
+
+						self.finish({"status_code": r.status_code, "result": result})
+				except:
+					self.finish({"status_code": r.status_code, "result": r.text})
+			else:
+				self.finish({"status_code": r.status_code, "result": r.reason})
 		except:
-			print("failed")
-			self.finish({"status_code": r.status_code, "result": r.reason})
+			self.finish({"status_code": 400, "result": "Bad Request"})
 
 class GetStatusHandler(IPythonHandler):
 	def get(self):
@@ -261,51 +288,75 @@ class DismissHandler(IPythonHandler):
 
 class DescribeProcessHandler(IPythonHandler):
 	def get(self):
+		complete = True
 		# xml_file = "./submit_jobs/describe.xml"
 		fields = getFields('describeProcess')
 
 		params = {}
 		for f in fields:
 			try:
-				arg = self.get_argument(f.lower(), '')
+				arg = self.get_argument(f.lower(), '').strip()
 				params[f] = arg
 			except:
-				pass
+				complete = False
+
+		if all(e == '' for e in list(params.values())):
+			complete = False
 
 		# params['algo_id'] = 'plant_test'
 		# params['version'] = 'master'
 		# print(params)
-		# url = BASE_URL+'/mas/algorithm/{algo_id}:{version}'.format(**params)
-		url = 'http://localhost:5000/api/mas/algorithm/{algo_id}:{version}'.format(**params)
+
+		# return all algorithms if malformed request
+		if complete:
+			url = BASE_URL+'/mas/algorithm/{algo_id}:{version}'.format(**params) 
+		else:
+			url = BASE_URL+'/mas/algorithm'
+
 		headers = {'Content-Type':'application/json'}
-		
+		# print(url)
+
 		r = requests.get(
 			url,
 			headers=headers
 		)
 		# print(r)
 		# print(r.text)
+		# print(r.status_code)
 
-		try:
+		if r.status_code == 200:
 			try:
-				# parse out capability names & request info
-				rt = ET.fromstring(r.text)
-				attrib = [getParams(e) for e in rt[0][0]]
+				if complete:
+					# parse out capability names & request info
+					rt = ET.fromstring(r.text)
+					attrib = [getParams(e) for e in rt[0][0]]
 
-				result = ''
-				for (tag,txt) in attrib:
-					if tag == 'Input':
-						result += '{}\n'.format(tag)
-						for (tag1,txt1) in txt:
-							result += '\t{tag1}:\t{txt1}\n'.format(tag1=tag1,txt1=txt1)
-						result += '\n'
-					else:
-						result += '{tag}:\t{txt}\n'.format(tag=tag,txt=txt)
+					result = ''
+					for (tag,txt) in attrib:
+						if tag == 'Input':
+							result += '{}\n'.format(tag)
+							for (tag1,txt1) in txt:
+								result += '\t{tag1}:\t{txt1}\n'.format(tag1=tag1,txt1=txt1)
+							result += '\n'
+						else:
+							result += '{tag}:\t{txt}\n'.format(tag=tag,txt=txt)
+				else:
+					resp = json.loads(r.text)
+					result = 'Algorithms:\n'
+					for e in resp['algorithms']:
+						result += '\t{}:{}\n'.format(e['type'],e['version'])
 
 				# print(result)
 				self.finish({"status_code": r.status_code, "result": result})
 			except:
-				# resp = json.loads(r.text)
 				self.finish({"status_code": r.status_code, "result": r.text})
-		except:
-			self.finish({"status_code": r.status_code, "result": r.reason})
+
+		# malformed request will still give 500
+		elif r.status_code == 500:
+			if 'AttributeError' in r.text:
+				result = 'Bad Request\nThe provided parameters were\n\talgo_id:{}\n\tversion:{}\n'.format(params['algo_id'],params['version'])
+				self.finish({"status_code": 400, "result": result})
+			else:
+				self.finish({"status_code": r.status_code, "result": r.reason})
+		else:
+			self.finish({"status_code": 400, "result": "Bad Request"})
