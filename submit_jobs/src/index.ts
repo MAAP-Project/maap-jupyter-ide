@@ -17,7 +17,7 @@ const dismissFields = data.dismiss;
 const describeProcessFields = data.describeProcess;
 // const resultFields: string[] = ['status_code', 'result'];
 const notImplemented: string[] = ['dismiss','getResult'];
-const nonXML: string[] = ['describeProcess','getCapabilities','register'];
+const nonXML: string[] = ['execute','describeProcess','getCapabilities','register'];
 
 // -----------------------
 // HySDS stuff
