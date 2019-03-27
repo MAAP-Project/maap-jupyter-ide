@@ -42,6 +42,13 @@ RUN cd /jupyterlab-git && npm run build
 RUN cd /jupyterlab-git && pip install -e .
 RUN cd /jupyterlab-git && jupyter serverextension enable --py jupyterlab_git --sys-prefix
 
+# jlab show ssh extension
+COPY inject_ssh /inject_ssh
+RUN cd /inject_ssh && npm run build
+RUN cd /inject_ssh && jupyter labextension link .
+RUN cd /inject_ssh && pip install -e .
+RUN cd /inject_ssh && jupyter serverextension enable --py inject_ssh --sys-prefix
+
 RUN touch /root/.bashrc && echo "cd /projects >& /dev/null" >> /root/.bashrc
 
 RUN mkdir /projects
