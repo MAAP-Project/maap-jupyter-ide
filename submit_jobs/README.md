@@ -10,15 +10,19 @@ This connects the JupyterLab UI with the HySDS/DPS backend.  There will be 7 API
 2. GetCapabilities
 	- endpoint: `hysds/getCapabilities`
 	- sends a GET request to DPS for a list of HySDS jobs and algorithms available from MAAP
+	- GET request sent to http://localhost:5000/dps/job
 3. DescribeProcess
 	- endpoint: `hysds/describeProcess`
-	- sends a POST request to get information about the specified algorithm
+	- sends a GET request to get information about the specified algorithm
+	- GET request sent to http://localhost:5000/mas/algorithm/{algorithm_id}
 4. Execute
 	- endpoint: `hysds/execute`
-	- sents a POST request to run a job and return the result right away, or run a background process that can be queried for status and/or result
+	- sends a POST request to run a job and return the result right away, or run a background process that can be queried for status and/or result using the returned JobID
+	- POST request sent to http://localhost:5000/dps/job
 5. GetStatus
 	- endpoint: `hysds/getStatus`
-	- sends a POST request to check on a job's status
+	- sends a GET request to check on a job's status
+	- GET request sent to http://localhost:5000/dps/job/{job_id}
 6. GetResult
 	- endpoint: `hysds/getResult`
 	- sends a POST request to get the result of a job that has been executed in the background
