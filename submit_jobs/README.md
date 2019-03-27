@@ -21,7 +21,8 @@ This connects the JupyterLab UI with the HySDS/DPS backend.  There will be 7 API
 	- POST request sent to http://localhost:5000/dps/job
 5. GetStatus
 	- endpoint: `hysds/getStatus`
-	- sends a POST request to check on a job's status
+	- sends a GET request to check on a job's status
+	- GET request sent to http://localhost:5000/dps/job/{job_id}
 6. GetResult
 	- endpoint: `hysds/getResult`
 	- sends a POST request to get the result of a job that has been executed in the background

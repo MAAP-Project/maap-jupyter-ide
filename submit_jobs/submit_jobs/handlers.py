@@ -196,36 +196,68 @@ class ExecuteHandler(IPythonHandler):
 
 class GetStatusHandler(IPythonHandler):
 	def get(self):
-		xml_file = "./submit_jobs/getStatus.xml"
+		# xml_file = "./submit_jobs/getStatus.xml"
 		fields = getFields('getStatus')
 
 		params = {}
 		for f in fields:
 			try:
-				arg = self.get_argument(f.lower(), '')
+				arg = self.get_argument(f.lower(), '').strip()
 				params[f] = arg
 			except:
-				pass
+				arg = ''
 
-		url = 'http://geoprocessing.demo.52north.org:8080/wps/WebProcessingService'
 		# params['job_id'] = 'random_job_id'
-		headers = {'Content-Type':'text/xml',}
 		# print(params)
-		with open(xml_file) as xml:
-			req_xml = xml.read()
-
-		req_xml = req_xml.format(**params)
+		url = BASE_URL+'/dps/job/{job_id}'.format(**params)
+		headers = {'Content-Type':'application/xml'}
+		# print(url)
 		# print(req_xml)
-		r = requests.post(
-			url,
-			data=req_xml,
-			headers=headers
-		)
+
 		try:
-			# resp = json.loads(r.text)
-			self.finish({"status_code": r.status_code, "result": r.text})
+			r = requests.get(
+				url,
+				headers=headers
+			)
+
+			# print(r.status_code)
+			# print(r.text)
+
+			# bad job id will still give 200
+			if r.status_code == 200:
+				try:
+					# parse out JobID from response
+					rt = ET.fromstring(r.text)
+
+					# if bad job id, show provided parameters
+					if 'Exception' in r.text:
+						result = 'Exception: {}\n'.format(rt[0].attrib['exceptionCode'])
+						result += 'Bad Request\nThe provided parameters were:\n'
+						for f in fields:
+							result += '\t{}: {}\n'.format(f,params[f])
+						result += '\n'
+						self.finish({"status_code": 404, "result": result})
+
+					else:
+						job_id = rt[0].text
+						status = rt[1].text
+						# print(job_id)
+
+						result = 'JobID is {}\nStatus: {}'.format(job_id,status)
+						# print("success!")
+
+						self.finish({"status_code": r.status_code, "result": result})
+				except:
+					self.finish({"status_code": r.status_code, "result": r.text})
+			# if no job id provided
+			elif r.status_code in [404]:
+				# print('404?')
+				result = 'Bad Request\nDid you submit a valid JobID?\nJobID: {}'.format(params['job_id'])
+				self.finish({"status_code": r.status_code, "result": result})
+			else:
+				self.finish({"status_code": r.status_code, "result": r.reason})
 		except:
-			self.finish({"status_code": r.status_code, "result": r.reason})
+			self.finish({"status_code": 400, "result": "Bad Request"})
 
 class GetResultHandler(IPythonHandler):
 	def get(self):
