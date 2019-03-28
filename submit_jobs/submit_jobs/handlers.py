@@ -128,11 +128,12 @@ class ExecuteHandler(IPythonHandler):
 	def get(self):
 		# submit job
 		xml_file = "./submit_jobs/execute.xml"
+		input_xml = "./submit_jobs/execute_inputs.xml"
 		fields = getFields('execute')
-		inputs = self.get_argument("inputs", '').split(',')[:-1]
+		input_names = self.get_argument("inputs", '').split(',')[:-1]
 		# inputs = ['localize_urls']
 		# print(inputs)
-		fields = fields + inputs
+		# fields = fields + input_names
 		# print(fields)
 
 		params = {}
@@ -143,22 +144,46 @@ class ExecuteHandler(IPythonHandler):
 			except:
 				params[f] = ''
 
+		inputs = {}
+		for f in input_names:
+			try:
+				arg = self.get_argument(f.lower(), '').strip()
+				inputs[f] = arg
+			except:
+				inputs[f] = ''
+
 		# params['identifier'] = 'org.n52.wps.server.algorithm.SimpleBufferAlgorithm'
 		# params['algo_id'] = 'plant_test'
 		# params['version'] = 'master'
 		# params['localize_urls'] = []
 		params['timestamp'] = str(datetime.datetime.today())
-		if params['localize_urls'] == '':
-			params['localize_urls'] = []
+		if inputs['localize_urls'] == '':
+			inputs['localize_urls'] = []
 		# print(params)
 
+		req_xml = ''
+		ins_xml = ''
 		url = BASE_URL+'/dps/job'
 		headers = {'Content-Type':'application/xml'}
+		# print(url)
+
+		other = ''
+		with open(input_xml) as xml:
+			ins_xml = xml.read()
+
+		for i in range(len(input_names)):
+			name = input_names[i]
+			other += ins_xml.format(name=name).format(value=inputs[name])
+			other += '\n'
+
+		# print(other)
+		params['other_inputs'] = other
+
 		with open(xml_file) as xml:
 			req_xml = xml.read()
 
 		req_xml = req_xml.format(**params)
-		# print(url)
+
 		# print(req_xml)
 
 		try:
@@ -411,11 +436,11 @@ class ExecuteInputsHandler(IPythonHandler):
 				params[f] = arg
 			except:
 				params[f] = ''
-				# complete = False
+				complete = False
 
-		params['identifier'] = 'org.n52.wps.server.algorithm.SimpleBufferAlgorithm'
-		params['algo_id'] = 'plant_test'
-		params['version'] = 'master'
+		# params['identifier'] = 'org.n52.wps.server.algorithm.SimpleBufferAlgorithm'
+		# params['algo_id'] = 'plant_test'
+		# params['version'] = 'master'
 
 		if all(e == '' for e in list(params.values())):
 			complete = False
@@ -443,9 +468,9 @@ class ExecuteInputsHandler(IPythonHandler):
 
 		if r.status_code == 200:
 			try:
-				print('200')
+				# print('200')
 				if complete:
-					print('complete')
+					# print('complete')
 					# parse out capability names & request info
 					rt = ET.fromstring(r.text)
 					attrib = [getParams(e) for e in rt[0][0]] 						# parse XML
@@ -458,11 +483,11 @@ class ExecuteInputsHandler(IPythonHandler):
 					result = ''
 					for (identifier,typ) in ins_req:
 						result += '{identifier}:\t{typ}\n'.format(identifier=identifier,typ=typ)
-					print(result)
+					# print(result)
 					self.finish({"status_code": r.status_code, "result": result, "ins": ins_req, "old":params})
 
 				else:
-					print('failed 200')
+					# print('failed 200')
 					result = 'Bad Request\nThe provided parameters were\n\tidentifier:{}\n\talgo_id:{}\n\tversion:{}\n'.format(params['identifier'],params['algo_id'],params['version'])
 					self.finish({"status_code": 400, "result": result, "ins": [], "old":params})
 			except:

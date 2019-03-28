@@ -13,11 +13,7 @@
 	        </wps:LiteralValue>
 		</wps:Data>
 	</wps:Input>
-	<wps:Input id="localize_urls">
-		<wps:Data>
-			<wps:LiteralValue>{localize_urls}</wps:LiteralValue>
-		</wps:Data>
-	</wps:Input>
+	{other_inputs}
 	<wps:Input id="timestamp">
 		<wps:Data>
 			<wps:LiteralValue>{timestamp}</wps:LiteralValue>
