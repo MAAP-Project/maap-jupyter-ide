@@ -1,7 +1,7 @@
 
-function getKeycloak() {
+export var getKeycloak = function() {
 
-    Window._keycloak.loadUserInfo().success(function(profile:any) {
+    Window._keycloak.loadUserInfo().success(function(profile) {
       console.log(profile);
       // key = profile['public_ssh_keys'];
       return profile;
@@ -9,6 +9,6 @@ function getKeycloak() {
       console.log('Failed to load profile.');
       return "error";
     });
-}
+};
 
-module.exports = getKeycloak;
+// exports.getKeycloak = getKeycloak;
