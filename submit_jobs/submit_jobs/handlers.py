@@ -4,9 +4,11 @@ import xml.etree.ElementTree as ET
 import json
 import datetime
 import copy
+import sys
 import os
 
-from .fields import getFields
+sys.path.append(os.getcwd()+'/submit_jobs')
+from fields import getFields
 # USE https when pointing to actual MAAP API server
 #BASE_URL = "http://localhost:5000/api"
 BASE_URL = "https://api.maap.xyz/api"
@@ -46,6 +48,8 @@ class RegisterAlgorithmHandler(IPythonHandler):
 	def get(self):
 		json_file = WORKDIR+"/submit_jobs/register.json"
 		fields = getFields('register')
+		print(WORKDIR)
+		print(sys.path)
 
 		params = {}
 		# params['url_list'] = []
