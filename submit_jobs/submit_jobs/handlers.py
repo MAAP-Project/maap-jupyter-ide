@@ -12,7 +12,7 @@ from fields import getFields
 # USE https when pointing to actual MAAP API server
 #BASE_URL = "http://localhost:5000/api"
 BASE_URL = "https://api.maap.xyz/api"
-WORKDIR = os.getcwd()
+WORKDIR = os.getcwd()+'/../submit_jobs'
 
 def dig(node):
 	# print("dig!")
@@ -257,7 +257,7 @@ class GetStatusHandler(IPythonHandler):
 
 		# params['job_id'] = 'random_job_id'
 		# print(params)
-		url = BASE_URL+'/dps/job/{job_id}'.format(**params)
+		url = BASE_URL+'/dps/job/{job_id}/status'.format(**params)
 		headers = {'Content-Type':'application/xml'}
 		# print(url)
 		# print(req_xml)
@@ -324,7 +324,7 @@ class GetResultHandler(IPythonHandler):
 		# print(req_xml)
 
 		try:
-			r = requests.post(
+			r = requests.get(
 				url,
 				headers=headers
 			)
