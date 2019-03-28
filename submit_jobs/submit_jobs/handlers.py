@@ -20,17 +20,25 @@ def dig(node):
 		# return {node.tag[node.tag.index('}')+1:]:node.text.split(' ')}
 		return {node.tag[node.tag.index('}')+1:]:node.text}
 
+# helper to parse out algorithm parameters
 def getParams(node):
 	tag = node.tag[node.tag.index('}')+1:]
 	if tag in ['Title','Identifier']:
-		# print('title')
 		return (tag,node.text)
 	elif tag == 'LiteralData':
-		# print('literaldata')
 		return (node[1][1].tag.split('}')[-1],list(node[1][1].attrib.values())[0].split(':')[-1])
 	else:
-		# print('other')
 		return (tag,[getParams(e) for e in node])
+
+# helper to parse out products of result
+def getProds(node):
+	tag = node.tag[node.tag.index('}')+1:]
+	if tag in ['ProductName','Location']:
+		return (tag,node.text)
+	elif tag == 'Locations':
+		return (tag,[loc.text for loc in node])
+	else:
+		return (tag,[getProds(e) for e in node])
 
 class RegisterAlgorithmHandler(IPythonHandler):
 	def get(self):
@@ -261,6 +269,66 @@ class GetStatusHandler(IPythonHandler):
 					# parse out JobID from response
 					rt = ET.fromstring(r.text)
 
+					job_id = rt[0].text
+					status = rt[1].text
+					# print(job_id)
+
+					result = 'JobID is {}\nStatus: {}'.format(job_id,status)
+					# print("success!")
+
+					self.finish({"status_code": r.status_code, "result": result})
+				except:
+					self.finish({"status_code": r.status_code, "result": r.text})
+			# if no job id provided
+			elif r.status_code in [404]:
+				# print('404?')
+				# if bad job id, show provided parameters
+				result = 'Exception: {}\nMessage: {}\n(Did you provide a valid JobID?)\n'.format(rt[0].attrib['exceptionCode'], rt[0][0].text)
+				result += '\nThe provided parameters were:\n'
+				for f in fields:
+					result += '\t{}: {}\n'.format(f,params[f])
+				result += '\n'
+				self.finish({"status_code": 404, "result": result})
+
+			else:
+				self.finish({"status_code": r.status_code, "result": r.reason})
+		except:
+			self.finish({"status_code": 400, "result": "Bad Request"})
+
+class GetResultHandler(IPythonHandler):
+	def get(self):
+		# xml_file = "./submit_jobs/getResult.xml"
+		fields = getFields('getResult')
+
+		params = {}
+		for f in fields:
+			try:
+				arg = self.get_argument(f.lower(), '').strip()
+				params[f] = arg
+			except:
+				arg = ''
+
+		# params['job_id'] = 'random_job_id'
+		# print(params)
+		url = BASE_URL+'/dps/job/{job_id}'.format(**params)
+		headers = {'Content-Type':'application/xml'}
+		# print(url)
+		# print(req_xml)
+
+		try:
+			r = requests.post(
+				url,
+				headers=headers
+			)
+
+			# print(r.status_code)
+			# print(r.text)
+
+			if r.status_code == 200:
+				try:
+					# parse out JobID from response
+					rt = ET.fromstring(r.text)
+
 					# if bad job id, show provided parameters
 					if 'Exception' in r.text:
 						result = 'Exception: {}\nMessage: {}\n'.format(rt[0].attrib['exceptionCode'], rt[0][0].text)
@@ -268,14 +336,22 @@ class GetStatusHandler(IPythonHandler):
 						for f in fields:
 							result += '\t{}: {}\n'.format(f,params[f])
 						result += '\n'
-						self.finish({"status_code": 404, "result": result})
 
+						self.finish({"status_code": 404, "result": result})
 					else:
 						job_id = rt[0].text
-						status = rt[1].text
 						# print(job_id)
 
-						result = 'JobID is {}\nStatus: {}'.format(job_id,status)
+						prods = rt[1][0]
+						p = getProds(prods)
+
+						result = 'JobID is {}\n'.format(job_id)
+
+						for product in p[1]:
+							for attrib in product[1]:
+								result += '{}: {}\n'.format(attrib[0],attrib[1])
+							result += '\n'
+
 						# print("success!")
 
 						self.finish({"status_code": r.status_code, "result": result})
@@ -284,44 +360,18 @@ class GetStatusHandler(IPythonHandler):
 			# if no job id provided
 			elif r.status_code in [404]:
 				# print('404?')
-				result = 'Bad Request\nDid you submit a valid JobID?\nJobID: {}'.format(params['job_id'])
-				self.finish({"status_code": r.status_code, "result": result})
+				# if bad job id, show provided parameters
+				result = 'Exception: {}\nMessage: {}\n(Did you provide a valid JobID?)\n'.format(rt[0].attrib['exceptionCode'], rt[0][0].text)
+				result += '\nThe provided parameters were:\n'
+				for f in fields:
+					result += '\t{}: {}\n'.format(f,params[f])
+				result += '\n'
+				self.finish({"status_code": 404, "result": result})
+
 			else:
 				self.finish({"status_code": r.status_code, "result": r.reason})
 		except:
 			self.finish({"status_code": 400, "result": "Bad Request"})
-
-class GetResultHandler(IPythonHandler):
-	def get(self):
-		xml_file = "./submit_jobs/getResult.xml"
-		fields = getFields('getResult')
-
-		params = {}
-		for f in fields:
-			try:
-				arg = self.get_argument(f.lower(), '')
-				params[f] = arg
-			except:
-				pass
-
-		url = 'http://geoprocessing.demo.52north.org:8080/wps/WebProcessingService'
-		headers = {'Content-Type':'text/xml'}
-		# print(params)
-		with open(xml_file) as xml:
-			req_xml = xml.read()
-
-		req_xml = req_xml.format(**params)
-		# print(req_xml)
-		r = requests.post(
-			url,
-			data=req_xml,
-			headers=headers
-		)
-		try:
-			# resp = json.loads(r.text)
-			self.finish({"status_code": r.status_code, "result": r.text})
-		except:
-			self.finish({"status_code": r.status_code, "result": r.reason})
 
 class DismissHandler(IPythonHandler):
 	def post(self):
