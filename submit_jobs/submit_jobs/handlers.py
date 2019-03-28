@@ -8,7 +8,8 @@ import os
 
 from .fields import getFields
 # USE https when pointing to actual MAAP API server
-BASE_URL = "http://localhost:5000/api"
+# BASE_URL = "http://localhost:5000/api"
+BASE_URL = "https://api.maap.xyz/api"
 
 def dig(node):
 	# print("dig!")
@@ -166,6 +167,8 @@ class ExecuteHandler(IPythonHandler):
 		# params['version'] = 'master'
 		# params['localize_urls'] = []
 		params['timestamp'] = str(datetime.datetime.today())
+		if inputs['username'] =='':
+			inputs['username'] = 'anonymous'
 		if inputs['localize_urls'] == '':
 			inputs['localize_urls'] = []
 		# print(params)
