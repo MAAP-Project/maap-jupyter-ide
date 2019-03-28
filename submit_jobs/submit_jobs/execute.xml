@@ -15,7 +15,7 @@
 	</wps:Input>
 	<wps:Input id="localize_urls">
 		<wps:Data>
-			<wps:LiteralValue>{url_list}</wps:LiteralValue>
+			<wps:LiteralValue>{localize_urls}</wps:LiteralValue>
 		</wps:Data>
 	</wps:Input>
 	<wps:Input id="timestamp">

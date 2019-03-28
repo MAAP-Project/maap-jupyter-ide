@@ -1,7 +1,7 @@
 # Running `npm run build` will create static resources in the static
 # directory of this Python package (and create that directory if necessary).
 from notebook.utils import url_path_join
-from .handlers import RegisterAlgorithmHandler, GetCapabilitiesHandler, ExecuteHandler, GetStatusHandler, DescribeProcessHandler, GetResultHandler, DismissHandler
+from .handlers import RegisterAlgorithmHandler, GetCapabilitiesHandler, ExecuteHandler, ExecuteInputsHandler, GetStatusHandler, DescribeProcessHandler, GetResultHandler, DismissHandler
 
 
 def _jupyter_labextension_paths():
@@ -32,6 +32,7 @@ def load_jupyter_server_extension(nb_server_app):
 
     web_app.add_handlers(host_pattern, [(url_path_join(base_url, 'hysds/register'), RegisterAlgorithmHandler)])
     web_app.add_handlers(host_pattern, [(url_path_join(base_url, 'hysds/getCapabilities'), GetCapabilitiesHandler)])
+    web_app.add_handlers(host_pattern, [(url_path_join(base_url, 'hysds/executeInputs'), ExecuteInputsHandler)])
     web_app.add_handlers(host_pattern, [(url_path_join(base_url, 'hysds/execute'), ExecuteHandler)])
     web_app.add_handlers(host_pattern, [(url_path_join(base_url, 'hysds/getStatus'), GetStatusHandler)])
     web_app.add_handlers(host_pattern, [(url_path_join(base_url, 'hysds/getResult'), GetResultHandler)])

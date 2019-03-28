@@ -3,6 +3,7 @@ import requests
 import xml.etree.ElementTree as ET
 import json
 import datetime
+import copy
 import os
 
 from .fields import getFields
@@ -128,6 +129,11 @@ class ExecuteHandler(IPythonHandler):
 		# submit job
 		xml_file = "./submit_jobs/execute.xml"
 		fields = getFields('execute')
+		inputs = self.get_argument("inputs", '').split(',')[:-1]
+		# inputs = ['localize_urls']
+		# print(inputs)
+		fields = fields + inputs
+		# print(fields)
 
 		params = {}
 		for f in fields:
@@ -140,10 +146,10 @@ class ExecuteHandler(IPythonHandler):
 		# params['identifier'] = 'org.n52.wps.server.algorithm.SimpleBufferAlgorithm'
 		# params['algo_id'] = 'plant_test'
 		# params['version'] = 'master'
-		# params['url_list'] = []
+		# params['localize_urls'] = []
 		params['timestamp'] = str(datetime.datetime.today())
-		if params['url_list'] == '':
-			params['url_list'] = []
+		if params['localize_urls'] == '':
+			params['localize_urls'] = []
 		# print(params)
 
 		url = BASE_URL+'/dps/job'
@@ -231,8 +237,8 @@ class GetStatusHandler(IPythonHandler):
 
 					# if bad job id, show provided parameters
 					if 'Exception' in r.text:
-						result = 'Exception: {}\n'.format(rt[0].attrib['exceptionCode'])
-						result += 'Bad Request\nThe provided parameters were:\n'
+						result = 'Exception: {}\nMessage: {}\n'.format(rt[0].attrib['exceptionCode'], rt[0][0].text)
+						result += '\nThe provided parameters were:\n'
 						for f in fields:
 							result += '\t{}: {}\n'.format(f,params[f])
 						result += '\n'
@@ -392,3 +398,82 @@ class DescribeProcessHandler(IPythonHandler):
 				self.finish({"status_code": r.status_code, "result": r.reason})
 		else:
 			self.finish({"status_code": 400, "result": "Bad Request"})
+
+class ExecuteInputsHandler(IPythonHandler):
+	def get(self):
+		complete = True
+		fields = getFields('executeInputs')
+
+		params = {}
+		for f in fields:
+			try:
+				arg = self.get_argument(f.lower(), '').strip()
+				params[f] = arg
+			except:
+				params[f] = ''
+				# complete = False
+
+		params['identifier'] = 'org.n52.wps.server.algorithm.SimpleBufferAlgorithm'
+		params['algo_id'] = 'plant_test'
+		params['version'] = 'master'
+
+		if all(e == '' for e in list(params.values())):
+			complete = False
+
+		params2 = copy.deepcopy(params)
+		params2.pop('identifier')
+		# print(params)
+
+		# return all algorithms if malformed request
+		if complete:
+			url = BASE_URL+'/mas/algorithm/{algo_id}:{version}'.format(**params2) 
+		else:
+			url = BASE_URL+'/mas/algorithm'
+
+		headers = {'Content-Type':'application/json'}
+		# print(url)
+
+		r = requests.get(
+			url,
+			headers=headers
+		)
+		# print(r)
+		# print(r.text)
+		# print(r.status_code)
+
+		if r.status_code == 200:
+			try:
+				print('200')
+				if complete:
+					print('complete')
+					# parse out capability names & request info
+					rt = ET.fromstring(r.text)
+					attrib = [getParams(e) for e in rt[0][0]] 						# parse XML
+					inputs = [e[1] for e in attrib[2:-1]]
+					ins_req = [[e[1][1],e[2][1]] for e in inputs] 					# extract identifier & type for each input
+					ins_req = list(filter(lambda e: e[0] != 'timestamp', ins_req)) 	# filter out automatic timestamp req input
+					# ins_req = {k: v for d in ins_req for k, v in d.items()} 		# flatten list of dicts
+					# ins_req.pop('timestamp')										# filter out automatic timestamp req input
+
+					result = ''
+					for (identifier,typ) in ins_req:
+						result += '{identifier}:\t{typ}\n'.format(identifier=identifier,typ=typ)
+					print(result)
+					self.finish({"status_code": r.status_code, "result": result, "ins": ins_req, "old":params})
+
+				else:
+					print('failed 200')
+					result = 'Bad Request\nThe provided parameters were\n\tidentifier:{}\n\talgo_id:{}\n\tversion:{}\n'.format(params['identifier'],params['algo_id'],params['version'])
+					self.finish({"status_code": 400, "result": result, "ins": [], "old":params})
+			except:
+				self.finish({"status_code": r.status_code, "result": r.text, "ins": [], "old":params})
+
+		# malformed request will still give 500
+		elif r.status_code == 500:
+			if 'AttributeError' in r.text:
+				result = 'Bad Request\nThe provided parameters were\n\tidentifier:{}\n\talgo_id:{}\n\tversion:{}\n'.format(params['identifier'],params['algo_id'],params['version'])
+				self.finish({"status_code": 400, "result": result, "ins": [], "old":params})
+			else:
+				self.finish({"status_code": r.status_code, "result": r.reason, "ins": [], "old":params})
+		else:
+			self.finish({"status_code": 400, "result": "Bad Request", "ins": [], "old":params})
