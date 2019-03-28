@@ -2,7 +2,8 @@
 	"register": ["run_cmd","algo_name","algo_desc"],
 	"getCapabilities": [],
 	"describeProcess": ["algo_id","version"],
-	"execute": ["identifier","algo_id","version","url_list"],
+	"executeInputs": ["identifier","algo_id","version"],
+	"execute" : ["identifier","algo_id","version","inputs"],
 	"getStatus": ["job_id"],
 	"getResult": ["job_id"],
 	"dismiss": ["job_id"]

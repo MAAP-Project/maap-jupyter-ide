@@ -10,14 +10,15 @@ import * as data from './fields.json';
 
 const registerFields = data.register;
 const getCapabilitiesFields = data.getCapabilities;
-const executeFields = data.execute;
+const executeInputsFields = data.executeInputs;
+// const executeFields = data.execute;
 const getStatusFields = data.getStatus;
 const getResultFields = data.getResult;
 const dismissFields = data.dismiss;
 const describeProcessFields = data.describeProcess;
 // const resultFields: string[] = ['status_code', 'result'];
 const notImplemented: string[] = ['dismiss','getResult'];
-const nonXML: string[] = ['getStatus','execute','describeProcess','getCapabilities','register'];
+const nonXML: string[] = ['executeInputs','getStatus','execute','describeProcess','getCapabilities','register'];
 
 // -----------------------
 // HySDS stuff
@@ -28,9 +29,11 @@ class HySDSWidget extends Widget {
   public readonly req: string;
   public readonly popup_title: string;
   public response_text: string;
+  public old_fields: {[k:string]:string};
   public readonly fields: string[];
+  public readonly get_inputs: boolean;
 
-  constructor(req:string) {
+  constructor(req:string, method_fields:string[]) {
     let body = document.createElement('div');
     body.style.display = 'flex';
     body.style.flexDirection = 'column';
@@ -39,51 +42,53 @@ class HySDSWidget extends Widget {
      // Default text
     this.response_text = "";
     this.req = req;
+    this.fields = method_fields;
+    this.get_inputs = false;
+    this.old_fields = {};
 
     switch (req) {
       case 'register':
         this.popup_title = "Register Algorithm";
-        this.fields = registerFields;
         console.log('register');
         break;
       case 'getCapabilities':
         this.popup_title = "Get List of Capabilities";
-        this.fields = getCapabilitiesFields; // no params
         console.log('getCapabilities');
         break;
       case 'getStatus':
         this.popup_title = "Get Job Status";
-        this.fields = getStatusFields;
         console.log('getStatus');
         break;
       case 'getResult':
         this.popup_title = "Get Job Result";
-        this.fields = getResultFields;
         console.log('getResult');
         break;
-      case 'execute':
+      case 'executeInputs':
         this.popup_title = "Execute Job";
-        this.fields = executeFields;
+        console.log('executeInputs');
+        break;
+      case 'execute':
+        this.popup_title = "Execute Job - Provide Inputs";
+        this.get_inputs = true;
         console.log('execute');
         break;
       case 'dismiss':
         this.popup_title = "Dismiss Job";
-        this.fields = dismissFields;
         console.log('dismiss');
         break;
       case 'describeProcess':
         this.popup_title = "Describe Process";
-        this.fields = describeProcessFields;
         console.log('describeProcess');
     }
-    console.log(this.fields);
+    // console.log(this.fields);
 
     // bind method definitions of "this" to refer to class instance
     this.getValue = this.getValue.bind(this);
     this.updateSearchResults = this.updateSearchResults.bind(this);
+    this.setOldFields = this.setOldFields.bind(this);
 
+    // console.log('making title');
     // list all the fields of the job
-
     // ************ Search granule fields ********** //
     // Display search query result
     var title = document.createElement('div');
@@ -94,21 +99,51 @@ class HySDSWidget extends Widget {
     var x = document.createElement("BR");
     this.node.appendChild(x)
 
+    // TODO enforce input types
+    // console.log('making fields');
     // Construct labels and inputs for fields
-    for (var field of this.fields) {
-      var fieldLabel = document.createElement("Label");
-      fieldLabel.innerHTML = field;
-      this.node.appendChild(fieldLabel);
+    if (! this.get_inputs) {
+      for (var field of this.fields) {
+        var fieldLabel = document.createElement("Label");
+        fieldLabel.innerHTML = field;
+        this.node.appendChild(fieldLabel);
 
-      var fieldInput = document.createElement('input');
-      fieldInput.id = (field.toLowerCase() + '-input');
-      this.node.appendChild(fieldInput);
-    
-      // BREAK
-      var x = document.createElement("BR");
-      this.node.appendChild(x)
+        var fieldInput = document.createElement('input');
+        fieldInput.id = (field.toLowerCase() + '-input');
+        this.node.appendChild(fieldInput);
+      
+        // BREAK
+        var x = document.createElement("BR");
+        this.node.appendChild(x)
+      }
+    } else {
+      // console.log("new");
+      for (var field of this.fields) {
+        // console.log('printing fields');
+        var field_name = field[0];
+        // console.log(field_name);
+        var fieldLabel = document.createElement("Label");
+        fieldLabel.innerHTML = field_name;
+        this.node.appendChild(fieldLabel);
+
+        var fieldInput = document.createElement('input');
+        fieldInput.id = (field_name.toLowerCase() + '-input');
+        this.node.appendChild(fieldInput);
+      
+        // BREAK
+        var x = document.createElement("BR");
+        this.node.appendChild(x)
+        // console.log(field_name);
+      }
     }
+    // console.log('done constructing');
 
+  }
+
+  setOldFields(old:{[k:string]:string}): void {
+    console.log('setting fields');
+    this.old_fields = old;
+    // TODO enforce input types
   }
 
   updateSearchResults(): void {
@@ -158,19 +193,67 @@ class HySDSWidget extends Widget {
     // create API call to server extension
     var getUrl = new URL(PageConfig.getBaseUrl() + 'hysds/'+this.req); // REMINDER: hack this url until fixed
 
-    for (var field of this.fields) {
-      var fieldText = (<HTMLInputElement>document.getElementById(field.toLowerCase()+'-input')).value;
-      if (fieldText != "") { getUrl.searchParams.append(field.toLowerCase(), fieldText); }
+    if (this.get_inputs) {
+      for (let key in this.old_fields) {
+        var fieldText = this.old_fields[key].toLowerCase();
+        // if (fieldText != "") { getUrl.searchParams.append(key.toLowerCase(), fieldText); }
+        getUrl.searchParams.append(key.toLowerCase(), fieldText);
+      }
+      var new_input_list = "";
+      for (var e of this.fields) {
+        var field = e[0].toLowerCase();
+        new_input_list = new_input_list.concat(field,',');
+        console.log(field);
+        var fieldText = (<HTMLInputElement>document.getElementById(field.toLowerCase()+'-input')).value;
+        // if (! ["","0"].includes(fieldText)) { getUrl.searchParams.append(field.toLowerCase(), fieldText); }
+        getUrl.searchParams.append(field.toLowerCase(), fieldText);
+      }
+      console.log(new_input_list);
+      getUrl.searchParams.append("inputs",new_input_list);
+    } else {
+      for (var field of this.fields) {
+        var fieldText = (<HTMLInputElement>document.getElementById(field.toLowerCase()+'-input')).value;
+        if (fieldText != "") { getUrl.searchParams.append(field.toLowerCase(), fieldText); }
+      }
     }
 
     console.log(getUrl.href);
 
     // Send Job as Request
-    if ( !(notImplemented.includes(me.req) )){
+    // if just got inputs for execute, new popup to fill out input fields
+    if (me.req == 'executeInputs') {
       request('get', getUrl.href).then((res: RequestResult) => {
         if(res.ok){
           let json_response:any = res.json();
-          // me.response_text = json_response;
+          console.log(json_response['result']);
+
+          if (json_response['status_code'] == 200){
+            // console.log(json_response['ins']);
+            // var new_fields = [...executeInputsFields, ...json_response['ins']];
+            var new_fields = json_response['ins'];
+            var old_fields = json_response['old'];
+            // console.log(new_fields);
+            console.log('pre-popup');
+            var exec = new HySDSWidget('execute',new_fields);
+            exec.setOldFields(old_fields);
+            popup(exec);
+            console.log('post-popup');
+          } else {
+            me.response_text = json_response['result'];
+            me.updateSearchResults();
+            console.log("updating");
+          }
+        } else {
+          me.response_text = "Error Getting Inputs Required.";
+          me.updateSearchResults();
+          console.log("updating");
+        }
+      });
+    // if set result text to response
+    } else if ( !(notImplemented.includes(me.req) )){
+      request('get', getUrl.href).then((res: RequestResult) => {
+        if(res.ok){
+          let json_response:any = res.json();
           me.response_text = json_response['result'];
         } else {
           me.response_text = "Error Sending Request.";
@@ -232,7 +315,7 @@ export function activateRegister(app: JupyterLab,
     label: 'Register Algorithm',
     isEnabled: () => true,
     execute: args => {
-      popup(new HySDSWidget('register'));
+      popup(new HySDSWidget('register',registerFields));
     }
   });
   palette.addItem({command: open_command, category: 'DPS'});
@@ -247,7 +330,7 @@ export function activateGetCapabilities(app: JupyterLab,
     label: 'Get Capabilities',
     isEnabled: () => true,
     execute: args => {
-      popup(new HySDSWidget('getCapabilities'));
+      popup(new HySDSWidget('getCapabilities',getCapabilitiesFields));
     }
   });
   palette.addItem({command: open_command, category: 'DPS'});
@@ -262,7 +345,7 @@ export function activateGetStatus(app: JupyterLab,
     label: 'Get DPS Job Status',
     isEnabled: () => true,
     execute: args => {
-      popup(new HySDSWidget('getStatus'));
+      popup(new HySDSWidget('getStatus',getStatusFields));
     }
   });
   palette.addItem({command: open_command, category: 'DPS'});
@@ -277,7 +360,7 @@ export function activateGetResult(app: JupyterLab,
     label: 'Get DPS Job Result',
     isEnabled: () => true,
     execute: args => {
-      popup(new HySDSWidget('getResult'));
+      popup(new HySDSWidget('getResult',getResultFields));
     }
   });
   palette.addItem({command: open_command, category: 'DPS'});
@@ -292,7 +375,7 @@ export function activateExecute(app: JupyterLab,
     label: 'Execute DPS Job',
     isEnabled: () => true,
     execute: args => {
-      popup(new HySDSWidget('execute'));
+      popup(new HySDSWidget('executeInputs',executeInputsFields));
     }
   });
   palette.addItem({command: open_command, category: 'DPS'});
@@ -307,7 +390,7 @@ export function activateDismiss(app: JupyterLab,
     label: 'Dismiss DPS Job',
     isEnabled: () => true,
     execute: args => {
-      popup(new HySDSWidget('dismiss'));
+      popup(new HySDSWidget('dismiss',dismissFields));
     }
   });
   palette.addItem({command: open_command, category: 'DPS'});
@@ -322,7 +405,7 @@ export function activateDescribe(app: JupyterLab,
     label: 'Describe Algorithm',
     isEnabled: () => true,
     execute: args => {
-      popup(new HySDSWidget('describeProcess'));
+      popup(new HySDSWidget('describeProcess',describeProcessFields));
     }
   });
   palette.addItem({command: open_command, category: 'DPS'});
