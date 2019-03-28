@@ -8,7 +8,9 @@ import os
 
 from .fields import getFields
 # USE https when pointing to actual MAAP API server
-BASE_URL = "http://localhost:5000/api"
+#BASE_URL = "http://localhost:5000/api"
+BASE_URL = "https://api.maap.xyz/api"
+WORKDIR = os.getcwd()
 
 def dig(node):
 	# print("dig!")
@@ -42,7 +44,7 @@ def getProds(node):
 
 class RegisterAlgorithmHandler(IPythonHandler):
 	def get(self):
-		json_file = "./submit_jobs/register.json"
+		json_file = WORKDIR+"/submit_jobs/register.json"
 		fields = getFields('register')
 
 		params = {}
@@ -57,7 +59,7 @@ class RegisterAlgorithmHandler(IPythonHandler):
 		# params['run_cmd'] = 'python /app/plant.py'
 		# params['algo_name'] = 'plant_test'
 		# params['algo_desc'] = 'test plant'
-		# print(params)
+		print(params)
 		params['algo_name'] = params['algo_name'].replace(' ', '_')
 
 		url = BASE_URL+'/mas/algorithm'
@@ -67,7 +69,7 @@ class RegisterAlgorithmHandler(IPythonHandler):
 			req_json = jso.read()
 
 		req_json = req_json.format(**params)
-		# print(req_json)
+		print(req_json)
 
 		try:
 			r = requests.post(
@@ -136,8 +138,8 @@ class GetCapabilitiesHandler(IPythonHandler):
 class ExecuteHandler(IPythonHandler):
 	def get(self):
 		# submit job
-		xml_file = "./submit_jobs/execute.xml"
-		input_xml = "./submit_jobs/execute_inputs.xml"
+		xml_file = WORKDIR+"/submit_jobs/execute.xml"
+		input_xml = WORKDIR+"/submit_jobs/execute_inputs.xml"
 		fields = getFields('execute')
 		input_names = self.get_argument("inputs", '').split(',')[:-1]
 		# inputs = ['localize_urls']
