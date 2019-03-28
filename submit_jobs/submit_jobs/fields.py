@@ -1,6 +1,7 @@
 import json
+import os
 
-fields_path = './src/fields.json'
+fields_path = os.getcwd()+'/src/fields.json'
 # getCapabilities, execute, getStatus, getResult, dismiss, describe
 
 def getFields(param):
