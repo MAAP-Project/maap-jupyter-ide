@@ -168,6 +168,8 @@ class ExecuteHandler(IPythonHandler):
 		# params['version'] = 'master'
 		# params['localize_urls'] = []
 		params['timestamp'] = str(datetime.datetime.today())
+		if inputs['username'] =='':
+			inputs['username'] = 'anonymous'
 		if inputs['localize_urls'] == '':
 			inputs['localize_urls'] = []
 		# print(params)
