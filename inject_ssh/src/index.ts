@@ -7,9 +7,10 @@ import { request, RequestResult } from './request';
 
 // /// <reference path="./getKeycloak.d.ts" />
 // import * as getKeycloak from "./getKeycloak";
-import getKeycloak = require("./getKeycloak");
+// import getKeycloak = require("./getKeycloak");
 
-
+declare var _keycloak: any;
+declare var Window: any;
 
 // declare global {
 //     interface Window {
@@ -20,20 +21,21 @@ import getKeycloak = require("./getKeycloak");
 export class InjectSSH extends Widget {
   constructor() {
 
-    // let key = "err";
-    // console.log((<any> window));
-    // console.log((<any> window)._keycloak);
-    // (<any> window)._keycloak.loadUserInfo().success(function(profile:any) {
-    //   console.log(profile);
-    //   key = profile['public_ssh_keys'];
-    // }).error(function() {
-    //   console.log('Failed to load profile.');
-    // });
-    let profile = getKeycloak.getKeycloak();
-    let key = "error";
-    if (profile != "error") {
+    let key = "err";
+    console.log(Window);
+    console.log(_keycloak);
+    console.log(Window._keycloak);
+    Window._keycloak.loadUserInfo().success(function(profile:any) {
+      console.log(profile);
       key = profile['public_ssh_keys'];
-    }
+    }).error(function() {
+      console.log('Failed to load profile.');
+    });
+    //let profile = getKeycloak.getKeycloak();
+    //let key = "error";
+    // if (profile != "error") {
+    //   key = profile['public_ssh_keys'];
+    // }
 
     // let token = Window._keycloak.token;
     // console.log(token)
