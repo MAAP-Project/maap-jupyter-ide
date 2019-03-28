@@ -1,6 +1,7 @@
 
 export var getKeycloak = function() {
 
+    console.log(Window);
     Window._keycloak.loadUserInfo().success(function(profile) {
       console.log(profile);
       // key = profile['public_ssh_keys'];
