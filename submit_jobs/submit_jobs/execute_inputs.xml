@@ -1,0 +1,5 @@
+	<wps:Input id="{name}">
+		<wps:Data>
+			<wps:LiteralValue>{{value}}</wps:LiteralValue>
+		</wps:Data>
+	</wps:Input>
