@@ -4,6 +4,8 @@ import { JupyterLab, JupyterLabPlugin } from '@jupyterlab/application';
 import { ILauncher } from '@jupyterlab/launcher';
 import { Widget } from '@phosphor/widgets';
 import { request, RequestResult } from './request';
+import getKeycloak = require('./getKeycloak');
+
 
 declare global {
     interface Window {
@@ -14,15 +16,20 @@ declare global {
 export class InjectSSH extends Widget {
   constructor() {
 
-    let key = "err";
-    console.log(window);
-    console.log(window._keycloak);
-    window._keycloak.loadUserInfo().success(function(profile:any) {
-      console.log(profile);
+    // let key = "err";
+    // console.log((<any> window));
+    // console.log((<any> window)._keycloak);
+    // (<any> window)._keycloak.loadUserInfo().success(function(profile:any) {
+    //   console.log(profile);
+    //   key = profile['public_ssh_keys'];
+    // }).error(function() {
+    //   console.log('Failed to load profile.');
+    // });
+    let profile:any = getKeycloak();
+    let key = "error";
+    if (profile != "error") {
       key = profile['public_ssh_keys'];
-    }).error(function() {
-      console.log('Failed to load profile.');
-    });
+    }
 
     // let token = Window._keycloak.token;
     // console.log(token)
