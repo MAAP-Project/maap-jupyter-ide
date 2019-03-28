@@ -50,6 +50,7 @@ class RegisterAlgorithmHandler(IPythonHandler):
 		# params['algo_name'] = 'plant_test'
 		# params['algo_desc'] = 'test plant'
 		# print(params)
+		params['algo_name'] = params['algo_name'].replace(' ', '_')
 
 		url = BASE_URL+'/mas/algorithm'
 		headers = {'Content-Type':'application/json'}
