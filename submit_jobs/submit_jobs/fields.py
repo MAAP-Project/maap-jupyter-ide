@@ -1,7 +1,8 @@
 import json
 import os
 
-fields_path = os.getcwd()+'/src/fields.json'
+prefix = os.getcwd() if (os.getcwd() != '/') else ''
+fields_path = prefix + '/src/fields.json'
 # getCapabilities, execute, getStatus, getResult, dismiss, describe
 
 def getFields(param):
