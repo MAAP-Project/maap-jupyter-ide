@@ -7,7 +7,7 @@ import copy
 import sys
 import os
 
-sys.path.append(os.getcwd()+'/submit_jobs')
+sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 from fields import getFields
 # USE https when pointing to actual MAAP API server
 #BASE_URL = "http://localhost:5000/api"
