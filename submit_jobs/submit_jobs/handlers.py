@@ -1,6 +1,8 @@
 from notebook.base.handlers import IPythonHandler
-import requests
+from notebook.notebookapp import list_running_servers
 import xml.etree.ElementTree as ET
+import requests
+import subprocess
 import json
 import datetime
 import copy
@@ -46,26 +48,33 @@ def getProds(node):
 
 class RegisterAlgorithmHandler(IPythonHandler):
 	def get(self):
-		json_file = WORKDIR+"/submit_jobs/register.json"
+		# ==================================
+		# Part 1: Parse Required Arguments
+		# ==================================
 		fields = getFields('register')
-		print(WORKDIR)
-		print(sys.path)
 
 		params = {}
 		# params['url_list'] = []
-		# params['timestamp'] = str(datetime.datetime.today())
 		for f in fields:
 			try:
 				arg = self.get_argument(f.lower(), '').strip()
 				params[f] = arg
 			except:
 				params[f] = ''
-		# params['run_cmd'] = 'python /app/plant.py'
-		# params['algo_name'] = 'plant_test'
-		# params['algo_desc'] = 'test plant'
-		print(params)
+		# print(params)
+
+		if params['repo_url'] == ''
+			json_file = WORKDIR+"/submit_jobs/register.json"
+			params.pop('repo_url')
+		else:
+			json_file = WORKDIR+"/submit_jobs/register_url.json"
+
+		# replace spaces in algorithm name
 		params['algo_name'] = params['algo_name'].replace(' ', '_')
 
+		# ==================================
+		# Part 2: Build & Send Request
+		# ==================================
 		url = BASE_URL+'/mas/algorithm'
 		headers = {'Content-Type':'application/json'}
 
@@ -73,8 +82,124 @@ class RegisterAlgorithmHandler(IPythonHandler):
 			req_json = jso.read()
 
 		req_json = req_json.format(**params)
-		print(req_json)
+		# print(req_json)
 
+		# ==================================
+		# Part 3: Check Response
+		# ==================================
+		try:
+			r = requests.post(
+				url=url,
+				data=req_json,
+				headers=headers
+			)
+			if r.status_code == 200:
+				# print(r.text)
+				try:
+					# empty
+					resp = json.loads(r.text)
+					self.finish({"status_code": resp['code'], "result": resp['message']})
+				except:
+					self.finish({"status_code": r.status_code, "result": r.text})
+			else:
+				print('failed')
+				self.finish({"status_code": r.status_code, "result": r.reason})
+		except:
+			self.finish({"status_code": 400, "result": "Bad Request"})
+
+class RegisterAutoHandler(IPythonHandler):
+	def get(self):
+		# ==================================
+		# Part 1: GitLab Token
+		# ==================================
+		# check if GitLab token has been set
+		ENV_TOKEN_KEY = 'gitlab_token'
+		git_url = str(subprocess.check_output("git remote get-url origin", shell=True).strip())
+		# print(git_url)
+		token = git_url.split("repo.nasa")[0][:-1]
+		ind = token.find("gitlab-ci-token:")
+		notoken = True
+
+		# if repo url has token, no problems
+		if ind != -1:
+			token = token[ind+len("gitlab-ci-token:"):]
+			if len(token) != 0:
+				print("token has been set")
+				notoken = False
+		
+		# token needs to be set
+		if notoken:
+			# if saved in environment, set for user
+			if ENV_TOKEN_KEY in os.environ:
+				token = os.environ[ENV_TOKEN_KEY]
+				url = git_url.split("//")
+				new_url = "{}//gitlab-ci-token:${}@{}".format(url[0],ENV_TOKEN_KEY,url[1])
+				status = subprocess.check_output("git remote set-url origin {}".format(new_url))
+
+				if status != 0:
+					self.finish({"status_code": 412, "result": "Error {} setting GitLab Token".format(status)})
+			else:
+				self.finish({"status_code": 412, "result": "Error: GitLab Token not set in environment"})
+
+		# ==================================
+		# Part 2: Get Notebook Information
+		# ==================================
+		# get list of running servers
+		servers = list(list_running_servers())
+		# buid API call with workspace url
+		lk = 'https://che-k8s.maap.xyz'+servers[0]['base_url']+'api/sessions'
+
+		# send request for server information
+		r = requests.get(lk)
+		resp = json.loads(r.text)
+
+		# filter to current notebook
+		current = list(filter(lambda e: e['kernel']['execution_state'] in ['busy'],resp))
+		tab = current[0]
+
+		# ==================================
+		# Part 2: Check if User Has Committed
+		# ==================================
+		# get git status
+		git_status_out = subprocess.check_output("git status --porcelain", shell=True).decode("utf-8")
+		git_status = git_status_out.splitlines()
+		git_status = [e.strip() for e in git_status]
+		unsaved = list(filter(lambda e: (('.ipynb' in e) or ('.py' in e)) and ((e[0] == 'M') or (e[0] == '?')), git_status))
+		if len(unsaved) != 0:
+			self.finish({"status_code": 412, "result": "Error: Notebook(s) and/or script(s) have not been committed\n{}".format(git_status_out)})
+
+		# ==================================
+		# Part 3: Extract Required Parameters
+		# ==================================
+		# grab info necessary for registering
+		algo_name = tab['notebook']['path'].split('/').replace(' ', '_')
+		lang = tab['kernel']['name']
+		nb_name = tab['path'] 
+		git_url = str(subprocess.check_output("git remote get-url origin", shell=True).strip())
+
+		# convert python notebook to python script
+		status = subprocess.call("ipython nbconvert --to python GetKernelData.ipynb", shell=True)
+		if status != 0:
+			self.finish({"status_code": 500, "result": "Could not convert .ipynb to .py"})
+
+		run_cmd = '/{} {}'.format(lang,nb_name.replace('.ipynb','.py'))
+		
+		# ==================================
+		# Part 4: Build & Send Request
+		# ==================================
+		json_file = WORKDIR+"/submit_jobs/register_url.json"
+		url = BASE_URL+'/mas/algorithm'
+		headers = {'Content-Type':'application/json'}
+
+		with open(json_file) as jso:
+			req_json = jso.read()
+
+		req_json = req_json.format(**params)
+		# print(req_json)
+
+		# ==================================
+		# Part 5: Check Response
+		# ==================================
 		try:
 			r = requests.post(
 				url=url,
@@ -97,8 +222,11 @@ class RegisterAlgorithmHandler(IPythonHandler):
 
 class GetCapabilitiesHandler(IPythonHandler):
 	def get(self):
-		fields = getFields('getCapabilities')
+		# No Required Arguments
 
+		# ==================================
+		# Part 1: Build & Send Request
+		# ==================================
 		url = BASE_URL+'/dps/job'
 		headers = {'Content-Type':'application/json'}
 
@@ -107,6 +235,9 @@ class GetCapabilitiesHandler(IPythonHandler):
 			headers=headers
 		)
 
+		# ==================================
+		# Part 3: Check & Parse Response
+		# ==================================
 		try:
 			try:
 				# parse out capability names & request info
@@ -141,14 +272,15 @@ class GetCapabilitiesHandler(IPythonHandler):
 
 class ExecuteHandler(IPythonHandler):
 	def get(self):
-		# submit job
 		xml_file = WORKDIR+"/submit_jobs/execute.xml"
 		input_xml = WORKDIR+"/submit_jobs/execute_inputs.xml"
+		
+		# ==================================
+		# Part 1: Parse Required Arguments
+		# ==================================
 		fields = getFields('execute')
 		input_names = self.get_argument("inputs", '').split(',')[:-1]
-		# inputs = ['localize_urls']
 		# print(inputs)
-		# fields = fields + input_names
 		# print(fields)
 
 		params = {}
@@ -167,10 +299,6 @@ class ExecuteHandler(IPythonHandler):
 			except:
 				inputs[f] = ''
 
-		# params['identifier'] = 'org.n52.wps.server.algorithm.SimpleBufferAlgorithm'
-		# params['algo_id'] = 'plant_test'
-		# params['version'] = 'master'
-		# params['localize_urls'] = []
 		params['timestamp'] = str(datetime.datetime.today())
 		if inputs['username'] =='':
 			inputs['username'] = 'anonymous'
@@ -178,16 +306,21 @@ class ExecuteHandler(IPythonHandler):
 			inputs['localize_urls'] = []
 		# print(params)
 
+		# ==================================
+		# Part 2: Build & Send Request
+		# ==================================
 		req_xml = ''
 		ins_xml = ''
 		url = BASE_URL+'/dps/job'
 		headers = {'Content-Type':'application/xml'}
-		# print(url)
 
 		other = ''
 		with open(input_xml) as xml:
 			ins_xml = xml.read()
 
+		# -------------------------------
+		# Insert XML for algorithm inputs
+		# -------------------------------
 		for i in range(len(input_names)):
 			name = input_names[i]
 			other += ins_xml.format(name=name).format(value=inputs[name])
@@ -200,9 +333,11 @@ class ExecuteHandler(IPythonHandler):
 			req_xml = xml.read()
 
 		req_xml = req_xml.format(**params)
-
 		# print(req_xml)
 
+		# -------------------------------
+		# Send Request
+		# -------------------------------
 		try:
 			r = requests.post(
 				url=url, 
@@ -212,6 +347,9 @@ class ExecuteHandler(IPythonHandler):
 			# print(r.status_code)
 			# print(r.text)
 
+			# ==================================
+			# Part 3: Check & Parse Response
+			# ==================================
 			# malformed request will still give 200
 			if r.status_code == 200:
 				try:
@@ -233,7 +371,6 @@ class ExecuteHandler(IPythonHandler):
 
 						result = 'JobID is {}'.format(job_id)
 						# print("success!")
-
 						self.finish({"status_code": r.status_code, "result": result})
 				except:
 					self.finish({"status_code": r.status_code, "result": r.text})
@@ -244,7 +381,9 @@ class ExecuteHandler(IPythonHandler):
 
 class GetStatusHandler(IPythonHandler):
 	def get(self):
-		# xml_file = "./submit_jobs/getStatus.xml"
+		# ==================================
+		# Part 1: Parse Required Arguments
+		# ==================================
 		fields = getFields('getStatus')
 
 		params = {}
@@ -255,8 +394,11 @@ class GetStatusHandler(IPythonHandler):
 			except:
 				arg = ''
 
-		# params['job_id'] = 'random_job_id'
 		# print(params)
+
+		# ==================================
+		# Part 2: Build & Send Request
+		# ==================================
 		url = BASE_URL+'/dps/job/{job_id}/status'.format(**params)
 		headers = {'Content-Type':'application/xml'}
 		# print(url)
@@ -271,6 +413,9 @@ class GetStatusHandler(IPythonHandler):
 			# print(r.status_code)
 			# print(r.text)
 
+			# ==================================
+			# Part 3: Check Response
+			# ==================================
 			# bad job id will still give 200
 			if r.status_code == 200:
 				try:
@@ -283,7 +428,6 @@ class GetStatusHandler(IPythonHandler):
 
 					result = 'JobID is {}\nStatus: {}'.format(job_id,status)
 					# print("success!")
-
 					self.finish({"status_code": r.status_code, "result": result})
 				except:
 					self.finish({"status_code": r.status_code, "result": r.text})
@@ -297,7 +441,6 @@ class GetStatusHandler(IPythonHandler):
 					result += '\t{}: {}\n'.format(f,params[f])
 				result += '\n'
 				self.finish({"status_code": 404, "result": result})
-
 			else:
 				self.finish({"status_code": r.status_code, "result": r.reason})
 		except:
@@ -305,7 +448,9 @@ class GetStatusHandler(IPythonHandler):
 
 class GetResultHandler(IPythonHandler):
 	def get(self):
-		# xml_file = "./submit_jobs/getResult.xml"
+		# ==================================
+		# Part 1: Parse Required Arguments
+		# ==================================
 		fields = getFields('getResult')
 
 		params = {}
@@ -316,8 +461,11 @@ class GetResultHandler(IPythonHandler):
 			except:
 				arg = ''
 
-		# params['job_id'] = 'random_job_id'
 		# print(params)
+
+		# ==================================
+		# Part 2: Build & Send Request
+		# ==================================
 		url = BASE_URL+'/dps/job/{job_id}'.format(**params)
 		headers = {'Content-Type':'application/xml'}
 		# print(url)
@@ -328,10 +476,12 @@ class GetResultHandler(IPythonHandler):
 				url,
 				headers=headers
 			)
-
 			# print(r.status_code)
 			# print(r.text)
 
+			# ==================================
+			# Part 3: Check & Parse Response
+			# ==================================
 			if r.status_code == 200:
 				try:
 					# parse out JobID from response
@@ -361,7 +511,6 @@ class GetResultHandler(IPythonHandler):
 							result += '\n'
 
 						# print("success!")
-
 						self.finish({"status_code": r.status_code, "result": result})
 				except:
 					self.finish({"status_code": r.status_code, "result": r.text})
@@ -410,8 +559,10 @@ class DismissHandler(IPythonHandler):
 
 class DescribeProcessHandler(IPythonHandler):
 	def get(self):
+		# ==================================
+		# Part 1: Parse Required Arguments
+		# ==================================
 		complete = True
-		# xml_file = "./submit_jobs/describe.xml"
 		fields = getFields('describeProcess')
 
 		params = {}
@@ -425,10 +576,11 @@ class DescribeProcessHandler(IPythonHandler):
 		if all(e == '' for e in list(params.values())):
 			complete = False
 
-		# params['algo_id'] = 'plant_test'
-		# params['version'] = 'master'
 		# print(params)
 
+		# ==================================
+		# Part 2: Build & Send Request
+		# ==================================
 		# return all algorithms if malformed request
 		if complete:
 			url = BASE_URL+'/mas/algorithm/{algo_id}:{version}'.format(**params) 
@@ -442,9 +594,12 @@ class DescribeProcessHandler(IPythonHandler):
 			url,
 			headers=headers
 		)
-		# print(r)
-		# print(r.text)
 		# print(r.status_code)
+		# print(r.text)
+
+		# ==================================
+		# Part 3: Check & Parse Response
+		# ==================================
 
 		if r.status_code == 200:
 			try:
@@ -485,6 +640,9 @@ class DescribeProcessHandler(IPythonHandler):
 
 class ExecuteInputsHandler(IPythonHandler):
 	def get(self):
+		# ==================================
+		# Part 1: Parse Required Arguments
+		# ==================================
 		complete = True
 		fields = getFields('executeInputs')
 
@@ -497,10 +655,6 @@ class ExecuteInputsHandler(IPythonHandler):
 				params[f] = ''
 				complete = False
 
-		# params['identifier'] = 'org.n52.wps.server.algorithm.SimpleBufferAlgorithm'
-		# params['algo_id'] = 'plant_test'
-		# params['version'] = 'master'
-
 		if all(e == '' for e in list(params.values())):
 			complete = False
 
@@ -508,6 +662,9 @@ class ExecuteInputsHandler(IPythonHandler):
 		params2.pop('identifier')
 		# print(params)
 
+		# ==================================
+		# Part 2: Build & Send Request
+		# ==================================
 		# return all algorithms if malformed request
 		if complete:
 			url = BASE_URL+'/mas/algorithm/{algo_id}:{version}'.format(**params2) 
@@ -521,9 +678,12 @@ class ExecuteInputsHandler(IPythonHandler):
 			url,
 			headers=headers
 		)
-		# print(r)
-		# print(r.text)
 		# print(r.status_code)
+		# print(r.text)
+
+		# ==================================
+		# Part 3: Check & Parse Response
+		# ==================================
 
 		if r.status_code == 200:
 			try:
@@ -536,8 +696,6 @@ class ExecuteInputsHandler(IPythonHandler):
 					inputs = [e[1] for e in attrib[2:-1]]
 					ins_req = [[e[1][1],e[2][1]] for e in inputs] 					# extract identifier & type for each input
 					ins_req = list(filter(lambda e: e[0] != 'timestamp', ins_req)) 	# filter out automatic timestamp req input
-					# ins_req = {k: v for d in ins_req for k, v in d.items()} 		# flatten list of dicts
-					# ins_req.pop('timestamp')										# filter out automatic timestamp req input
 
 					result = ''
 					for (identifier,typ) in ins_req:

@@ -1,5 +1,5 @@
 #!/bin/bash
-
+  
 # Reconstruct Che preview url
 export PREVIEW_URL=`/usr/bin/printenv | grep $MACHINE_NAME | perl -slane 'if(/^(SERVER[^_]+_$mn)_SERVICE_PORT=(\d+)/) { $p=$2; print "/".lc($1=~s/_/-/rg)."/server-".$p; }' -- -mn=$MACHINE_NAME | uniq`
 
@@ -19,6 +19,7 @@ perl -pi -e "s|web_app.settings\['base_url'\]|'/'|g" /edsc_extension/edsc_extens
 #perl -pi -e "s|web_app.settings\['base_url'\]|'/'|g" /jupyterlab_iframe/jupyterlab_iframe/__init__.py
 perl -pi -e "s|web_app.settings\['base_url'\]|'/'|g" /show_ssh_info/inject_ssh/__init__.py
 perl -pi -e "s|web_app.settings\[\"base_url\"\]|'/'|g" /jupyterlab-git/jupyterlab_git/handlers.py
+perl -pi -e "s|web_app.settings\['base_url'\]|'/'|g" /submit_jobs/submit_jobs/__init__.py
 
 # Dump all env variables into file so they exist still though SSH
 env | grep _ >> /etc/environment
