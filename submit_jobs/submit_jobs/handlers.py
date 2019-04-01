@@ -63,7 +63,7 @@ class RegisterAlgorithmHandler(IPythonHandler):
 				params[f] = ''
 		# print(params)
 
-		if params['repo_url'] == ''
+		if params['repo_url'] == '':
 			json_file = WORKDIR+"/submit_jobs/register.json"
 			params.pop('repo_url')
 		else:
@@ -110,10 +110,30 @@ class RegisterAlgorithmHandler(IPythonHandler):
 class RegisterAutoHandler(IPythonHandler):
 	def get(self):
 		# ==================================
-		# Part 1: GitLab Token
+		# Part 1: Get Notebook Information
 		# ==================================
-		# check if GitLab token has been set
+		# get list of running servers
+		servers = list(list_running_servers())
+		# buid API call with workspace url
+		lk = 'https://che-k8s.maap.xyz'+servers[0]['base_url']+'api/sessions'
+
+		# send request for server information
+		r = requests.get(lk)
+		resp = json.loads(r.text)
+
+		# filter to current notebook
+		current = list(filter(lambda e: e['kernel']['execution_state'] in ['busy'],resp))
+		tab = current[0]
+
+		# ==================================
+		# Part 2: GitLab Token
+		# ==================================
+		# set key and path
 		ENV_TOKEN_KEY = 'gitlab_token'
+		proj_path = ('/').join(tab['path'].split('/')[:-1])
+		os.chdir(proj_path)
+		
+		# check if GitLab token has been set
 		git_url = str(subprocess.check_output("git remote get-url origin", shell=True).strip())
 		# print(git_url)
 		token = git_url.split("repo.nasa")[0][:-1]
@@ -142,23 +162,7 @@ class RegisterAutoHandler(IPythonHandler):
 				self.finish({"status_code": 412, "result": "Error: GitLab Token not set in environment"})
 
 		# ==================================
-		# Part 2: Get Notebook Information
-		# ==================================
-		# get list of running servers
-		servers = list(list_running_servers())
-		# buid API call with workspace url
-		lk = 'https://che-k8s.maap.xyz'+servers[0]['base_url']+'api/sessions'
-
-		# send request for server information
-		r = requests.get(lk)
-		resp = json.loads(r.text)
-
-		# filter to current notebook
-		current = list(filter(lambda e: e['kernel']['execution_state'] in ['busy'],resp))
-		tab = current[0]
-
-		# ==================================
-		# Part 2: Check if User Has Committed
+		# Part 3: Check if User Has Committed
 		# ==================================
 		# get git status
 		git_status_out = subprocess.check_output("git status --porcelain", shell=True).decode("utf-8")
@@ -169,7 +173,7 @@ class RegisterAutoHandler(IPythonHandler):
 			self.finish({"status_code": 412, "result": "Error: Notebook(s) and/or script(s) have not been committed\n{}".format(git_status_out)})
 
 		# ==================================
-		# Part 3: Extract Required Parameters
+		# Part 4: Extract Required Parameters
 		# ==================================
 		# grab info necessary for registering
 		algo_name = tab['notebook']['path'].split('/').replace(' ', '_')
@@ -185,7 +189,7 @@ class RegisterAutoHandler(IPythonHandler):
 		run_cmd = '/{} {}'.format(lang,nb_name.replace('.ipynb','.py'))
 		
 		# ==================================
-		# Part 4: Build & Send Request
+		# Part 5: Build & Send Request
 		# ==================================
 		json_file = WORKDIR+"/submit_jobs/register_url.json"
 		url = BASE_URL+'/mas/algorithm'
@@ -198,7 +202,7 @@ class RegisterAutoHandler(IPythonHandler):
 		# print(req_json)
 
 		# ==================================
-		# Part 5: Check Response
+		# Part 6: Check Response
 		# ==================================
 		try:
 			r = requests.post(
