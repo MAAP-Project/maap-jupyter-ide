@@ -1,5 +1,6 @@
 {
-	"register": ["run_cmd","algo_name","algo_desc"],
+	"register": ["repo_url","run_cmd","algo_name","algo_desc"],
+	"registerAuto": [],
 	"getCapabilities": [],
 	"describeProcess": ["algo_id","version"],
 	"executeInputs": ["identifier","algo_id","version"],
