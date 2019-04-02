@@ -193,7 +193,7 @@ class HySDSWidget extends Widget {
   // overrides the resolution of popup dialog
   getValue() {
     var me = this;
-
+    var skip = false;
     // create API call to server extension
     var getUrl = new URL(PageConfig.getBaseUrl() + 'hysds/'+this.req); // REMINDER: hack this url until fixed
 
@@ -218,12 +218,25 @@ class HySDSWidget extends Widget {
       var settingsAPIUrl = new URL(PageConfig.getBaseUrl() + 'api/sessions');
       request('get',settingsAPIUrl.href).then((res: RequestResult) => {
         if (res.ok) {
-          let json_response:any = res.json();
-          console.log(json_response[0]);
-          var servers = JSON.stringify(json_response[0]);
+          var json_response:any = res.json();
+          var servers = json_response;
           console.log(servers);
-          getUrl.searchParams.append('servers', servers);
-          console.log(getUrl.href);
+          console.log(servers.length);
+
+          // TODO: find active tab instead of grabbing 1st one
+          // Get Notebook information to pass to RegisterAuto Handler
+          var tab:any = servers[0];
+          // console.log(tab);
+          var nb_name:any = tab["path"]
+          var algo_name:any = tab["notebook"]["path"]
+          var lang:any = tab["kernel"]["name"]
+          // console.log(nb_name);
+          // console.log(algo_name);
+          // console.log(lang);
+          getUrl.searchParams.append('nb_name', nb_name);
+          getUrl.searchParams.append('algo_name', algo_name);
+          getUrl.searchParams.append('lang', lang);
+          // console.log(getUrl.href);
         }
       })
     } else {
@@ -266,7 +279,7 @@ class HySDSWidget extends Widget {
         }
       });
     // if set result text to response
-    } else if ( !(notImplemented.includes(me.req) )){
+    } else if ( !(notImplemented.includes(me.req) && !skip)){
       request('get', getUrl.href).then((res: RequestResult) => {
         if(res.ok){
           let json_response:any = res.json();
