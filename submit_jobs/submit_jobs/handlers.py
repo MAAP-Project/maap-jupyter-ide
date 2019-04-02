@@ -112,117 +112,132 @@ class RegisterAutoHandler(IPythonHandler):
 		# ==================================
 		# Part 1: Get Notebook Information
 		# ==================================
-		# get list of running servers
-		servers = list(list_running_servers())
-		# buid API call with workspace url
-		lk = 'https://che-k8s.maap.xyz'+servers[0]['base_url']+'api/sessions'
-
-		# send request for server information
-		r = requests.get(lk)
-		resp = json.loads(r.text)
-
-		# filter to current notebook
-		current = list(filter(lambda e: e['kernel']['execution_state'] in ['busy'],resp))
-		tab = current[0]
-
-		# ==================================
-		# Part 2: GitLab Token
-		# ==================================
-		# set key and path
-		ENV_TOKEN_KEY = 'gitlab_token'
-		proj_path = ('/').join(tab['path'].split('/')[:-1])
-		os.chdir(proj_path)
-		
-		# check if GitLab token has been set
-		git_url = str(subprocess.check_output("git remote get-url origin", shell=True).strip())
-		# print(git_url)
-		token = git_url.split("repo.nasa")[0][:-1]
-		ind = token.find("gitlab-ci-token:")
-		notoken = True
-
-		# if repo url has token, no problems
-		if ind != -1:
-			token = token[ind+len("gitlab-ci-token:"):]
-			if len(token) != 0:
-				print("token has been set")
-				notoken = False
-		
-		# token needs to be set
-		if notoken:
-			# if saved in environment, set for user
-			if ENV_TOKEN_KEY in os.environ:
-				token = os.environ[ENV_TOKEN_KEY]
-				url = git_url.split("//")
-				new_url = "{}//gitlab-ci-token:${}@{}".format(url[0],ENV_TOKEN_KEY,url[1])
-				status = subprocess.check_output("git remote set-url origin {}".format(new_url))
-
-				if status != 0:
-					self.finish({"status_code": 412, "result": "Error {} setting GitLab Token".format(status)})
-			else:
-				self.finish({"status_code": 412, "result": "Error: GitLab Token not set in environment"})
-
-		# ==================================
-		# Part 3: Check if User Has Committed
-		# ==================================
-		# get git status
-		git_status_out = subprocess.check_output("git status --porcelain", shell=True).decode("utf-8")
-		git_status = git_status_out.splitlines()
-		git_status = [e.strip() for e in git_status]
-		unsaved = list(filter(lambda e: (('.ipynb' in e) or ('.py' in e)) and ((e[0] == 'M') or (e[0] == '?')), git_status))
-		if len(unsaved) != 0:
-			self.finish({"status_code": 412, "result": "Error: Notebook(s) and/or script(s) have not been committed\n{}".format(git_status_out)})
-
-		# ==================================
-		# Part 4: Extract Required Parameters
-		# ==================================
-		# grab info necessary for registering
-		algo_name = tab['notebook']['path'].split('/').replace(' ', '_')
-		lang = tab['kernel']['name']
-		nb_name = tab['path'] 
-		git_url = str(subprocess.check_output("git remote get-url origin", shell=True).strip())
-
-		# convert python notebook to python script
-		status = subprocess.call("ipython nbconvert --to python GetKernelData.ipynb", shell=True)
-		if status != 0:
-			self.finish({"status_code": 500, "result": "Could not convert .ipynb to .py"})
-
-		run_cmd = '/{} {}'.format(lang,nb_name.replace('.ipynb','.py'))
-		
-		# ==================================
-		# Part 5: Build & Send Request
-		# ==================================
-		json_file = WORKDIR+"/submit_jobs/register_url.json"
-		url = BASE_URL+'/mas/algorithm'
-		headers = {'Content-Type':'application/json'}
-
-		with open(json_file) as jso:
-			req_json = jso.read()
-
-		req_json = req_json.format(**params)
-		# print(req_json)
-
-		# ==================================
-		# Part 6: Check Response
-		# ==================================
+		servers = []
 		try:
-			r = requests.post(
-				url=url,
-				data=req_json,
-				headers=headers
-			)
-			if r.status_code == 200:
-				# print(r.text)
-				try:
-					# empty
-					resp = json.loads(r.text)
-					self.finish({"status_code": resp['code'], "result": resp['message']})
-				except:
-					self.finish({"status_code": r.status_code, "result": r.text})
-			else:
-				print('failed')
-				self.finish({"status_code": r.status_code, "result": r.reason})
+			arg = self.get_argument('servers', '').strip()
+			servers = json.loads(arg)
 		except:
-			self.finish({"status_code": 400, "result": "Bad Request"})
+			pass
+		# get list of running servers
+		# servers = list(list_running_servers())
+		# buid API call with workspace url
+		# lk = 'https://che-k8s.maap.xyz'+servers[0]['base_url']+'api/sessions'
+		print('servers')
+		print(servers)
+		try:
+			current = list(filter(lambda e: e['kernel']['execution_state'] in ['busy'],resp))
+			print('current')
+			print(current)
+			tab = current[0]
+			self.finish({"status_code" : 200, "result": json.dumps(tab)})
+
+			# ==================================
+			# Part 2: GitLab Token
+			# ==================================
+			# set key and path
+			ENV_TOKEN_KEY = 'gitlab_token'
+			proj_path = ('/').join(tab['path'].split('/')[:-1])
+			os.chdir(proj_path)
+			
+			# check if GitLab token has been set
+			git_url = str(subprocess.check_output("git remote get-url origin", shell=True).strip())
+			# print(git_url)
+			token = git_url.split("repo.nasa")[0][:-1]
+			ind = token.find("gitlab-ci-token:")
+			notoken = True
+
+			# if repo url has token, no problems
+			if ind != -1:
+				token = token[ind+len("gitlab-ci-token:"):]
+				if len(token) != 0:
+					print("token has been set")
+					notoken = False
+			
+			# token needs to be set
+			if notoken:
+				# if saved in environment, set for user
+				if ENV_TOKEN_KEY in os.environ:
+					token = os.environ[ENV_TOKEN_KEY]
+					url = git_url.split("//")
+					new_url = "{}//gitlab-ci-token:${}@{}".format(url[0],ENV_TOKEN_KEY,url[1])
+					status = subprocess.check_output("git remote set-url origin {}".format(new_url))
+
+					if status != 0:
+						self.finish({"status_code": 412, "result": "Error {} setting GitLab Token".format(status)})
+				else:
+					self.finish({"status_code": 412, "result": "Error: GitLab Token not set in environment"})
+
+			self.finish({"status_code":200,"result":"finish checking token"})
+
+			# ==================================
+			# Part 3: Check if User Has Committed
+			# ==================================
+			# get git status
+			git_status_out = subprocess.check_output("git status --porcelain", shell=True).decode("utf-8")
+			git_status = git_status_out.splitlines()
+			git_status = [e.strip() for e in git_status]
+			unsaved = list(filter(lambda e: (('.ipynb' in e) or ('.py' in e)) and ((e[0] == 'M') or (e[0] == '?')), git_status))
+			if len(unsaved) != 0:
+				self.finish({"status_code": 412, "result": "Error: Notebook(s) and/or script(s) have not been committed\n{}".format(git_status_out)})
+
+			# self.finish({"status_code" : 200, "result": "Done checking commit"})
+
+			# ==================================
+			# Part 4: Extract Required Parameters
+			# ==================================
+			# grab info necessary for registering
+			algo_name = tab['notebook']['path'].split('/').replace(' ', '_')
+			lang = tab['kernel']['name']
+			nb_name = tab['path'] 
+			git_url = str(subprocess.check_output("git remote get-url origin", shell=True).strip())
+
+			# convert python notebook to python script
+			status = subprocess.call("ipython nbconvert --to python GetKernelData.ipynb", shell=True)
+			if status != 0:
+				self.finish({"status_code": 500, "result": "Could not convert .ipynb to .py"})
+
+			run_cmd = '/{} {}'.format(lang,nb_name.replace('.ipynb','.py'))
+
+			# self.finish({"status_code" : 200, "result": "Done getting params"})
+			
+			# ==================================
+			# Part 5: Build & Send Request
+			# ==================================
+			json_file = WORKDIR+"/submit_jobs/register_url.json"
+			url = BASE_URL+'/mas/algorithm'
+			headers = {'Content-Type':'application/json'}
+
+			with open(json_file) as jso:
+				req_json = jso.read()
+
+			req_json = req_json.format(**params)
+			# print(req_json)
+
+			# ==================================
+			# Part 6: Check Response
+			# ==================================
+			try:
+				r = requests.post(
+					url=url,
+					data=req_json,
+					headers=headers
+				)
+				if r.status_code == 200:
+					# print(r.text)
+					try:
+						# empty
+						resp = json.loads(r.text)
+						self.finish({"status_code": resp['code'], "result": resp['message']})
+					except:
+						self.finish({"status_code": r.status_code, "result": r.text})
+				else:
+					print('failed')
+					self.finish({"status_code": r.status_code, "result": r.reason})
+			except:
+				self.finish({"status_code": 400, "result": "Bad Request"})
+		except:
+			self.finish({"status_code" : 412, "result": "no servers running"})
+
 
 class GetCapabilitiesHandler(IPythonHandler):
 	def get(self):

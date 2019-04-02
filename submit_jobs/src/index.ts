@@ -9,6 +9,7 @@ import { request, RequestResult } from './request';
 import * as data from './fields.json';
 
 const registerFields = data.register;
+const registerAutoFields = data.registerAuto;
 const getCapabilitiesFields = data.getCapabilities;
 const executeInputsFields = data.executeInputs;
 // const executeFields = data.execute;
@@ -18,7 +19,7 @@ const dismissFields = data.dismiss;
 const describeProcessFields = data.describeProcess;
 // const resultFields: string[] = ['status_code', 'result'];
 const notImplemented: string[] = ['dismiss'];
-const nonXML: string[] = ['getResult','executeInputs','getStatus','execute','describeProcess','getCapabilities','register'];
+const nonXML: string[] = ['registerAuto','getResult','executeInputs','getStatus','execute','describeProcess','getCapabilities','register'];
 
 // -----------------------
 // HySDS stuff
@@ -50,6 +51,10 @@ class HySDSWidget extends Widget {
       case 'register':
         this.popup_title = "Register Algorithm";
         console.log('register');
+        break;
+      case 'registerAuto':
+        this.popup_title = "Register Algorithm";
+        console.log('registerAuto');
         break;
       case 'getCapabilities':
         this.popup_title = "Get List of Capabilities";
@@ -137,7 +142,6 @@ class HySDSWidget extends Widget {
       }
     }
     // console.log('done constructing');
-
   }
 
   setOldFields(old:{[k:string]:string}): void {
@@ -210,6 +214,18 @@ class HySDSWidget extends Widget {
       }
       console.log(new_input_list);
       getUrl.searchParams.append("inputs",new_input_list);
+    } else if (me.req == 'registerAuto') {
+      var settingsAPIUrl = new URL(PageConfig.getBaseUrl() + 'api/sessions');
+      request('get',settingsAPIUrl.href).then((res: RequestResult) => {
+        if (res.ok) {
+          let json_response:any = res.json();
+          console.log(json_response[0]);
+          var servers = JSON.stringify(json_response[0]);
+          console.log(servers);
+          getUrl.searchParams.append('servers', servers);
+          console.log(getUrl.href);
+        }
+      })
     } else {
       for (var field of this.fields) {
         var fieldText = (<HTMLInputElement>document.getElementById(field.toLowerCase()+'-input')).value;
@@ -412,6 +428,30 @@ export function activateDescribe(app: JupyterLab,
   console.log('HySDS Describe Job is activated!');
 }
 
+export function activateRegisterAuto(app: JupyterLab, 
+                        palette: ICommandPalette, 
+                        restorer: ILauncher | null): void{
+  const open_command = 'hysds: register-auto';
+
+  app.commands.addCommand(open_command, {
+    label: 'Register Algorithm Automatically',
+    isEnabled: () => true,
+    execute: args => {
+      popup(new HySDSWidget('registerAuto',registerAutoFields));
+      // popupResult(new HySDSWidget('registerAuto',registerAutoFields);
+    }
+  });
+  palette.addItem({command: open_command, category: 'DPS'});
+  console.log('HySDS Register Algorithm is activated!');
+}
+const extensionRegisterAuto: JupyterLabPlugin<void> = {
+  id: 'dps-register-auto',
+  autoStart: true,
+  requires: [ICommandPalette],
+  optional: [ILauncher],
+  activate: activateRegisterAuto
+};
+
 // export extensions
 const extensionRegister: JupyterLabPlugin<void> = {
   id: 'dps-register',
@@ -463,4 +503,4 @@ const extensionDescribe: JupyterLabPlugin<void> = {
   activate: activateDescribe
 };
 
-export default [extensionRegister,extensionCapabilities,extensionStatus,extensionResult,extensionExecute,extensionDismiss,extensionDescribe];
+export default [extensionRegisterAuto,extensionRegister,extensionCapabilities,extensionStatus,extensionResult,extensionExecute,extensionDismiss,extensionDescribe];
