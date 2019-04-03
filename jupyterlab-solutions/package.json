@@ -1,0 +1,39 @@
+{
+  "name": "@rmotr/jupyterlab-solutions",
+  "version": "0.0.6",
+  "description": "Add your own exercises to JupyterLab",
+  "keywords": [
+    "jupyter",
+    "jupyterlab",
+    "jupyterlab-extension",
+    "jupyter-notebook",
+    "education",
+    "educational",
+    "javascript",
+    "teachers",
+    "demo",
+    "students",
+    "jupyterlab-solutions"
+  ],
+  "homepage": "https://github.com/rmotr/jupyterlab-solutions.git",
+  "bugs": {
+    "url": "https://github.com/rmotr/jupyterlab-solutions/issues"
+  },
+  "license": "BSD-3-Clause",
+  "author": "rmotr.com",
+  "main": "src/index.js",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/rmotr/jupyterlab-solutions.git"
+  },
+  "scripts": {},
+  "dependencies": {
+    "@jupyterlab/application": "^0.19.1",
+    "@jupyterlab/apputils": "^0.19.1",
+    "@phosphor/widgets": "^1.6.0"
+  },
+  "devDependencies": {},
+  "jupyterlab": {
+    "extension": true
+  }
+}
