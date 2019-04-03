@@ -5,10 +5,10 @@ class InjectSSH {
   constructor() {
 
     let key = "err";
-    console.log(window);
+    console.log(window.parent);
     //console.log(_keycloak);
-    console.log(window._keycloak);
-    window._keycloak.loadUserInfo().success(function(profile) {
+    console.log(window.parent._keycloak);
+    window.parent._keycloak.loadUserInfo().success(function(profile) {
       console.log(profile);
       key = profile['public_ssh_keys'];
       console.log(key)
