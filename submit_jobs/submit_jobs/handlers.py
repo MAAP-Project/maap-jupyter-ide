@@ -125,17 +125,17 @@ class RegisterAutoHandler(IPythonHandler):
 		algo_name = params['algo_name']
 		lang = params['lang']
 		nb_name = params['nb_name']
-		
+
 		# ==================================
 		# Part 2: GitLab Token
 		# ==================================
 		# set key and path
 		ENV_TOKEN_KEY = 'gitlab_token'
 		# proj_path = ('/').join(tab['path'].split('/')[:-1])
-		proj_path = ('/').join(nb_name.split('/')[:-1])
-		if proj_path != '':
-			os.chdir(proj_path)
-		
+		proj_path = ('/').join(['/projects']+nb_name.split('/')[:-1])
+		# if proj_path != '/':
+		os.chdir(proj_path)
+
 		# check if GitLab token has been set
 		git_url = subprocess.check_output("git remote get-url origin", shell=True).decode('utf-8').strip()
 		print(git_url)
@@ -164,7 +164,7 @@ class RegisterAutoHandler(IPythonHandler):
 					self.finish({"status_code": 412, "result": "Error {} setting GitLab Token".format(status)})
 					return
 			else:
-				self.finish({"status_code": 412, "result": "Error: GitLab Token not set in environment"})
+				self.finish({"status_code": 412, "result": "Error: GitLab Token not set in environment\n{}".format(git_url)})
 				return
 
 		# self.finish({"status_code":200,"result":"finish checking token"})
