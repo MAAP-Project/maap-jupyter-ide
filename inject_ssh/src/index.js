@@ -9,23 +9,26 @@ class InjectSSH {
     //console.log(_keycloak);
     console.log(window.parent._keycloak);
     window.parent._keycloak.loadUserInfo().success(function(profile) {
+      
       console.log(profile);
       key = profile['public_ssh_keys'];
       console.log(key)
+
+      var getUrl = new URL(PageConfig.getBaseUrl() + "inject_ssh/inject_public_key");
+      getUrl.searchParams.append("key", key);
+
+      // Make call to back end
+      var xhr = new XMLHttpRequest();
+      xhr.onload = function() {
+        console.log("SSH Key injected")
+      };
+      xhr.open("GET", getUrl.href, true);
+      xhr.send(null);
+
     }).error(function() {
       console.log('Failed to load profile.');
     });
 
-    var getUrl = new URL(PageConfig.getBaseUrl() + "inject_ssh/inject_public_key");
-    getUrl.searchParams.append("key", key);
-
-    // Make call to back end
-    var xhr = new XMLHttpRequest();
-    xhr.onload = function() {
-      console.log("SSH Key injected")
-    };
-    xhr.open("GET", getUrl.href, true);
-    xhr.send(null);
   }
 }
 
