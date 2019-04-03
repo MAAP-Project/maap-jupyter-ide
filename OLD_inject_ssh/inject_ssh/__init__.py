@@ -7,13 +7,13 @@ from .handlers import InjectKeyHandler
 
 def _jupyter_labextension_paths():
     return [{
-        'name': 'inject_ssh',
+        'name': 'OLD_inject_ssh',
         'src': 'static',
     }]
 
 def _jupyter_server_extension_paths():
     return [{
-        "module": "inject_ssh"
+        "module": "OLD_inject_ssh"
     }]
 
 
@@ -27,9 +27,9 @@ def load_jupyter_server_extension(nb_server_app):
     base_url = web_app.settings['base_url']
     host_pattern = '.*$'
 
-    print('Installing jupyterlab pull_projects handler on path %s' % url_path_join(base_url, 'inject_ssh'))
+    print('Installing jupyterlab pull_projects handler on path %s' % url_path_join(base_url, 'OLD_inject_ssh'))
     print('base_url is '+base_url)
 
-    web_app.add_handlers(host_pattern, [(url_path_join(base_url, 'inject_ssh/inject_public_key'), InjectKeyHandler)])
+    web_app.add_handlers(host_pattern, [(url_path_join(base_url, 'OLD_inject_ssh/inject_public_key'), InjectKeyHandler)])
 
 
