@@ -91,6 +91,7 @@ class HySDSWidget extends Widget {
     this.getValue = this.getValue.bind(this);
     this.updateSearchResults = this.updateSearchResults.bind(this);
     this.setOldFields = this.setOldFields.bind(this);
+    this.buildRequestUrl = this.buildRequestUrl.bind(this);
 
     // console.log('making title');
     // list all the fields of the job
@@ -189,65 +190,73 @@ class HySDSWidget extends Widget {
     }
   }
 
-  // submit the job
-  // overrides the resolution of popup dialog
-  getValue() {
+  buildRequestUrl() {
     var me = this;
-    var skip = false;
-    // create API call to server extension
-    var getUrl = new URL(PageConfig.getBaseUrl() + 'hysds/'+this.req); // REMINDER: hack this url until fixed
+    return new Promise<URL>((resolve, reject) => {
+      // var skip = false;
+      // create API call to server extension
+      var getUrl = new URL(PageConfig.getBaseUrl() + 'hysds/'+this.req); // REMINDER: hack this url until fixed
 
-    if (this.get_inputs) {
-      for (let key in this.old_fields) {
-        var fieldText = this.old_fields[key].toLowerCase();
-        // if (fieldText != "") { getUrl.searchParams.append(key.toLowerCase(), fieldText); }
-        getUrl.searchParams.append(key.toLowerCase(), fieldText);
-      }
-      var new_input_list = "";
-      for (var e of this.fields) {
-        var field = e[0].toLowerCase();
-        new_input_list = new_input_list.concat(field,',');
-        console.log(field);
-        var fieldText = (<HTMLInputElement>document.getElementById(field.toLowerCase()+'-input')).value;
-        // if (! ["","0"].includes(fieldText)) { getUrl.searchParams.append(field.toLowerCase(), fieldText); }
-        getUrl.searchParams.append(field.toLowerCase(), fieldText);
-      }
-      console.log(new_input_list);
-      getUrl.searchParams.append("inputs",new_input_list);
-    } else if (me.req == 'registerAuto') {
-      var settingsAPIUrl = new URL(PageConfig.getBaseUrl() + 'api/sessions');
-      request('get',settingsAPIUrl.href).then((res: RequestResult) => {
-        if (res.ok) {
-          var json_response:any = res.json();
-          var servers = json_response;
-          console.log(servers);
-          console.log(servers.length);
-
-          // TODO: find active tab instead of grabbing 1st one
-          // Get Notebook information to pass to RegisterAuto Handler
-          var tab:any = servers[0];
-          // console.log(tab);
-          var nb_name:any = tab["path"]
-          var algo_name:any = tab["notebook"]["path"]
-          var lang:any = tab["kernel"]["name"]
-          // console.log(nb_name);
-          // console.log(algo_name);
-          // console.log(lang);
-          getUrl.searchParams.append('nb_name', nb_name);
-          getUrl.searchParams.append('algo_name', algo_name);
-          getUrl.searchParams.append('lang', lang);
-          // console.log(getUrl.href);
+      if (this.get_inputs) {
+        for (let key in this.old_fields) {
+          var fieldText = this.old_fields[key].toLowerCase();
+          // if (fieldText != "") { getUrl.searchParams.append(key.toLowerCase(), fieldText); }
+          getUrl.searchParams.append(key.toLowerCase(), fieldText);
         }
-      })
-    } else {
-      for (var field of this.fields) {
-        var fieldText = (<HTMLInputElement>document.getElementById(field.toLowerCase()+'-input')).value;
-        if (fieldText != "") { getUrl.searchParams.append(field.toLowerCase(), fieldText); }
+        var new_input_list = "";
+        for (var e of this.fields) {
+          var field = e[0].toLowerCase();
+          new_input_list = new_input_list.concat(field,',');
+          console.log(field);
+          var fieldText = (<HTMLInputElement>document.getElementById(field.toLowerCase()+'-input')).value;
+          // if (! ["","0"].includes(fieldText)) { getUrl.searchParams.append(field.toLowerCase(), fieldText); }
+          getUrl.searchParams.append(field.toLowerCase(), fieldText);
+        }
+        console.log(new_input_list);
+        getUrl.searchParams.append("inputs",new_input_list);
+        resolve(getUrl);
+      } else if (me.req == 'registerAuto') {
+        var settingsAPIUrl = new URL(PageConfig.getBaseUrl() + 'api/sessions');
+        request('get',settingsAPIUrl.href).then((res: RequestResult) => {
+          if (res.ok) {
+            var json_response:any = res.json();
+            var servers = json_response;
+            console.log(servers);
+            console.log(servers.length);
+
+            // TODO: find active tab instead of grabbing 1st one
+            // Get Notebook information to pass to RegisterAuto Handler
+            var tab:any = servers[0];
+            console.log(tab);
+            var nb_name:any = tab["path"];
+            var algo_name:any = tab["notebook"]["path"];
+            var lang:any = tab["kernel"]["name"];
+            console.log(nb_name);
+            console.log(algo_name);
+            console.log(lang);
+            getUrl.searchParams.append('nb_name', nb_name);
+            getUrl.searchParams.append('algo_name', algo_name);
+            getUrl.searchParams.append('lang', lang);
+            console.log(getUrl.href);
+          }
+          console.log('done setting url');
+          resolve(getUrl);
+        })
+      } else {
+        for (var field of this.fields) {
+          var fieldText = (<HTMLInputElement>document.getElementById(field.toLowerCase()+'-input')).value;
+          if (fieldText != "") { getUrl.searchParams.append(field.toLowerCase(), fieldText); }
+        }
+        resolve(getUrl);
       }
-    }
 
+    });
+  }
+
+  sendRequest(getUrl:URL) {
+    console.log('sending');
     console.log(getUrl.href);
-
+    var me = this;
     // Send Job as Request
     // if just got inputs for execute, new popup to fill out input fields
     if (me.req == 'executeInputs') {
@@ -279,7 +288,7 @@ class HySDSWidget extends Widget {
         }
       });
     // if set result text to response
-    } else if ( !(notImplemented.includes(me.req) && !skip)){
+    } else if ( !(notImplemented.includes(me.req) )){
       request('get', getUrl.href).then((res: RequestResult) => {
         if(res.ok){
           let json_response:any = res.json();
@@ -294,6 +303,16 @@ class HySDSWidget extends Widget {
       console.log("not implemented yet");
     }
     return;
+  }
+
+  // submit the job
+  // overrides the resolution of popup dialog
+  getValue() {
+    this.buildRequestUrl().then((url) => {
+      console.log('then');
+      console.log(url);
+      this.sendRequest(url);
+    });
   }
 }
 
