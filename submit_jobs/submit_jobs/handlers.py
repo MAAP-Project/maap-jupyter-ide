@@ -63,7 +63,7 @@ class RegisterAlgorithmHandler(IPythonHandler):
 				params[f] = ''
 		# print(params)
 
-		if params['repo_url'] == ''
+		if params['repo_url'] == '':
 			json_file = WORKDIR+"/submit_jobs/register.json"
 			params.pop('repo_url')
 		else:
@@ -110,12 +110,35 @@ class RegisterAlgorithmHandler(IPythonHandler):
 class RegisterAutoHandler(IPythonHandler):
 	def get(self):
 		# ==================================
-		# Part 1: GitLab Token
+		# Part 1: Get Notebook Information Processed in UI
 		# ==================================
-		# check if GitLab token has been set
+		fields = ['algo_name','lang','nb_name']
+		params = {}
+		for f in fields:
+			try:
+				arg = self.get_argument(f,'').strip()
+				params[f] = arg
+			except:
+				params[f] = ''
+
+		print(params)
+		algo_name = params['algo_name']
+		lang = params['lang']
+		nb_name = params['nb_name']
+		
+		# ==================================
+		# Part 2: GitLab Token
+		# ==================================
+		# set key and path
 		ENV_TOKEN_KEY = 'gitlab_token'
-		git_url = str(subprocess.check_output("git remote get-url origin", shell=True).strip())
-		# print(git_url)
+		# proj_path = ('/').join(tab['path'].split('/')[:-1])
+		proj_path = ('/').join(nb_name.split('/')[:-1])
+		if proj_path != '':
+			os.chdir(proj_path)
+		
+		# check if GitLab token has been set
+		git_url = subprocess.check_output("git remote get-url origin", shell=True).decode('utf-8').strip()
+		print(git_url)
 		token = git_url.split("repo.nasa")[0][:-1]
 		ind = token.find("gitlab-ci-token:")
 		notoken = True
@@ -132,33 +155,22 @@ class RegisterAutoHandler(IPythonHandler):
 			# if saved in environment, set for user
 			if ENV_TOKEN_KEY in os.environ:
 				token = os.environ[ENV_TOKEN_KEY]
+				print(token)
 				url = git_url.split("//")
-				new_url = "{}//gitlab-ci-token:${}@{}".format(url[0],ENV_TOKEN_KEY,url[1])
-				status = subprocess.check_output("git remote set-url origin {}".format(new_url))
+				new_url = "{pre}//gitlab-ci-token:{tkn}@{rep}".format(pre=url[0],tkn=token,rep=url[1])
+				status = subprocess.call("git remote set-url origin {}".format(new_url), shell=True)
 
 				if status != 0:
 					self.finish({"status_code": 412, "result": "Error {} setting GitLab Token".format(status)})
+					return
 			else:
 				self.finish({"status_code": 412, "result": "Error: GitLab Token not set in environment"})
+				return
+
+		# self.finish({"status_code":200,"result":"finish checking token"})
 
 		# ==================================
-		# Part 2: Get Notebook Information
-		# ==================================
-		# get list of running servers
-		servers = list(list_running_servers())
-		# buid API call with workspace url
-		lk = 'https://che-k8s.maap.xyz'+servers[0]['base_url']+'api/sessions'
-
-		# send request for server information
-		r = requests.get(lk)
-		resp = json.loads(r.text)
-
-		# filter to current notebook
-		current = list(filter(lambda e: e['kernel']['execution_state'] in ['busy'],resp))
-		tab = current[0]
-
-		# ==================================
-		# Part 2: Check if User Has Committed
+		# Part 3: Check if User Has Committed
 		# ==================================
 		# get git status
 		git_status_out = subprocess.check_output("git status --porcelain", shell=True).decode("utf-8")
@@ -167,14 +179,18 @@ class RegisterAutoHandler(IPythonHandler):
 		unsaved = list(filter(lambda e: (('.ipynb' in e) or ('.py' in e)) and ((e[0] == 'M') or (e[0] == '?')), git_status))
 		if len(unsaved) != 0:
 			self.finish({"status_code": 412, "result": "Error: Notebook(s) and/or script(s) have not been committed\n{}".format(git_status_out)})
+			return;
+
+		self.finish({"status_code" : 200, "result": "Done checking commit"})
+		return
 
 		# ==================================
-		# Part 3: Extract Required Parameters
+		# Part 4: Extract Required Parameters
 		# ==================================
 		# grab info necessary for registering
-		algo_name = tab['notebook']['path'].split('/').replace(' ', '_')
-		lang = tab['kernel']['name']
-		nb_name = tab['path'] 
+		# algo_name = tab['notebook']['path'].split('/').replace(' ', '_')
+		# lang = tab['kernel']['name']
+		# nb_name = tab['path'] 
 		git_url = str(subprocess.check_output("git remote get-url origin", shell=True).strip())
 
 		# convert python notebook to python script
@@ -183,9 +199,11 @@ class RegisterAutoHandler(IPythonHandler):
 			self.finish({"status_code": 500, "result": "Could not convert .ipynb to .py"})
 
 		run_cmd = '/{} {}'.format(lang,nb_name.replace('.ipynb','.py'))
+
+		# self.finish({"status_code" : 200, "result": "Done getting params"})
 		
 		# ==================================
-		# Part 4: Build & Send Request
+		# Part 5: Build & Send Request
 		# ==================================
 		json_file = WORKDIR+"/submit_jobs/register_url.json"
 		url = BASE_URL+'/mas/algorithm'
@@ -198,7 +216,7 @@ class RegisterAutoHandler(IPythonHandler):
 		# print(req_json)
 
 		# ==================================
-		# Part 5: Check Response
+		# Part 6: Check Response
 		# ==================================
 		try:
 			r = requests.post(
@@ -219,6 +237,7 @@ class RegisterAutoHandler(IPythonHandler):
 				self.finish({"status_code": r.status_code, "result": r.reason})
 		except:
 			self.finish({"status_code": 400, "result": "Bad Request"})
+
 
 class GetCapabilitiesHandler(IPythonHandler):
 	def get(self):
