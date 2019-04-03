@@ -1,5 +1,5 @@
 import { ICellTools, INotebookTracker } from "@jupyterlab/notebook";
-
+import { PageConfig } from '@jupyterlab/coreutils'
 
 class InjectSSH {
   constructor() {
@@ -15,6 +15,17 @@ class InjectSSH {
     }).error(function() {
       console.log('Failed to load profile.');
     });
+
+    var getUrl = new URL(PageConfig.getBaseUrl() + "inject_ssh/inject_public_key");
+    getUrl.searchParams.append("key", key);
+
+    // Make call to back end
+    var xhr = new XMLHttpRequest();
+    xhr.onload = function() {
+      console.log("SSH Key injected")
+    };
+    xhr.open("GET", getUrl.href, true);
+    xhr.send(null);
   }
 }
 
