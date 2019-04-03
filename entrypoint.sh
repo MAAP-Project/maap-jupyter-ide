@@ -17,7 +17,7 @@ perl -pi -e "s|web_app.settings\['base_url'\]|'/'|g" /pull_projects/pull_project
 perl -pi -e "s|web_app.settings\['base_url'\]|'/'|g" /show_ssh_info/show_ssh_info/__init__.py
 perl -pi -e "s|web_app.settings\['base_url'\]|'/'|g" /edsc_extension/edsc_extension/__init__.py
 #perl -pi -e "s|web_app.settings\['base_url'\]|'/'|g" /jupyterlab_iframe/jupyterlab_iframe/__init__.py
-perl -pi -e "s|web_app.settings\['base_url'\]|'/'|g" /show_ssh_info/inject_ssh/__init__.py
+perl -pi -e "s|web_app.settings\['base_url'\]|'/'|g" /inject_ssh/inject_ssh/__init__.py
 perl -pi -e "s|web_app.settings\[\"base_url\"\]|'/'|g" /jupyterlab-git/jupyterlab_git/handlers.py
 perl -pi -e "s|web_app.settings\['base_url'\]|'/'|g" /submit_jobs/submit_jobs/__init__.py
 
