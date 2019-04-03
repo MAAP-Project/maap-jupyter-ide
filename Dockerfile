@@ -43,11 +43,11 @@ RUN cd /jupyterlab-git && pip install -e .
 RUN cd /jupyterlab-git && jupyter serverextension enable --py jupyterlab_git --sys-prefix
 
 ## jlab show ssh extension
-#COPY inject_ssh /inject_ssh
-#RUN cd /inject_ssh && npm run build
-#RUN cd /inject_ssh && jupyter labextension link .
-#RUN cd /inject_ssh && pip install -e .
-#RUN cd /inject_ssh && jupyter serverextension enable --py inject_ssh --sys-prefix
+#COPY OLD_inject_ssh /OLD_inject_ssh
+#RUN cd /OLD_inject_ssh && npm run build
+#RUN cd /OLD_inject_ssh && jupyter labextension link .
+#RUN cd /OLD_inject_ssh && pip install -e .
+#RUN cd /OLD_inject_ssh && jupyter serverextension enable --py OLD_inject_ssh --sys-prefix
 
 # jlab submit_jobs extension
 COPY submit_jobs /submit_jobs
@@ -57,9 +57,11 @@ RUN cd /submit_jobs && pip install -e .
 RUN cd /submit_jobs && jupyter serverextension enable --py submit_jobs --sys-prefix
 
 # jlab show ssh extension
-COPY jupyterlab-solutions /jupyterlab-solutions
-RUN cd /jupyterlab-solutions && npm install
-RUN cd /jupyterlab-solutions && jupyter labextension link .
+COPY inject_ssh /inject_ssh
+RUN cd /inject_ssh && npm install
+RUN cd /inject_ssh && jupyter labextension link .
+RUN cd /inject_ssh && pip install -e .
+RUN cd /inject_ssh && jupyter serverextension enable --py inject_ssh --sys-prefix
 
 RUN touch /root/.bashrc && echo "cd /projects >& /dev/null" >> /root/.bashrc
 

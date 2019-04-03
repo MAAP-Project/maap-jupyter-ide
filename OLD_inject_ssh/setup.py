@@ -8,7 +8,7 @@ with open(path.join(here, 'requirements.txt'), encoding='utf-8') as f:
     requires = f.read().split()
 
 setup(
-    name="inject_ssh",
+    name="OLD_inject_ssh",
     author="Maya DeBellis",
     author_email="Maya.DeBellis@jpl.nasa.gov",
     version="0.1.0",
