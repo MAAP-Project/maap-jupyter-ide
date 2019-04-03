@@ -9,7 +9,7 @@ import { request, RequestResult } from './request';
 // import * as getKeycloak from "./getKeycloak";
 // import getKeycloak = require("./getKeycloak");
 
-declare var _keycloak: any;
+//declare var _keycloak: any;
 declare var Window: any;
 
 // declare global {
@@ -23,7 +23,7 @@ export class InjectSSH extends Widget {
 
     let key = "err";
     console.log(Window);
-    console.log(_keycloak);
+    //console.log(_keycloak);
     console.log(Window._keycloak);
     Window._keycloak.loadUserInfo().success(function(profile:any) {
       console.log(profile);
@@ -44,7 +44,7 @@ export class InjectSSH extends Widget {
     body.style.display = 'flex';
     body.style.flexDirection = 'column';
     console.log("going to call backend in key injection");
-    request('get', PageConfig.getBaseUrl() + "inject_ssh/inject_public_key", {"key": key})
+    request('get', PageConfig.getBaseUrl() + "OLD_inject_ssh/inject_public_key", {"key": key})
         .then((res: RequestResult) => {
       if(res.ok){
         console.log("SSH Key injected")
@@ -82,7 +82,7 @@ function activate_inject(app: JupyterLab,
                   launcher: ILauncher | null) {
 
    // Add an application command
-  const open_command = 'inject_ssh:inject';
+  const open_command = 'OLD_inject_ssh:inject';
 
   app.commands.addCommand(open_command, {
     label: 'Inject User SSH Key',
@@ -99,7 +99,7 @@ function activate_inject(app: JupyterLab,
 
 
 const inject_extension: JupyterLabPlugin<void> = {
-  id: 'inject_ssh',
+  id: 'OLD_inject_ssh',
   autoStart: true,
   requires: [ICommandPalette],
   optional: [ILauncher],
