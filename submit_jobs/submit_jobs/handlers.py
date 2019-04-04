@@ -197,17 +197,19 @@ class RegisterAutoHandler(IPythonHandler):
 		algo_name = ('.').join(algo_name.split('.')[:-1])
 		# lang = tab['kernel']['name']
 		# nb_name = tab['path'] 
-		git_url = str(subprocess.check_output("git remote get-url origin", shell=True).strip())
+		git_url = str(subprocess.check_output("git remote get-url origin", shell=True).decode('utf-8').strip())
 
 		# convert python notebook to python script
 		status = subprocess.call("ipython nbconvert --to python GetKernelData.ipynb", shell=True)
 		if status != 0:
 			self.finish({"status_code": 500, "result": "Could not convert .ipynb to .py"})
+			return
 
 		# push converted python script to git
 		status = subprocess.call("git add GetKernelData.py\ngit commit -m 'commit converted notebook'\ngit push", shell=True)
 		if status !=0:
-			self.finish({"status_code": 500, "result": "Could not commit converted notebook to git"})			
+			self.finish({"status_code": 500, "result": "Could not commit converted notebook to git"})	
+			return		
 
 		run_cmd = '{} {}'.format(lang,nb_name.replace('.ipynb','.py'))
 
@@ -237,8 +239,8 @@ class RegisterAutoHandler(IPythonHandler):
 
 		req_json = req_json.format(**params)
 		# print(req_json)
-		self.finish({"status_code" : 200, "result": json.dumps(req_json)})
-		return
+		# self.finish({"status_code" : 200, "result": json.dumps(req_json)})
+		# return
 
 		# ==================================
 		# Part 6: Send Request & Check Response
