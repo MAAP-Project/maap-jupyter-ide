@@ -176,7 +176,7 @@ class RegisterAutoHandler(IPythonHandler):
 		git_status_out = subprocess.check_output("git status --porcelain", shell=True).decode("utf-8")
 		git_status = git_status_out.splitlines()
 		git_status = [e.strip() for e in git_status]
-		unsaved = list(filter(lambda e: (('.ipynb' in e) or ('.py' in e)) and ((e[0] == 'M') or (e[0] == '?')), git_status))
+		unsaved = list(filter(lambda e: (( (e.split('.')[-1] in ['ipynb','py']) and (e[0] in ['M','?']), git_status))
 		if len(unsaved) != 0:
 			self.finish({"status_code": 412, "result": "Error: Notebook(s) and/or script(s) have not been committed\n{}".format(git_status_out)})
 			return;
