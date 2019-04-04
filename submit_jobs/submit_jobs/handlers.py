@@ -121,7 +121,7 @@ class RegisterAutoHandler(IPythonHandler):
 			except:
 				params[f] = ''
 
-		print(params)
+		# print(params)
 		algo_name = params['algo_name']
 		lang = params['lang']
 		nb_name = params['nb_name']
@@ -131,7 +131,6 @@ class RegisterAutoHandler(IPythonHandler):
 		# ==================================
 		# set key and path
 		ENV_TOKEN_KEY = 'gitlab_token'
-		# proj_path = ('/').join(tab['path'].split('/')[:-1])
 		proj_path = ('/').join(['/projects']+nb_name.split('/')[:-1])
 		# if proj_path != '/':
 		os.chdir(proj_path)
@@ -176,19 +175,26 @@ class RegisterAutoHandler(IPythonHandler):
 		git_status_out = subprocess.check_output("git status --porcelain", shell=True).decode("utf-8")
 		git_status = git_status_out.splitlines()
 		git_status = [e.strip() for e in git_status]
-		unsaved = list(filter(lambda e: (( (e.split('.')[-1] in ['ipynb','py']) and (e[0] in ['M','?']), git_status))
+
+		# filter for unsaved python files
+		unsaved = list(filter(lambda e: ( (e.split('.')[-1] in ['ipynb','py']) and (e[0] in ['M','?']) ), git_status))
+
+		# if there are unsaved python files, user needs to commit
 		if len(unsaved) != 0:
 			self.finish({"status_code": 412, "result": "Error: Notebook(s) and/or script(s) have not been committed\n{}".format(git_status_out)})
-			return;
+			return
 
-		self.finish({"status_code" : 200, "result": "Done checking commit"})
-		return
+		# self.finish({"status_code" : 200, "result": "Done checking commit"})
+		# return
 
 		# ==================================
-		# Part 4: Extract Required Parameters
+		# Part 4: Extract Required Register Parameters
 		# ==================================
-		# grab info necessary for registering
-		# algo_name = tab['notebook']['path'].split('/').replace(' ', '_')
+		# sanitize algo_name input
+		# 	not allowed: '/' ' ' '"'
+		# 	remove filename extension
+		algo_name = algo_name.replace('/',':').replace(' ', '_').replace('"','')
+		algo_name = ('.').join(algo_name.split('.')[:-1])
 		# lang = tab['kernel']['name']
 		# nb_name = tab['path'] 
 		git_url = str(subprocess.check_output("git remote get-url origin", shell=True).strip())
@@ -198,12 +204,21 @@ class RegisterAutoHandler(IPythonHandler):
 		if status != 0:
 			self.finish({"status_code": 500, "result": "Could not convert .ipynb to .py"})
 
-		run_cmd = '/{} {}'.format(lang,nb_name.replace('.ipynb','.py'))
+		# push converted python script to git
+		status = subprocess.call("git add GetKernelData.py\ngit commit -m 'commit converted notebook'\ngit push", shell=True)
+		if status !=0:
+			self.finish({"status_code": 500, "result": "Could not commit converted notebook to git"})			
 
-		# self.finish({"status_code" : 200, "result": "Done getting params"})
+		run_cmd = '{} {}'.format(lang,nb_name.replace('.ipynb','.py'))
+
+		# looks like:
+		# 	algo_name 		che-test:GetKernelData
+		# 	run_cmd 		python3 che-test/GetKernelData.py
+		# self.finish({"status_code" : 200, "result": "Done getting params\n{}\n{}".format(algo_name,run_cmd)})
+		# return
 		
 		# ==================================
-		# Part 5: Build & Send Request
+		# Part 5: Build Request
 		# ==================================
 		json_file = WORKDIR+"/submit_jobs/register_url.json"
 		url = BASE_URL+'/mas/algorithm'
@@ -212,11 +227,21 @@ class RegisterAutoHandler(IPythonHandler):
 		with open(json_file) as jso:
 			req_json = jso.read()
 
+		# rebuild params dictionary with required parameters for registering
+		# some may have been modified since initial UI processing
+		params = {}
+		params["repo_url"] = git_url
+		params["run_cmd"] = run_cmd
+		params["algo_name"] = algo_name
+		params["algo_desc"] = ''
+
 		req_json = req_json.format(**params)
 		# print(req_json)
+		self.finish({"status_code" : 200, "result": json.dumps(req_json)})
+		return
 
 		# ==================================
-		# Part 6: Check Response
+		# Part 6: Send Request & Check Response
 		# ==================================
 		try:
 			r = requests.post(
@@ -238,11 +263,9 @@ class RegisterAutoHandler(IPythonHandler):
 		except:
 			self.finish({"status_code": 400, "result": "Bad Request"})
 
-
 class GetCapabilitiesHandler(IPythonHandler):
 	def get(self):
 		# No Required Arguments
-
 		# ==================================
 		# Part 1: Build & Send Request
 		# ==================================
@@ -255,7 +278,7 @@ class GetCapabilitiesHandler(IPythonHandler):
 		)
 
 		# ==================================
-		# Part 3: Check & Parse Response
+		# Part 2: Check & Parse Response
 		# ==================================
 		try:
 			try:
