@@ -17,7 +17,7 @@ class InjectKeyHandler(IPythonHandler):
             os.makedirs(".ssh")
 
         # Inject key into authorized keys
-        cmd = "echo " + public_key + " >> .ssh/authorized_keys"
+        cmd = "echo " + public_key + " >> .ssh/authorized_keys && chmod 700 .ssh/ && chmod 600 .ssh/authorized_keys"
         print(cmd)
         subprocess.check_output(cmd, shell=True)
         os.chdir('/projects')
