@@ -1,5 +1,5 @@
 {
-  "name": "inject_ssh",
+  "name": "OLD_inject_ssh",
   "version": "0.1.0",
   "description": "Inject a users ssh key into their workspace upon launch of Jupyter IDE",
   "keywords": [
