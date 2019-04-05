@@ -1,4 +1,3 @@
+export function getUserInfo(): any;
+export function getToken(): any;
 
-//declare module "getKeycloak" {
-    export function getKeycloak(): any;
-//}

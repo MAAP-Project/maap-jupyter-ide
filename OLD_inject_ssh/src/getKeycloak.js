@@ -1,8 +1,8 @@
 
-export var getKeycloak = function() {
+export var getUserInfo = function() {
 
-    console.log(Window);
-    Window._keycloak.loadUserInfo().success(function(profile) {
+    console.log(window.parent);
+    window.parent._keycloak.loadUserInfo().success(function(profile) {
       console.log(profile);
       // key = profile['public_ssh_keys'];
       return profile;
@@ -12,4 +12,6 @@ export var getKeycloak = function() {
     });
 };
 
-// exports.getKeycloak = getKeycloak;
+export var getToken = function() {
+    return window.parent._keycloak.idToken;
+};
