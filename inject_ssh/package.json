@@ -27,7 +27,7 @@
     "url": "https://github.com/"
   },
   "scripts": {
-    "build": "npm run build"
+    "build": "npm install"
   },
   "dependencies": {
     "@jupyterlab/application": "^0.19.1",
