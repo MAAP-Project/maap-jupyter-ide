@@ -56,8 +56,6 @@ class HySDSWidget extends Widget {
       case 'registerAuto':
         this.popup_title = "Register Algorithm";
         console.log('registerAuto');
-        var msg = document.createElement("Label");
-        msg.innerHTML = "Your Docker container must have cloned the repository in the following path: /app";
         this.node.appendChild(msg);
         break;
       case 'getCapabilities':
@@ -104,6 +102,11 @@ class HySDSWidget extends Widget {
     var title = document.createElement('div');
     title.innerHTML = this.popup_title+"\n";
     this.node.appendChild(title);
+
+    if (this.popup_title == "registerAuto") {
+      var msg = document.createElement("Label");
+      msg.innerHTML = "Your Docker container must have cloned the repository in the following path: /app";
+    }
 
     // BREAK
     var x = document.createElement("BR");
