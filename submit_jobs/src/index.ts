@@ -4,6 +4,7 @@ import { ICommandPalette, Dialog } from '@jupyterlab/apputils';
 import { PageConfig } from '@jupyterlab/coreutils'
 import { ILauncher } from '@jupyterlab/launcher';
 import { request, RequestResult } from './request';
+// import { INotebookTracker, Notebook, NotebookPanel } from '@jupyterlab/notebook';
 // import * as $ from "jquery";
 // import { format } from "xml-formatter";
 import * as data from './fields.json';
@@ -55,6 +56,9 @@ class HySDSWidget extends Widget {
       case 'registerAuto':
         this.popup_title = "Register Algorithm";
         console.log('registerAuto');
+        var msg = document.createElement("Label");
+        msg.innerHTML = "Your Docker container must have cloned the repository in the following path: /app";
+        this.node.appendChild(msg);
         break;
       case 'getCapabilities':
         this.popup_title = "Get List of Capabilities";
