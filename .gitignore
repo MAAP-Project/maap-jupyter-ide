@@ -3,4 +3,4 @@ jupyterlab_iframe/maap-py/
 .idea/
 *.pyc
 *.cpython-36.pyc
-*/node_modules/*
+inject_ssh/node_modules/*
