@@ -620,7 +620,8 @@ class DescribeProcessHandler(IPythonHandler):
 		if all(e == '' for e in list(params.values())):
 			complete = False
 
-		# print(params)
+		print(params)
+		print(complete)
 
 		# ==================================
 		# Part 2: Build & Send Request
@@ -647,7 +648,11 @@ class DescribeProcessHandler(IPythonHandler):
 
 		if r.status_code == 200:
 			try:
-				if complete:
+				if 'AttributeError' in r.text:
+					# print('attribute error')
+					result = 'Bad Request\nThe provided parameters were\n\talgo_id:{}\n\tversion:{}\n'.format(params['algo_id'],params['version'])
+					self.finish({"status_code": 400, "result": result})
+				elif complete:
 					# parse out capability names & request info
 					rt = ET.fromstring(r.text)
 					attrib = [getParams(e) for e in rt[0][0]]
@@ -702,8 +707,9 @@ class ExecuteInputsHandler(IPythonHandler):
 		if all(e == '' for e in list(params.values())):
 			complete = False
 
+		print(params)
 		params2 = copy.deepcopy(params)
-		params2.pop('identifier')
+		# params2.pop('identifier')
 		# print(params)
 
 		# ==================================

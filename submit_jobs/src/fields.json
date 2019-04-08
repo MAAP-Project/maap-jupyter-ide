@@ -3,7 +3,7 @@
 	"registerAuto": [],
 	"getCapabilities": [],
 	"describeProcess": ["algo_id","version"],
-	"executeInputs": ["identifier","algo_id","version"],
+	"executeInputs": ["algo_id","version"],
 	"execute" : ["identifier","algo_id","version","inputs"],
 	"getStatus": ["job_id"],
 	"getResult": ["job_id"],
