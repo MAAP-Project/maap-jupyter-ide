@@ -12,11 +12,12 @@ class Result(dict):
     """
     _location = None
 
-    #TODO: add destpath as config setting
-    def getLocalPath(self, destpath="."):
+    # TODO: add destpath as config setting
+    def getLocalPath(self, destpath=".", overwrite=False):
         """
         Download the dataset into file system
-        :param destPath: use the current directory as default
+        :param destpath: use the current directory as default
+        :param overwrite: don't download by default if the target file exists
         :return:
         """
         url = self._location
@@ -29,9 +30,10 @@ class Result(dict):
         elif url.startswith('s3'):
             o = urlparse(url)
             filename = url[url.rfind("/") + 1:]
-            s3 = boto3.client('s3', aws_access_key_id=self._awsKey, aws_secret_access_key=self._awsSecret)
-            s3.download_file(o.netloc, o.path.lstrip('/'), filename)
-            return os.getcwd() + '/' + filename
+            if not overwrite and not os.path.isfile(destpath + "/" + filename):
+                s3 = boto3.client('s3', aws_access_key_id=self._awsKey, aws_secret_access_key=self._awsSecret)
+                s3.download_file(o.netloc, o.path.lstrip('/'), destpath + "/" + filename)
+            return destpath + '/' + filename
         else:
             r = requests.get(url, stream=True)
             r.raw.decode_content = True
@@ -55,6 +57,7 @@ class Result(dict):
         """
         return self['Granule']['GranuleUR'].ljust(70) + 'Updated ' + self['Granule']['LastUpdate'] + ' (' + self['collection-concept-id'] + ')'
 
+
 class Collection(Result):
     def __init__(self, metaResult, maap_host):
         for k in metaResult:
@@ -62,6 +65,7 @@ class Collection(Result):
 
         self._location = 'https://{}/search/concepts/{}.umm-json'.format(maap_host, metaResult['concept-id'])
         self._downloadname = metaResult['Collection']['ShortName']
+
 
 class Granule(Result):
     def __init__(self, metaResult, awsAccessKey, awsAccessSecret):
