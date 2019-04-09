@@ -193,6 +193,7 @@ class RegisterAutoHandler(IPythonHandler):
 		# sanitize algo_name input
 		# 	not allowed: '/' ' ' '"'
 		# 	remove filename extension
+		file_name = algo_name.split('/')[-1]
 		algo_name = algo_name.replace('/',':').replace(' ', '_').replace('"','')
 		algo_name = ('.').join(algo_name.split('.')[:-1])
 		# lang = tab['kernel']['name']
@@ -200,13 +201,13 @@ class RegisterAutoHandler(IPythonHandler):
 		git_url = str(subprocess.check_output("git remote get-url origin", shell=True).decode('utf-8').strip())
 
 		# convert python notebook to python script
-		status = subprocess.call("ipython nbconvert --to python GetKernelData.ipynb", shell=True)
+		status = subprocess.call("ipython nbconvert --to python {}".format(file_name), shell=True)
 		if status != 0:
 			self.finish({"status_code": 500, "result": "Could not convert .ipynb to .py"})
 			return
 
 		# push converted python script to git
-		status = subprocess.call("git add GetKernelData.py\ngit commit -m 'commit converted notebook'\ngit push", shell=True)
+		status = subprocess.call("git add {}\ngit commit -m 'commit converted notebook'\ngit push".format(file_name.replace('ipynb','py')), shell=True)
 		if status !=0:
 			self.finish({"status_code": 500, "result": "Could not commit converted notebook to git"})	
 			return		
