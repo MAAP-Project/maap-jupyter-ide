@@ -15,19 +15,22 @@ except ImportError:
 
 
 class MAAP(object):
-    def __init__(self, configFilePath=''):
-        """
-        :param configFilePath: The config file containing the credentials to make CRUD requests to CMR (extention .cfg)
-        These con
-        """
-        print(configFilePath)
+    def __init__(self):
+
         self.config = ConfigParser()
-        if os.path.isfile(configFilePath) and os.access(configFilePath, os.R_OK ):
-            # Open the config file as normal
-            self.config.read(configFilePath)
-            self.configFilePath = configFilePath
-        else:
-            raise IOError("The config file can't be opened for reading")
+
+        config_paths = list(map(self._get_config_path, [os.curdir, os.path.expanduser("~"), os.environ.get("MAAP_CONF") or '.']))
+
+        for loc in config_paths:
+            try:
+                with open(loc) as source:
+                    self.config.read_file(source)
+                    break
+            except IOError:
+                pass
+
+        if not self.config.has_option('service', 'maap_host'):
+            raise IOError("No maap.cfg file found. Locations checked: " + '; '.join(config_paths))
 
         self._MAAP_TOKEN = self.config.get("service", "maap_token")
         self._PAGE_SIZE = self.config.getint("request", "page_size")
@@ -44,6 +47,9 @@ class MAAP(object):
         self._AWS_ACCESS_KEY = self.config.get("aws", "aws_access_key_id")
         self._AWS_ACCESS_SECRET = self.config.get("aws", "aws_secret_access_key")
         self._INDEXED_ATTRIBUTES = json.loads(self.config.get("search", "indexed_attributes"))
+
+    def _get_config_path(self, directory):
+        return os.path.join(directory, "maap.cfg")
 
     def _get_search_params(self, **kwargs):
         mapped = self._map_indexed_attributes(**kwargs)
@@ -146,6 +152,8 @@ class MAAP(object):
                 params.append(key[:-2] + "=\"" + "|".join(value) + "\"")
             elif key == "bounding_box":
                 params.append(key + "=\"" + value + "\"")
+            elif key == "p":
+                params.append("collection_concept_id=\"" + value.replace("!", "|") + "\"")
 
         result = variable_name + ".searchGranule(" + ", ".join(params) + ")"
 

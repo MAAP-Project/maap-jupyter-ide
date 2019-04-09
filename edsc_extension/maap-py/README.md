@@ -23,7 +23,7 @@ Then, run:
 ```python
 $ python
 >>> from maap.maap import MAAP
->>> maap = MAAP('maap.cfg') 
+>>> maap = MAAP() 
 
 >>> granules = maap.searchGranule(sitename='lope', instrument='uavsar')
 >>> for res in granules:
