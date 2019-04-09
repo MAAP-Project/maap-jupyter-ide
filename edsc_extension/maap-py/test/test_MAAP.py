@@ -6,9 +6,8 @@ from maap.utils.TokenHandler import TokenHandler
 class TestMAAP(TestCase):
     @classmethod
     def setUpClass(cls):
-        config_file_path = "../maap.cfg"
 
-        cls.maap = MAAP(config_file_path)
+        cls.maap = MAAP()
 
         cls._test_instrument_name_uavsar = 'UAVSAR'
         cls._test_instrument_name_lvis= 'lvis'
@@ -37,6 +36,13 @@ class TestMAAP(TestCase):
         results = self.maap.searchGranule(
             instrument="LVIS|UAVSAR",
             platform="AIRCRAFT")
+        self.assertTrue('concept-id' in results[0].keys())
+
+    def test_searchFromEarthdata(self):
+        results = self.maap.searchCollection(
+            instrument="LVIS|UAVSAR",
+            platform="AIRCRAFT|B-200|COMPUTERS",
+            data_center="MAAP Data Management Team|ORNL_DAAC")
         self.assertTrue('concept-id' in results[0].keys())
 
     def test_searchCollection(self):
