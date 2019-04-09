@@ -12,17 +12,29 @@ class InjectKeyHandler(IPythonHandler):
         public_key = self.get_argument('key', '')
 
         print("=== Injecting SSH KEY ===")
+
+        # Check if .ssh directory exists
         os.chdir('/root')
         if not os.path.exists(".ssh"):
             os.makedirs(".ssh")
 
-        # Inject key into authorized keys
-        cmd = "echo " + public_key + " >> .ssh/authorized_keys && chmod 700 .ssh/ && chmod 600 .ssh/authorized_keys"
-        print(cmd)
-        subprocess.check_output(cmd, shell=True)
-        os.chdir('/projects')
-        print("====== SUCCESS ========")
-        # self.finish()
+        # Check if key already in file
+        with open('.ssh/authorized_keys', 'r') as f:
+            linelist = f.readlines()
+
+        found = False
+        for line in linelist:
+            if public_key == line:
+                print "Key already in authorized_keys"
+                found = True
+
+        # If not in file, inject key into authorized keys
+        if not found:
+            cmd = "echo " + public_key + " >> .ssh/authorized_keys && chmod 700 .ssh/ && chmod 600 .ssh/authorized_keys"
+            print(cmd)
+            subprocess.check_output(cmd, shell=True)
+            os.chdir('/projects')
+            print("====== SUCCESS ========")
 
 
 def load_jupyter_server_extension(nb_server_app):
