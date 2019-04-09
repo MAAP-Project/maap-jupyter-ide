@@ -33,6 +33,7 @@ RUN cd /edsc_extension && jupyter labextension link .
 RUN cd /edsc_extension && pip install -e .
 RUN cd /edsc_extension/maap-py && python setup.py install
 RUN cd /edsc_extension && jupyter serverextension enable --py edsc_extension --sys-prefix
+ENV MAAP_CONF='/edsc_extension/maap-py/maap.cfg'
 
 # install git extension
 COPY jupyterlab-git /jupyterlab-git
