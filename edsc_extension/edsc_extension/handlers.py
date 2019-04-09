@@ -35,7 +35,7 @@ class GetCollectionsHandler(IPythonHandler):
     def get(self):
         #print(subprocess.check_output('ls',shell=True))
         # do stuff
-        maap = MAAP(PATH_TO_MAAP_CFG)
+        maap = MAAP()
         #maap = MAAP('/home/ubuntu/extensions/search/search/maap-py/maap.cfg')
 
         query_result = ''
@@ -75,7 +75,7 @@ class GetGranulesHandler(IPythonHandler):
 
     def get(self):
 
-        maap = MAAP(PATH_TO_MAAP_CFG)
+        maap = MAAP()
         json_obj = self.get_argument('json_obj', '')
         print("json obj", json_obj)
 
@@ -88,7 +88,7 @@ class GetGranulesHandler(IPythonHandler):
 
 class GetQueryHandler(IPythonHandler):
     def get(self):
-        maap = MAAP(PATH_TO_MAAP_CFG)
+        maap = MAAP()
         json_obj = self.get_argument('json_obj', '')
         print("json obj", json_obj)
 
