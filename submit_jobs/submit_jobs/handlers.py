@@ -648,11 +648,12 @@ class DescribeProcessHandler(IPythonHandler):
 
 		if r.status_code == 200:
 			try:
-				if 'AttributeError' in r.text:
-					# print('attribute error')
-					result = 'Bad Request\nThe provided parameters were\n\talgo_id:{}\n\tversion:{}\n'.format(params['algo_id'],params['version'])
-					self.finish({"status_code": 400, "result": result})
-				elif complete:
+				# if 'AttributeError' in r.text:
+				# 	# print('attribute error')
+				# 	result = 'Bad Request\nThe provided parameters were\n\talgo_id:{}\n\tversion:{}\n'.format(params['algo_id'],params['version'])
+				# 	self.finish({"status_code": 400, "result": result})
+				# elif complete:
+				if complete:
 					# parse out capability names & request info
 					rt = ET.fromstring(r.text)
 					attrib = [getParams(e) for e in rt[0][0]]
@@ -671,6 +672,11 @@ class DescribeProcessHandler(IPythonHandler):
 					result = 'Algorithms:\n'
 					for e in resp['algorithms']:
 						result += '\t{}:{}\n'.format(e['type'],e['version'])
+
+				if result.strip() == '':
+					result = 'Bad Request\nThe provided parameters were\n\talgo_id:{}\n\tversion:{}\n'.format(params['algo_id'],params['version'])
+					self.finish({"status_code": 400, "result": result})
+					return
 
 				# print(result)
 				self.finish({"status_code": r.status_code, "result": result})
@@ -751,21 +757,28 @@ class ExecuteInputsHandler(IPythonHandler):
 					for (identifier,typ) in ins_req:
 						result += '{identifier}:\t{typ}\n'.format(identifier=identifier,typ=typ)
 					# print(result)
-					self.finish({"status_code": r.status_code, "result": result, "ins": ins_req, "old":params})
 
 				else:
 					# print('failed 200')
-					result = 'Bad Request\nThe provided parameters were\n\tidentifier:{}\n\talgo_id:{}\n\tversion:{}\n'.format(params['identifier'],params['algo_id'],params['version'])
+					result = 'Bad Request\nThe provided parameters were\n\talgo_id:{}\n\tversion:{}\n'.format(params['algo_id'],params['version'])
 					self.finish({"status_code": 400, "result": result, "ins": [], "old":params})
+
+				if result.strip() == '':
+					result = 'Bad Request\nThe provided parameters were\n\talgo_id:{}\n\tversion:{}\n'.format(params['algo_id'],params['version'])
+					self.finish({"status_code": 400, "result": result})
+					return
+				
+				self.finish({"status_code": r.status_code, "result": result, "ins": ins_req, "old":params})
+
 			except:
-				self.finish({"status_code": r.status_code, "result": r.text, "ins": [], "old":params})
+				self.finish({"status_code": 500, "result": r.text, "ins": [], "old":params})
 
 		# malformed request will still give 500
 		elif r.status_code == 500:
 			if 'AttributeError' in r.text:
-				result = 'Bad Request\nThe provided parameters were\n\tidentifier:{}\n\talgo_id:{}\n\tversion:{}\n'.format(params['identifier'],params['algo_id'],params['version'])
+				result = 'Bad Request\nThe provided parameters were\n\talgo_id:{}\n\tversion:{}\n'.format(params['algo_id'],params['version'])
 				self.finish({"status_code": 400, "result": result, "ins": [], "old":params})
 			else:
-				self.finish({"status_code": r.status_code, "result": r.reason, "ins": [], "old":params})
+				self.finish({"status_code": 500, "result": r.reason, "ins": [], "old":params})
 		else:
 			self.finish({"status_code": 400, "result": "Bad Request", "ins": [], "old":params})
