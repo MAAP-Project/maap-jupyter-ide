@@ -270,6 +270,7 @@ class HySDSWidget extends Widget {
       request('get', getUrl.href).then((res: RequestResult) => {
         if(res.ok){
           let json_response:any = res.json();
+          // console.log(json_response['status_code']);
           console.log(json_response['result']);
 
           if (json_response['status_code'] == 200){
@@ -278,11 +279,11 @@ class HySDSWidget extends Widget {
             var new_fields = json_response['ins'];
             var old_fields = json_response['old'];
             // console.log(new_fields);
-            console.log('pre-popup');
+            // console.log('pre-popup');
             var exec = new HySDSWidget('execute',new_fields);
             exec.setOldFields(old_fields);
             popup(exec);
-            console.log('post-popup');
+            // console.log('post-popup');
           } else {
             me.response_text = json_response['result'];
             me.updateSearchResults();
@@ -316,7 +317,7 @@ class HySDSWidget extends Widget {
   // overrides the resolution of popup dialog
   getValue() {
     this.buildRequestUrl().then((url) => {
-      console.log('then');
+      // console.log('then');
       console.log(url);
       this.sendRequest(url);
     });
