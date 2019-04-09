@@ -181,7 +181,7 @@ class RegisterAutoHandler(IPythonHandler):
 
 		# if there are unsaved python files, user needs to commit
 		if len(unsaved) != 0:
-			self.finish({"status_code": 412, "result": "Error: Notebook(s) and/or script(s) have not been committed\n{}".format(git_status_out)})
+			self.finish({"status_code": 412, "result": "Error: Notebook(s) and/or script(s) have not been committed\n{}".format('\n'.join(unsaved))})
 			return
 
 		# self.finish({"status_code" : 200, "result": "Done checking commit"})
