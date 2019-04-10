@@ -2,11 +2,15 @@ import logging
 import os
 import requests
 import json
+import urllib.parse
+from mapboxgl.utils import *
+from mapboxgl.viz import *
 
 import xml.etree.ElementTree as ET
 from .Result import Collection, Granule
 from .Dictlist import Dictlist
 from .xmlParser import XmlDictConfig
+from maap.utils.Presenter import Presenter
 
 try:
     from configparser import ConfigParser
@@ -16,7 +20,6 @@ except ImportError:
 
 class MAAP(object):
     def __init__(self):
-
         self.config = ConfigParser()
 
         config_paths = list(map(self._get_config_path, [os.curdir, os.path.expanduser("~"), os.environ.get("MAAP_CONF") or '.']))
@@ -42,10 +45,13 @@ class MAAP(object):
         self._ALGORITHM_REGISTER = self.config.get("service", "algorithm_register")
         self._ALGORITHM_BUILD = self.config.get("service", "algorithm_build")
         self._JOB_STATUS = self.config.get("service", "job_status")
+        self._WMTS = self.config.get("service", "wmts")
+        self._TILER_ENDPOINT = self.config.get("service", "tiler_endpoint")
         self._MAAP_HOST = self.config.get("service", "maap_host")
 
         self._AWS_ACCESS_KEY = self.config.get("aws", "aws_access_key_id")
         self._AWS_ACCESS_SECRET = self.config.get("aws", "aws_secret_access_key")
+        self._MAPBOX_TOKEN = os.environ['MAPBOX_ACCESS_TOKEN']
         self._INDEXED_ATTRIBUTES = json.loads(self.config.get("search", "indexed_attributes"))
 
     def _get_config_path(self, directory):
@@ -186,6 +192,42 @@ class MAAP(object):
         )
         return response
 
+    def _get_browse(self, granule_ur):
+        response = requests.get(
+            url='{}/GetTile'.format(self._WMTS),
+            params=dict(granule_ur=granule_ur),
+            headers=dict(Accept='application/json')
+        )
+        return response
+
+    def _get_capabilities(self, granule_ur):
+        response = requests.get(
+            url='{}/GetCapabilities'.format(self._WMTS),
+            params=dict(granule_ur=granule_ur),
+            headers=dict(Accept='application/json')
+        )
+        return response
+
+    def show(self, granule, display_config={}):
+        granule_ur = granule['Granule']['GranuleUR']
+        browse_file = json.loads(self._get_browse(granule_ur).text)['browse']
+        capabilities = json.loads(self._get_capabilities(granule_ur).text)['body']
+        presenter = Presenter(capabilities, display_config)
+        query_params = dict(url=browse_file, **presenter.display_config)
+        qs = urllib.parse.urlencode(query_params)
+        tiles_url = f"{self._TILER_ENDPOINT}/tiles/{{z}}/{{x}}/{{y}}.png?{qs}"
+        viz = RasterTilesViz(
+            tiles_url,
+            height='800px',
+            zoom=10,
+            access_token=self._MAPBOX_TOKEN,
+            tiles_size=256,
+            tiles_bounds=presenter.bbox,
+            center=(presenter.lng, presenter.lat),
+            tiles_minzoom=presenter.minzoom,
+            tiles_maxzoom=presenter.maxzoom,
+        )
+        viz.show()
 
 if __name__ == "__main__":
     print("initialized")
