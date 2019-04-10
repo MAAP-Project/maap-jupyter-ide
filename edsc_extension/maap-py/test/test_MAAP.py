@@ -12,19 +12,26 @@ class TestMAAP(TestCase):
         cls._test_instrument_name_uavsar = 'UAVSAR'
         cls._test_instrument_name_lvis= 'lvis'
         cls._test_track_number = '001'
-        cls._test_ur = 'uavsar_AfriSAR_v1_SLC-topo'
+        cls._test_ur = 'uavsar_AfriSAR_v1-cov_lopenp_14043_16008_140_001_160225-geo_cov_4-4.bin'
         cls._test_site_name = 'lope'
 
     def test_searchGranuleByInstrumentAndTrackNumber(self):
         results = self.maap.searchGranule(
             instrument=self._test_instrument_name_uavsar,
-            track_number=self._test_track_number)
+            track_number=self._test_track_number,
+            polarization='HH')
         self.assertTrue('concept-id' in results[0].keys())
 
     def test_searchGranuleByGranuleUR(self):
         results = self.maap.searchGranule(
             granule_ur=self._test_ur)
         self.assertTrue('concept-id' in results[0].keys())
+
+    def test_granuleDownload(self):
+        results = self.maap.searchGranule(
+            granule_ur=self._test_ur)
+        download = results[0].getLocalPath('/Users/satorius/source')
+        self.assertTrue(len(download) > 0)
 
     def test_searchGranuleByInstrumentAndSiteName(self):
         results = self.maap.searchGranule(
