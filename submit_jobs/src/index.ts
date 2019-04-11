@@ -12,6 +12,7 @@ import * as data from './fields.json';
 const registerFields = data.register;
 const registerAutoFields = data.registerAuto;
 const getCapabilitiesFields = data.getCapabilities;
+const listAlgorithmsFields = data.listAlgorithms;
 const executeInputsFields = data.executeInputs;
 // const executeFields = data.execute;
 const getStatusFields = data.getStatus;
@@ -20,7 +21,7 @@ const dismissFields = data.dismiss;
 const describeProcessFields = data.describeProcess;
 // const resultFields: string[] = ['status_code', 'result'];
 const notImplemented: string[] = ['dismiss'];
-const nonXML: string[] = ['registerAuto','getResult','executeInputs','getStatus','execute','describeProcess','getCapabilities','register'];
+const nonXML: string[] = ['listAlgorithms','registerAuto','getResult','executeInputs','getStatus','execute','describeProcess','getCapabilities','register'];
 
 // -----------------------
 // HySDS stuff
@@ -85,6 +86,9 @@ class HySDSWidget extends Widget {
       case 'describeProcess':
         this.popup_title = "Describe Process";
         console.log('describeProcess');
+      case 'listAlgorithms':
+        this.popup_title = "List Algorithms";
+        console.log('listAlgorithms');
     }
     // console.log(this.fields);
 
@@ -416,10 +420,10 @@ export function showDialog<T>(
   return;
 }
 
-export function popup(b:any): void {
+export function popup(b:HySDSWidget): void {
   if ( !(notImplemented.includes(b.req) )){ 
     showDialog({
-      title: 'Submit Request:',
+      title: b.popup_title,
       body: b,
       focusNodeSelector: 'input',
       buttons: [Dialog.okButton({ label: 'Ok' }), Dialog.cancelButton({ label : 'Cancel'})]
@@ -544,6 +548,21 @@ export function activateDescribe(app: JupyterLab,
   palette.addItem({command: open_command, category: 'DPS'});
   console.log('HySDS Describe Job is activated!');
 }
+export function activateList(app: JupyterLab, 
+                        palette: ICommandPalette, 
+                        restorer: ILauncher | null): void{
+  const open_command = 'hysds: list-algorithms';
+
+  app.commands.addCommand(open_command, {
+    label: 'List Algorithms',
+    isEnabled: () => true,
+    execute: args => {
+      popup(new HySDSWidget('listAlgorithms',listAlgorithmsFields));
+    }
+  });
+  palette.addItem({command: open_command, category: 'DPS'});
+  console.log('HySDS Describe Job is activated!');
+}
 
 export function activateRegisterAuto(app: JupyterLab, 
                         palette: ICommandPalette, 
@@ -619,5 +638,12 @@ const extensionDescribe: JupyterLabPlugin<void> = {
   optional: [ILauncher],
   activate: activateDescribe
 };
+const extensionList: JupyterLabPlugin<void> = {
+  id: 'dps-job-list',
+  autoStart: true,
+  requires: [ICommandPalette],
+  optional: [ILauncher],
+  activate: activateList
+};
 
-export default [extensionRegisterAuto,extensionRegister,extensionCapabilities,extensionStatus,extensionResult,extensionExecute,extensionDismiss,extensionDescribe];
+export default [extensionRegisterAuto,extensionRegister,extensionCapabilities,extensionStatus,extensionResult,extensionExecute,extensionDismiss,extensionDescribe,extensionList];
