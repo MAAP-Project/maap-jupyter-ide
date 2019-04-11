@@ -3,3 +3,4 @@ requests==2.17.3
 boto3
 botocore
 mapboxgl
+ipython
