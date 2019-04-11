@@ -162,7 +162,7 @@ class MAAP(object):
             elif key == "p":
                 params.append("collection_concept_id=\"" + value.replace("!", "|") + "\"")
 
-        params.append("limit=" + limit)
+        params.append("limit=" + str(limit))
 
         result = variable_name + ".searchGranule(" + ", ".join(params) + ")"
 
