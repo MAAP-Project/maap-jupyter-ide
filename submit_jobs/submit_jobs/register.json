@@ -3,10 +3,7 @@
   "algorithm_name" : "{algo_name}",
   "algorithm_description" : "{algo_desc}",
   "algorithm_params" : [
-    {{
-      "field": "localize_urls",
-      "download": true
-    }},
+    {algo_inputs}
     {{
       "field": "timestamp",
       "download": false

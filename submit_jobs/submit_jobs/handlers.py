@@ -26,7 +26,7 @@ def dig(node):
 		# return {node.tag[node.tag.index('}')+1:]:node.text.split(' ')}
 		return {node.tag[node.tag.index('}')+1:]:node.text}
 
-# helper to parse out algorithm parameters
+# helper to parse out algorithm parameters for execute
 def getParams(node):
 	tag = node.tag[node.tag.index('}')+1:]
 	if tag in ['Title','Identifier']:
@@ -45,6 +45,30 @@ def getProds(node):
 		return (tag,[loc.text for loc in node])
 	else:
 		return (tag,[getProds(e) for e in node])
+
+# helper to parse out user-defined inputs when registering algorithm
+def parseInputs(popped):
+	a = popped.strip()
+	a = a.replace('\n',';')
+	inputs = [e.split(',') for e in a.split(';')] 					# split lines into inputs
+	inputs = [[e.strip() for e in e1] for e1 in inputs]				# strip whitespace
+	inputs = [e+['false'] if len(e) == 1 else e for e in inputs] 	# set false if dl not set
+	inputs = [[e[0],'true'] if e[1].lower() in ['true','download','dl'] else [e[0],'false'] for e in inputs] 	# replace anything not dl=true to false
+	inputs = {e[0]:e[1] for e in inputs} 							# convert to dictionary & overwrite duplicate input names
+	# print(a)
+	# print(inputs)
+	return inputs
+
+# helper to print accepted user-defined inputs when registering algorithm
+def printInputs(resp,inputs):
+	result = resp['message'] + '\nInputs:\n'
+	for name in inputs.keys():
+			if len(name) > 0:
+				if inputs[name] == 'true':
+					result += '\t{} (download)\n'.format(name)
+				else:
+					result += '\t{} (no download)\n'.format(name)
+	return result
 
 class RegisterAlgorithmHandler(IPythonHandler):
 	def get(self):
@@ -75,8 +99,25 @@ class RegisterAlgorithmHandler(IPythonHandler):
 		# ==================================
 		# Part 2: Build & Send Request
 		# ==================================
+		json_in_file = WORKDIR+"/submit_jobs/register_inputs.json"
 		url = BASE_URL+'/mas/algorithm'
 		headers = {'Content-Type':'application/json'}
+
+		with open(json_in_file) as f:
+			ins_json = f.read()
+
+		# build inputs json		
+		popped = params.pop('inputs')
+		inputs = parseInputs(popped)
+
+		ins = ''
+		for name in inputs.keys():
+			if len(name) > 0:
+				ins += ins_json.format(field_name=name,dl=inputs[name])
+
+		# print(ins)
+		# add inputs json to params for template substitution
+		params['algo_inputs'] = ins
 
 		with open(json_file) as jso:
 			req_json = jso.read()
@@ -96,9 +137,12 @@ class RegisterAlgorithmHandler(IPythonHandler):
 			if r.status_code == 200:
 				# print(r.text)
 				try:
-					# empty
+					# MAAP API response
 					resp = json.loads(r.text)
-					self.finish({"status_code": resp['code'], "result": resp['message']})
+					# show registered inputs
+					result = printInputs(resp,inputs)
+
+					self.finish({"status_code": resp['code'], "result": result})
 				except:
 					self.finish({"status_code": r.status_code, "result": r.text})
 			else:
