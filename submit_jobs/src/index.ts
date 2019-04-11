@@ -117,18 +117,40 @@ class HySDSWidget extends Widget {
     // Construct labels and inputs for fields
     if (! this.get_inputs) {
       for (var field of this.fields) {
-        var fieldLabel = document.createElement("Label");
-        fieldLabel.innerHTML = field;
-        this.node.appendChild(fieldLabel);
+        
+        // textarea for inputs field in register
+        if (field == "inputs") {
+          var fieldLabel = document.createElement("Label");
+          fieldLabel.innerHTML = field;
+          this.node.appendChild(fieldLabel);
 
-        var fieldInput = document.createElement('input');
-        fieldInput.id = (field.toLowerCase() + '-input');
-        this.node.appendChild(fieldInput);
-      
-        // BREAK
-        var x = document.createElement("BR");
-        this.node.appendChild(x)
+          var fieldInputs = document.createElement('textarea');
+          fieldInputs.id = (field.toLowerCase() + '-input');
+          (<HTMLTextAreaElement>fieldInputs).cols = 40;
+          (<HTMLTextAreaElement>fieldInputs).rows = 6;
+          this.node.appendChild(fieldInputs);
+        
+          // BREAK
+          var x = document.createElement("BR");
+          this.node.appendChild(x)
+
+        // for all other fields
+        } else {
+          var fieldLabel = document.createElement("Label");
+          fieldLabel.innerHTML = field;
+          this.node.appendChild(fieldLabel);
+
+          var fieldInput = document.createElement('input');
+          fieldInput.id = (field.toLowerCase() + '-input');
+          this.node.appendChild(fieldInput);
+        
+          // BREAK
+          var x = document.createElement("BR");
+          this.node.appendChild(x)
+        }
       }
+
+    // user fill out inputs for execute 2nd popup
     } else {
       // console.log("new");
       for (var field of this.fields) {
@@ -204,6 +226,7 @@ class HySDSWidget extends Widget {
       // create API call to server extension
       var getUrl = new URL(PageConfig.getBaseUrl() + 'hysds/'+this.req); // REMINDER: hack this url until fixed
 
+      // for calling execute after getting user inputs
       if (this.get_inputs) {
         for (let key in this.old_fields) {
           var fieldText = this.old_fields[key].toLowerCase();
@@ -222,6 +245,8 @@ class HySDSWidget extends Widget {
         console.log(new_input_list);
         getUrl.searchParams.append("inputs",new_input_list);
         resolve(getUrl);
+
+      // for getting notebook info with auto register
       } else if (me.req == 'registerAuto') {
         var settingsAPIUrl = new URL(PageConfig.getBaseUrl() + 'api/sessions');
         request('get',settingsAPIUrl.href).then((res: RequestResult) => {
@@ -249,10 +274,17 @@ class HySDSWidget extends Widget {
           console.log('done setting url');
           resolve(getUrl);
         })
+
+      // for all other requests
       } else {
         for (var field of this.fields) {
-          var fieldText = (<HTMLInputElement>document.getElementById(field.toLowerCase()+'-input')).value;
-          if (fieldText != "") { getUrl.searchParams.append(field.toLowerCase(), fieldText); }
+          if (field == "inputs") {
+            var fieldText = (<HTMLTextAreaElement>document.getElementById(field.toLowerCase()+'-input')).value;
+            if (fieldText != "") { getUrl.searchParams.append(field.toLowerCase(), fieldText); }
+          } else {
+            var fieldText = (<HTMLInputElement>document.getElementById(field.toLowerCase()+'-input')).value;
+            if (fieldText != "") { getUrl.searchParams.append(field.toLowerCase(), fieldText); }
+          }
         }
         resolve(getUrl);
       }
@@ -330,10 +362,55 @@ class WidgetResult extends Widget {
   }
 }
 
+export class DialogEnter<T> extends Dialog<T> {
+  /**
+   * Create a dialog panel instance.
+   *
+   * @param options - The dialog setup options.
+   */
+  constructor(options: Partial<Dialog.IOptions<T>> = {}) {
+    super(options);
+  }
+
+  handleEvent(event: Event): void {
+    switch (event.type) {
+      case 'keydown':
+        this._evtKeydown(event as KeyboardEvent);
+        break;
+      case 'click':
+        this._evtClick(event as MouseEvent);
+        break;
+      case 'focus':
+        this._evtFocus(event as FocusEvent);
+        break;
+      case 'contextmenu':
+        event.preventDefault();
+        event.stopPropagation();
+        break;
+      default:
+        break;
+    }
+  }
+
+  protected _evtKeydown(event: KeyboardEvent): void {
+    // Check for escape key
+    switch (event.keyCode) {
+      case 13: // Enter.
+        //event.stopPropagation();
+        //event.preventDefault();
+        //this.resolve();
+        break;
+      default:
+        super._evtKeydown(event);
+        break;
+    }
+  }
+}
+
 export function showDialog<T>(
   options: Partial<Dialog.IOptions<T>> = {}
 ): void {
-  let dialog = new Dialog(options);
+  let dialog = new DialogEnter(options);
   dialog.launch();
   // setTimeout(function(){console.log('go away'); dialog.resolve(0);}, 3000);
   return;
