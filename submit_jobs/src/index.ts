@@ -22,6 +22,53 @@ const describeProcessFields = data.describeProcess;
 const notImplemented: string[] = ['dismiss'];
 const nonXML: string[] = ['registerAuto','getResult','executeInputs','getStatus','execute','describeProcess','getCapabilities','register'];
 
+class JobCache extends Widget {
+  public response_text: string;
+
+  constructor() {
+    super();
+    this.response_text = "";
+  }
+
+  addJob(job): void {
+    // document.getElementById('search-text').innerHTML = this.response_text;
+
+    if (document.getElementById('job-cache') != null){
+      (<HTMLTextAreaElement>document.getElementById('job-cache')).value = this.response_text;
+    } else {
+      var textarea = document.createElement("TEXTAREA");
+      textarea.id = 'job-cache';
+      (<HTMLTextAreaElement>textarea).readOnly = true;
+      (<HTMLTextAreaElement>textarea).cols = 40;
+      (<HTMLTextAreaElement>textarea).rows = 50;
+      (<HTMLTextAreaElement>textarea).value = this.response_text;
+      this.node.appendChild(textarea);
+    }
+  }
+}
+
+export function activateJobCache(app: JupyterLab): void{
+
+  var infoPanel = new JobCache();
+  infoPanel.id = 'job-cache-display';
+  infoPanel.title.label = 'Submitted Jobs';
+  infoPanel.title.caption = 'jobs sent to DPS';
+
+  app.shell.addToLeftArea(infoPanel, {rank:300});
+}
+
+const extensionJobCache: JupyterLabPlugin<void> = {
+  requires: [],
+  id: 'job-cache-panel',
+  autoStart:true,
+  activate: activateJobCache
+};
+
+export function addJobToCache(){
+  
+}
+
+
 // -----------------------
 // HySDS stuff
 // -----------------------
@@ -228,18 +275,18 @@ class HySDSWidget extends Widget {
 
       // for calling execute after getting user inputs
       if (this.get_inputs) {
+        // filling out algo info (id, version)
         for (let key in this.old_fields) {
           var fieldText = this.old_fields[key].toLowerCase();
-          // if (fieldText != "") { getUrl.searchParams.append(key.toLowerCase(), fieldText); }
           getUrl.searchParams.append(key.toLowerCase(), fieldText);
         }
+        // filling out algo inputs
         var new_input_list = "";
         for (var e of this.fields) {
           var field = e[0].toLowerCase();
           new_input_list = new_input_list.concat(field,',');
           console.log(field);
           var fieldText = (<HTMLInputElement>document.getElementById(field.toLowerCase()+'-input')).value;
-          // if (! ["","0"].includes(fieldText)) { getUrl.searchParams.append(field.toLowerCase(), fieldText); }
           getUrl.searchParams.append(field.toLowerCase(), fieldText);
         }
         console.log(new_input_list);
@@ -439,6 +486,8 @@ export function popupResult(b:any): void {
   });
 }
 
+
+
 export function activateRegister(app: JupyterLab, 
                         palette: ICommandPalette, 
                         restorer: ILauncher | null): void{
@@ -570,6 +619,7 @@ const extensionRegisterAuto: JupyterLabPlugin<void> = {
 };
 
 // export extensions
+
 const extensionRegister: JupyterLabPlugin<void> = {
   id: 'dps-register',
   autoStart: true,
@@ -620,4 +670,5 @@ const extensionDescribe: JupyterLabPlugin<void> = {
   activate: activateDescribe
 };
 
-export default [extensionRegisterAuto,extensionRegister,extensionCapabilities,extensionStatus,extensionResult,extensionExecute,extensionDismiss,extensionDescribe];
+
+export default [extensionRegisterAuto,extensionRegister,extensionCapabilities,extensionStatus,extensionResult,extensionExecute,extensionDismiss,extensionDescribe,extensionJobCache];
