@@ -77,7 +77,7 @@ class GetGranulesHandler(IPythonHandler):
 
         maap = MAAP()
         json_obj = self.get_argument('json_obj', '')
-        limit = self.get_argument('limit', '')
+        limit = str(self.get_argument('limit', ''))
         print("json obj", json_obj)
 
         query_string = maap.getCallFromEarthdataQuery(json_obj, limit)
@@ -91,7 +91,7 @@ class GetQueryHandler(IPythonHandler):
     def get(self):
         maap = MAAP()
         json_obj = self.get_argument('json_obj', '')
-        limit = self.get_argument('limit', '')
+        limit = str(self.get_argument('limit', ''))
         print("json obj", json_obj)
 
         query_string = maap.getCallFromEarthdataQuery(json_obj, limit)
