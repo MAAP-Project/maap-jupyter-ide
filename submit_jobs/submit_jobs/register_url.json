@@ -1,16 +1,13 @@
 {{ 
-  "script_command" : "{run_cmd}",
-  "algorithm_name" : "{algo_name}",
-  "algorithm_description" : "{algo_desc}",
-  "repo_url" : "{repo_url}",
-  "algorithm_params" : [
-    {{
-      "field": "localize_urls",
-      "download": true
-    }},
-    {{
-      "field": "timestamp",
-      "download": false
-    }}
-  ]
+	"script_command" : "{run_cmd}",
+	"algorithm_name" : "{algo_name}",
+	"algorithm_description" : "{algo_desc}",
+	"repo_url" : "{repo_url}",
+	"algorithm_params" : [
+		{algo_inputs}
+		{{
+			"field": "timestamp",
+			"download": false
+		}}
+	]
 }}
