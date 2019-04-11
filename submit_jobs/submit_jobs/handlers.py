@@ -50,11 +50,11 @@ def getProds(node):
 def parseInputs(popped):
 	a = popped.strip()
 	a = a.replace('\n',';')
-	inputs = [e.split(',') for e in a.split(';')] 					# split lines into inputs
-	inputs = [[e.strip() for e in e1] for e1 in inputs]				# strip whitespace
-	inputs = [e+['false'] if len(e) == 1 else e for e in inputs] 	# set false if dl not set
+	inputs = [e.split(',') for e in a.split(';')]							# split lines into inputs
+	inputs = [[e.strip().replace(' ','_') for e in e1] for e1 in inputs]	# strip whitespace
+	inputs = [e+['false'] if len(e) == 1 else e for e in inputs]			# set false if dl not set
 	inputs = [[e[0],'true'] if e[1].lower() in ['true','download','dl'] else [e[0],'false'] for e in inputs] 	# replace anything not dl=true to false
-	inputs = {e[0]:e[1] for e in inputs} 							# convert to dictionary & overwrite duplicate input names
+	inputs = {e[0]:e[1] for e in inputs}									# convert to dictionary & overwrite duplicate input names
 	# print(a)
 	# print(inputs)
 	return inputs
@@ -141,7 +141,6 @@ class RegisterAlgorithmHandler(IPythonHandler):
 					resp = json.loads(r.text)
 					# show registered inputs
 					result = printInputs(resp,inputs)
-
 					self.finish({"status_code": resp['code'], "result": result})
 				except:
 					self.finish({"status_code": r.status_code, "result": r.text})
@@ -156,7 +155,8 @@ class RegisterAutoHandler(IPythonHandler):
 		# ==================================
 		# Part 1: Get Notebook Information Processed in UI
 		# ==================================
-		fields = ['algo_name','lang','nb_name']
+		# include user-defined inputs
+		fields = ['algo_name','lang','nb_name'] + getFields('register')
 		params = {}
 		for f in fields:
 			try:
@@ -268,8 +268,25 @@ class RegisterAutoHandler(IPythonHandler):
 		# Part 5: Build Request
 		# ==================================
 		json_file = WORKDIR+"/submit_jobs/register_url.json"
+		json_in_file = WORKDIR+"/submit_jobs/register_inputs.json"
 		url = BASE_URL+'/mas/algorithm'
 		headers = {'Content-Type':'application/json'}
+
+		with open(json_in_file) as f:
+			ins_json = f.read()
+
+		# build inputs json		
+		popped = params.pop('inputs')
+		inputs = parseInputs(popped)
+
+		ins = ''
+		for name in inputs.keys():
+			if len(name) > 0:
+				ins += ins_json.format(field_name=name,dl=inputs[name])
+
+		# print(ins)
+		# add inputs json to params for template substitution
+		params['algo_inputs'] = ins
 
 		with open(json_file) as jso:
 			req_json = jso.read()
@@ -280,7 +297,7 @@ class RegisterAutoHandler(IPythonHandler):
 		params["repo_url"] = git_url
 		params["run_cmd"] = run_cmd
 		params["algo_name"] = algo_name
-		params["algo_desc"] = ''
+		params["algo_desc"] = 'auto-register {}'.format(algo_name)
 
 		req_json = req_json.format(**params)
 		# print(req_json)
@@ -299,9 +316,11 @@ class RegisterAutoHandler(IPythonHandler):
 			if r.status_code == 200:
 				# print(r.text)
 				try:
-					# empty
+					# MAAP API response
 					resp = json.loads(r.text)
-					self.finish({"status_code": resp['code'], "result": resp['message']})
+					# show registered inputs
+					result = printInputs(resp,inputs)
+					self.finish({"status_code": resp['code'], "result": result})
 				except:
 					self.finish({"status_code": r.status_code, "result": r.text})
 			else:
