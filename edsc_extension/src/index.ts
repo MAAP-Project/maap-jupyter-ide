@@ -34,7 +34,7 @@ import '../style/index.css';
 let unique = 0;
 // let searchParamURL = "test";
 let params:any = {};
-let limit = 1000;
+let limit = "1000";
 
 const extension: JupyterLabPlugin<void> = {
   id: 'edsc_extension',
@@ -200,7 +200,7 @@ class LimitPopupWidget extends Widget {
   }
 
   getValue() {
-    limit = +(<HTMLInputElement>document.getElementById('inputLimit')).value;
+    limit = (<HTMLInputElement>document.getElementById('inputLimit')).value;
     (<HTMLInputElement>document.getElementById('setLimitBtn')).innerHTML = "Results Limit: " + limit;
     console.log("new limit is: ", limit)
   }
@@ -210,7 +210,7 @@ class LimitPopupWidget extends Widget {
 function copySearchQuery() {
   var getUrl = new URL(PageConfig.getBaseUrl() + 'edsc/getQuery');
   getUrl.searchParams.append("json_obj", JSON.stringify(params));
-  getUrl.searchParams.append("limit", JSON.stringify(limit));
+  getUrl.searchParams.append("limit", limit);
 
   // Make call to back end
   var xhr = new XMLHttpRequest();
@@ -233,7 +233,7 @@ function copySearchResults() {
   // Construct url to hit backend
   var getUrl = new URL(PageConfig.getBaseUrl() + 'edsc/getGranules');
   getUrl.searchParams.append("json_obj", JSON.stringify(params));
-  getUrl.searchParams.append("limit", JSON.stringify(limit));
+  getUrl.searchParams.append("limit", limit);
 
 
   // Make call to back end
