@@ -39,3 +39,4 @@ def load_jupyter_server_extension(nb_server_app):
     web_app.add_handlers(host_pattern, [(url_path_join(base_url, 'hysds/getResult'), GetResultHandler)])
     web_app.add_handlers(host_pattern, [(url_path_join(base_url, 'hysds/dismiss'), DismissHandler)])
     web_app.add_handlers(host_pattern, [(url_path_join(base_url, 'hysds/describeProcess'), DescribeProcessHandler)])
+    web_app.add_handlers(host_pattern, [(url_path_join(base_url, 'hysds/listAlgorithms'), DescribeProcessHandler)])

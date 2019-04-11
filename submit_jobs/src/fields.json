@@ -2,6 +2,7 @@
 	"register": ["repo_url","algo_name","algo_desc","run_cmd","inputs"],
 	"registerAuto": ["inputs"],
 	"getCapabilities": [],
+	"listAlgorithms": [],
 	"describeProcess": ["algo_id","version"],
 	"executeInputs": ["algo_id","version"],
 	"execute" : ["identifier","algo_id","version","inputs"],
