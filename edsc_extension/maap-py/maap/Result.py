@@ -21,27 +21,33 @@ class Result(dict):
         :return:
         """
         url = self._location
+        destfile = self._downloadname.replace('/', '')
+
         # Downloadable url does not exist
         if not url:
             return None
         if url.startswith('ftp'):
-            urllib.urlretrieve(url, destpath + "/" + self._downloadname.replace('/', ''))
-            return self._downloadname.replace('/', '')
+            if not overwrite and not os.path.isfile(destpath + "/" + destfile):
+                urllib.urlretrieve(url, destpath + "/" + destfile)
+
+            return destpath + '/' + destfile
         elif url.startswith('s3'):
             o = urlparse(url)
             filename = url[url.rfind("/") + 1:]
             if not overwrite and not os.path.isfile(destpath + "/" + filename):
                 s3 = boto3.client('s3', aws_access_key_id=self._awsKey, aws_secret_access_key=self._awsSecret)
                 s3.download_file(o.netloc, o.path.lstrip('/'), destpath + "/" + filename)
+
             return destpath + '/' + filename
         else:
-            r = requests.get(url, stream=True)
-            r.raw.decode_content = True
+            if not overwrite and not os.path.isfile(destpath + "/" + destfile):
+                r = requests.get(url, stream=True)
+                r.raw.decode_content = True
 
-            with open(destpath + "/" + self._downloadname.replace('/', ''), 'wb') as f:
-                shutil.copyfileobj(r.raw, f)
+                with open(destpath + "/" + destfile, 'wb') as f:
+                    shutil.copyfileobj(r.raw, f)
 
-            return self._downloadname.replace('/', '')
+            return destpath + '/' + destfile
 
 
     def getDownloadUrl(self):
