@@ -3,7 +3,7 @@ import {
 } from '@jupyterlab/application';
 
 import {
-  ICommandPalette, Clipboard, showDialog, Dialog
+  ICommandPalette, Clipboard, Dialog, showDialog
 } from '@jupyterlab/apputils';
 
 import {
@@ -34,6 +34,7 @@ import '../style/index.css';
 let unique = 0;
 // let searchParamURL = "test";
 let params:any = {};
+let limit = "1000";
 
 const extension: JupyterLabPlugin<void> = {
   id: 'edsc_extension',
@@ -41,6 +42,62 @@ const extension: JupyterLabPlugin<void> = {
   requires: [IDocumentManager, ICommandPalette, ILayoutRestorer, IMainMenu],
   activate: activate
 };
+
+
+// export class DialogEnter<T> extends Dialog<T> {
+//   /**
+//    * Create a dialog panel instance.
+//    *
+//    * @param options - The dialog setup options.
+//    */
+//   constructor(options: Partial<Dialog.IOptions<T>> = {}) {
+//     super(options);
+//   }
+//
+//   handleEvent(event: Event): void {
+//     switch (event.type) {
+//       case 'keydown':
+//         this._evtKeydown(event as KeyboardEvent);
+//         break;
+//       case 'click':
+//         this._evtClick(event as MouseEvent);
+//         break;
+//       case 'focus':
+//         this._evtFocus(event as FocusEvent);
+//         break;
+//       case 'contextmenu':
+//         event.preventDefault();
+//         event.stopPropagation();
+//         break;
+//       default:
+//         break;
+//     }
+//   }
+//
+//   protected _evtKeydown(event: KeyboardEvent): void {
+//     // Check for escape key
+//     switch (event.keyCode) {
+//       case 13: // Enter.
+//         //event.stopPropagation();
+//         //event.preventDefault();
+//         //this.resolve();
+//         break;
+//       default:
+//         super._evtKeydown(event);
+//         break;
+//     }
+//   }
+// }
+//
+// export function showDialog<T>(
+//   options: Partial<Dialog.IOptions<T>> = {}
+// ): void {
+//   let dialog = new DialogEnter(options);
+//   dialog.launch();
+//   // setTimeout(function(){console.log('go away'); dialog.resolve(0);}, 3000);
+//   return;
+// }
+
 
 class IFrameWidget extends Widget {
 
@@ -93,6 +150,12 @@ class IFrameWidget extends Widget {
     copyResultsBtn.addEventListener('click', copySearchResults, false);
     this.node.appendChild(copyResultsBtn);
 
+    let setLimitBtn = document.createElement('button');
+    setLimitBtn.id = "setLimitBtn";
+    setLimitBtn.innerHTML = "Set Results Limit";
+    setLimitBtn.addEventListener('click', setResultsLimit, false);
+    this.node.appendChild(setLimitBtn);
+
     let viewParamsBtn = document.createElement('button');
     viewParamsBtn.id = "copyBtn";
     // copyBtn.className = "btn";
@@ -114,18 +177,40 @@ class ParamsPopupWidget extends Widget {
     body.style.display = 'flex';
     body.style.flexDirection = 'column';
     body.innerHTML = "<pre>" + JSON.stringify(params, null, " ") + "</pre>";
-    //let contents = document.createTextNode(JSON.stringify(params, null, " "));
-    //body.appendChild(contents);
 
     super({ node: body });
   }
 
 }
 
-function copySearchQuery() {
+export
+class LimitPopupWidget extends Widget {
+  constructor() {
+      let body = document.createElement('div');
+      body.style.display = 'flex';
+      body.style.flexDirection = 'column';
 
+      super({node: body});
+
+      this.getValue = this.getValue.bind(this);
+
+      let inputLimit = document.createElement('input');
+      inputLimit.id = 'inputLimit';
+      this.node.appendChild(inputLimit);
+  }
+
+  getValue() {
+    limit = (<HTMLInputElement>document.getElementById('inputLimit')).value;
+    (<HTMLInputElement>document.getElementById('setLimitBtn')).innerHTML = "Results Limit: " + limit;
+    console.log("new limit is: ", limit)
+  }
+
+}
+
+function copySearchQuery() {
   var getUrl = new URL(PageConfig.getBaseUrl() + 'edsc/getQuery');
   getUrl.searchParams.append("json_obj", JSON.stringify(params));
+  getUrl.searchParams.append("limit", limit);
 
   // Make call to back end
   var xhr = new XMLHttpRequest();
@@ -148,6 +233,7 @@ function copySearchResults() {
   // Construct url to hit backend
   var getUrl = new URL(PageConfig.getBaseUrl() + 'edsc/getGranules');
   getUrl.searchParams.append("json_obj", JSON.stringify(params));
+  getUrl.searchParams.append("limit", limit);
 
 
   // Make call to back end
@@ -163,6 +249,18 @@ function copySearchResults() {
 
   xhr.open("GET", getUrl.href, true);
   xhr.send(null);
+}
+
+function setResultsLimit() {
+    console.log("old limit is: ", limit)
+    showDialog({
+        title: 'Set Results Limit:',
+        body: new LimitPopupWidget(),
+        focusNodeSelector: 'input',
+        buttons: [Dialog.okButton({ label: 'Ok' })]
+    });
+
+
 }
 
 
