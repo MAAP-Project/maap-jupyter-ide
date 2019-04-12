@@ -850,17 +850,19 @@ class ExecuteInputsHandler(IPythonHandler):
 						result += '{identifier}:\t{typ}\n'.format(identifier=identifier,typ=typ)
 					# print(result)
 
+					if result.strip() == '':
+						result = 'Bad Request\nThe provided parameters were\n\talgo_id:{}\n\tversion:{}\n'.format(params['algo_id'],params['version'])
+						self.finish({"status_code": 400, "result": result})
+						return
+
+					self.finish({"status_code": r.status_code, "result": result, "ins": ins_req, "old":params})
+					return
+
 				else:
 					# print('failed 200')
 					result = 'Bad Request\nThe provided parameters were\n\talgo_id:{}\n\tversion:{}\n'.format(params['algo_id'],params['version'])
 					self.finish({"status_code": 400, "result": result, "ins": [], "old":params})
-
-				if result.strip() == '':
-					result = 'Bad Request\nThe provided parameters were\n\talgo_id:{}\n\tversion:{}\n'.format(params['algo_id'],params['version'])
-					self.finish({"status_code": 400, "result": result})
 					return
-				
-				self.finish({"status_code": r.status_code, "result": result, "ins": ins_req, "old":params})
 
 			except:
 				self.finish({"status_code": 500, "result": r.text, "ins": [], "old":params})
