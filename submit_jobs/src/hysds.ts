@@ -50,6 +50,7 @@ export class HySDSWidget extends Widget {
   public readonly fields: string[];       // for execute
   public readonly get_inputs: boolean;    // for execute
   jobs_panel: JobCache;    // for execute
+  ins_dict: {[k:string]:string};          // for execute
 
   constructor(req:string, method_fields:string[],panel:JobCache) {
     let body = document.createElement('div');
@@ -64,6 +65,7 @@ export class HySDSWidget extends Widget {
     this.fields = method_fields;
     this.get_inputs = false;
     this.jobs_panel = panel;
+    this.ins_dict = {};
 
     switch (req) {
       case 'register':
@@ -200,7 +202,22 @@ export class HySDSWidget extends Widget {
 
   // TODO: add jobs to response text
   updateJobCache(){
-    this.jobs_panel.addJob(this.response_text);
+    console.log(this.fields);
+    if (this.req == 'execute') {
+      this.jobs_panel.addJob("algo: " + this.old_fields["algo_id"]);
+      this.jobs_panel.addJob("inputs: ");
+      for (var e of this.fields) {
+        var fieldName = e[0].toLowerCase();
+        console.log(fieldName);
+        if (!['timestamp'].includes(fieldName)){
+          var fieldText = this.ins_dict[fieldName];
+          console.log(fieldText);
+          this.jobs_panel.addJob("\t" + fieldName + " : " + fieldText);
+        }
+      }
+      this.jobs_panel.addJob(this.response_text);
+      this.jobs_panel.addJob('------------------------------');
+    }
   }
 
   updateSearchResults(): void {
@@ -262,8 +279,10 @@ export class HySDSWidget extends Widget {
         for (var e of this.fields) {
           var field = e[0].toLowerCase();
           new_input_list = new_input_list.concat(field,',');
-          console.log(field);
+          // console.log(field);
           var fieldText = (<HTMLInputElement>document.getElementById(field.toLowerCase()+'-input')).value;
+          // console.log(fieldText);
+          this.ins_dict[field] = fieldText;
           getUrl.searchParams.append(field.toLowerCase(), fieldText);
         }
         console.log(new_input_list);
