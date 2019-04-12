@@ -66,4 +66,9 @@ EXPOSE 3100
 WORKDIR /projects
 ADD entrypoint.sh /entrypoint.sh
 
+ARG aws_access_key_id
+ENV AWS_ACCESS_KEY_ID=$aws_access_key_id
+ARG aws_secret_access_key
+ENV AWS_SECRET_ACCESS_KEY=$aws_secret_access_key
+
 ENTRYPOINT ["/entrypoint.sh"]
