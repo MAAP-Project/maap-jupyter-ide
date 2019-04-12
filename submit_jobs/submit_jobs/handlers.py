@@ -75,7 +75,7 @@ class RegisterAlgorithmHandler(IPythonHandler):
 		# ==================================
 		# Part 1: Parse Required Arguments
 		# ==================================
-		fields = getFields('register')
+		fields = ['nb_name'] + getFields('register')
 
 		params = {}
 		# params['url_list'] = []
@@ -85,7 +85,9 @@ class RegisterAlgorithmHandler(IPythonHandler):
 				params[f] = arg
 			except:
 				params[f] = ''
-		# print(params)
+		
+		print(params)
+		nb_name = params['nb_name']
 
 		if params['repo_url'] == '':
 			json_file = WORKDIR+"/submit_jobs/register.json"
@@ -97,7 +99,33 @@ class RegisterAlgorithmHandler(IPythonHandler):
 		params['algo_name'] = params['algo_name'].replace(' ', '_')
 
 		# ==================================
-		# Part 2: Build & Send Request
+		# Part 2: Check if User Has Committed
+		# ==================================
+		# navigate to project directory
+		proj_path = ('/').join(['/projects']+nb_name.split('/')[:-1])
+		os.chdir(proj_path)
+
+		# get git status
+		git_status_out = subprocess.check_output("git status --porcelain", shell=True).decode("utf-8")
+
+		# is there a git repo?
+		if 'not a git repository' in git_status_out:
+			self.finish({"status_code": 412, "result": "Error: \n{}".format(git_status_out)})
+			return
+
+		git_status = git_status_out.splitlines()
+		git_status = [e.strip() for e in git_status]
+
+		# filter for unsaved python files
+		unsaved = list(filter(lambda e: ( (e.split('.')[-1] in ['ipynb','py']) and (e[0] in ['M','?']) ), git_status))
+
+		# if there are unsaved python files, user needs to commit
+		if len(unsaved) != 0:
+			self.finish({"status_code": 412, "result": "Error: Notebook(s) and/or script(s) have not been committed\n{}".format('\n'.join(unsaved))})
+			return
+
+		# ==================================
+		# Part 3: Build & Send Request
 		# ==================================
 		json_in_file = WORKDIR+"/submit_jobs/register_inputs.json"
 		url = BASE_URL+'/mas/algorithm'
@@ -126,7 +154,7 @@ class RegisterAlgorithmHandler(IPythonHandler):
 		print(req_json)
 
 		# ==================================
-		# Part 3: Check Response
+		# Part 4: Check Response
 		# ==================================
 		try:
 			r = requests.post(
