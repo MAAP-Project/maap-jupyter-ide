@@ -326,7 +326,7 @@ export class HySDSWidget extends Widget {
             if (fieldText != "") { getUrl.searchParams.append(field.toLowerCase(), fieldText); }
           } else {
             var fieldText = (<HTMLInputElement>document.getElementById(field.toLowerCase()+'-input')).value;
-            if (fieldText != "") { getUrl.searchParams.append(field.toLowerCase(), fieldText); }
+            // if (fieldText != "") { getUrl.searchParams.append(field.toLowerCase(), fieldText); }
           }
         }
 
