@@ -316,46 +316,44 @@ export class HySDSWidget extends Widget {
           }
           console.log('done setting url');
           resolve(getUrl);
-        })
+        });
 
+      // Get Notebook information to pass to Register Handler
+      } else if (me.req == 'register') {
+        var settingsAPIUrl = new URL(PageConfig.getBaseUrl() + 'api/sessions');
+          request('get',settingsAPIUrl.href).then((res: RequestResult) => {
+            if (res.ok) {
+            var json_response:any = res.json();
+            var servers = json_response;
+            console.log(servers);
+            console.log(servers.length);
+
+            // TODO: find active tab instead of grabbing 1st one
+            var tab:any = servers[0];
+            console.log(tab);
+            var nb_name:any = tab["path"];
+            console.log(nb_name);
+            getUrl.searchParams.append('nb_name', nb_name);
+            console.log(getUrl.href);
+            resolve(getUrl);
+          }
+          console.log('done setting url');
+        });
       // for all other requests
       } else {
+        console.log(this.req+'!!!!');
         for (var field of this.fields) {
           if (field == "inputs") {
             var fieldText = (<HTMLTextAreaElement>document.getElementById(field.toLowerCase()+'-input')).value;
-            if (fieldText != "") { getUrl.searchParams.append(field.toLowerCase(), fieldText); }
+            // if (fieldText != "") { getUrl.searchParams.append(field.toLowerCase(), fieldText); }
+            getUrl.searchParams.append(field.toLowerCase(), fieldText);
           } else {
             var fieldText = (<HTMLInputElement>document.getElementById(field.toLowerCase()+'-input')).value;
             // if (fieldText != "") { getUrl.searchParams.append(field.toLowerCase(), fieldText); }
+            getUrl.searchParams.append(field.toLowerCase(), fieldText);
           }
         }
-
-        // get notebook path if regsiter to check user commit
-        if (me.req == 'register') {
-          var settingsAPIUrl = new URL(PageConfig.getBaseUrl() + 'api/sessions');
-          request('get',settingsAPIUrl.href).then((res: RequestResult) => {
-            if (res.ok) {
-              var json_response:any = res.json();
-              var servers = json_response;
-              console.log(servers);
-              console.log(servers.length);
-
-              // TODO: find active tab instead of grabbing 1st one
-              // Get Notebook information to pass to Register Handler
-              var tab:any = servers[0];
-              console.log(tab);
-              var nb_name:any = tab["path"];
-              console.log(nb_name);
-              getUrl.searchParams.append('nb_name', nb_name);
-              console.log(getUrl.href);
-              resolve(getUrl);
-            }
-            console.log('done setting url');
-          })
-        // or else it resolves register early
-        } else {
-          resolve(getUrl);
-        }
+        resolve(getUrl);
       }
 
     });
