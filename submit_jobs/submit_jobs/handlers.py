@@ -123,7 +123,7 @@ class RegisterAlgorithmHandler(IPythonHandler):
 			req_json = jso.read()
 
 		req_json = req_json.format(**params)
-		# print(req_json)
+		print(req_json)
 
 		# ==================================
 		# Part 3: Check Response
@@ -134,8 +134,8 @@ class RegisterAlgorithmHandler(IPythonHandler):
 				data=req_json,
 				headers=headers
 			)
+			print(r.text)
 			if r.status_code == 200:
-				# print(r.text)
 				try:
 					# MAAP API response
 					resp = json.loads(r.text)
@@ -441,7 +441,7 @@ class ExecuteHandler(IPythonHandler):
 			req_xml = xml.read()
 
 		req_xml = req_xml.format(**params)
-		# print(req_xml)
+		print(req_xml)
 
 		# -------------------------------
 		# Send Request
@@ -452,8 +452,8 @@ class ExecuteHandler(IPythonHandler):
 				data=req_xml, 
 				headers=headers
 			)
-			# print(r.status_code)
-			# print(r.text)
+			print(r.status_code)
+			print(r.text)
 
 			# ==================================
 			# Part 3: Check & Parse Response
