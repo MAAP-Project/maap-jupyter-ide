@@ -30,7 +30,7 @@ export class JobCache extends Widget {
     }
   }
   addJob(job:string): void {
-    this.response_text.push(job);
+    this.response_text.unshift(job);
     this.updateDisplay();
   }
 }
@@ -204,8 +204,8 @@ export class HySDSWidget extends Widget {
   updateJobCache(){
     console.log(this.fields);
     if (this.req == 'execute') {
-      this.jobs_panel.addJob("algo: " + this.old_fields["algo_id"]);
-      this.jobs_panel.addJob("inputs: ");
+      this.jobs_panel.addJob('------------------------------');
+      this.jobs_panel.addJob(this.response_text);
       for (var e of this.fields) {
         var fieldName = e[0].toLowerCase();
         console.log(fieldName);
@@ -215,8 +215,8 @@ export class HySDSWidget extends Widget {
           this.jobs_panel.addJob("\t" + fieldName + " : " + fieldText);
         }
       }
-      this.jobs_panel.addJob(this.response_text);
-      this.jobs_panel.addJob('------------------------------');
+      this.jobs_panel.addJob("inputs: ");
+      this.jobs_panel.addJob("algo: " + this.old_fields["algo_id"]);
     }
   }
 
@@ -255,16 +255,45 @@ export class HySDSWidget extends Widget {
       body.appendChild(textarea);
       // this.node.appendChild(textarea);
       // this.node = body;
-      me.updateJobCache();
-      popupResult(new WidgetResult(body));
+      popupResult(new WidgetResult(body,this));
     }
+  }
+
+  // helper to deepcopy aka rebuild URL because deepcopy is a pain rn
+  buildCopyUrl(fieldName:string,fieldValue:string): URL {
+    var getUrl = new URL(PageConfig.getBaseUrl() + 'hysds/'+this.req);
+    // only call when execute
+    if (this.get_inputs) {
+      // filling out algo info (id, version)
+      for (let key in this.old_fields) {
+        var fieldText = this.old_fields[key].toLowerCase();
+        getUrl.searchParams.append(key.toLowerCase(), fieldText);
+      }
+      // filling out algo inputs
+      var new_input_list = "";
+
+      for (var e of this.fields) {
+        var field = e[0].toLowerCase();
+        new_input_list = new_input_list.concat(field,',');
+        if (fieldName == field){
+          getUrl.searchParams.append(field.toLowerCase(), fieldValue);
+        } else {
+          var fieldText = (<HTMLInputElement>document.getElementById(field.toLowerCase()+'-input')).value;
+          this.ins_dict[field] = fieldText;
+          getUrl.searchParams.append(field.toLowerCase(), fieldText);
+        }
+      }
+      getUrl.searchParams.append("inputs",new_input_list);
+    }
+    return getUrl;
   }
 
   buildRequestUrl() {
     var me = this;
-    return new Promise<URL>((resolve, reject) => {
+    return new Promise<Array<URL>>((resolve, reject) => {
       // var skip = false;
       // create API call to server extension
+      var urllst: Array<URL> = []
       var getUrl = new URL(PageConfig.getBaseUrl() + 'hysds/'+this.req); // REMINDER: hack this url until fixed
 
       // for calling execute after getting user inputs
@@ -276,18 +305,51 @@ export class HySDSWidget extends Widget {
         }
         // filling out algo inputs
         var new_input_list = "";
+        var range = false;
+        var rangeField = "";
+        var rangeFieldValue:string[] = [];
+
         for (var e of this.fields) {
           var field = e[0].toLowerCase();
           new_input_list = new_input_list.concat(field,',');
           // console.log(field);
           var fieldText = (<HTMLInputElement>document.getElementById(field.toLowerCase()+'-input')).value;
           // console.log(fieldText);
+
+          // check for range in inputs
+          // currently only support INTEGER range in SINGLE input field
+          // expected format "range:1:10"
+          if (fieldText.includes("range:")) {
+            range = true;
+            rangeField = field;
+            rangeFieldValue = fieldText.split("range:")[1].split(":");
+          }
           this.ins_dict[field] = fieldText;
           getUrl.searchParams.append(field.toLowerCase(), fieldText);
         }
         console.log(new_input_list);
         getUrl.searchParams.append("inputs",new_input_list);
-        resolve(getUrl);
+
+        if (range) {
+          var start = Number(rangeFieldValue[0]);
+          var last = Number(rangeFieldValue[1]);
+          console.log(rangeFieldValue);
+          // var len = last - start + 1;
+          for (var i = start; i <= last; i++) {
+            var multiUrl = this.buildCopyUrl(rangeField,String(i));
+            console.log(multiUrl);
+            // const build = new Promise<void>((resolve, reject) => { getUrl.searchParams.set(rangeField,String(i)); resolve(); });
+            // build.then(() => {
+            // multiUrl.searchParams.set(rangeField,String(i))
+            console.log(multiUrl.href);
+            urllst.push(multiUrl);
+            // });
+          }
+          resolve(urllst);
+        } else {
+          urllst.push(getUrl);
+          resolve(urllst);
+        }
 
       // for getting notebook info with auto register
       } else if (me.req == 'registerAuto') {
@@ -315,7 +377,8 @@ export class HySDSWidget extends Widget {
             console.log(getUrl.href);
           }
           console.log('done setting url');
-          resolve(getUrl);
+          urllst.push(getUrl);
+          resolve(urllst);
         });
 
       // Get Notebook information to pass to Register Handler
@@ -335,13 +398,14 @@ export class HySDSWidget extends Widget {
             console.log(nb_name);
             getUrl.searchParams.append('nb_name', nb_name);
             console.log(getUrl.href);
-            resolve(getUrl);
+            urllst.push(getUrl);
+            resolve(urllst);
           }
           console.log('done setting url');
         });
       // for all other requests
       } else {
-        console.log(this.req+'!!!!');
+        // console.log(this.req+'!!!!');
         for (var field of this.fields) {
           if (field == "inputs") {
             var fieldText = (<HTMLTextAreaElement>document.getElementById(field.toLowerCase()+'-input')).value;
@@ -353,61 +417,66 @@ export class HySDSWidget extends Widget {
             getUrl.searchParams.append(field.toLowerCase(), fieldText);
           }
         }
-        resolve(getUrl);
+        urllst.push(getUrl);
+        resolve(urllst);
       }
 
     });
   }
 
-  sendRequest(getUrl:URL) {
-    console.log('sending');
-    console.log(getUrl.href);
-    var me = this;
-    // Send Job as Request
-    // if just got inputs for execute, new popup to fill out input fields
-    if (me.req == 'executeInputs') {
-      request('get', getUrl.href).then((res: RequestResult) => {
-        if(res.ok){
-          let json_response:any = res.json();
-          // console.log(json_response['status_code']);
-          console.log(json_response['result']);
+  sendRequest(urllst:Array<URL>) {
+    this.response_text = '';
+    for (var ind in urllst){
+      var getUrl = urllst[ind];
+      console.log('sending');
+      console.log(getUrl.href);
+      var me = this;
+      // Send Job as Request
+      // if just got inputs for execute, new popup to fill out input fields
+      if (me.req == 'executeInputs') {
+        request('get', getUrl.href).then((res: RequestResult) => {
+          if(res.ok){
+            let json_response:any = res.json();
+            // console.log(json_response['status_code']);
+            console.log(json_response['result']);
 
-          if (json_response['status_code'] == 200){
-            // console.log(json_response['ins']);
-            // var new_fields = [...executeInputsFields, ...json_response['ins']];
-            var new_fields = json_response['ins'];
-            var old_fields = json_response['old'];
-            // console.log(new_fields);
-            // console.log('pre-popup');
-            var exec = new HySDSWidget('execute',new_fields, me.jobs_panel);
-            exec.setOldFields(old_fields);
-            popup(exec);
-            // console.log('post-popup');
+            if (json_response['status_code'] == 200){
+              // console.log(json_response['ins']);
+              // var new_fields = [...executeInputsFields, ...json_response['ins']];
+              var new_fields = json_response['ins'];
+              var old_fields = json_response['old'];
+              // console.log(new_fields);
+              // console.log('pre-popup');
+              var exec = new HySDSWidget('execute',new_fields, me.jobs_panel);
+              exec.setOldFields(old_fields);
+              popup(exec);
+              // console.log('post-popup');
+            } else {
+              me.response_text = json_response['result'];
+              me.updateSearchResults();
+              console.log("updating");
+            }
           } else {
-            me.response_text = json_response['result'];
+            me.response_text = "Error Getting Inputs Required.";
             me.updateSearchResults();
             console.log("updating");
           }
-        } else {
-          me.response_text = "Error Getting Inputs Required.";
-          me.updateSearchResults();
+        });
+      // if set result text to response
+      } else if ( !(notImplemented.includes(me.req) )){
+        request('get', getUrl.href).then((res: RequestResult) => {
+          if(res.ok){
+            let json_response:any = res.json();
+            me.response_text = me.response_text + '\n' + json_response['result'];
+          } else {
+            me.response_text = "Error Sending Request.";
+          }
           console.log("updating");
-        }
-      });
-    // if set result text to response
-    } else if ( !(notImplemented.includes(me.req) )){
-      request('get', getUrl.href).then((res: RequestResult) => {
-        if(res.ok){
-          let json_response:any = res.json();
-          me.response_text = json_response['result'];
-        } else {
-          me.response_text = "Error Sending Request.";
-        }
-        console.log("updating");
-        me.updateSearchResults();
-      });
-    } else {
-      console.log("not implemented yet");
+          me.updateSearchResults();
+        });
+      } else {
+        console.log("not implemented yet");
+      }
     }
     return;
   }
@@ -424,8 +493,17 @@ export class HySDSWidget extends Widget {
 }
 
 export class WidgetResult extends Widget {
-  constructor(b: any) {
+  // pass HySDSWidget which contains info panel
+  public parentWidget: HySDSWidget;
+
+  constructor(b: any,parent:HySDSWidget) {
     super({node: b});
+    this.parentWidget = parent;
+  }
+
+  // update panel text on resolution of result popup
+  getValue() {
+    this.parentWidget.updateJobCache();
   }
 }
 
