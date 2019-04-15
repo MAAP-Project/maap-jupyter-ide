@@ -10,6 +10,7 @@ import * as data from './fields.json';
 
 const registerFields = data.register;
 const registerAutoFields = data.registerAuto;
+const deleteAlgorithmFields = data.deleteAlgorithm;
 const getCapabilitiesFields = data.getCapabilities;
 const listAlgorithmsFields = data.listAlgorithms;
 const executeInputsFields = data.executeInputs;
@@ -144,6 +145,21 @@ export function activateList(app: JupyterLab,
   palette.addItem({command: open_command, category: 'DPS'});
   console.log('HySDS Describe Job is activated!');
 }
+export function activateDelete(app: JupyterLab, 
+                        palette: ICommandPalette, 
+                        restorer: ILauncher | null): void{
+  const open_command = 'hysds: delete-algorithm';
+
+  app.commands.addCommand(open_command, {
+    label: 'Delete Algorithm',
+    isEnabled: () => true,
+    execute: args => {
+      popup(new HySDSWidget('deleteAlgorithm',deleteAlgorithmFields,jobsPanel));
+    }
+  });
+  palette.addItem({command: open_command, category: 'DPS'});
+  console.log('HySDS Describe Job is activated!');
+}
 export function activateRegisterAuto(app: JupyterLab, 
                         palette: ICommandPalette, 
                         restorer: ILauncher | null): void{
@@ -235,6 +251,14 @@ const extensionList: JupyterLabPlugin<void> = {
   optional: [ILauncher],
   activate: activateList
 };
+const extensionDelete: JupyterLabPlugin<void> = {
+  id: 'dps-algo-delete',
+  autoStart: true,
+  requires: [ICommandPalette],
+  optional: [ILauncher],
+  activate: activateDelete
+};
+
 const extensionJobCache: JupyterLabPlugin<void> = {
   requires: [],
   id: 'job-cache-panel',
@@ -242,4 +266,4 @@ const extensionJobCache: JupyterLabPlugin<void> = {
   activate: activateJobCache
 };
 
-export default [extensionRegisterAuto,extensionRegister,extensionCapabilities,extensionStatus,extensionResult,extensionExecute,extensionDismiss,extensionDescribe,extensionList,extensionJobCache];
+export default [extensionDelete,extensionRegisterAuto,extensionRegister,extensionCapabilities,extensionStatus,extensionResult,extensionExecute,extensionDismiss,extensionDescribe,extensionList,extensionJobCache];
