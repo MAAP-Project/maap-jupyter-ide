@@ -49,8 +49,8 @@ class MAAP(object):
         self._TILER_ENDPOINT = self.config.get("service", "tiler_endpoint")
         self._MAAP_HOST = self.config.get("service", "maap_host")
 
-        self._AWS_ACCESS_KEY = self.config.get("aws", "aws_access_key_id")
-        self._AWS_ACCESS_SECRET = self.config.get("aws", "aws_secret_access_key")
+        self._AWS_ACCESS_KEY = os.environ.get("AWS_ACCESS_KEY_ID") or self.config.get("aws", "aws_access_key_id")
+        self._AWS_ACCESS_SECRET = os.environ.get("AWS_SECRET_ACCESS_KEY") or self.config.get("aws", "aws_secret_access_key")
         self._MAPBOX_TOKEN = os.environ.get("MAPBOX_ACCESS_TOKEN") or ''
         self._INDEXED_ATTRIBUTES = json.loads(self.config.get("search", "indexed_attributes"))
 
