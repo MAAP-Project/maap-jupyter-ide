@@ -69,7 +69,8 @@ class GetGranulesHandler(IPythonHandler):
     def printUrls(self, granules):
         url_list = '[\n'
         for res in granules:
-            url_list = url_list + '\'' + res.getDownloadUrl() + '\',\n'
+            if res.getDownloadUrl():
+                url_list = url_list + '\'' + res.getDownloadUrl() + '\',\n'
         url_list = url_list + ']'
         return url_list
 
