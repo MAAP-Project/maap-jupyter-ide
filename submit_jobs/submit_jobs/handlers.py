@@ -101,28 +101,50 @@ class RegisterAlgorithmHandler(IPythonHandler):
 		# ==================================
 		# Part 2: Check if User Has Committed
 		# ==================================
-		# navigate to project directory
-		proj_path = ('/').join(['/projects']+nb_name.split('/')[:-1])
-		os.chdir(proj_path)
+		if nb_name == '':
+			workspace_id = os.environ['CHE_WORKSPACE_ID']
+			che_machine_token = os.environ['CHE_MACHINE_TOKEN']
+			headers = {
+				'Accept':'application/json',
+				'Authorization':'Bearer {token}'.format(token=che_machine_token)
+			}
+			r = requests.get(
+				url = 'https://che-k8s.maap.xyz/api/workspace/{workspace_id}'.format(workspace_id=workspace_id),
+				headers = headers
+			)
+			try:
+				resp = json.loads(r.text)
+				projects = resp['config']['projects']
+				project_name = projects[0]['name']
+				nb_name = '/projects/'+project_name
 
-		# get git status
-		git_status_out = subprocess.check_output("git status --porcelain", shell=True).decode("utf-8")
+			except:
+				self.finish({"status_code": 412, "result": "Error: Unable to check if Notebook(s) and/or script(s) have not been committed\n{}".format('\n'.join(unsaved))})
+				return
 
-		# is there a git repo?
-		if 'not a git repository' in git_status_out:
-			self.finish({"status_code": 412, "result": "Error: \n{}".format(git_status_out)})
-			return
+		if nb_name != '':
+			# navigate to project directory
+			proj_path = ('/').join(['/projects']+nb_name.split('/')[:-1])
+			os.chdir(proj_path)
 
-		git_status = git_status_out.splitlines()
-		git_status = [e.strip() for e in git_status]
+			# get git status
+			git_status_out = subprocess.check_output("git status --porcelain", shell=True).decode("utf-8")
 
-		# filter for unsaved python files
-		unsaved = list(filter(lambda e: ( (e.split('.')[-1] in ['ipynb','py']) and (e[0] in ['M','?']) ), git_status))
+			# is there a git repo?
+			if 'not a git repository' in git_status_out:
+				self.finish({"status_code": 412, "result": "Error: \n{}".format(git_status_out)})
+				return
 
-		# if there are unsaved python files, user needs to commit
-		if len(unsaved) != 0:
-			self.finish({"status_code": 412, "result": "Error: Notebook(s) and/or script(s) have not been committed\n{}".format('\n'.join(unsaved))})
-			return
+			git_status = git_status_out.splitlines()
+			git_status = [e.strip() for e in git_status]
+
+			# filter for unsaved python files
+			unsaved = list(filter(lambda e: ( (e.split('.')[-1] in ['ipynb','py']) and (e[0] in ['M','?']) ), git_status))
+
+			# if there are unsaved python files, user needs to commit
+			if len(unsaved) != 0:
+				self.finish({"status_code": 412, "result": "Error: Notebook(s) and/or script(s) have not been committed\n{}".format('\n'.join(unsaved))})
+				return
 
 		# ==================================
 		# Part 3: Build & Send Request
@@ -355,6 +377,87 @@ class RegisterAutoHandler(IPythonHandler):
 				print('failed')
 				self.finish({"status_code": r.status_code, "result": r.reason})
 		except:
+			self.finish({"status_code": 400, "result": "Bad Request"})
+
+class DeleteAlgorithmHandler(IPythonHandler):
+	def get(self):
+		# ==================================
+		# Part 1: Parse Required Arguments
+		# ==================================
+		complete = True
+		fields = getFields('deleteAlgorithm')
+
+		params = {}
+		for f in fields:
+			try:
+				arg = self.get_argument(f.lower(), '').strip()
+				params[f] = arg
+			except:
+				complete = False
+
+		if all(e == '' for e in list(params.values())):
+			complete = False
+
+		print(params)
+		print(complete)
+
+		# ==================================
+		# Part 2: Build & Send Request
+		# ==================================
+		# return all algorithms if malformed request
+		headers = {'Content-Type':'application/json'}
+		if complete:
+			url = BASE_URL+'/mas/algorithm/{algo_id}:{version}'.format(**params) 
+			r = requests.delete(
+				url,
+				headers=headers
+			)
+		else:
+			url = BASE_URL+'/mas/algorithm'
+			r = requests.get(
+				url,
+				headers=headers
+			)
+
+		# print(url)
+		# print(r.status_code)
+		# print(r.text)
+
+		# ==================================
+		# Part 3: Check & Parse Response
+		# ==================================
+
+		if r.status_code == 200:
+			try:
+				if complete:
+					# MAAP API response
+					resp = json.loads(r.text)
+					# show registered inputs
+					result = resp['message']
+				else:
+					resp = json.loads(r.text)
+					result = 'Algorithms:\n'
+					for e in resp['algorithms']:
+						result += '\t{}:{}\n'.format(e['type'],e['version'])
+
+				if result.strip() == '':
+					result = 'Bad Request\nThe provided parameters were\n\talgo_id:{}\n\tversion:{}\n'.format(params['algo_id'],params['version'])
+					self.finish({"status_code": 400, "result": result})
+					return
+
+				# print(result)
+				self.finish({"status_code": r.status_code, "result": result})
+			except:
+				self.finish({"status_code": r.status_code, "result": r.text})
+
+		# malformed request will still give 500
+		elif r.status_code == 500:
+			if 'AttributeError' in r.text:
+				result = 'Bad Request\nThe provided parameters were\n\talgo_id:{}\n\tversion:{}\n'.format(params['algo_id'],params['version'])
+				self.finish({"status_code": 400, "result": result})
+			else:
+				self.finish({"status_code": r.status_code, "result": r.reason})
+		else:
 			self.finish({"status_code": 400, "result": "Bad Request"})
 
 class GetCapabilitiesHandler(IPythonHandler):
@@ -643,8 +746,20 @@ class GetResultHandler(IPythonHandler):
 
 						for product in p[1]:
 							for attrib in product[1]:
-								result += '{}: {}\n'.format(attrib[0],attrib[1])
+								if attrib[0] == 'Locations' and type(attrib[1] == type([])):
+									lst = attrib[1]
+									lnk = lst[-1]
+									lst[-1] = "<a href=\"{}\">{}</a>".format(lnk,lnk)
+									prop = ('\n	').join(lst)
+									result += '{}: {}\n'.format(attrib[0],prop)
+								else:
+									result += '{}: {}\n'.format(attrib[0],attrib[1])
 							result += '\n'
+
+						print(result)
+						# result = result.replace(',',',<br>	')
+						result = result.replace('\n','<br>')
+						print(result)
 
 						# print("success!")
 						self.finish({"status_code": r.status_code, "result": result})
