@@ -38,7 +38,8 @@ export class JobCache extends Widget {
 // -----------------------
 // HySDS stuff
 // -----------------------
-const nonXML: string[] = ['listAlgorithms','registerAuto','getResult','executeInputs','getStatus','execute','describeProcess','getCapabilities','register'];
+const nonXML: string[] = ['deleteAlgorithm','listAlgorithms','registerAuto','getResult','executeInputs','getStatus','execute','describeProcess','getCapabilities','register'];
+// const nonXML: string[] = ['deleteAlgorithm','listAlgorithms','registerAuto','executeInputs','getStatus','execute','describeProcess','getCapabilities','register'];
 const notImplemented: string[] = ['dismiss'];
 export class HySDSWidget extends Widget {
 
@@ -57,6 +58,9 @@ export class HySDSWidget extends Widget {
     body.style.display = 'flex';
     body.style.flexDirection = 'column';
     super({node: body});
+    // const el = document.getElementById('jupyter-config-data');
+    // console.log(PageConfig.getOption('');
+    // console.log(el);
 
      // Default text
     this.req = req;
@@ -75,6 +79,10 @@ export class HySDSWidget extends Widget {
       case 'registerAuto':
         this.popup_title = "Register Algorithm";
         console.log('registerAuto');
+        break;
+      case 'deleteAlgorithm':
+        this.popup_title = "Delete Algorithm";
+        console.log('deleteAlgorithm');
         break;
       case 'getCapabilities':
         this.popup_title = "Get List of Capabilities";
@@ -118,9 +126,9 @@ export class HySDSWidget extends Widget {
 
     // console.log('making title');
     // list all the fields of the job
-    var title = document.createElement('div');
-    title.innerHTML = this.popup_title+"\n";
-    this.node.appendChild(title);
+    // var title = document.createElement('div');
+    // title.innerHTML = this.popup_title+"\n";
+    // this.node.appendChild(title);
 
     if (this.popup_title == "registerAuto") {
       var msg = document.createElement("Label");
@@ -243,13 +251,13 @@ export class HySDSWidget extends Widget {
 
       if ( nonXML.includes(me.req) ){ 
         textarea.innerHTML = "<pre>" + this.response_text + "</pre>";
-        console.log(textarea);
+        // console.log(textarea);
       } else {
-        var xml = this.response_text;
+        var xml = "<root><content><p>"+this.response_text+"</p></content></root>";
         var options = {indentation: '  ', stripComments: true, collapseContent: false};
         var formattedXML = format(xml,options); 
-        textarea.innerText = formattedXML;
-        console.log(textarea);
+        textarea.innerHTML = formattedXML;
+        // console.log(formattedXML);
       }
 
       body.appendChild(textarea);
@@ -337,7 +345,7 @@ export class HySDSWidget extends Widget {
           // var len = last - start + 1;
           for (var i = start; i <= last; i++) {
             var multiUrl = this.buildCopyUrl(rangeField,String(i));
-            console.log(multiUrl);
+            // console.log(multiUrl);
             // const build = new Promise<void>((resolve, reject) => { getUrl.searchParams.set(rangeField,String(i)); resolve(); });
             // build.then(() => {
             // multiUrl.searchParams.set(rangeField,String(i))
@@ -365,7 +373,13 @@ export class HySDSWidget extends Widget {
             // Get Notebook information to pass to RegisterAuto Handler
             var tab:any = servers[0];
             console.log(tab);
-            var nb_name:any = tab["path"];
+            var nb_name:any = tab["path"];      // undefined if no notebook open
+            if (typeof nb_name == 'undefined') {
+              console.log("no notebook open");
+              me.response_text = "No notebook open";
+              me.updateSearchResults();
+              return;
+            }
             var algo_name:any = tab["notebook"]["path"];
             var lang:any = tab["kernel"]["name"];
             console.log(nb_name);
@@ -384,17 +398,28 @@ export class HySDSWidget extends Widget {
       // Get Notebook information to pass to Register Handler
       } else if (me.req == 'register') {
         var settingsAPIUrl = new URL(PageConfig.getBaseUrl() + 'api/sessions');
+
+          // add user-defined fields
+          for (var field of this.fields) {
+            var fieldText = (<HTMLInputElement>document.getElementById(field.toLowerCase()+'-input')).value;
+            // if (fieldText != "") { getUrl.searchParams.append(field.toLowerCase(), fieldText); }
+            getUrl.searchParams.append(field.toLowerCase(), fieldText);
+          }
+          // get notebook path to check if user committed
           request('get',settingsAPIUrl.href).then((res: RequestResult) => {
             if (res.ok) {
             var json_response:any = res.json();
             var servers = json_response;
             console.log(servers);
-            console.log(servers.length);
+            // console.log(servers.length);
 
             // TODO: find active tab instead of grabbing 1st one
             var tab:any = servers[0];
             console.log(tab);
-            var nb_name:any = tab["path"];
+            var nb_name:any = tab["path"];      // undefined if no notebook open
+            if (typeof nb_name == 'undefined') {
+              nb_name = ''
+            }
             console.log(nb_name);
             getUrl.searchParams.append('nb_name', nb_name);
             console.log(getUrl.href);
