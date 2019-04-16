@@ -84,7 +84,10 @@ class GetGranulesHandler(IPythonHandler):
         query_string = maap.getCallFromEarthdataQuery(json_obj, limit=limit)
         granules = eval(query_string)
         query_result = self.printUrls(granules)
-        print("Response is: ", query_result)
+        try:
+            print("Response is: ", query_result)
+        except:
+            print("Could not print results")
         self.finish({"granule_urls": query_result})
 
 
