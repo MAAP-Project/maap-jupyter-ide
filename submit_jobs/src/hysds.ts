@@ -39,7 +39,6 @@ export class JobCache extends Widget {
 // HySDS stuff
 // -----------------------
 const nonXML: string[] = ['deleteAlgorithm','listAlgorithms','registerAuto','getResult','executeInputs','getStatus','execute','describeProcess','getCapabilities','register'];
-// const nonXML: string[] = ['deleteAlgorithm','listAlgorithms','registerAuto','executeInputs','getStatus','execute','describeProcess','getCapabilities','register'];
 const notImplemented: string[] = ['dismiss'];
 export class HySDSWidget extends Widget {
 
@@ -297,7 +296,7 @@ export class HySDSWidget extends Widget {
   }
 
   buildRequestUrl() {
-    var me = this;
+    var me:HySDSWidget = this;
     return new Promise<Array<URL>>((resolve, reject) => {
       // var skip = false;
       // create API call to server extension
@@ -371,17 +370,32 @@ export class HySDSWidget extends Widget {
 
             // TODO: find active tab instead of grabbing 1st one
             // Get Notebook information to pass to RegisterAuto Handler
-            var tab:any = servers[0];
+            var tab:any = {};
+            var nb_name:string = '';
+            var algo_name:string = '';
+            var lang:string = '';
             console.log(tab);
-            var nb_name:any = tab["path"];      // undefined if no notebook open
-            if (typeof nb_name == 'undefined') {
+            if (servers.length > 0) {
+              tab = servers[0];
+              nb_name = tab["path"];      // undefined if no notebook open
+              if (tab["type"] == "console") {
+                nb_name = tab["path"].split('/console')[0]
+              }
+              algo_name = tab["name"];
+              lang = tab["kernel"]["name"];
+            }
+            if (servers.length == 0 || tab == {} || [nb_name,algo_name,lang].includes('')) {
               console.log("no notebook open");
               me.response_text = "No notebook open";
               me.updateSearchResults();
               return;
             }
-            var algo_name:any = tab["notebook"]["path"];
-            var lang:any = tab["kernel"]["name"];
+            if (nb_name == '' || nb_name.indexOf("/console") == 0) {
+              console.log("Not in a project!");
+              me.response_text = "Not in a project";
+              me.updateSearchResults();
+              return;
+            }
             console.log(nb_name);
             console.log(algo_name);
             console.log(lang);
@@ -395,7 +409,7 @@ export class HySDSWidget extends Widget {
           resolve(urllst);
         });
 
-      // Get Notebook information to pass to Register Handler
+      // // Get Notebook information to pass to Register Handler
       } else if (me.req == 'register') {
         var settingsAPIUrl = new URL(PageConfig.getBaseUrl() + 'api/sessions');
 
@@ -408,25 +422,42 @@ export class HySDSWidget extends Widget {
           // get notebook path to check if user committed
           request('get',settingsAPIUrl.href).then((res: RequestResult) => {
             if (res.ok) {
-            var json_response:any = res.json();
-            var servers = json_response;
-            console.log(servers);
-            // console.log(servers.length);
+              var json_response:any = res.json();
+              var servers = json_response;
+              console.log(servers);
+              // console.log(servers.length);
+
+              // nothing open
+              if (servers.length == 0) {
+                console.log("no notebook open");
+                me.response_text = "No notebook open";
+                me.updateSearchResults();
+                return;
+            }
 
             // TODO: find active tab instead of grabbing 1st one
             var tab:any = servers[0];
             console.log(tab);
             var nb_name:any = tab["path"];      // undefined if no notebook open
+            if (tab["type"] == "console") {
+              nb_name = tab["path"].split('/console')[0]
+            }
             if (typeof nb_name == 'undefined') {
               nb_name = ''
+            }
+            if (nb_name == '' || nb_name.indexOf("/console") == 0) {
+              console.log("Not in a project!");
+              me.response_text = "Not in a project";
+              me.updateSearchResults();
+              return;
             }
             console.log(nb_name);
             getUrl.searchParams.append('nb_name', nb_name);
             console.log(getUrl.href);
             urllst.push(getUrl);
             resolve(urllst);
+            console.log('done setting url');
           }
-          console.log('done setting url');
         });
       // for all other requests
       } else {
@@ -455,7 +486,7 @@ export class HySDSWidget extends Widget {
       var getUrl = urllst[ind];
       console.log('sending');
       console.log(getUrl.href);
-      var me = this;
+      var me:HySDSWidget = this;
       // Send Job as Request
       // if just got inputs for execute, new popup to fill out input fields
       if (me.req == 'executeInputs') {
@@ -508,7 +539,7 @@ export class HySDSWidget extends Widget {
 
   // submit the job
   // overrides the resolution of popup dialog
-  getValue() {
+  getValue(): void {
     this.buildRequestUrl().then((url) => {
       // console.log('then');
       console.log(url);
