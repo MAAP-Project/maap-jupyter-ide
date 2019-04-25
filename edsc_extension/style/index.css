@@ -7,3 +7,17 @@ div.iframe-widget iframe{
     height:100%;
     width:100%;
 }
+.btn{
+    border: none;
+    box-sizing: border-box;
+    outline: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    margin: 4px;
+    padding: 5px 7px;
+    /*border-radius: 0;*/
+}
+
+.btn:hover {
+    background-color: #eeeeee;
+}

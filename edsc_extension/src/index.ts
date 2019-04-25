@@ -3,7 +3,7 @@ import {
 } from '@jupyterlab/application';
 
 import {
-  ICommandPalette, Clipboard, Dialog, showDialog
+  ICommandPalette, Clipboard, Dialog, showDialog, //Toolbar, ToolbarButton
 } from '@jupyterlab/apputils';
 
 import {
@@ -21,7 +21,6 @@ import {
   Widget
 } from '@phosphor/widgets';
 
-// import { MimeData } from '@phosphor/coreutils';
 
 import {
   request, RequestResult
@@ -44,60 +43,6 @@ const extension: JupyterLabPlugin<void> = {
 };
 
 
-// export class DialogEnter<T> extends Dialog<T> {
-//   /**
-//    * Create a dialog panel instance.
-//    *
-//    * @param options - The dialog setup options.
-//    */
-//   constructor(options: Partial<Dialog.IOptions<T>> = {}) {
-//     super(options);
-//   }
-//
-//   handleEvent(event: Event): void {
-//     switch (event.type) {
-//       case 'keydown':
-//         this._evtKeydown(event as KeyboardEvent);
-//         break;
-//       case 'click':
-//         this._evtClick(event as MouseEvent);
-//         break;
-//       case 'focus':
-//         this._evtFocus(event as FocusEvent);
-//         break;
-//       case 'contextmenu':
-//         event.preventDefault();
-//         event.stopPropagation();
-//         break;
-//       default:
-//         break;
-//     }
-//   }
-//
-//   protected _evtKeydown(event: KeyboardEvent): void {
-//     // Check for escape key
-//     switch (event.keyCode) {
-//       case 13: // Enter.
-//         //event.stopPropagation();
-//         //event.preventDefault();
-//         //this.resolve();
-//         break;
-//       default:
-//         super._evtKeydown(event);
-//         break;
-//     }
-//   }
-// }
-//
-// export function showDialog<T>(
-//   options: Partial<Dialog.IOptions<T>> = {}
-// ): void {
-//   let dialog = new DialogEnter(options);
-//   dialog.launch();
-//   // setTimeout(function(){console.log('go away'); dialog.resolve(0);}, 3000);
-//   return;
-// }
-
 
 class IFrameWidget extends Widget {
 
@@ -106,13 +51,14 @@ class IFrameWidget extends Widget {
     this.id = path + '-' + unique;
     unique += 1;
 
+
     this.title.label = "Earthdata Search";
     this.title.closable = true;
 
     let div = document.createElement('div');
     div.classList.add('iframe-widget');
     let iframe = document.createElement('iframe');
-    iframe.id = "iframeid"
+    iframe.id = "iframeid";
 
     console.log("Path is,", path);
     // TODO proxy path if necessary
@@ -138,28 +84,29 @@ class IFrameWidget extends Widget {
 
     let copyQueryBtn = document.createElement('button');
     copyQueryBtn.id = "copyBtn";
-    // copyBtn.className = "btn";
+    copyQueryBtn.className = "btn";
     copyQueryBtn.innerHTML = "Copy Search Query";
     copyQueryBtn.addEventListener('click', copySearchQuery, false);
     this.node.appendChild(copyQueryBtn);
 
     let copyResultsBtn = document.createElement('button');
     copyResultsBtn.id = "copyBtn";
-    // copyBtn.className = "btn";
+    copyResultsBtn.className = "btn";
     copyResultsBtn.innerHTML = "Copy Search Results";
     copyResultsBtn.addEventListener('click', copySearchResults, false);
     this.node.appendChild(copyResultsBtn);
 
     let setLimitBtn = document.createElement('button');
     setLimitBtn.id = "setLimitBtn";
+    setLimitBtn.className = "btn";
     setLimitBtn.innerHTML = "Set Results Limit";
     setLimitBtn.addEventListener('click', setResultsLimit, false);
     this.node.appendChild(setLimitBtn);
 
     let viewParamsBtn = document.createElement('button');
     viewParamsBtn.id = "copyBtn";
-    // copyBtn.className = "btn";
-    viewParamsBtn.innerHTML = "View current search parameters";
+    viewParamsBtn.className = "btn";
+    viewParamsBtn.innerHTML = "View Search Parameters";
     viewParamsBtn.addEventListener('click', displaySearchParams, false);
     this.node.appendChild(viewParamsBtn);
 
@@ -274,6 +221,31 @@ function displaySearchParams() {
 
 }
 
+// class ToolbarWidget extends Widget {
+//
+//     constructor(path: string) {
+//         this.id = "bar_widget222";
+//         super();
+//
+//
+//     // const layout = (bar_widget.layout = new BoxLayout({ spacing: 0 }));
+//     const bar = new Toolbar();
+//
+//     // this.node.innerText = "DEFAULT TILTE";
+//     // bar.insertItem(0, 'banner', banner);
+//     // layout.addWidget(bar);
+//
+//     let button = new ToolbarButton({
+//         className: 'test',
+//         iconClassName: 'test',
+//         onClick: print,
+//         tooltip: 'Run All Cells'
+//       });
+//      bar.insertItem(6, 'runAllCells', button);
+//
+//      this.node.appendChild(bar)
+//     }
+// }
 
 function activate(app: JupyterLab, docManager: IDocumentManager, palette: ICommandPalette, restorer: ILayoutRestorer, mainMenu: IMainMenu) {
 
@@ -304,6 +276,8 @@ function activate(app: JupyterLab, docManager: IDocumentManager, palette: IComma
   // panel.spacing = 0;
   // panel.addWidget(toolbar);
   // Widget.attach(panel, window);
+
+
 
   // Add an application command to open ESDS
   const open_command = 'iframe:open';
