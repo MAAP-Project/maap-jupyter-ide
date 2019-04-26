@@ -2,7 +2,8 @@ import { JupyterLab, JupyterLabPlugin } from '@jupyterlab/application';
 // import { Widget } from '@phosphor/widgets';
 import { ICommandPalette } from '@jupyterlab/apputils';
 import { ILauncher } from '@jupyterlab/launcher';
-import { JobCache, HySDSWidget, popup } from './hysds';
+import { JobCache, HySDSWidget, popup, popupResult } from './hysds';
+import { ProjectSelector } from './subwidgets';
 // import { INotebookTracker, Notebook, NotebookPanel } from '@jupyterlab/notebook';
 // import * as $ from "jquery";
 // import { format } from "xml-formatter";
@@ -169,7 +170,7 @@ export function activateRegisterAuto(app: JupyterLab,
     label: 'Register Algorithm Automatically',
     isEnabled: () => true,
     execute: args => {
-      popup(new HySDSWidget('registerAuto',registerAutoFields,jobsPanel));
+      popupResult(new ProjectSelector(true,registerAutoFields,jobsPanel),"Select a Project");
       // popupResult(new HySDSWidget('registerAuto',registerAutoFields,jobsPanel);
     }
   });

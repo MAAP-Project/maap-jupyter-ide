@@ -6,8 +6,10 @@ import { request, RequestResult } from './request';
 // import * as $ from "jquery";
 // import { format } from "xml-formatter";
 
+// primitive text panel for storing submitted job information
 export class JobCache extends Widget {
   public response_text: string[];
+  public opt:string;
 
   constructor() {
     super();
@@ -47,7 +49,7 @@ export class HySDSWidget extends Widget {
   public readonly popup_title: string;
   public response_text: string;
   public old_fields: {[k:string]:string}; // for execute
-  public readonly fields: string[];       // for execute
+  public readonly fields: string[];       // user inputs
   public readonly get_inputs: boolean;    // for execute
   jobs_panel: JobCache;    // for execute
   ins_dict: {[k:string]:string};          // for execute
@@ -262,7 +264,7 @@ export class HySDSWidget extends Widget {
       body.appendChild(textarea);
       // this.node.appendChild(textarea);
       // this.node = body;
-      popupResult(new WidgetResult(body,this));
+      popupResult(new WidgetResult(body,this),"Results");
     }
   }
 
@@ -360,54 +362,56 @@ export class HySDSWidget extends Widget {
 
       // for getting notebook info with auto register
       } else if (me.req == 'registerAuto') {
-        var settingsAPIUrl = new URL(PageConfig.getBaseUrl() + 'api/sessions');
-        request('get',settingsAPIUrl.href).then((res: RequestResult) => {
-          if (res.ok) {
-            var json_response:any = res.json();
-            var servers = json_response;
-            console.log(servers);
-            console.log(servers.length);
+        // popupResult(new ProjectSelector());
+        // var settingsAPIUrl = new URL(PageConfig.getBaseUrl() + 'api/sessions');
+        // request('get',settingsAPIUrl.href).then((res: RequestResult) => {
+        //   if (res.ok) {
+        //     var json_response:any = res.json();
+        //     var servers = json_response;
+        //     console.log(servers);
+        //     console.log(servers.length);
 
-            // TODO: find active tab instead of grabbing 1st one
-            // Get Notebook information to pass to RegisterAuto Handler
-            var tab:any = {};
-            var nb_name:string = '';
-            var algo_name:string = '';
-            var lang:string = '';
-            console.log(tab);
-            if (servers.length > 0) {
-              tab = servers[0];
-              nb_name = tab["path"];      // undefined if no notebook open
-              if (tab["type"] == "console") {
-                nb_name = tab["path"].split('/console')[0]
-              }
-              algo_name = tab["name"];
-              lang = tab["kernel"]["name"];
-            }
-            if (servers.length == 0 || tab == {} || [nb_name,algo_name,lang].includes('')) {
-              console.log("no notebook open");
-              me.response_text = "No notebook open";
-              me.updateSearchResults();
-              return;
-            }
-            if (nb_name == '' || nb_name.indexOf("/console") == 0) {
-              console.log("Not in a project!");
-              me.response_text = "Not in a project";
-              me.updateSearchResults();
-              return;
-            }
-            console.log(nb_name);
-            console.log(algo_name);
-            console.log(lang);
-            getUrl.searchParams.append('nb_name', nb_name);
-            getUrl.searchParams.append('algo_name', algo_name);
-            getUrl.searchParams.append('lang', lang);
-            console.log(getUrl.href);
-          }
-          console.log('done setting url');
-          urllst.push(getUrl);
-          resolve(urllst);
-        });
+        //     // TODO: find active tab instead of grabbing 1st one
+        //     // Get Notebook information to pass to RegisterAuto Handler
+        //     var tab:any = {};
+        //     var nb_name:string = '';
+        //     var algo_name:string = '';
+        //     var lang:string = '';
+        //     console.log(tab);
+        //     if (servers.length > 0) {
+        //       tab = servers[0];
+        //       nb_name = tab["path"];      // undefined if no notebook open
+        //       if (tab["type"] == "console") {
+        //         nb_name = tab["path"].split('/console')[0]
+        //       }
+        //       algo_name = tab["name"];
+        //       lang = tab["kernel"]["name"];
+        //     }
+        //     if (servers.length == 0 || tab == {} || [nb_name,algo_name,lang].includes('')) {
+        //       console.log("no notebook open");
+        //       me.response_text = "No notebook open";
+        //       me.updateSearchResults();
+        //       return;
+        //     }
+        //     if (nb_name == '' || nb_name.indexOf("/console") == 0) {
+        //       console.log("Not in a project!");
+        //       me.response_text = "Not in a project";
+        //       me.updateSearchResults();
+        //       return;
+        //     }
+        //     console.log(nb_name);
+        //     console.log(algo_name);
+        //     console.log(lang);
+        //     getUrl.searchParams.append('nb_name', nb_name);
+        //     getUrl.searchParams.append('algo_name', algo_name);
+        //     getUrl.searchParams.append('lang', lang);
+        //     console.log(getUrl.href);
+        //   }
+        //   console.log('done setting url');
+        //   urllst.push(getUrl);
+        //   resolve(urllst);
+        // });
+        resolve(urllst);
 
       // // Get Notebook information to pass to Register Handler
       } else if (me.req == 'register') {
@@ -627,13 +631,13 @@ export function popup(b:HySDSWidget): void {
     });
   } else {
     console.log("not implemented yet");
-    popupResult("Not Implemented yet")
+    popupResult("Not Implemented yet","Not Implemented yet")
   }
 }
 
-export function popupResult(b:any): void {
+export function popupResult(b:any,popup_title:string): void {
   showDialog({
-    title: 'Results:',
+    title: popup_title,
     body: b,
     focusNodeSelector: 'input',
     buttons: [Dialog.okButton({ label: 'Ok' })]
