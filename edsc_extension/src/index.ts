@@ -186,16 +186,29 @@ function copySearchResults() {
   // Make call to back end
   var xhr = new XMLHttpRequest();
 
+  let url_response:any = [];
+
   xhr.onload = function() {
       let response:any = $.parseJSON(xhr.response);
       let response_text:any = response.granule_urls;
       if (response_text == "" ) { response_text = "No results found."; }
       console.log(response_text);
       Clipboard.copyToSystem(response_text);
+      url_response = response_text;
   }
 
   xhr.open("GET", getUrl.href, true);
   xhr.send(null);
+
+  return url_response;
+}
+
+//
+// External facing function for DPS to get the s3 urls of a specified search
+//
+export function getUrls() {
+
+  return copySearchResults();
 }
 
 function setResultsLimit() {
