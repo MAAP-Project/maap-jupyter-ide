@@ -41,7 +41,7 @@ class ListProjectsHandler(IPythonHandler):
                 result += 'name: {project_name}, \rsource: {src_type}, \rfrom {location}'.format(project_name=project_name, src_type=src_type, location=location)
                 result += '\r\r'
 
-            self.finish({"status_code": r.status_code, "result": result})
+            self.finish({"status_code": r.status_code, "result": result, "json_object":projects})
         except:
             self.finish({"status_code": r.status_code, "result": r.reason})
 
