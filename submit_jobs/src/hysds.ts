@@ -125,12 +125,6 @@ export class HySDSWidget extends Widget {
     this.setOldFields = this.setOldFields.bind(this);
     this.buildRequestUrl = this.buildRequestUrl.bind(this);
 
-    // console.log('making title');
-    // list all the fields of the job
-    // var title = document.createElement('div');
-    // title.innerHTML = this.popup_title+"\n";
-    // this.node.appendChild(title);
-
     if (this.popup_title == "registerAuto") {
       var msg = document.createElement("Label");
       msg.innerHTML = "Your Docker container must have cloned the repository in the following path: /app";
@@ -362,55 +356,6 @@ export class HySDSWidget extends Widget {
 
       // for getting notebook info with auto register
       } else if (me.req == 'registerAuto') {
-        // popupResult(new ProjectSelector());
-        // var settingsAPIUrl = new URL(PageConfig.getBaseUrl() + 'api/sessions');
-        // request('get',settingsAPIUrl.href).then((res: RequestResult) => {
-        //   if (res.ok) {
-        //     var json_response:any = res.json();
-        //     var servers = json_response;
-        //     console.log(servers);
-        //     console.log(servers.length);
-
-        //     // TODO: find active tab instead of grabbing 1st one
-        //     // Get Notebook information to pass to RegisterAuto Handler
-        //     var tab:any = {};
-        //     var nb_name:string = '';
-        //     var algo_name:string = '';
-        //     var lang:string = '';
-        //     console.log(tab);
-        //     if (servers.length > 0) {
-        //       tab = servers[0];
-        //       nb_name = tab["path"];      // undefined if no notebook open
-        //       if (tab["type"] == "console") {
-        //         nb_name = tab["path"].split('/console')[0]
-        //       }
-        //       algo_name = tab["name"];
-        //       lang = tab["kernel"]["name"];
-        //     }
-        //     if (servers.length == 0 || tab == {} || [nb_name,algo_name,lang].includes('')) {
-        //       console.log("no notebook open");
-        //       me.response_text = "No notebook open";
-        //       me.updateSearchResults();
-        //       return;
-        //     }
-        //     if (nb_name == '' || nb_name.indexOf("/console") == 0) {
-        //       console.log("Not in a project!");
-        //       me.response_text = "Not in a project";
-        //       me.updateSearchResults();
-        //       return;
-        //     }
-        //     console.log(nb_name);
-        //     console.log(algo_name);
-        //     console.log(lang);
-        //     getUrl.searchParams.append('nb_name', nb_name);
-        //     getUrl.searchParams.append('algo_name', algo_name);
-        //     getUrl.searchParams.append('lang', lang);
-        //     console.log(getUrl.href);
-        //   }
-        //   console.log('done setting url');
-        //   urllst.push(getUrl);
-        //   resolve(urllst);
-        // });
         resolve(urllst);
 
       // // Get Notebook information to pass to Register Handler
@@ -552,7 +497,7 @@ export class HySDSWidget extends Widget {
   }
 }
 
-export class WidgetResult extends Widget {
+class WidgetResult extends Widget {
   // pass HySDSWidget which contains info panel
   public parentWidget: HySDSWidget;
 
@@ -567,7 +512,7 @@ export class WidgetResult extends Widget {
   }
 }
 
-export class DialogEnter<T> extends Dialog<T> {
+class DialogEnter<T> extends Dialog<T> {
   /**
    * Create a dialog panel instance.
    *
@@ -612,7 +557,7 @@ export class DialogEnter<T> extends Dialog<T> {
   }
 }
 
-export function showDialog<T>(
+function showDialog<T>(
   options: Partial<Dialog.IOptions<T>> = {}
 ): void {
   let dialog = new DialogEnter(options);
