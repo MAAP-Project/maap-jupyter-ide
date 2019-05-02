@@ -336,7 +336,6 @@ class RegisterAutoHandler(IPythonHandler):
 
 		# print(ins)
 		# add inputs json to params for template substitution
-		params['algo_inputs'] = ins
 
 		with open(json_file) as jso:
 			req_json = jso.read()
@@ -348,6 +347,7 @@ class RegisterAutoHandler(IPythonHandler):
 		params["run_cmd"] = run_cmd
 		params["algo_name"] = algo_name
 		params["algo_desc"] = 'auto-register {}'.format(algo_name)
+		params['algo_inputs'] = ins
 
 		req_json = req_json.format(**params)
 		# print(req_json)

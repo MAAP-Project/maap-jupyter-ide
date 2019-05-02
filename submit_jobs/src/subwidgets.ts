@@ -108,6 +108,14 @@ export class RegisterWidget extends HySDSWidget {
 
       // Pull notebook name and language for automatic register
       if (me.auto) {
+        // add user-defined fields
+        for (var field of this.fields) {
+          var fieldText = (<HTMLInputElement>document.getElementById(field.toLowerCase()+'-input')).value;
+          // if (fieldText != "") { getUrl.searchParams.append(field.toLowerCase(), fieldText); }
+          console.log(field+' input is '+fieldText);
+          getUrl.searchParams.append(field.toLowerCase(), fieldText);
+        }
+
         var settingsAPIUrl = new URL(PageConfig.getBaseUrl() + 'api/sessions');
         request('get',settingsAPIUrl.href).then((res: RequestResult) => {
           if (res.ok) {
@@ -159,29 +167,29 @@ export class RegisterWidget extends HySDSWidget {
 
       // // Get Notebook information to pass to Register Handler
       } else {
+        // add user-defined fields
+        for (var field of this.fields) {
+          console.log('checking '+field);
+          var fieldText = (<HTMLInputElement>document.getElementById(field.toLowerCase()+'-input')).value;
+          // if (fieldText != "") { getUrl.searchParams.append(field.toLowerCase(), fieldText); }
+          getUrl.searchParams.append(field.toLowerCase(), fieldText);
+        }
+
         var settingsAPIUrl = new URL(PageConfig.getBaseUrl() + 'api/sessions');
+        // get notebook path to check if user committed
+        request('get',settingsAPIUrl.href).then((res: RequestResult) => {
+          if (res.ok) {
+            var json_response:any = res.json();
+            var servers = json_response;
+            console.log(servers);
+            // console.log(servers.length);
 
-          // add user-defined fields
-          for (var field of this.fields) {
-            console.log('checking '+field);
-            var fieldText = (<HTMLInputElement>document.getElementById(field.toLowerCase()+'-input')).value;
-            // if (fieldText != "") { getUrl.searchParams.append(field.toLowerCase(), fieldText); }
-            getUrl.searchParams.append(field.toLowerCase(), fieldText);
-          }
-          // get notebook path to check if user committed
-          request('get',settingsAPIUrl.href).then((res: RequestResult) => {
-            if (res.ok) {
-              var json_response:any = res.json();
-              var servers = json_response;
-              console.log(servers);
-              // console.log(servers.length);
-
-              // nothing open
-              if (servers.length == 0) {
-                console.log("no notebook open");
-                me.response_text = "No notebook open";
-                me.updateSearchResults();
-                return;
+            // nothing open
+            if (servers.length == 0) {
+              console.log("no notebook open");
+              me.response_text = "No notebook open";
+              me.updateSearchResults();
+              return;
             }
 
             // TODO: find active tab instead of grabbing 1st one
@@ -209,7 +217,6 @@ export class RegisterWidget extends HySDSWidget {
           }
         });
       }
-
     });
   }
 }
