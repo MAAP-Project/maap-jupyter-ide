@@ -3,7 +3,7 @@ import { JupyterLab, JupyterLabPlugin } from '@jupyterlab/application';
 import { ICommandPalette } from '@jupyterlab/apputils';
 import { ILauncher } from '@jupyterlab/launcher';
 import { JobCache, HySDSWidget, popup, popupResult } from './hysds';
-import { ProjectSelector } from './subwidgets';
+import { ProjectSelector } from './register';
 // import { INotebookTracker, Notebook, NotebookPanel } from '@jupyterlab/notebook';
 // import * as $ from "jquery";
 // import { format } from "xml-formatter";
