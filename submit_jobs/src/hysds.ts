@@ -136,7 +136,6 @@ export class HySDSWidget extends Widget {
     this.node.appendChild(x)
 
     // TODO enforce input types
-    // console.log('making fields');
     // Construct labels and inputs for fields
     if (! this.get_inputs) {
       for (var field of this.fields) {
@@ -177,24 +176,51 @@ export class HySDSWidget extends Widget {
     } else {
       // console.log("new");
       for (var field of this.fields) {
-        // console.log('printing fields');
-        var field_name = field[0];
-        // console.log(field_name);
+        var fieldName = field[0];
         var fieldLabel = document.createElement("Label");
-        fieldLabel.innerHTML = field_name;
+        fieldLabel.innerHTML = fieldName;
         this.node.appendChild(fieldLabel);
 
+        fieldName = fieldName.toLowerCase();
         var fieldInput = document.createElement('input');
-        fieldInput.id = (field_name.toLowerCase() + '-input');
+        fieldInput.id = (fieldName + '-input');
+        fieldInput.classList.add(fieldName);
         this.node.appendChild(fieldInput);
       
-        // BREAK
-        var x = document.createElement("BR");
-        this.node.appendChild(x)
-        // console.log(field_name);
+        // newline
+        var br = document.createElement("BR");
+        this.node.appendChild(br);
+
+        // add button
+        var fieldAdd = document.createElement('button');
+        fieldAdd.innerHTML = 'Add Run Input';
+        fieldAdd.id = (fieldName + '-add');
+        fieldAdd.name = fieldName;
+        fieldAdd.addEventListener('click', (e:Event) => this.insertField(e), false);
+        this.node.appendChild(fieldAdd);
+
+        // newline
+        var br = document.createElement("BR");
+        this.node.appendChild(br);
       }
     }
     // console.log('done constructing');
+  }
+
+  // insertField(fieldName:string) {
+  insertField(e:Event) {
+    console.log('adding field '+fieldName);
+    var fieldName = (<HTMLButtonElement>e.currentTarget).name;
+    fieldName = fieldName.toLowerCase();
+    var addbtn = document.getElementById(fieldName+'-add');
+    var fieldInput = document.createElement('input');
+    fieldInput.id = (fieldName + '-input');
+    fieldInput.classList.add(fieldName);
+
+     // insert newline & new input field before add button
+    addbtn.parentNode.insertBefore(document.createElement("BR"),addbtn.previousSibling);
+    addbtn.parentNode.insertBefore(fieldInput,addbtn.previousSibling);
+    return;
   }
 
   setOldFields(old:{[k:string]:string}): void {
