@@ -205,7 +205,7 @@ export class HySDSWidget extends Widget {
 
   // TODO: add jobs to response text
   updateJobCache(){
-    console.log(this.fields);
+    // console.log(this.fields);
     if (this.req == 'execute') {
       this.jobs_panel.addJob('------------------------------');
       this.jobs_panel.addJob(this.response_text);
@@ -229,10 +229,10 @@ export class HySDSWidget extends Widget {
     // console.log(this.response_text);
 
     if (document.getElementById('result-text') != null){
-      console.log('using textarea');
+      // console.log('using textarea');
       (<HTMLDivElement>document.getElementById('result-text')).innerHTML = "<pre>" + this.response_text + "</pre>";
     } else {
-      console.log('create textarea');
+      // console.log('create textarea');
       let body = document.createElement('div');
       body.style.display = 'flex';
       body.style.flexDirection = 'column';
@@ -256,8 +256,6 @@ export class HySDSWidget extends Widget {
       }
 
       body.appendChild(textarea);
-      // this.node.appendChild(textarea);
-      // this.node = body;
       popupResult(new WidgetResult(body,this),"Results");
     }
   }
@@ -413,12 +411,12 @@ export class HySDSWidget extends Widget {
             } else {
               me.response_text = json_response['result'];
               me.updateSearchResults();
-              console.log("updating");
+              // console.log("updating");
             }
           } else {
             me.response_text = "Error Getting Inputs Required.";
             me.updateSearchResults();
-            console.log("updating");
+            // console.log("updating");
           }
         });
       // if set result text to response

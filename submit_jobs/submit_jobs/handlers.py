@@ -78,7 +78,6 @@ class RegisterAlgorithmHandler(IPythonHandler):
 		fields = ['nb_name'] + getFields('register')
 
 		params = {}
-		# params['url_list'] = []
 		for f in fields:
 			try:
 				arg = self.get_argument(f.lower(), '').strip()
@@ -101,27 +100,6 @@ class RegisterAlgorithmHandler(IPythonHandler):
 		# ==================================
 		# Part 2: Check if User Has Committed
 		# ==================================
-		if nb_name == '':
-			workspace_id = os.environ['CHE_WORKSPACE_ID']
-			che_machine_token = os.environ['CHE_MACHINE_TOKEN']
-			headers = {
-				'Accept':'application/json',
-				'Authorization':'Bearer {token}'.format(token=che_machine_token)
-			}
-			r = requests.get(
-				url = 'https://che-k8s.maap.xyz/api/workspace/{workspace_id}'.format(workspace_id=workspace_id),
-				headers = headers
-			)
-			try:
-				resp = json.loads(r.text)
-				projects = resp['config']['projects']
-				project_name = projects[0]['name']
-				nb_name = '/projects/'+project_name
-
-			except:
-				self.finish({"status_code": 412, "result": "Error: Unable to check if Notebook(s) and/or script(s) have not been committed\n{}".format('\n'.join(unsaved))})
-				return
-
 		if nb_name != '':
 			# navigate to project directory
 			proj_path = ('/').join(['/projects']+nb_name.split('/')[:-1])
