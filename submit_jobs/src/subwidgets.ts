@@ -73,7 +73,7 @@ export class ProjectSelector extends Widget {
       popup(new RegisterWidget('registerAuto',this.registerFields,this.jobsPanel,opt));
     } else {
       console.log('create register');
-      // popup(new HySDSWidget('register',this.registerFields,this.jobsPanel));
+      popup(new RegisterWidget('register',this.registerFields,this.jobsPanel,opt));
     }
   }
 }
@@ -175,8 +175,8 @@ export class RegisterWidget extends HySDSWidget {
           getUrl.searchParams.append(field.toLowerCase(), fieldText);
         }
 
-        var settingsAPIUrl = new URL(PageConfig.getBaseUrl() + 'api/sessions');
         // get notebook path to check if user committed
+        var settingsAPIUrl = new URL(PageConfig.getBaseUrl() + 'api/sessions');
         request('get',settingsAPIUrl.href).then((res: RequestResult) => {
           if (res.ok) {
             var json_response:any = res.json();
