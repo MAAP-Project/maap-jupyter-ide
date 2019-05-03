@@ -358,56 +358,10 @@ export class HySDSWidget extends Widget {
       } else if (me.req == 'registerAuto') {
         resolve(urllst);
 
-      // // Get Notebook information to pass to Register Handler
+      // Get Notebook information to pass to Register Handler
       } else if (me.req == 'register') {
-        var settingsAPIUrl = new URL(PageConfig.getBaseUrl() + 'api/sessions');
+        resolve(urllst);
 
-          // add user-defined fields
-          for (var field of this.fields) {
-            var fieldText = (<HTMLInputElement>document.getElementById(field.toLowerCase()+'-input')).value;
-            // if (fieldText != "") { getUrl.searchParams.append(field.toLowerCase(), fieldText); }
-            getUrl.searchParams.append(field.toLowerCase(), fieldText);
-          }
-          // get notebook path to check if user committed
-          request('get',settingsAPIUrl.href).then((res: RequestResult) => {
-            if (res.ok) {
-              var json_response:any = res.json();
-              var servers = json_response;
-              console.log(servers);
-              // console.log(servers.length);
-
-              // nothing open
-              if (servers.length == 0) {
-                console.log("no notebook open");
-                me.response_text = "No notebook open";
-                me.updateSearchResults();
-                return;
-            }
-
-            // TODO: find active tab instead of grabbing 1st one
-            var tab:any = servers[0];
-            console.log(tab);
-            var nb_name:any = tab["path"];      // undefined if no notebook open
-            if (tab["type"] == "console") {
-              nb_name = tab["path"].split('/console')[0]
-            }
-            if (typeof nb_name == 'undefined') {
-              nb_name = ''
-            }
-            if (nb_name == '' || nb_name.indexOf("/console") == 0) {
-              console.log("Not in a project!");
-              me.response_text = "Not in a project";
-              me.updateSearchResults();
-              return;
-            }
-            console.log(nb_name);
-            getUrl.searchParams.append('nb_name', nb_name);
-            console.log(getUrl.href);
-            urllst.push(getUrl);
-            resolve(urllst);
-            console.log('done setting url');
-          }
-        });
       // for all other requests
       } else {
         // console.log(this.req+'!!!!');

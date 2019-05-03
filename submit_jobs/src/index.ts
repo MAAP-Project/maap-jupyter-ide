@@ -34,7 +34,8 @@ function activateRegister(app: JupyterLab,
     label: 'Register Algorithm',
     isEnabled: () => true,
     execute: args => {
-      popup(new HySDSWidget('register',registerFields,jobsPanel));
+      popupResult(new ProjectSelector(false,registerFields,jobsPanel),"Select a Project");
+      // popup(new HySDSWidget('register',registerFields,jobsPanel));
     }
   });
   palette.addItem({command: open_command, category: 'DPS'});
