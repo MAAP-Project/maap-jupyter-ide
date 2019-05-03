@@ -78,7 +78,6 @@ class RegisterAlgorithmHandler(IPythonHandler):
 		fields = ['nb_name'] + getFields('register')
 
 		params = {}
-		# params['url_list'] = []
 		for f in fields:
 			try:
 				arg = self.get_argument(f.lower(), '').strip()
@@ -101,27 +100,6 @@ class RegisterAlgorithmHandler(IPythonHandler):
 		# ==================================
 		# Part 2: Check if User Has Committed
 		# ==================================
-		if nb_name == '':
-			workspace_id = os.environ['CHE_WORKSPACE_ID']
-			che_machine_token = os.environ['CHE_MACHINE_TOKEN']
-			headers = {
-				'Accept':'application/json',
-				'Authorization':'Bearer {token}'.format(token=che_machine_token)
-			}
-			r = requests.get(
-				url = 'https://che-k8s.maap.xyz/api/workspace/{workspace_id}'.format(workspace_id=workspace_id),
-				headers = headers
-			)
-			try:
-				resp = json.loads(r.text)
-				projects = resp['config']['projects']
-				project_name = projects[0]['name']
-				nb_name = '/projects/'+project_name
-
-			except:
-				self.finish({"status_code": 412, "result": "Error: Unable to check if Notebook(s) and/or script(s) have not been committed\n{}".format('\n'.join(unsaved))})
-				return
-
 		if nb_name != '':
 			# navigate to project directory
 			proj_path = ('/').join(['/projects']+nb_name.split('/')[:-1])
@@ -206,7 +184,7 @@ class RegisterAutoHandler(IPythonHandler):
 		# Part 1: Get Notebook Information Processed in UI
 		# ==================================
 		# include user-defined inputs
-		fields = ['algo_name','lang','nb_name'] + getFields('register')
+		fields =  getFields('register') + ['lang','nb_name']#,'algo_name']
 		params = {}
 		for f in fields:
 			try:
@@ -216,9 +194,10 @@ class RegisterAutoHandler(IPythonHandler):
 				params[f] = ''
 
 		# print(params)
-		algo_name = params['algo_name']
 		lang = params['lang']
 		nb_name = params['nb_name']
+		algo_name = nb_name
+		params['algo_name'] = nb_name
 
 		# ==================================
 		# Part 2: GitLab Token
@@ -336,7 +315,6 @@ class RegisterAutoHandler(IPythonHandler):
 
 		# print(ins)
 		# add inputs json to params for template substitution
-		params['algo_inputs'] = ins
 
 		with open(json_file) as jso:
 			req_json = jso.read()
@@ -348,6 +326,7 @@ class RegisterAutoHandler(IPythonHandler):
 		params["run_cmd"] = run_cmd
 		params["algo_name"] = algo_name
 		params["algo_desc"] = 'auto-register {}'.format(algo_name)
+		params['algo_inputs'] = ins
 
 		req_json = req_json.format(**params)
 		# print(req_json)

@@ -2,7 +2,8 @@ import { JupyterLab, JupyterLabPlugin } from '@jupyterlab/application';
 // import { Widget } from '@phosphor/widgets';
 import { ICommandPalette } from '@jupyterlab/apputils';
 import { ILauncher } from '@jupyterlab/launcher';
-import { JobCache, HySDSWidget, popup } from './hysds';
+import { JobCache, HySDSWidget, popup, popupResult } from './hysds';
+import { ProjectSelector } from './register';
 // import { INotebookTracker, Notebook, NotebookPanel } from '@jupyterlab/notebook';
 // import * as $ from "jquery";
 // import { format } from "xml-formatter";
@@ -24,7 +25,7 @@ const describeProcessFields = data.describeProcess;
 // I really don't like this hack
 const jobsPanel = new JobCache();
 
-export function activateRegister(app: JupyterLab, 
+function activateRegister(app: JupyterLab, 
                         palette: ICommandPalette, 
                         restorer: ILauncher | null): void{
   const open_command = 'hysds: register';
@@ -33,13 +34,14 @@ export function activateRegister(app: JupyterLab,
     label: 'Register Algorithm',
     isEnabled: () => true,
     execute: args => {
-      popup(new HySDSWidget('register',registerFields,jobsPanel));
+      popupResult(new ProjectSelector(false,registerFields,jobsPanel),"Select a Project");
+      // popup(new HySDSWidget('register',registerFields,jobsPanel));
     }
   });
   palette.addItem({command: open_command, category: 'DPS'});
   console.log('HySDS Register Algorithm is activated!');
 }
-export function activateGetCapabilities(app: JupyterLab, 
+function activateGetCapabilities(app: JupyterLab, 
                         palette: ICommandPalette, 
                         restorer: ILauncher | null): void{
   const open_command = 'hysds: get-capabilities';
@@ -54,7 +56,7 @@ export function activateGetCapabilities(app: JupyterLab,
   palette.addItem({command: open_command, category: 'DPS'});
   console.log('HySDS Get Capabilities is activated!');
 }
-export function activateGetStatus(app: JupyterLab, 
+function activateGetStatus(app: JupyterLab, 
                         palette: ICommandPalette, 
                         restorer: ILauncher | null): void{  
   const open_command = 'hysds: get-status';
@@ -69,7 +71,7 @@ export function activateGetStatus(app: JupyterLab,
   palette.addItem({command: open_command, category: 'DPS'});
   console.log('HySDS Get Job Status is activated!');
 }
-export function activateGetResult(app: JupyterLab, 
+function activateGetResult(app: JupyterLab, 
                         palette: ICommandPalette, 
                         restorer: ILauncher | null): void{
   const open_command = 'hysds: get-result';
@@ -84,7 +86,7 @@ export function activateGetResult(app: JupyterLab,
   palette.addItem({command: open_command, category: 'DPS'});
   console.log('HySDS Get Job Result is activated!');
 }
-export function activateExecute(app: JupyterLab, 
+function activateExecute(app: JupyterLab, 
                         palette: ICommandPalette, 
                         restorer: ILauncher | null): void{
   const open_command = 'hysds: execute-job';
@@ -100,7 +102,7 @@ export function activateExecute(app: JupyterLab,
  
   console.log('HySDS Execute Job is activated!');
 }
-export function activateDismiss(app: JupyterLab, 
+function activateDismiss(app: JupyterLab, 
                         palette: ICommandPalette, 
                         restorer: ILauncher | null): void{
   const open_command = 'hysds: dismiss-job';
@@ -115,7 +117,7 @@ export function activateDismiss(app: JupyterLab,
   palette.addItem({command: open_command, category: 'DPS'});
   console.log('HySDS Dismiss Job is activated!');
 }
-export function activateDescribe(app: JupyterLab, 
+function activateDescribe(app: JupyterLab, 
                         palette: ICommandPalette, 
                         restorer: ILauncher | null): void{
   const open_command = 'hysds: describe-job';
@@ -130,7 +132,7 @@ export function activateDescribe(app: JupyterLab,
   palette.addItem({command: open_command, category: 'DPS'});
   console.log('HySDS Describe Job is activated!');
 }
-export function activateList(app: JupyterLab, 
+function activateList(app: JupyterLab, 
                         palette: ICommandPalette, 
                         restorer: ILauncher | null): void{
   const open_command = 'hysds: list-algorithms';
@@ -145,7 +147,7 @@ export function activateList(app: JupyterLab,
   palette.addItem({command: open_command, category: 'DPS'});
   console.log('HySDS Describe Job is activated!');
 }
-export function activateDelete(app: JupyterLab, 
+function activateDelete(app: JupyterLab, 
                         palette: ICommandPalette, 
                         restorer: ILauncher | null): void{
   const open_command = 'hysds: delete-algorithm';
@@ -160,7 +162,7 @@ export function activateDelete(app: JupyterLab,
   palette.addItem({command: open_command, category: 'DPS'});
   console.log('HySDS Describe Job is activated!');
 }
-export function activateRegisterAuto(app: JupyterLab, 
+function activateRegisterAuto(app: JupyterLab, 
                         palette: ICommandPalette, 
                         restorer: ILauncher | null): void{
   const open_command = 'hysds: register-auto';
@@ -169,7 +171,7 @@ export function activateRegisterAuto(app: JupyterLab,
     label: 'Register Algorithm Automatically',
     isEnabled: () => true,
     execute: args => {
-      popup(new HySDSWidget('registerAuto',registerAutoFields,jobsPanel));
+      popupResult(new ProjectSelector(true,registerAutoFields,jobsPanel),"Select a Project");
       // popupResult(new HySDSWidget('registerAuto',registerAutoFields,jobsPanel);
     }
   });
@@ -177,7 +179,7 @@ export function activateRegisterAuto(app: JupyterLab,
   console.log('HySDS Register Algorithm is activated!');
 }
 
-export function activateJobCache(app: JupyterLab): void{
+function activateJobCache(app: JupyterLab): void{
 
   var infoPanel = jobsPanel;
   infoPanel.id = 'job-cache-display';
