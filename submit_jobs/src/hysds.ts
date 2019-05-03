@@ -6,8 +6,10 @@ import { request, RequestResult } from './request';
 // import * as $ from "jquery";
 // import { format } from "xml-formatter";
 
+// primitive text panel for storing submitted job information
 export class JobCache extends Widget {
   public response_text: string[];
+  public opt:string;
 
   constructor() {
     super();
@@ -47,7 +49,7 @@ export class HySDSWidget extends Widget {
   public readonly popup_title: string;
   public response_text: string;
   public old_fields: {[k:string]:string}; // for execute
-  public readonly fields: string[];       // for execute
+  public readonly fields: string[];       // user inputs
   public readonly get_inputs: boolean;    // for execute
   jobs_panel: JobCache;    // for execute
   ins_dict: {[k:string]:string};          // for execute
@@ -122,12 +124,6 @@ export class HySDSWidget extends Widget {
     this.updateSearchResults = this.updateSearchResults.bind(this);
     this.setOldFields = this.setOldFields.bind(this);
     this.buildRequestUrl = this.buildRequestUrl.bind(this);
-
-    // console.log('making title');
-    // list all the fields of the job
-    // var title = document.createElement('div');
-    // title.innerHTML = this.popup_title+"\n";
-    // this.node.appendChild(title);
 
     if (this.popup_title == "registerAuto") {
       var msg = document.createElement("Label");
@@ -209,7 +205,7 @@ export class HySDSWidget extends Widget {
 
   // TODO: add jobs to response text
   updateJobCache(){
-    console.log(this.fields);
+    // console.log(this.fields);
     if (this.req == 'execute') {
       this.jobs_panel.addJob('------------------------------');
       this.jobs_panel.addJob(this.response_text);
@@ -233,10 +229,10 @@ export class HySDSWidget extends Widget {
     // console.log(this.response_text);
 
     if (document.getElementById('result-text') != null){
-      console.log('using textarea');
+      // console.log('using textarea');
       (<HTMLDivElement>document.getElementById('result-text')).innerHTML = "<pre>" + this.response_text + "</pre>";
     } else {
-      console.log('create textarea');
+      // console.log('create textarea');
       let body = document.createElement('div');
       body.style.display = 'flex';
       body.style.flexDirection = 'column';
@@ -260,9 +256,7 @@ export class HySDSWidget extends Widget {
       }
 
       body.appendChild(textarea);
-      // this.node.appendChild(textarea);
-      // this.node = body;
-      popupResult(new WidgetResult(body,this));
+      popupResult(new WidgetResult(body,this),"Results");
     }
   }
 
@@ -360,105 +354,12 @@ export class HySDSWidget extends Widget {
 
       // for getting notebook info with auto register
       } else if (me.req == 'registerAuto') {
-        var settingsAPIUrl = new URL(PageConfig.getBaseUrl() + 'api/sessions');
-        request('get',settingsAPIUrl.href).then((res: RequestResult) => {
-          if (res.ok) {
-            var json_response:any = res.json();
-            var servers = json_response;
-            console.log(servers);
-            console.log(servers.length);
+        resolve(urllst);
 
-            // TODO: find active tab instead of grabbing 1st one
-            // Get Notebook information to pass to RegisterAuto Handler
-            var tab:any = {};
-            var nb_name:string = '';
-            var algo_name:string = '';
-            var lang:string = '';
-            console.log(tab);
-            if (servers.length > 0) {
-              tab = servers[0];
-              nb_name = tab["path"];      // undefined if no notebook open
-              if (tab["type"] == "console") {
-                nb_name = tab["path"].split('/console')[0]
-              }
-              algo_name = tab["name"];
-              lang = tab["kernel"]["name"];
-            }
-            if (servers.length == 0 || tab == {} || [nb_name,algo_name,lang].includes('')) {
-              console.log("no notebook open");
-              me.response_text = "No notebook open";
-              me.updateSearchResults();
-              return;
-            }
-            if (nb_name == '' || nb_name.indexOf("/console") == 0) {
-              console.log("Not in a project!");
-              me.response_text = "Not in a project";
-              me.updateSearchResults();
-              return;
-            }
-            console.log(nb_name);
-            console.log(algo_name);
-            console.log(lang);
-            getUrl.searchParams.append('nb_name', nb_name);
-            getUrl.searchParams.append('algo_name', algo_name);
-            getUrl.searchParams.append('lang', lang);
-            console.log(getUrl.href);
-          }
-          console.log('done setting url');
-          urllst.push(getUrl);
-          resolve(urllst);
-        });
-
-      // // Get Notebook information to pass to Register Handler
+      // Get Notebook information to pass to Register Handler
       } else if (me.req == 'register') {
-        var settingsAPIUrl = new URL(PageConfig.getBaseUrl() + 'api/sessions');
+        resolve(urllst);
 
-          // add user-defined fields
-          for (var field of this.fields) {
-            var fieldText = (<HTMLInputElement>document.getElementById(field.toLowerCase()+'-input')).value;
-            // if (fieldText != "") { getUrl.searchParams.append(field.toLowerCase(), fieldText); }
-            getUrl.searchParams.append(field.toLowerCase(), fieldText);
-          }
-          // get notebook path to check if user committed
-          request('get',settingsAPIUrl.href).then((res: RequestResult) => {
-            if (res.ok) {
-              var json_response:any = res.json();
-              var servers = json_response;
-              console.log(servers);
-              // console.log(servers.length);
-
-              // nothing open
-              if (servers.length == 0) {
-                console.log("no notebook open");
-                me.response_text = "No notebook open";
-                me.updateSearchResults();
-                return;
-            }
-
-            // TODO: find active tab instead of grabbing 1st one
-            var tab:any = servers[0];
-            console.log(tab);
-            var nb_name:any = tab["path"];      // undefined if no notebook open
-            if (tab["type"] == "console") {
-              nb_name = tab["path"].split('/console')[0]
-            }
-            if (typeof nb_name == 'undefined') {
-              nb_name = ''
-            }
-            if (nb_name == '' || nb_name.indexOf("/console") == 0) {
-              console.log("Not in a project!");
-              me.response_text = "Not in a project";
-              me.updateSearchResults();
-              return;
-            }
-            console.log(nb_name);
-            getUrl.searchParams.append('nb_name', nb_name);
-            console.log(getUrl.href);
-            urllst.push(getUrl);
-            resolve(urllst);
-            console.log('done setting url');
-          }
-        });
       // for all other requests
       } else {
         // console.log(this.req+'!!!!');
@@ -510,12 +411,12 @@ export class HySDSWidget extends Widget {
             } else {
               me.response_text = json_response['result'];
               me.updateSearchResults();
-              console.log("updating");
+              // console.log("updating");
             }
           } else {
             me.response_text = "Error Getting Inputs Required.";
             me.updateSearchResults();
-            console.log("updating");
+            // console.log("updating");
           }
         });
       // if set result text to response
@@ -548,7 +449,7 @@ export class HySDSWidget extends Widget {
   }
 }
 
-export class WidgetResult extends Widget {
+class WidgetResult extends Widget {
   // pass HySDSWidget which contains info panel
   public parentWidget: HySDSWidget;
 
@@ -563,7 +464,7 @@ export class WidgetResult extends Widget {
   }
 }
 
-export class DialogEnter<T> extends Dialog<T> {
+class DialogEnter<T> extends Dialog<T> {
   /**
    * Create a dialog panel instance.
    *
@@ -608,7 +509,7 @@ export class DialogEnter<T> extends Dialog<T> {
   }
 }
 
-export function showDialog<T>(
+function showDialog<T>(
   options: Partial<Dialog.IOptions<T>> = {}
 ): void {
   let dialog = new DialogEnter(options);
@@ -627,13 +528,13 @@ export function popup(b:HySDSWidget): void {
     });
   } else {
     console.log("not implemented yet");
-    popupResult("Not Implemented yet")
+    popupResult("Not Implemented yet","Not Implemented yet")
   }
 }
 
-export function popupResult(b:any): void {
+export function popupResult(b:any,popup_title:string): void {
   showDialog({
-    title: 'Results:',
+    title: popup_title,
     body: b,
     focusNodeSelector: 'input',
     buttons: [Dialog.okButton({ label: 'Ok' })]
