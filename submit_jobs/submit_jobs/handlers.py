@@ -206,7 +206,7 @@ class RegisterAutoHandler(IPythonHandler):
 		# Part 1: Get Notebook Information Processed in UI
 		# ==================================
 		# include user-defined inputs
-		fields = ['algo_name','lang','nb_name'] + getFields('register')
+		fields =  getFields('register') + ['lang','nb_name']#,'algo_name']
 		params = {}
 		for f in fields:
 			try:
@@ -216,9 +216,10 @@ class RegisterAutoHandler(IPythonHandler):
 				params[f] = ''
 
 		# print(params)
-		algo_name = params['algo_name']
 		lang = params['lang']
 		nb_name = params['nb_name']
+		algo_name = nb_name
+		params['algo_name'] = nb_name
 
 		# ==================================
 		# Part 2: GitLab Token

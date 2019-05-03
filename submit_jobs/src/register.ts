@@ -128,7 +128,6 @@ export class RegisterWidget extends HySDSWidget {
             // Get Notebook information to pass to RegisterAuto Handler
             var tab:any = {};
             var nb_name:string = '';
-            var algo_name:string = '';
             var lang:string = '';
             console.log(tab);
             if (servers.length > 0) {
@@ -137,10 +136,9 @@ export class RegisterWidget extends HySDSWidget {
               if (tab["type"] == "console") {
                 nb_name = tab["path"].split('/console')[0]
               }
-              algo_name = tab["name"];
               lang = tab["kernel"]["name"];
             }
-            if (servers.length == 0 || tab == {} || [nb_name,algo_name,lang].includes('')) {
+            if (servers.length == 0 || tab == {} || [nb_name,lang].includes('')) {
               console.log("no notebook open");
               me.response_text = "No notebook open";
               me.updateSearchResults();
@@ -153,10 +151,8 @@ export class RegisterWidget extends HySDSWidget {
               return;
             }
             console.log(nb_name);
-            console.log(algo_name);
             console.log(lang);
             getUrl.searchParams.append('nb_name', nb_name);
-            getUrl.searchParams.append('algo_name', algo_name);
             getUrl.searchParams.append('lang', lang);
             console.log(getUrl.href);
           }
@@ -220,5 +216,3 @@ export class RegisterWidget extends HySDSWidget {
     });
   }
 }
-
-
