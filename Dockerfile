@@ -18,23 +18,6 @@ RUN cd /pull_projects && jupyter serverextension enable --py pull_projects --sys
 RUN cd /pull_projects && npm run build
 RUN cd /pull_projects && jupyter labextension link .
 
-# jlab earthdata search extension
-#COPY jupyterlab_iframe /jupyterlab_iframe
-#RUN cd /jupyterlab_iframe && npm run build
-#RUN cd /jupyterlab_iframe && jupyter labextension link .
-#RUN cd /jupyterlab_iframe && pip install -e .
-#RUN cd /jupyterlab_iframe/maap-py && python setup.py install
-#RUN cd /jupyterlab_iframe && jupyter serverextension enable --py jupyterlab_iframe --sys-prefix
-
-# jlab earthdata search extension
-COPY edsc_extension /edsc_extension
-RUN cd /edsc_extension && npm run build
-RUN cd /edsc_extension && jupyter labextension link .
-RUN cd /edsc_extension && pip install -e .
-RUN cd /edsc_extension/maap-py && python setup.py install
-RUN cd /edsc_extension && jupyter serverextension enable --py edsc_extension --sys-prefix
-ENV MAAP_CONF='/edsc_extension/maap-py/'
-
 # install git extension
 COPY jupyterlab-git /jupyterlab-git
 RUN cd /jupyterlab-git && npm install && npm run build
@@ -56,6 +39,15 @@ RUN cd /submit_jobs && npm run build
 RUN cd /submit_jobs && jupyter labextension link .
 RUN cd /submit_jobs && pip install -e .
 RUN cd /submit_jobs && jupyter serverextension enable --py submit_jobs --sys-prefix
+
+# jlab earthdata search extension
+COPY edsc_extension /edsc_extension
+RUN cd /edsc_extension && npm run build
+RUN cd /edsc_extension && jupyter labextension link .
+RUN cd /edsc_extension && pip install -e .
+RUN cd /edsc_extension/maap-py && python setup.py install
+RUN cd /edsc_extension && jupyter serverextension enable --py edsc_extension --sys-prefix
+ENV MAAP_CONF='/edsc_extension/maap-py/'
 
 RUN touch /root/.bashrc && echo "cd /projects >& /dev/null" >> /root/.bashrc
 
