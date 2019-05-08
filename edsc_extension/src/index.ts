@@ -274,25 +274,75 @@ function activate(app: JupyterLab,
     console.log("in func");
     const current = getCurrent(args);
     console.log(result_type);
-    let insert_text:any = "NO SEARCH STORED";
+    //let insert_text:any = "NO SEARCH STORED";
 
     if (result_type == "query") {
-      insert_text = copySearchQuery();
-      console.log("insert text is:", insert_text)
+
+        var getUrl = new URL(PageConfig.getBaseUrl() + 'edsc/getQuery');
+        getUrl.searchParams.append("json_obj", JSON.stringify(params));
+        getUrl.searchParams.append("limit", limit);
+
+        // Make call to back end
+        var xhr = new XMLHttpRequest();
+        let response_text:any = "";
+
+        xhr.onload = function() {
+            let response:any = $.parseJSON(xhr.response);
+            console.log(response);
+            response_text = response.query_string;
+            if (response_text == "" ) { response_text = "No results found."; }
+            console.log(response_text);
+            if (current) {
+              NotebookActions.insertBelow(current.content);
+              NotebookActions.paste(current.content);
+              current.content.mode = 'edit';
+              current.content.activeCell.model.value.text = response_text;
+              console.log("inserted text");
+            }
+        };
+
+        xhr.open("GET", getUrl.href, true);
+        xhr.send(null);
       // insert_text = "QUERY";
     } else {
-      insert_text = copySearchResults();
-      console.log("insert text is:", insert_text)
+
+      var getUrl = new URL(PageConfig.getBaseUrl() + 'edsc/getGranules');
+      getUrl.searchParams.append("json_obj", JSON.stringify(params));
+      getUrl.searchParams.append("limit", limit);
+
+
+      // Make call to back end
+      var xhr = new XMLHttpRequest();
+
+      let url_response:any = [];
+
+      xhr.onload = function() {
+          let response:any = $.parseJSON(xhr.response);
+          let response_text:any = response.granule_urls;
+          if (response_text == "" ) { response_text = "No results found."; }
+          url_response = response_text;
+          console.log(response_text);
+          if (current) {
+              NotebookActions.insertBelow(current.content);
+              NotebookActions.paste(current.content);
+              current.content.mode = 'edit';
+              current.content.activeCell.model.value.text = url_response;
+              console.log("inserted text");
+            }
+      };
+
+      xhr.open("GET", getUrl.href, true);
+      xhr.send(null);
       // insert_text = "RESULT";
     }
 
-    if (current) {
-      NotebookActions.insertBelow(current.content);
-      NotebookActions.paste(current.content);
-      current.content.mode = 'edit';
-      current.content.activeCell.model.value.text = insert_text;
-      console.log("inserted text");
-    }
+    // if (current) {
+    //   NotebookActions.insertBelow(current.content);
+    //   NotebookActions.paste(current.content);
+    //   current.content.mode = 'edit';
+    //   current.content.activeCell.model.value.text = insert_text;
+    //   console.log("inserted text");
+    // }
   }
 
 
