@@ -3,7 +3,7 @@ import {
 } from '@jupyterlab/application';
 
 import {
-  ICommandPalette, Clipboard, Dialog, showDialog, //Toolbar, ToolbarButton
+  ICommandPalette, Clipboard, Dialog, showDialog//, ToolbarButton
 } from '@jupyterlab/apputils';
 
 import {
@@ -21,6 +21,11 @@ import {
   Widget
 } from '@phosphor/widgets';
 
+import {
+    NotebookActions, NotebookPanel, INotebookTracker
+} from '@jupyterlab/notebook';
+
+import { ReadonlyJSONObject } from '@phosphor/coreutils';
 
 import {
   request, RequestResult
@@ -38,7 +43,7 @@ let limit = "1000";
 const extension: JupyterLabPlugin<void> = {
   id: 'edsc_extension',
   autoStart: true,
-  requires: [IDocumentManager, ICommandPalette, ILayoutRestorer, IMainMenu],
+  requires: [IDocumentManager, ICommandPalette, ILayoutRestorer, IMainMenu, INotebookTracker],
   activate: activate
 };
 
@@ -161,18 +166,21 @@ function copySearchQuery() {
 
   // Make call to back end
   var xhr = new XMLHttpRequest();
+  let response_text:any = "";
 
   xhr.onload = function() {
       let response:any = $.parseJSON(xhr.response);
       console.log(response);
-      let response_text:any = response.query_string;
+      response_text = response.query_string;
       if (response_text == "" ) { response_text = "No results found."; }
       console.log(response_text);
       Clipboard.copyToSystem(response_text);
-  }
+  };
 
   xhr.open("GET", getUrl.href, true);
   xhr.send(null);
+
+  return response_text;
 }
 
 
@@ -195,7 +203,7 @@ function copySearchResults() {
       console.log(response_text);
       Clipboard.copyToSystem(response_text);
       url_response = response_text;
-  }
+  };
 
   xhr.open("GET", getUrl.href, true);
   xhr.send(null);
@@ -223,7 +231,6 @@ function setResultsLimit() {
 
 }
 
-
 function displaySearchParams() {
   showDialog({
         title: 'Current Search Parameters:',
@@ -234,35 +241,27 @@ function displaySearchParams() {
 
 }
 
-// class ToolbarWidget extends Widget {
-//
-//     constructor(path: string) {
-//         this.id = "bar_widget222";
-//         super();
-//
-//
-//     // const layout = (bar_widget.layout = new BoxLayout({ spacing: 0 }));
-//     const bar = new Toolbar();
-//
-//     // this.node.innerText = "DEFAULT TILTE";
-//     // bar.insertItem(0, 'banner', banner);
-//     // layout.addWidget(bar);
-//
-//     let button = new ToolbarButton({
-//         className: 'test',
-//         iconClassName: 'test',
-//         onClick: print,
-//         tooltip: 'Run All Cells'
-//       });
-//      bar.insertItem(6, 'runAllCells', button);
-//
-//      this.node.appendChild(bar)
-//     }
-// }
-
-function activate(app: JupyterLab, docManager: IDocumentManager, palette: ICommandPalette, restorer: ILayoutRestorer, mainMenu: IMainMenu) {
+function activate(app: JupyterLab,
+                  docManager: IDocumentManager,
+                  palette: ICommandPalette,
+                  restorer: ILayoutRestorer,
+                  mainMenu: IMainMenu,
+                  tracker: INotebookTracker,
+                  panel: NotebookPanel) {
 
   let widget: IFrameWidget;
+
+  function getCurrent(args: ReadonlyJSONObject): NotebookPanel | null {
+    console.log(args);
+    const widget = tracker.currentWidget;
+    const activate = args['activate'] !== false;
+
+    if (activate && widget) {
+      app.shell.activateById(widget.id);
+    }
+
+    return widget;
+  }
 
   // Listen for messages being sent by the iframe
   window.addEventListener("message", (event: MessageEvent) => {
@@ -270,27 +269,25 @@ function activate(app: JupyterLab, docManager: IDocumentManager, palette: IComma
     console.log("at event listen: ", event.data);
   });
 
-  // const toolbar = new Toolbar();
-  // toolbar.id = 'ESDS-TOOLBAR-1'
-  // toolbar.addItem(
-  //     'Copy search Query',
-  //     new ToolbarButton({
-  //       iconClassName: 'jp-RefreshIcon jp-Icon jp-Icon-16',
-  //       onClick: () => {
-  //         copySearchQuery();
-  //       },
-  //       tooltip: 'Copy Search Query'
-  //     })
-  //   );
+  function pasteSearch(args: any, result_type: any) {
+    const current = getCurrent(args);
+    let insert_text = "NO SEARCH STORED";
 
-  // const panel = new BoxPanel();
-  // panel.id = 'main';
-  // panel.direction = 'top-to-bottom';
-  // panel.spacing = 0;
-  // panel.addWidget(toolbar);
-  // Widget.attach(panel, window);
+    if (result_type == "query") {
+      insert_text = copySearchQuery();
+    } else {
+      insert_text = copySearchResults();
+    }
+
+    if (current) {
+      NotebookActions.paste(current.content);
+      current.content.mode = 'edit';
+      current.content.activeCell.model.value.text = insert_text;
+    }
+  }
 
 
+  /******** Set commands for menu *********/
 
   // Add an application command to open ESDS
   const open_command = 'iframe:open';
@@ -303,8 +300,6 @@ function activate(app: JupyterLab, docManager: IDocumentManager, palette: IComma
       app.shell.activateById(widget.id);
     }
   });
-
-  // Add the command to the palette.
   palette.addItem({command: open_command, category: 'Search'});
 
   // Add copy commands to the command palette
@@ -336,6 +331,52 @@ function activate(app: JupyterLab, docManager: IDocumentManager, palette: IComma
   });
   palette.addItem({command: 'search:displayParams', category: 'Search'});
 
+  app.commands.addCommand('search:pasteQuery', {
+    label: 'Paste Search Query',
+    isEnabled: () => true,
+    execute: args => {
+      pasteSearch(args, "query")
+
+    }
+  });
+  palette.addItem({command: 'search:pasteQuery', category: 'Search'});
+
+  app.commands.addCommand('search:pasteResults', {
+    label: 'Paste Search Results',
+    isEnabled: () => true,
+    execute: args => {
+      pasteSearch(args, "results")
+
+    }
+  });
+  palette.addItem({command: 'search:pasteResults', category: 'Search'});
+
+
+
+  // function pasteFunc() {
+  //   const current = getCurrent(args);
+  //
+  //     if (current) {
+  //
+  //       NotebookActions.paste(current.content);
+  //       current.content.mode = 'edit';
+  //       current.content.activeCell.model.value.text = "Inserting ESDS query!!!";
+  //     }
+  // }
+
+  // let button = new ToolbarButton({
+  //     iconClassName: 'paste-esds',
+  //     onClick: () => {
+  //       panel = getCurrent(args);
+  //       NotebookActions.paste(panel.content);
+  //       panel.content.mode = 'edit';
+  //       panel.content.activeCell.model.value.text = "Inserting ESDS query!!!";
+  //     },
+  //     tooltip: 'Insert a cell below'
+  //   });
+  //
+  // panel.toolbar.insertItem(0,"paste-search", button);
+
   const { commands } = app;
   let searchMenu = new Menu({ commands })
   searchMenu.title.label = 'Data Search';
@@ -343,17 +384,17 @@ function activate(app: JupyterLab, docManager: IDocumentManager, palette: IComma
     open_command,
     'search:copyQuery',
     'search:copyResult',
-    'search:displayParams'
+    'search:displayParams',
+    'search:pasteQuery',
+    'search:pasteResults'
   ].forEach(command => {
     searchMenu.addItem({ command });
   });
   mainMenu.addMenu(searchMenu, { rank: 100 });
 
-
-
+  
   console.log('JupyterLab extension edsc_extension is activated!');
 };
 
 
 export default extension;
-export {activate as _activate};
