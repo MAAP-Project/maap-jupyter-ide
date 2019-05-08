@@ -207,7 +207,7 @@ function copySearchResults() {
 
   xhr.open("GET", getUrl.href, true);
   xhr.send(null);
-  
+
   return url_response;
 }
 
@@ -277,9 +277,11 @@ function activate(app: JupyterLab,
 
     if (result_type == "query") {
       insert_text = copySearchQuery();
+      console.log("insert text is:", insert_text)
       // insert_text = "QUERY";
     } else {
       insert_text = copySearchResults();
+      console.log("insert text is:", insert_text)
       // insert_text = "RESULT";
     }
 
