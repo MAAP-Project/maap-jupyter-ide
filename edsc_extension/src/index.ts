@@ -40,6 +40,7 @@ let unique = 0;
 let params:any = {};
 let limit = "1000";
 
+
 const extension: JupyterLabPlugin<void> = {
   id: 'edsc_extension',
   autoStart: true,
@@ -175,12 +176,12 @@ function copySearchQuery() {
       if (response_text == "" ) { response_text = "No results found."; }
       console.log(response_text);
       Clipboard.copyToSystem(response_text);
+      return response_text;
   };
 
   xhr.open("GET", getUrl.href, true);
   xhr.send(null);
 
-  return response_text;
 }
 
 
@@ -203,12 +204,12 @@ function copySearchResults() {
       console.log(response_text);
       Clipboard.copyToSystem(response_text);
       url_response = response_text;
+      return url_response;
   };
 
   xhr.open("GET", getUrl.href, true);
   xhr.send(null);
 
-  return url_response;
 }
 
 //
@@ -273,7 +274,7 @@ function activate(app: JupyterLab,
     console.log("in func");
     const current = getCurrent(args);
     console.log(result_type);
-    let insert_text = "NO SEARCH STORED";
+    let insert_text:any = "NO SEARCH STORED";
 
     if (result_type == "query") {
       insert_text = copySearchQuery();
