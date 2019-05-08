@@ -3,7 +3,7 @@ import {
 } from '@jupyterlab/application';
 
 import {
-  ICommandPalette, Clipboard, Dialog, showDialog//, ToolbarButton
+  ICommandPalette, Dialog, showDialog//, Clipboard, ToolbarButton
 } from '@jupyterlab/apputils';
 
 import {
@@ -88,19 +88,19 @@ class IFrameWidget extends Widget {
       }
     });
 
-    let copyQueryBtn = document.createElement('button');
-    copyQueryBtn.id = "copyBtn";
-    copyQueryBtn.className = "btn";
-    copyQueryBtn.innerHTML = "Copy Search Query";
-    copyQueryBtn.addEventListener('click', copySearchQuery, false);
-    this.node.appendChild(copyQueryBtn);
-
-    let copyResultsBtn = document.createElement('button');
-    copyResultsBtn.id = "copyBtn";
-    copyResultsBtn.className = "btn";
-    copyResultsBtn.innerHTML = "Copy Search Results";
-    copyResultsBtn.addEventListener('click', copySearchResults, false);
-    this.node.appendChild(copyResultsBtn);
+    // let copyQueryBtn = document.createElement('button');
+    // copyQueryBtn.id = "copyBtn";
+    // copyQueryBtn.className = "btn";
+    // copyQueryBtn.innerHTML = "Copy Search Query";
+    // copyQueryBtn.addEventListener('click', copySearchQuery, false);
+    // this.node.appendChild(copyQueryBtn);
+    //
+    // let copyResultsBtn = document.createElement('button');
+    // copyResultsBtn.id = "copyBtn";
+    // copyResultsBtn.className = "btn";
+    // copyResultsBtn.innerHTML = "Copy Search Results";
+    // copyResultsBtn.addEventListener('click', copySearchResults, false);
+    // this.node.appendChild(copyResultsBtn);
 
     let setLimitBtn = document.createElement('button');
     setLimitBtn.id = "setLimitBtn";
@@ -160,29 +160,29 @@ class LimitPopupWidget extends Widget {
 
 }
 
-function copySearchQuery() {
-  var getUrl = new URL(PageConfig.getBaseUrl() + 'edsc/getQuery');
-  getUrl.searchParams.append("json_obj", JSON.stringify(params));
-  getUrl.searchParams.append("limit", limit);
-
-  // Make call to back end
-  var xhr = new XMLHttpRequest();
-  let response_text:any = "";
-
-  xhr.onload = function() {
-      let response:any = $.parseJSON(xhr.response);
-      console.log(response);
-      response_text = response.query_string;
-      if (response_text == "" ) { response_text = "No results found."; }
-      console.log(response_text);
-      Clipboard.copyToSystem(response_text);
-      return response_text;
-  };
-
-  xhr.open("GET", getUrl.href, true);
-  xhr.send(null);
-
-}
+// function copySearchQuery() {
+//   var getUrl = new URL(PageConfig.getBaseUrl() + 'edsc/getQuery');
+//   getUrl.searchParams.append("json_obj", JSON.stringify(params));
+//   getUrl.searchParams.append("limit", limit);
+//
+//   // Make call to back end
+//   var xhr = new XMLHttpRequest();
+//   let response_text:any = "";
+//
+//   xhr.onload = function() {
+//       let response:any = $.parseJSON(xhr.response);
+//       console.log(response);
+//       response_text = response.query_string;
+//       if (response_text == "" ) { response_text = "No results found."; }
+//       console.log(response_text);
+//       Clipboard.copyToSystem(response_text);
+//       return response_text;
+//   };
+//
+//   xhr.open("GET", getUrl.href, true);
+//   xhr.send(null);
+//
+// }
 
 
 function copySearchResults() {
@@ -202,7 +202,7 @@ function copySearchResults() {
       let response_text:any = response.granule_urls;
       if (response_text == "" ) { response_text = "No results found."; }
       console.log(response_text);
-      Clipboard.copyToSystem(response_text);
+      //Clipboard.copyToSystem(response_text);
       url_response = response_text;
       return url_response;
   };
@@ -216,7 +216,6 @@ function copySearchResults() {
 // External facing function for DPS to get the s3 urls of a specified search
 //
 export function getUrls() {
-
   return copySearchResults();
 }
 
@@ -361,25 +360,25 @@ function activate(app: JupyterLab,
   });
   palette.addItem({command: open_command, category: 'Search'});
 
-  // Add copy commands to the command palette
-  app.commands.addCommand('search:copyQuery', {
-    label: 'Copy Search Query To Clipboard',
-    isEnabled: () => true,
-    execute: args => {
-      copySearchQuery();
-    }
-  });
-  palette.addItem({command: 'search:copyQuery', category: 'Search'});
-
-
-  app.commands.addCommand('search:copyResult', {
-    label: 'Copy Search Result To Clipboard',
-    isEnabled: () => true,
-    execute: args => {
-      copySearchResults();
-    }
-  });
-  palette.addItem({command: 'search:copyResult', category: 'Search'});
+  // // Add copy commands to the command palette
+  // app.commands.addCommand('search:copyQuery', {
+  //   label: 'Copy Search Query To Clipboard',
+  //   isEnabled: () => true,
+  //   execute: args => {
+  //     copySearchQuery();
+  //   }
+  // });
+  // palette.addItem({command: 'search:copyQuery', category: 'Search'});
+  //
+  //
+  // app.commands.addCommand('search:copyResult', {
+  //   label: 'Copy Search Result To Clipboard',
+  //   isEnabled: () => true,
+  //   execute: args => {
+  //     copySearchResults();
+  //   }
+  // });
+  // palette.addItem({command: 'search:copyResult', category: 'Search'});
 
   app.commands.addCommand('search:displayParams', {
     label: 'Display selected search parameters',
@@ -441,8 +440,8 @@ function activate(app: JupyterLab,
   searchMenu.title.label = 'Data Search';
   [
     open_command,
-    'search:copyQuery',
-    'search:copyResult',
+    // 'search:copyQuery',
+    // 'search:copyResult',
     'search:displayParams',
     'search:pasteQuery',
     'search:pasteResults'
