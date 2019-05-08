@@ -207,7 +207,7 @@ function copySearchResults() {
 
   xhr.open("GET", getUrl.href, true);
   xhr.send(null);
-
+  
   return url_response;
 }
 
@@ -270,19 +270,25 @@ function activate(app: JupyterLab,
   });
 
   function pasteSearch(args: any, result_type: any) {
+    console.log("in func");
     const current = getCurrent(args);
+    console.log(result_type);
     let insert_text = "NO SEARCH STORED";
 
     if (result_type == "query") {
       insert_text = copySearchQuery();
+      // insert_text = "QUERY";
     } else {
       insert_text = copySearchResults();
+      // insert_text = "RESULT";
     }
 
     if (current) {
+      NotebookActions.insertBelow(current.content);
       NotebookActions.paste(current.content);
       current.content.mode = 'edit';
       current.content.activeCell.model.value.text = insert_text;
+      console.log("inserted text");
     }
   }
 
@@ -392,7 +398,7 @@ function activate(app: JupyterLab,
   });
   mainMenu.addMenu(searchMenu, { rank: 100 });
 
-  
+
   console.log('JupyterLab extension edsc_extension is activated!');
 };
 
