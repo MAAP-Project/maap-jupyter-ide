@@ -2,7 +2,7 @@ import json
 from notebook.base.handlers import IPythonHandler
 from notebook.utils import url_path_join
 from .proxy import IFrameProxyHandler
-from .handlers import GetCollectionsHandler,GetGranulesHandler, GetQueryHandler
+from .handlers import GetGranulesHandler, GetQueryHandler
 
 __version__ = '0.0.11'
 
@@ -41,6 +41,5 @@ def load_jupyter_server_extension(nb_server_app):
     web_app.add_handlers(host_pattern, [(url_path_join(base_url, 'edsc'), IFrameHandler, {'welcome': welcome, 'sites': sites}),
                                         (url_path_join(base_url, 'edsc/proxy'), IFrameProxyHandler)])
 
-    web_app.add_handlers(host_pattern, [(url_path_join(base_url, 'edsc/getCollections'), GetCollectionsHandler)])
     web_app.add_handlers(host_pattern, [(url_path_join(base_url, 'edsc/getGranules'), GetGranulesHandler)])
     web_app.add_handlers(host_pattern, [(url_path_join(base_url, 'edsc/getQuery'), GetQueryHandler)])
