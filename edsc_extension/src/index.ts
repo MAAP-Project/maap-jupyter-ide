@@ -137,6 +137,19 @@ class ParamsPopupWidget extends Widget {
 }
 
 export
+class FlexiblePopupWidget extends Widget {
+  constructor(text:string) {
+    let body = document.createElement('div');
+    body.style.display = 'flex';
+    body.style.flexDirection = 'column';
+    body.innerHTML = text;
+
+    super({ node: body });
+  }
+
+}
+
+export
 class LimitPopupWidget extends Widget {
   constructor() {
       let body = document.createElement('div');
@@ -270,10 +283,8 @@ function activate(app: JupyterLab,
   });
 
   function pasteSearch(args: any, result_type: any) {
-    console.log("in func");
     const current = getCurrent(args);
     console.log(result_type);
-    //let insert_text:any = "NO SEARCH STORED";
 
     if (result_type == "query") {
 
@@ -286,23 +297,41 @@ function activate(app: JupyterLab,
         let response_text:any = "";
 
         xhr.onload = function() {
-            let response:any = $.parseJSON(xhr.response);
-            console.log(response);
-            response_text = response.query_string;
-            if (response_text == "" ) { response_text = "No results found."; }
-            console.log(response_text);
-            if (current) {
-              NotebookActions.insertBelow(current.content);
-              NotebookActions.paste(current.content);
-              current.content.mode = 'edit';
-              current.content.activeCell.model.value.text = response_text;
-              console.log("inserted text");
-            }
+          if (xhr.status == 200) {
+              let response: any = $.parseJSON(xhr.response);
+              console.log(response);
+              response_text = response.query_string;
+              if (response_text == "") {
+                  response_text = "No results found.";
+              }
+              console.log(response_text);
+              if (current) {
+                  NotebookActions.insertBelow(current.content);
+                  NotebookActions.paste(current.content);
+                  current.content.mode = 'edit';
+                  current.content.activeCell.model.value.text = response_text;
+                  console.log("inserted text");
+              }
+          }
+          else {
+              console.log("Error making call to get query. Status is " + xhr.status);
+
+              showDialog({
+                title: 'Error:',
+                body: new FlexiblePopupWidget("Error making call to get search query. Have you selected valid search parameters?"),
+                focusNodeSelector: 'input',
+                buttons: [Dialog.okButton({ label: 'Ok' })]
+              });
+          }
+        };
+
+        xhr.onerror = function() {
+          console.log("Error making call to get query");
         };
 
         xhr.open("GET", getUrl.href, true);
         xhr.send(null);
-      // insert_text = "QUERY";
+
     } else {
 
       var getUrl = new URL(PageConfig.getBaseUrl() + 'edsc/getGranules');
@@ -316,32 +345,42 @@ function activate(app: JupyterLab,
       let url_response:any = [];
 
       xhr.onload = function() {
-          let response:any = $.parseJSON(xhr.response);
-          let response_text:any = response.granule_urls;
-          if (response_text == "" ) { response_text = "No results found."; }
-          url_response = response_text;
-          console.log(response_text);
-          if (current) {
-              NotebookActions.insertBelow(current.content);
-              NotebookActions.paste(current.content);
-              current.content.mode = 'edit';
-              current.content.activeCell.model.value.text = url_response;
-              console.log("inserted text");
-            }
+          if (xhr.status == 200) {
+              let response: any = $.parseJSON(xhr.response);
+              let response_text: any = response.granule_urls;
+              if (response_text == "") {
+                  response_text = "No results found.";
+              }
+              url_response = response_text;
+              console.log(response_text);
+              if (current) {
+                  NotebookActions.insertBelow(current.content);
+                  NotebookActions.paste(current.content);
+                  current.content.mode = 'edit';
+                  current.content.activeCell.model.value.text = url_response;
+                  console.log("inserted text");
+              }
+          }
+          else {
+              console.log("Error making call to get results. Status is " + xhr.status);
+
+              showDialog({
+                title: 'Error:',
+                body: new FlexiblePopupWidget("Error making call to get search results. Have you selected valid search parameters?"),
+                focusNodeSelector: 'input',
+                buttons: [Dialog.okButton({ label: 'Ok' })]
+              });
+          }
       };
+
+      xhr.onerror = function() {
+          console.log("Error making call to get results");
+        };
 
       xhr.open("GET", getUrl.href, true);
       xhr.send(null);
-      // insert_text = "RESULT";
     }
 
-    // if (current) {
-    //   NotebookActions.insertBelow(current.content);
-    //   NotebookActions.paste(current.content);
-    //   current.content.mode = 'edit';
-    //   current.content.activeCell.model.value.text = insert_text;
-    //   console.log("inserted text");
-    // }
   }
 
 
