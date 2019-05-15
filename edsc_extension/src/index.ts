@@ -97,7 +97,8 @@ class ParamsPopupWidget extends Widget {
     let body = document.createElement('div');
     body.style.display = 'flex';
     body.style.flexDirection = 'column';
-    body.innerHTML = "<pre>" + JSON.stringify(params, null, " ") + "</pre><br>" + "Results Limit: " + limit;
+    body.innerHTML = "<pre>" + JSON.stringify(params, null, " ") + "</pre><br>"
+        + "<pre>Results Limit: " + limit + "</pre>";
 
     super({ node: body });
   }
@@ -126,18 +127,18 @@ class LimitPopupWidget extends Widget {
 
       super({node: body});
 
-      // this.getValue = this.getValue.bind(this);
+      this.getValue = this.getValue.bind(this);
 
       let inputLimit = document.createElement('input');
       inputLimit.id = 'inputLimit';
       this.node.appendChild(inputLimit);
   }
 
-  // getValue() {
-  //   limit = (<HTMLInputElement>document.getElementById('inputLimit')).value;
-  //   (<HTMLInputElement>document.getElementById('setLimitBtn')).innerHTML = "Results Limit: " + limit;
-  //   console.log("new limit is: ", limit)
-  // }
+  getValue() {
+    limit = (<HTMLInputElement>document.getElementById('inputLimit')).value;
+    // (<HTMLInputElement>document.getElementById('setLimitBtn')).innerHTML = "Results Limit: " + limit;
+    console.log("new limit is: ", limit)
+  }
 
 }
 
@@ -149,8 +150,6 @@ function setResultsLimit() {
         focusNodeSelector: 'input',
         buttons: [Dialog.okButton({ label: 'Ok' })]
     });
-
-
 }
 
 function displaySearchParams() {
@@ -160,7 +159,6 @@ function displaySearchParams() {
         focusNodeSelector: 'input',
         buttons: [Dialog.okButton({ label: 'Ok' })]
     });
-
 }
 
 
