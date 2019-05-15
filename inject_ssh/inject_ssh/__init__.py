@@ -24,8 +24,8 @@ class InjectKeyHandler(IPythonHandler):
 
         found = False
         for line in linelist:
-            if public_key == line:
-                print "Key already in authorized_keys"
+            if public_key in line:
+                print("Key already in authorized_keys")
                 found = True
 
         # If not in file, inject key into authorized keys

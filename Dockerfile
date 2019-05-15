@@ -49,6 +49,11 @@ RUN cd /edsc_extension/maap-py && python setup.py install
 RUN cd /edsc_extension && jupyter serverextension enable --py edsc_extension --sys-prefix
 ENV MAAP_CONF='/edsc_extension/maap-py/'
 
+# control che side panel extension
+COPY hide_side_panel /hide_side_panel
+RUN cd /hide_side_panel && npm run build
+RUN cd /hide_side_panel && jupyter labextension link .
+
 RUN touch /root/.bashrc && echo "cd /projects >& /dev/null" >> /root/.bashrc
 
 RUN mkdir /projects
