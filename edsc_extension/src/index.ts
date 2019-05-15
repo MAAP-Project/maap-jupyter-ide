@@ -48,7 +48,7 @@ const extension: JupyterLabPlugin<void> = {
   activate: activate
 };
 
-
+/* WIDGETS */
 
 class IFrameWidget extends Widget {
 
@@ -56,7 +56,6 @@ class IFrameWidget extends Widget {
     super();
     this.id = path + '-' + unique;
     unique += 1;
-
 
     this.title.label = "Earthdata Search";
     this.title.closable = true;
@@ -66,8 +65,7 @@ class IFrameWidget extends Widget {
     let iframe = document.createElement('iframe');
     iframe.id = "iframeid";
 
-    console.log("Path is,", path);
-    // TODO proxy path if necessary
+    // set proxy to ESDS
     request('get', path).then((res: RequestResult) => {
       if (res.ok){
         console.log('site accesible: proceeding');
@@ -88,38 +86,8 @@ class IFrameWidget extends Widget {
       }
     });
 
-    // let copyQueryBtn = document.createElement('button');
-    // copyQueryBtn.id = "copyBtn";
-    // copyQueryBtn.className = "btn";
-    // copyQueryBtn.innerHTML = "Copy Search Query";
-    // copyQueryBtn.addEventListener('click', copySearchQuery, false);
-    // this.node.appendChild(copyQueryBtn);
-    //
-    // let copyResultsBtn = document.createElement('button');
-    // copyResultsBtn.id = "copyBtn";
-    // copyResultsBtn.className = "btn";
-    // copyResultsBtn.innerHTML = "Copy Search Results";
-    // copyResultsBtn.addEventListener('click', copySearchResults, false);
-    // this.node.appendChild(copyResultsBtn);
-
-    let setLimitBtn = document.createElement('button');
-    setLimitBtn.id = "setLimitBtn";
-    setLimitBtn.className = "btn";
-    setLimitBtn.innerHTML = "Set Results Limit";
-    setLimitBtn.addEventListener('click', setResultsLimit, false);
-    this.node.appendChild(setLimitBtn);
-
-    let viewParamsBtn = document.createElement('button');
-    viewParamsBtn.id = "copyBtn";
-    viewParamsBtn.className = "btn";
-    viewParamsBtn.innerHTML = "View Search Parameters";
-    viewParamsBtn.addEventListener('click', displaySearchParams, false);
-    this.node.appendChild(viewParamsBtn);
-
-
     div.appendChild(iframe);
     this.node.appendChild(div);
-
   }
 };
 
@@ -129,7 +97,7 @@ class ParamsPopupWidget extends Widget {
     let body = document.createElement('div');
     body.style.display = 'flex';
     body.style.flexDirection = 'column';
-    body.innerHTML = "<pre>" + JSON.stringify(params, null, " ") + "</pre>";
+    body.innerHTML = "<pre>" + JSON.stringify(params, null, " ") + "</pre><br>" + "Results Limit: " + limit;
 
     super({ node: body });
   }
@@ -158,44 +126,42 @@ class LimitPopupWidget extends Widget {
 
       super({node: body});
 
-      this.getValue = this.getValue.bind(this);
+      // this.getValue = this.getValue.bind(this);
 
       let inputLimit = document.createElement('input');
       inputLimit.id = 'inputLimit';
       this.node.appendChild(inputLimit);
   }
 
-  getValue() {
-    limit = (<HTMLInputElement>document.getElementById('inputLimit')).value;
-    (<HTMLInputElement>document.getElementById('setLimitBtn')).innerHTML = "Results Limit: " + limit;
-    console.log("new limit is: ", limit)
-  }
+  // getValue() {
+  //   limit = (<HTMLInputElement>document.getElementById('inputLimit')).value;
+  //   (<HTMLInputElement>document.getElementById('setLimitBtn')).innerHTML = "Results Limit: " + limit;
+  //   console.log("new limit is: ", limit)
+  // }
 
 }
 
-// function copySearchQuery() {
-//   var getUrl = new URL(PageConfig.getBaseUrl() + 'edsc/getQuery');
-//   getUrl.searchParams.append("json_obj", JSON.stringify(params));
-//   getUrl.searchParams.append("limit", limit);
-//
-//   // Make call to back end
-//   var xhr = new XMLHttpRequest();
-//   let response_text:any = "";
-//
-//   xhr.onload = function() {
-//       let response:any = $.parseJSON(xhr.response);
-//       console.log(response);
-//       response_text = response.query_string;
-//       if (response_text == "" ) { response_text = "No results found."; }
-//       console.log(response_text);
-//       Clipboard.copyToSystem(response_text);
-//       return response_text;
-//   };
-//
-//   xhr.open("GET", getUrl.href, true);
-//   xhr.send(null);
-//
-// }
+function setResultsLimit() {
+    console.log("old limit is: ", limit)
+    showDialog({
+        title: 'Set Results Limit:',
+        body: new LimitPopupWidget(),
+        focusNodeSelector: 'input',
+        buttons: [Dialog.okButton({ label: 'Ok' })]
+    });
+
+
+}
+
+function displaySearchParams() {
+  showDialog({
+        title: 'Current Search Parameters:',
+        body: new ParamsPopupWidget(),
+        focusNodeSelector: 'input',
+        buttons: [Dialog.okButton({ label: 'Ok' })]
+    });
+
+}
 
 
 function copySearchResults() {
@@ -232,27 +198,6 @@ export function getUrls() {
   return copySearchResults();
 }
 
-function setResultsLimit() {
-    console.log("old limit is: ", limit)
-    showDialog({
-        title: 'Set Results Limit:',
-        body: new LimitPopupWidget(),
-        focusNodeSelector: 'input',
-        buttons: [Dialog.okButton({ label: 'Ok' })]
-    });
-
-
-}
-
-function displaySearchParams() {
-  showDialog({
-        title: 'Current Search Parameters:',
-        body: new ParamsPopupWidget(),
-        focusNodeSelector: 'input',
-        buttons: [Dialog.okButton({ label: 'Ok' })]
-    });
-
-}
 
 function activate(app: JupyterLab,
                   docManager: IDocumentManager,
@@ -282,10 +227,13 @@ function activate(app: JupyterLab,
     console.log("at event listen: ", event.data);
   });
 
+
+  // PASTE SEARCH INTO A NOTEBOOK
   function pasteSearch(args: any, result_type: any) {
     const current = getCurrent(args);
     console.log(result_type);
 
+    // Paste Search Query
     if (result_type == "query") {
 
         var getUrl = new URL(PageConfig.getBaseUrl() + 'edsc/getQuery');
@@ -332,6 +280,7 @@ function activate(app: JupyterLab,
         xhr.open("GET", getUrl.href, true);
         xhr.send(null);
 
+    // Paste Search Results
     } else {
 
       var getUrl = new URL(PageConfig.getBaseUrl() + 'edsc/getGranules');
@@ -399,91 +348,57 @@ function activate(app: JupyterLab,
   });
   palette.addItem({command: open_command, category: 'Search'});
 
-  // // Add copy commands to the command palette
-  // app.commands.addCommand('search:copyQuery', {
-  //   label: 'Copy Search Query To Clipboard',
-  //   isEnabled: () => true,
-  //   execute: args => {
-  //     copySearchQuery();
-  //   }
-  // });
-  // palette.addItem({command: 'search:copyQuery', category: 'Search'});
-  //
-  //
-  // app.commands.addCommand('search:copyResult', {
-  //   label: 'Copy Search Result To Clipboard',
-  //   isEnabled: () => true,
-  //   execute: args => {
-  //     copySearchResults();
-  //   }
-  // });
-  // palette.addItem({command: 'search:copyResult', category: 'Search'});
-
-  app.commands.addCommand('search:displayParams', {
-    label: 'Display selected search parameters',
+  const display_params_command = 'search:displayParams';
+  app.commands.addCommand(display_params_command, {
+    label: 'View Selected Search Parameters',
     isEnabled: () => true,
     execute: args => {
       displaySearchParams();
     }
   });
-  palette.addItem({command: 'search:displayParams', category: 'Search'});
+  palette.addItem({command: display_params_command, category: 'Search'});
 
-  app.commands.addCommand('search:pasteQuery', {
+  const paste_query_command = 'search:pasteQuery';
+  app.commands.addCommand(paste_query_command, {
     label: 'Paste Search Query',
     isEnabled: () => true,
     execute: args => {
       pasteSearch(args, "query")
-
     }
   });
-  palette.addItem({command: 'search:pasteQuery', category: 'Search'});
+  palette.addItem({command: paste_query_command, category: 'Search'});
 
-  app.commands.addCommand('search:pasteResults', {
+  const paste_results_command = 'search:pasteResults';
+  app.commands.addCommand(paste_results_command, {
     label: 'Paste Search Results',
     isEnabled: () => true,
     execute: args => {
       pasteSearch(args, "results")
-
     }
   });
-  palette.addItem({command: 'search:pasteResults', category: 'Search'});
+  palette.addItem({command: paste_results_command, category: 'Search'});
+
+  const set_limit_command = 'search:setLimit';
+  app.commands.addCommand(set_limit_command, {
+    label: 'Set Results Limit',
+    isEnabled: () => true,
+    execute: args => {
+      setResultsLimit();
+    }
+  });
+  palette.addItem({command: set_limit_command, category: 'Search'});
 
 
-
-  // function pasteFunc() {
-  //   const current = getCurrent(args);
-  //
-  //     if (current) {
-  //
-  //       NotebookActions.paste(current.content);
-  //       current.content.mode = 'edit';
-  //       current.content.activeCell.model.value.text = "Inserting ESDS query!!!";
-  //     }
-  // }
-
-  // let button = new ToolbarButton({
-  //     iconClassName: 'paste-esds',
-  //     onClick: () => {
-  //       panel = getCurrent(args);
-  //       NotebookActions.paste(panel.content);
-  //       panel.content.mode = 'edit';
-  //       panel.content.activeCell.model.value.text = "Inserting ESDS query!!!";
-  //     },
-  //     tooltip: 'Insert a cell below'
-  //   });
-  //
-  // panel.toolbar.insertItem(0,"paste-search", button);
 
   const { commands } = app;
-  let searchMenu = new Menu({ commands })
+  let searchMenu = new Menu({ commands });
   searchMenu.title.label = 'Data Search';
   [
     open_command,
-    // 'search:copyQuery',
-    // 'search:copyResult',
-    'search:displayParams',
-    'search:pasteQuery',
-    'search:pasteResults'
+    display_params_command,
+    paste_query_command,
+    paste_results_command,
+    set_limit_command
   ].forEach(command => {
     searchMenu.addItem({ command });
   });
