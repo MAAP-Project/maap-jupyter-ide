@@ -1,13 +1,19 @@
 from IPython.core.magic import (Magics, magics_class, line_magic, cell_magic)
 import requests
 import json
+import os
+
+CHE_BASE_URL = 'https://che-k8s.maap.xyz'
+preview_url = os.environ['PREVIEW_URL']
+JUPYTER_SERVER_URL = CHE_BASE_URL+PREVIEW_URL
+lk = 'http://localhost:8888'
 
 @magics_class
 class HysdsMagic(Magics):
+    # '{workspace_id}'.format(workspace_id=workspace_id)
 
     @line_magic
     def execute(self, line):
-        lk = 'http://localhost:8888'
         endpoint = '/hysds/execute'
         id = 'org.n52.wps.server.algorithm.SimpleBufferAlgorithm'
         algo_ver,params = line.split('(')
@@ -27,7 +33,6 @@ class HysdsMagic(Magics):
     
     @line_magic
     def status(self, line):
-        lk = 'http://localhost:8888'
         endpoint = '/hysds/getStatus'
         call = '?job_id={}'.format(line.strip())
         url = lk + endpoint + call
@@ -38,7 +43,6 @@ class HysdsMagic(Magics):
     
     @line_magic
     def result(self, line):
-        lk = 'http://localhost:8888'
         endpoint = '/hysds/getResult'
         call = '?job_id={}'.format(line.strip())
         url = lk + endpoint + call
