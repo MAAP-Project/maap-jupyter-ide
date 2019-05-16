@@ -2,7 +2,7 @@ const path = require("path");
 const version = require("./package.json").version;
 
 // cmc-jupyter assets
-cmc_assets = /common-mapping-client-jupyter\/dist\/assets/;
+cmc_assets = /maap-common-mapping-client\/dist\/assets/;
 
 // Custom webpack rules
 const rules = [
