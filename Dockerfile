@@ -56,11 +56,11 @@ RUN cd /hide_side_panel && jupyter labextension link .
 
 # cmc widget
 COPY ipycmc /ipycmc
-RUN cd /ipycmc && pip install ipywidgets && jupyter nbextension enable --py ipycmc
 RUN cd /ipycmc && npm run build
 RUN cd /ipycmc && jupyter labextension link .
-RUN cd /ipycmc && pip install -e .
-RUN cd /ipycmc && jupyter serverextension enable --py ipycmc --sys-prefix
+RUN cd /ipycmc && jupyter nbextension install --py ipycmc --sys-prefix && jupyter nbextension enable --py ipycmc --sys-prefix
+#RUN cd /ipycmc && pip install -e .
+#RUN cd /ipycmc && jupyter serverextension enable --py ipycmc --sys-prefix
 
 RUN touch /root/.bashrc && echo "cd /projects >& /dev/null" >> /root/.bashrc
 
