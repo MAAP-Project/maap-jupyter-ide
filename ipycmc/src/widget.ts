@@ -6,12 +6,12 @@ import { DOMWidgetModel, DOMWidgetView, ISerializers } from '@jupyter-widgets/ba
 import { MODULE_NAME, MODULE_VERSION } from './version';
 
 import moment from 'moment';
-import CMC_Module = require('common-mapping-client-jupyter');
+import CMC_Module = require('maap-common-mapping-client');
 const CMC = CMC_Module.CMC;
-require('common-mapping-client-jupyter/dist/bundle.css');
-require('common-mapping-client-jupyter/dist/assets/mapskin/css/mapskin.min.css');
+require('maap-common-mapping-client/dist/bundle.css');
+require('maap-common-mapping-client/dist/assets/mapskin/css/mapskin.min.css');
 
-require('file-loader?emitFile=true&outputPath=assets/CesiumDrawHelper/img/&name=[name].[ext]!common-mapping-client-jupyter/dist/assets/CesiumDrawHelper/img/dragIcon.png');
+require('file-loader?emitFile=true&outputPath=assets/CesiumDrawHelper/img/&name=[name].[ext]!maap-common-mapping-client/dist/assets/CesiumDrawHelper/img/dragIcon.png');
 
 function importAll(r: any) {
     r.keys().forEach(r);
@@ -19,7 +19,7 @@ function importAll(r: any) {
 
 importAll(
     require.context(
-        'file-loader?emitFile=true&outputPath=assets/cesium/Workers/&name=[name].[ext]!common-mapping-client-jupyter/dist/assets/cesium/Workers',
+        'file-loader?emitFile=true&outputPath=assets/cesium/Workers/&name=[name].[ext]!maap-common-mapping-client/dist/assets/cesium/Workers',
         true,
         /\.(js)/,
     ),
