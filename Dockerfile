@@ -54,6 +54,11 @@ COPY hide_side_panel /hide_side_panel
 RUN cd /hide_side_panel && npm run build
 RUN cd /hide_side_panel && jupyter labextension link .
 
+# cmc widget
+COPY ipycmc /ipycmc
+RUN cd /ipycmc && npm run build
+RUN cd /ipycmc && jupyter labextension link .
+
 RUN touch /root/.bashrc && echo "cd /projects >& /dev/null" >> /root/.bashrc
 
 RUN mkdir /projects
