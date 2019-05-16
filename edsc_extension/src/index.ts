@@ -230,6 +230,7 @@ function activate(app: JupyterLab,
   function pasteSearch(args: any, result_type: any) {
     const current = getCurrent(args);
     console.log(result_type);
+    
 
     // Paste Search Query
     if (result_type == "query") {
@@ -263,7 +264,7 @@ function activate(app: JupyterLab,
               console.log("Error making call to get query. Status is " + xhr.status);
 
               showDialog({
-                title: 'Error:',
+                title: 'Error',
                 body: new FlexiblePopupWidget("Error making call to get search query. Have you selected valid search parameters?"),
                 focusNodeSelector: 'input',
                 buttons: [Dialog.okButton({ label: 'Ok' })]
