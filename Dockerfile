@@ -54,6 +54,8 @@ COPY hide_side_panel /hide_side_panel
 RUN cd /hide_side_panel && npm run build
 RUN cd /hide_side_panel && jupyter labextension link .
 
+# copy in cmc
+COPY maap-common-mapping-client /maap-common-mapping-client
 # cmc widget
 COPY ipycmc /ipycmc
 RUN cd /ipycmc && npm run build
@@ -61,6 +63,10 @@ RUN cd /ipycmc && jupyter labextension link .
 RUN cd /ipycmc && jupyter nbextension install --py ipycmc --sys-prefix && jupyter nbextension enable --py ipycmc --sys-prefix
 #RUN cd /ipycmc && pip install -e .
 #RUN cd /ipycmc && jupyter serverextension enable --py ipycmc --sys-prefix
+#RUN mkdir /ipycmc
+#COPY ipycmc/ipycmc/labextension/ipycmc-0.1.0.tgz /ipycmc/ipycmc-0.1.0.tgz
+#RUN jupyter labextension install /ipycmc/ipycmc-0.1.0.tgz
+
 
 RUN touch /root/.bashrc && echo "cd /projects >& /dev/null" >> /root/.bashrc
 
