@@ -20,6 +20,7 @@ perl -pi -e "s|web_app.settings\['base_url'\]|'/'|g" /edsc_extension/edsc_extens
 perl -pi -e "s|web_app.settings\['base_url'\]|'/'|g" /inject_ssh/inject_ssh/__init__.py
 perl -pi -e "s|web_app.settings\[\"base_url\"\]|'/'|g" /jupyterlab-git/jupyterlab_git/handlers.py
 perl -pi -e "s|web_app.settings\['base_url'\]|'/'|g" /submit_jobs/submit_jobs/__init__.py
+perl -pi -e "s|web_app.settings\['base_url'\]|'/'|g" /ipycmc/ipycmc/nbextension/__init__.py
 
 # Dump all env variables into file so they exist still though SSH
 env | grep _ >> /etc/environment
