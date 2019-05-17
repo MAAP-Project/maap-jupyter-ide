@@ -3,14 +3,17 @@ import requests
 import json
 import os
 
-CHE_BASE_URL = 'https://che-k8s.maap.xyz'
-PREVIEW_URL = os.environ['PREVIEW_URL']
-JUPYTER_SERVER_URL = CHE_BASE_URL+PREVIEW_URL
-lk = 'http://localhost:8888'
-
 @magics_class
 class HysdsMagic(Magics):
     # '{workspace_id}'.format(workspace_id=workspace_id)
+
+    def __init__(self, shell):
+        super(HysdsMagic, self).__init__(shell)
+        CHE_BASE_URL = 'https://che-k8s.maap.xyz'
+        PREVIEW_URL = os.environ['PREVIEW_URL']
+        # self.JUPYTER_SERVER_URL = CHE_BASE_URL+PREVIEW_URL
+        self.lk = CHE_BASE_URL+PREVIEW_URL
+        # self.lk = 'http://localhost:8888'
 
     @line_magic
     def execute(self, line):
@@ -25,7 +28,7 @@ class HysdsMagic(Magics):
             inputs.append(k)
         inputs.append('')
         call = '?algo_id={algo}&version={ver}&identifier={id}&inputs={inputs}&{params}'.format(algo=algo,ver=ver,id=id,inputs=','.join(inputs),params=params.replace(',','&'))
-        url = lk + endpoint + call
+        url = self.lk + endpoint + call
         print(url)
         try:
             r = requests.get(url)
@@ -43,7 +46,7 @@ class HysdsMagic(Magics):
     def status(self, line):
         endpoint = '/hysds/getStatus'
         call = '?job_id={}'.format(line.strip())
-        url = lk + endpoint + call
+        url = self.lk + endpoint + call
         r = requests.get(url)
         resp = json.loads(r.text)
         print('{}\n{}'.format(url,resp['result']))
@@ -53,7 +56,7 @@ class HysdsMagic(Magics):
     def result(self, line):
         endpoint = '/hysds/getResult'
         call = '?job_id={}'.format(line.strip())
-        url = lk + endpoint + call
+        url = self.lk + endpoint + call
         r = requests.get(url)
         resp = json.loads(r.text)
         print('{}\n{}'.format(url,resp['result']))
