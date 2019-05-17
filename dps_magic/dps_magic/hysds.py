@@ -26,9 +26,17 @@ class HysdsMagic(Magics):
         inputs.append('')
         call = '?algo_id={algo}&version={ver}&identifier={id}&inputs={inputs}&{params}'.format(algo=algo,ver=ver,id=id,inputs=','.join(inputs),params=params.replace(',','&'))
         url = lk + endpoint + call
-        r = requests.get(url)
-        resp = json.loads(r.text)
-        print('{}\n{}'.format(url,resp['result']))
+        print(url)
+        try:
+            r = requests.get(url)
+            try:
+                resp = json.loads(r.text)
+                print('{}\n{}'.format(url,resp['result']))
+            except:
+                print('response not json')
+                print(r)
+        except:
+            print('can\'t make requests')
         return
     
     @line_magic
