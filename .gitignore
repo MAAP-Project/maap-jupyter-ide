@@ -10,3 +10,4 @@ jupyterlab_iframe/maap-py/
 */*.egg-info/*
 submit_jobs/submit_jobs/response*
 */package-lock.json
+**/*.lock
