@@ -7,8 +7,8 @@ import os
 class HysdsMagic(Magics):
     # '{workspace_id}'.format(workspace_id=workspace_id)
 
-    def __init__(self, shell):
-        super(HysdsMagic, self).__init__(shell)
+    def __init__(self):
+        super(HysdsMagic, self).__init__()
         CHE_BASE_URL = 'https://che-k8s.maap.xyz'
         PREVIEW_URL = os.environ['PREVIEW_URL']
         # self.JUPYTER_SERVER_URL = CHE_BASE_URL+PREVIEW_URL
@@ -61,32 +61,3 @@ class HysdsMagic(Magics):
         resp = json.loads(r.text)
         print('{}\n{}'.format(url,resp['result']))
         return
-
-#     @cell_magic
-#     def cadabra(self, line, cell):
-#         return line, cell
-
-# @register_line_magic
-# def execute(line):
-#     algo_ver, = line.split('(')
-#     return line
-
-
-# @register_cell_magic
-# def cmagic(line, cell):
-#     "my cell magic"
-#     return line, cell
-
-# @register_line_cell_magic
-# def lcmagic(line, cell=None):
-#     "Magic that works both as %lcmagic and as %%lcmagic"
-#     if cell is None:
-#         print("Called as line magic")
-#         return line
-#     else:
-#         print("Called as cell magic")
-#         return line, cell
-
-# In an interactive session, we need to delete these to avoid
-# name conflicts for automagic to work on line magics.
-# del lmagic, lcmagic
