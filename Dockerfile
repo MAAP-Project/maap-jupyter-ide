@@ -62,9 +62,12 @@ RUN cd /dps_magic && jupyter nbextension enable --py dps_magic --sys-prefix
 
 # cmc widget
 COPY ipycmc /ipycmc
-RUN cd /ipycmc && npm install && npm run build
-RUN cd /ipycmc && pip install ipywidgets
+# RUN cd /ipycmc && pip install ipywidgets
 RUN cd /ipycmc && jupyter labextension install @jupyter-widgets/jupyterlab-manager
+RUN cd /ipycmc && npm install && npm run build
+RUN cd /ipycmc && pip install -e .
+RUN cd /ipycmc && jupyter nbextension install --py --symlink --sys-prefix ipycmc
+RUN cd /ipycmc && jupyter nbextension enable --py --sys-prefix ipycmc
 RUN cd /ipycmc && jupyter labextension link .
 
 RUN touch /root/.bashrc && echo "cd /projects >& /dev/null" >> /root/.bashrc
