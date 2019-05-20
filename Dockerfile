@@ -61,11 +61,12 @@ RUN cd /dps_magic && jupyter nbextension install --symlink --py dps_magic --sys-
 RUN cd /dps_magic && jupyter nbextension enable --py dps_magic --sys-prefix
 
 # copy in cmc
-COPY maap-common-mapping-client /maap-common-mapping-client
-RUN cd /maap-common-mapping-client && npm install
+#COPY maap-common-mapping-client /maap-common-mapping-client
+#RUN cd /maap-common-mapping-client && npm install
+
 # cmc widget
 COPY ipycmc /ipycmc
-RUN cd /ipycmc && pip install ipywidgets
+# RUN cd /ipycmc && pip install ipywidgets
 RUN cd /ipycmc && jupyter labextension install @jupyter-widgets/jupyterlab-manager
 RUN cd /ipycmc && npm install && npm run build
 RUN cd /ipycmc && pip install -e .
