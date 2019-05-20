@@ -17,7 +17,7 @@ from traitlets import (
 )
 from ._frontend import module_name, module_version
 
-import asyncio
+import os
 
 class InteractMixin(object):
 
@@ -44,6 +44,7 @@ class MapCMC(DOMWidget, InteractMixin):
 
     _argv = List().tag(sync=True)
     _state = Dict(read_only=True).tag(sync=True)
+    _workspace_base_url = Unicode(os.getenv("PREVIEW_URL", "")).tag(sync=True)
 
     def __init__(self, **kwargs):
         super(MapCMC, self).__init__(**kwargs)
