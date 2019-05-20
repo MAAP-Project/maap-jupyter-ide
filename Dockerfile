@@ -54,6 +54,12 @@ COPY hide_side_panel /hide_side_panel
 RUN cd /hide_side_panel && npm run build
 RUN cd /hide_side_panel && jupyter labextension link .
 
+# dps job magics
+COPY dps_magic /dps_magic
+RUN cd /dps_magic && pip install -e .
+RUN cd /dps_magic && jupyter nbextension install --symlink --py dps_magic --sys-prefix
+RUN cd /dps_magic && jupyter nbextension enable --py dps_magic --sys-prefix
+
 # copy in cmc
 COPY maap-common-mapping-client /maap-common-mapping-client
 RUN cd /maap-common-mapping-client && npm install

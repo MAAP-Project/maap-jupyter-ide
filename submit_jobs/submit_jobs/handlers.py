@@ -518,7 +518,7 @@ class ExecuteHandler(IPythonHandler):
 				inputs[f] = ''
 
 		params['timestamp'] = str(datetime.datetime.today())
-		if inputs['username'] =='':
+		if 'username' in params.keys() and inputs['username'] =='':
 			inputs['username'] = 'anonymous'
 		# if inputs['localize_urls'] == '':
 		# 	inputs['localize_urls'] = []
