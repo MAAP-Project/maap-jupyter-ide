@@ -60,8 +60,6 @@ RUN cd /dps_magic && pip install -e .
 RUN cd /dps_magic && jupyter nbextension install --symlink --py dps_magic --sys-prefix
 RUN cd /dps_magic && jupyter nbextension enable --py dps_magic --sys-prefix
 
-# copy in cmc
-COPY maap-common-mapping-client /maap-common-mapping-client
 # cmc widget
 COPY ipycmc /ipycmc
 RUN cd /ipycmc && npm install && npm run build
