@@ -27,6 +27,9 @@ import {
 
 import { ReadonlyJSONObject } from '@phosphor/coreutils';
 
+import { INotification } from "jupyterlab_toastify";
+// import INotification = require('jupyterlab_toastify');
+
 import {
   request, RequestResult
 } from './request';
@@ -102,7 +105,6 @@ class ParamsPopupWidget extends Widget {
 
     super({ node: body });
   }
-
 }
 
 export
@@ -115,7 +117,6 @@ class FlexiblePopupWidget extends Widget {
 
     super({ node: body });
   }
-
 }
 
 export
@@ -138,6 +139,7 @@ class LimitPopupWidget extends Widget {
     limit = (<HTMLInputElement>document.getElementById('inputLimit')).value;
     // (<HTMLInputElement>document.getElementById('setLimitBtn')).innerHTML = "Results Limit: " + limit;
     console.log("new limit is: ", limit)
+    INotification.success("Results limit is now set to " + limit);
   }
 
 }
@@ -207,6 +209,18 @@ function activate(app: JupyterLab,
 
   let widget: IFrameWidget;
 
+  //
+  // Listen for messages being sent by the iframe - this will be all of the parameter
+  // objects from the EDSC instance
+  //
+  window.addEventListener("message", (event: MessageEvent) => {
+    params = event.data;
+    console.log("at event listen: ", event.data);
+  });
+
+  //
+  // Get the current cell selected in a notebook
+  //
   function getCurrent(args: ReadonlyJSONObject): NotebookPanel | null {
     console.log(args);
     const widget = tracker.currentWidget;
@@ -219,17 +233,24 @@ function activate(app: JupyterLab,
     return widget;
   }
 
-  // Listen for messages being sent by the iframe
-  window.addEventListener("message", (event: MessageEvent) => {
-    params = event.data;
-    console.log("at event listen: ", event.data);
-  });
-
 
   // PASTE SEARCH INTO A NOTEBOOK
   function pasteSearch(args: any, result_type: any) {
     const current = getCurrent(args);
     console.log(result_type);
+
+    if (Object.keys(params).length == 0) {
+        // showDialog({
+        //     title: 'Error',
+        //     body: new FlexiblePopupWidget("No Search Selected"),
+        //     focusNodeSelector: 'input',
+        //     buttons: [Dialog.okButton({ label: 'Ok' })]
+        // });
+        // return;
+        INotification.error("Error: No Search Selected.");
+        return;
+    }
+    // INotification.error("Error");
     
 
     // Paste Search Query
@@ -263,12 +284,13 @@ function activate(app: JupyterLab,
           else {
               console.log("Error making call to get query. Status is " + xhr.status);
 
-              showDialog({
-                title: 'Error',
-                body: new FlexiblePopupWidget("Error making call to get search query. Have you selected valid search parameters?"),
-                focusNodeSelector: 'input',
-                buttons: [Dialog.okButton({ label: 'Ok' })]
-              });
+              // showDialog({
+              //   title: 'Error',
+              //   body: new FlexiblePopupWidget("Error making call to get search query. Have you selected valid search parameters?"),
+              //   focusNodeSelector: 'input',
+              //   buttons: [Dialog.okButton({ label: 'Ok' })]
+              // });
+              INotification.error("Error making call to get search query. Have you selected valid search parameters?");
           }
         };
 
@@ -312,12 +334,13 @@ function activate(app: JupyterLab,
           else {
               console.log("Error making call to get results. Status is " + xhr.status);
 
-              showDialog({
-                title: 'Error:',
-                body: new FlexiblePopupWidget("Error making call to get search results. Have you selected valid search parameters?"),
-                focusNodeSelector: 'input',
-                buttons: [Dialog.okButton({ label: 'Ok' })]
-              });
+              // showDialog({
+              //   title: 'Error:',
+              //   body: new FlexiblePopupWidget("Error making call to get search results. Have you selected valid search parameters?"),
+              //   focusNodeSelector: 'input',
+              //   buttons: [Dialog.okButton({ label: 'Ok' })]
+              // });
+               INotification.error("Error making call to get search results. Have you selected valid search parameters?");
           }
       };
 
@@ -332,7 +355,7 @@ function activate(app: JupyterLab,
   }
 
 
-  /******** Set commands for menu *********/
+  /******** Set commands for command palette and main menu *********/
 
   // Add an application command to open ESDS
   const open_command = 'iframe:open';

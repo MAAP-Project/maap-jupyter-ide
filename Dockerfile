@@ -40,6 +40,9 @@ RUN cd /submit_jobs && jupyter labextension link .
 RUN cd /submit_jobs && pip install -e .
 RUN cd /submit_jobs && jupyter serverextension enable --py submit_jobs --sys-prefix
 
+# install toastify for error messaging
+RUN jupyter labextension install jupyterlab_toastify
+
 # jlab earthdata search extension
 COPY edsc_extension /edsc_extension
 RUN cd /edsc_extension && npm run build
