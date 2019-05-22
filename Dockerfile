@@ -1,4 +1,4 @@
-FROM continuumio/anaconda3:2018.12
+FROM localhost:32000/vanilla
 
 RUN conda install -c conda-forge jupyterlab
 RUN conda install -c conda-forge nodejs 
@@ -42,6 +42,7 @@ RUN cd /submit_jobs && jupyter serverextension enable --py submit_jobs --sys-pre
 
 # install toastify for error messaging
 RUN jupyter labextension install jupyterlab_toastify
+RUN npm i jupyterlab_toastify
 
 # jlab earthdata search extension
 COPY edsc_extension /edsc_extension
