@@ -29,7 +29,7 @@ export class ProjectsList extends Widget {
     body.style.display = 'flex';
     body.style.flexDirection = 'column'
 
-    request('get', PageConfig.getBaseUrl() + "pull_projects/listAllProjects").then((res: RequestResult) => {
+    request('get', PageConfig.getBaseUrl() + "pull_projects/list").then((res: RequestResult) => {
       if(res.ok){
         let json_response:any = res.json();
         // let status_code:any = json_response['status_code'];
