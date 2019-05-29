@@ -3,6 +3,8 @@ import sys
 from notebook.base.handlers import IPythonHandler
 
 import os
+import glob
+from pathlib import Path
 import requests
 import json
 from git import Repo
@@ -70,7 +72,7 @@ class ListFilesHandler(IPythonHandler):
             files = []
             for p in projects:
                 print(p['path'])
-                path = '/projects/'+p['path']
+                path = p['path']
                 for fname in Path(path).glob('**/*.*py*'):
                     fname = str(fname)
                     # filter out ipynb checkpoints and py duplicates of ipynb
@@ -79,7 +81,7 @@ class ListFilesHandler(IPythonHandler):
 
             self.finish({"status_code": r.status_code, "project_files":files})
         except:
-            self.finish({"status_code": r.status_code, "result": r.reason})
+            self.finish({"status_code": r.status_code, "result": r.reason, "response": r.text})
 
 class GetProjectHandler(IPythonHandler):
     def get(self, project_name=None, location=None, src_type=None):
