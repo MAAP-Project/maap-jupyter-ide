@@ -1,4 +1,4 @@
-FROM continuumio/anaconda3:2018.12
+FROM localhost:32000/vanilla
 
 RUN conda install -c conda-forge jupyterlab
 RUN conda install -c conda-forge nodejs 
@@ -40,6 +40,10 @@ RUN cd /submit_jobs && jupyter labextension link .
 RUN cd /submit_jobs && pip install -e .
 RUN cd /submit_jobs && jupyter serverextension enable --py submit_jobs --sys-prefix
 
+# install toastify for error messaging
+RUN jupyter labextension install jupyterlab_toastify
+RUN npm i jupyterlab_toastify
+
 # jlab earthdata search extension
 COPY edsc_extension /edsc_extension
 RUN cd /edsc_extension && npm run build
@@ -60,13 +64,14 @@ RUN cd /dps_magic && pip install -e .
 RUN cd /dps_magic && jupyter nbextension install --symlink --py dps_magic --sys-prefix
 RUN cd /dps_magic && jupyter nbextension enable --py dps_magic --sys-prefix
 
-# copy in cmc
-COPY maap-common-mapping-client /maap-common-mapping-client
 # cmc widget
 COPY ipycmc /ipycmc
-RUN cd /ipycmc && npm install && npm run build
-RUN cd /ipycmc && pip install ipywidgets
+# RUN cd /ipycmc && pip install ipywidgets
 RUN cd /ipycmc && jupyter labextension install @jupyter-widgets/jupyterlab-manager
+RUN cd /ipycmc && npm install && npm run build
+RUN cd /ipycmc && pip install -e .
+RUN cd /ipycmc && jupyter nbextension install --py --symlink --sys-prefix ipycmc
+RUN cd /ipycmc && jupyter nbextension enable --py --sys-prefix ipycmc
 RUN cd /ipycmc && jupyter labextension link .
 
 RUN touch /root/.bashrc && echo "cd /projects >& /dev/null" >> /root/.bashrc
