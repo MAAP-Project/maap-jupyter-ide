@@ -1,0 +1,5 @@
+{
+  "load_extensions": {
+    "dps_magic/extension": true
+  }
+}
