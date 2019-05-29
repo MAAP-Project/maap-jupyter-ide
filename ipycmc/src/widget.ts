@@ -5,13 +5,12 @@ import { DOMWidgetModel, DOMWidgetView, ISerializers } from '@jupyter-widgets/ba
 
 import { MODULE_NAME, MODULE_VERSION } from './version';
 
+import path from "path";
 import moment from 'moment';
 import CMC_Module = require('maap-common-mapping-client');
 const CMC = CMC_Module.CMC;
 require('maap-common-mapping-client/dist/bundle.css');
 require('maap-common-mapping-client/dist/assets/mapskin/css/mapskin.min.css');
-
-require('file-loader?emitFile=true&outputPath=assets/CesiumDrawHelper/img/&name=[name].[ext]!maap-common-mapping-client/dist/assets/CesiumDrawHelper/img/dragIcon.png');
 
 function importAll(r: any) {
     r.keys().forEach(r);
@@ -38,6 +37,7 @@ export class MapCMCModel extends DOMWidgetModel {
             _view_module_version: MapCMCModel.view_module_version,
             _argv: [],
             _state: {},
+            _workspace_base_url: '',
         };
     }
 
@@ -85,7 +85,8 @@ export class MapCMCView extends DOMWidgetView {
     }
 
     render_cmc() {
-        this.cmc = new CMC(this.appDiv);
+        let baseUrl = path.join(this.model.get('_workspace_base_url'), "/lab/static");
+        this.cmc = new CMC({ target: this.appDiv, base_url: baseUrl });
         this._syncCMC();
 
         this.cmc._store.subscribe(() => {
