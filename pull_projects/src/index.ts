@@ -3,9 +3,13 @@ import { PageConfig } from '@jupyterlab/coreutils'
 import { JupyterLab, JupyterLabPlugin } from '@jupyterlab/application';
 import { ILauncher } from '@jupyterlab/launcher';
 import { Widget } from '@phosphor/widgets';
+import { INotification } from "jupyterlab_toastify";
 import { request, RequestResult } from './request';
 
 export class ProjectsPull extends Widget {
+
+  pull_result: string;
+  
   constructor() {
     let body = document.createElement('div');
     body.style.display = 'flex';
@@ -15,11 +19,16 @@ export class ProjectsPull extends Widget {
       if(res.ok){
         let json_response:any = res.json();
         let message = json_response['status'];
+        this.pull_result = message;
         let contents = document.createTextNode(message);
         body.appendChild(contents);
       }
     });
     super({ node: body });
+  }
+
+  get_pull_result_message() {
+    return this.pull_result;
   }
 }
 
@@ -44,6 +53,7 @@ export class ProjectsList extends Widget {
     });
     super({ node: body });
   }
+
 }
 
 export function showDialog<T>(
@@ -64,6 +74,11 @@ export function popup(b:any): void {
   });
 }
 
+export function toastify_notification(b:any): void {
+
+  INotification.success(b.get_pull_result_message());
+}
+
 function activate_pull(app: JupyterLab,
                   palette: ICommandPalette,
                   launcher: ILauncher | null) {
@@ -75,14 +90,14 @@ function activate_pull(app: JupyterLab,
     label: 'Pull All Projects',
     isEnabled: () => true,
     execute: args => {
-      popup(new ProjectsPull());
+      toastify_notification(new ProjectsPull());
     }
   });
 
   palette.addItem({command: open_command, category: 'Projects'});
 
   console.log('JupyterLab pull is activated!');
-  popup(new ProjectsPull());
+  toastify_notification(new ProjectsPull());
   console.log('Autopulled projects');
 };
 
