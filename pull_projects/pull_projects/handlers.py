@@ -72,14 +72,16 @@ class ListFilesHandler(IPythonHandler):
             files = []
             for p in projects:
                 print(p['path'])
-                path = p['path']
+                path = '/projects/'+p['path']
                 for fname in Path(path).glob('**/*.*py*'):
                     fname = str(fname)
+                    l = len('/projects/')
+                    fname = fname[l:]
                     # filter out ipynb checkpoints and py duplicates of ipynb
                     if not fname.replace('.py','.ipynb') in files and not '/.ipynb_checkpoints' in fname:
                         files.append(fname)
 
-            self.finish({"status_code": r.status_code, "project_files":files})
+            self.finish({"status_code": r.status_code, "project_files":files, "response": r.text})
         except:
             self.finish({"status_code": r.status_code, "result": r.reason, "response": r.text})
 

@@ -27,11 +27,11 @@ export class ProjectSelector extends Widget {
       var txt:string;
       for (var file of projectList) {
         var lang = '';
-        if (file.includes('.py')) {
+        if (file.indexOf('.py') > -1 || file.indexOf('.ipynb') > -1) {
           lang = 'python';
-        } else if (file.includes('.sh')) {
+        } else if (file.indexOf('.sh') > -1) {
           lang = 'bash';
-        } else if (file.includes('.jl')) {
+        } else if (file.indexOf('.jl') > -1) {
           lang = 'julia';
         } else {
           lang = 'unknown';
