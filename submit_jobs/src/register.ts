@@ -21,15 +21,27 @@ export class ProjectSelector extends Widget {
 
     this.dropdown = <HTMLSelectElement>document.createElement("SELECT");
     this.dropdown.id = "project-dropdown";
-    this.getProjects().then((serverList) => {
-      // console.log(serverList);
+    this.getProjects().then((projectList) => {
+      // console.log(projectList);
       var opt:HTMLOptionElement;
       var txt:string;
-      for (var tab of serverList) {
-        // console.log(tab);
+      for (var file of projectList) {
+        var lang = '';
+        if (file.indexOf('.py') > -1 || file.indexOf('.ipynb') > -1) {
+          lang = 'python';
+        } else if (file.indexOf('.sh') > -1) {
+          lang = 'bash';
+        } else if (file.indexOf('.jl') > -1) {
+          lang = 'julia';
+        } else {
+          lang = 'unknown';
+          console.log('language unknown');
+        }
+        console.log('lang is '+lang);
+
         opt = <HTMLOptionElement>document.createElement("option");
-        opt.setAttribute("id",tab['path']);
-        txt = tab['path']+' ('+tab['kernel']['name']+')';
+        opt.setAttribute("id",file);
+        txt = file+' (' + lang +')';
         opt.setAttribute("label",txt);
         opt.appendChild(document.createTextNode(txt));
         this.dropdown.appendChild(opt);
@@ -41,26 +53,31 @@ export class ProjectSelector extends Widget {
   getProjects() {
     var me = this;
     return new Promise<Array<string>>((resolve, reject) => {
-      var serverList: Array<string> = []
+      var projectList: Array<string> = []
 
       // get list of projects to give dropdown menu
-      var settingsAPIUrl = new URL(PageConfig.getBaseUrl() + 'api/sessions');
+      var settingsAPIUrl = new URL(PageConfig.getBaseUrl() + 'pull_projects/listFiles');
+      console.log(settingsAPIUrl.href);
       request('get',settingsAPIUrl.href).then((res: RequestResult) => {
         if (res.ok) {
           var json_response:any = res.json();
-          var servers = json_response;
+          var projects = json_response['project_files'];
           // console.log(servers);
           // console.log(servers.length);
-          if (servers.length == 0) {
+          if (projects.length == 0) {
             me.selection = "No open notebooks";
             return;
           } else {
-            serverList = servers;
+            projectList = projects;
           }
-        resolve(serverList);
+        resolve(projectList);
         }
       });
     });
+  }
+
+  listProjectFiles() {
+
   }
 
   getValue() {

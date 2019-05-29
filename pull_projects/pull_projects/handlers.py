@@ -3,6 +3,8 @@ import sys
 from notebook.base.handlers import IPythonHandler
 
 import os
+import glob
+from pathlib import Path
 import requests
 import json
 from git import Repo
@@ -44,6 +46,44 @@ class ListProjectsHandler(IPythonHandler):
             self.finish({"status_code": r.status_code, "result": result, "json_object":projects})
         except:
             self.finish({"status_code": r.status_code, "result": r.reason})
+
+class ListFilesHandler(IPythonHandler):
+    def get(self):
+        # 'https://che-k8s.maap.xyz/api/workspace/workspacetn41o4yl4a7kxclz'
+        workspace_id = os.environ['CHE_WORKSPACE_ID']
+        che_machine_token = os.environ['CHE_MACHINE_TOKEN']
+        url = 'https://che-k8s.maap.xyz/api/workspace/{workspace_id}'.format(workspace_id=workspace_id)
+        # --------------------------------------------------
+        # TODO: FIGURE OUT AUTH KEY & verify
+        # --------------------------------------------------
+        headers = {
+            'Accept':'application/json',
+            'Authorization':'Bearer {token}'.format(token=che_machine_token)
+        }
+        r = requests.get(
+            url, 
+            headers=headers, 
+            verify=False
+        )
+
+        try:
+            resp = json.loads(r.text)               # JSON response to dict
+            projects = resp['config']['projects']   # gets list of projects, each is dict with project properties
+            files = []
+            for p in projects:
+                print(p['path'])
+                path = '/projects/'+p['path']
+                for fname in Path(path).glob('**/*.*py*'):
+                    fname = str(fname)
+                    l = len('/projects/')
+                    fname = fname[l:]
+                    # filter out ipynb checkpoints and py duplicates of ipynb
+                    if not fname.replace('.py','.ipynb') in files and not '/.ipynb_checkpoints' in fname:
+                        files.append(fname)
+
+            self.finish({"status_code": r.status_code, "project_files":files, "response": r.text})
+        except:
+            self.finish({"status_code": r.status_code, "result": r.reason, "response": r.text})
 
 class GetProjectHandler(IPythonHandler):
     def get(self, project_name=None, location=None, src_type=None):
