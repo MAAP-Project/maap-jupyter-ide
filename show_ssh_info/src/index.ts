@@ -36,6 +36,10 @@ import {
   request, RequestResult
 } from './request';
 
+import { INotification } from "jupyterlab_toastify";
+
+import getKeycloak = require("./getKeycloak");
+
 import '../style/index.css';
 
 const extension: JupyterLabPlugin<void> = {
@@ -83,58 +87,34 @@ class InstallSshWidget extends Widget {
   }
 }
 
-// export
-// class InputKeyWidget extends Widget {
-//   constructor() {
-//     let body = document.createElement('div');
-//     body.style.display = 'flex';
-//     body.style.flexDirection = 'column';
-//     let textarea = document.createElement("TEXTAREA");
-//     textarea.id = 'public-key-text';
-//     console.log((<HTMLTextAreaElement>textarea).value)
-//     body.appendChild(textarea)
-//
-//     // let type = document.createElement('select');
-//
-//     // type.style.marginBottom = '15px';
-//     // type.style.minHeight = '25px';
-//     // body.appendChild(type);
-//
-//     super({ node: body });
-//   }
-//
-// }
+class InjectSSH {
+  constructor() {
+    let profile = getKeycloak.getUserInfo();
+    if (profile == "error") {
+        INotification.error("Injecting user's SSH key failed - Keycloak profile not found.");
+        return;
+    }
 
-// export
-// function autoversion(): void {
-//     showDialog({
-//         title: 'SSH Info:',
-//         body: new SshWidget(),
-//         focusNodeSelector: 'input',
-//         buttons: [Dialog.okButton({ label: 'Upload Public Key' }), Dialog.okButton({ label: 'Ok' })]
-//     }).then(result => {
-//         if (result.button.label === 'Upload Public Key') {
-//
-//             showDialog({
-//                 title: 'Upload Public Key:',
-//                 body: new InputKeyWidget(),
-//                 focusNodeSelector: 'input',
-//                 buttons: [Dialog.okButton({ label: 'Ok' })]
-//             }).then(result => {
-//                 console.log(result.value)
-//                 console.log("take in input here");
-//                 let test = "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDOBk5VU/BPAwsQjBnoMFGRptPR0vB1A2nWgc9Fz0BbgCRYFwdhPJM2IgiV4xmj6On3wcvr+RQ7i64gBCNM2UxZiGeX9b/bVfoMLJMQBCHAW/UH9Oxssa0wBHoCfhVrl3LoC+Esy3hSU05g95VwFMxxqN6tF20JpA6lDCYJtTrpCodlDVVt5ESl/BQcYy6YqSV8INITiLB9aN/SU/Ns9FxIoTu7o/pZrcOZVZfNVLAwkCwNmika05vJJCpCMe/f4PK81QN/WNJZAVbMq7HISg6SNxaz5uFX9Umhpgnb9RXYSUImS08/JTnk+Z3JpD1Q3V9jUs3PLhimzkrqcVgk0Rhn"
-//                 request('get', PageConfig.getBaseUrl() + "show_ssh_info/addKey", {'public_key': test})
-//                     .then((res: RequestResult) => {
-//                         if (res.ok) {
-//                             console.log("added the key!")
-//                         }
-//                     });
-//             });
-//         }
-//     });
-//
-// }
+    let key = profile['public_ssh_keys'];
+    if (key == "test") {
+        INotification.error("Injecting user's SSH key failed - SSH Key undefined.");
+        return;
+    }
+
+    let getUrl = new URL(PageConfig.getBaseUrl() + "show_ssh_info/inject_public_key");
+    getUrl.searchParams.append("key", key);
+
+    // Make call to back end
+    let xhr = new XMLHttpRequest();
+    xhr.onload = function() {
+        console.log("SSH Key injected");
+    };
+    xhr.open("GET", getUrl.href, true);
+    xhr.send(null);
+
+  }
+}
+
 
 export
 function checkSSH(): void {
@@ -199,10 +179,10 @@ function activate(app: JupyterLab,
                   browser: IFileBrowserFactory,
                   launcher: ILauncher | null) {
 
+  new InjectSSH();
 
   // let widget: SshWidget;
-
-   // Add an application command
+  // Add an application command
   const open_command = 'sshinfo:open';
 
   app.commands.addCommand(open_command, {
