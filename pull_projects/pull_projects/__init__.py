@@ -3,7 +3,7 @@ import os
 import os.path
 from notebook.utils import url_path_join
 
-from .handlers import ListProjectsHandler, GetProjectHandler, GetAllProjectsHandler
+from .handlers import ListProjectsHandler, GetProjectHandler, GetAllProjectsHandler, ListFilesHandler
 
 def _jupyter_labextension_paths():
     return [{
@@ -38,9 +38,8 @@ def load_jupyter_server_extension(nb_server_app):
     #http://0.0.0.0:3100/serverlx80f9ci-ws-jupyter/server-3100/
     #https://che-k8s.maap.xyz/serverlx80f9ci-ws-jupyter/server-3100/
 
-    web_app.add_handlers(host_pattern, [(url_path_join(base_url, 'pull_projects/listAllProjects'), ListProjectsHandler)])
+    web_app.add_handlers(host_pattern, [(url_path_join(base_url, 'pull_projects/list'), ListProjectsHandler)])
+    web_app.add_handlers(host_pattern, [(url_path_join(base_url, 'pull_projects/listFiles'), ListFilesHandler)])
     web_app.add_handlers(host_pattern, [(url_path_join(base_url, 'pull_projects/getProject'), GetProjectHandler)])
     web_app.add_handlers(host_pattern, [(url_path_join(base_url, 'pull_projects/getAllProjects'), GetAllProjectsHandler)])
-    # web_app.add_handlers(host_pattern, [(url_path_join(base_url, 'pull_projects/putProject'), PutProjectHandler)])
-    # web_app.add_handlers(host_pattern, [(url_path_join(base_url, 'pull_projects/deleteProject'), DeleteProjectsHandler)])
 
