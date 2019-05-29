@@ -26,17 +26,18 @@ export class ProjectSelector extends Widget {
       var opt:HTMLOptionElement;
       var txt:string;
       for (var file of projectList) {
-        // console.log(tab);
         var lang = '';
-        if (file.contains('.py')) {
+        if (file.includes('.py')) {
           lang = 'python';
-        } else if (file.contains('.sh')) {
+        } else if (file.includes('.sh')) {
           lang = 'bash';
-        } else if (file.contains('.jl')) {
+        } else if (file.includes('.jl')) {
           lang = 'julia';
         } else {
+          lang = 'unknown';
           console.log('language unknown');
         }
+        console.log('lang is '+lang);
 
         opt = <HTMLOptionElement>document.createElement("option");
         opt.setAttribute("id",file);
