@@ -94,12 +94,13 @@ class InjectSSH {
         INotification.error("Injecting user's SSH key failed - Keycloak profile not found.");
         return;
     }
+    console.log(profile);
 
-    let key = profile['public_ssh_keys'];
-    if (key == "test") {
+    if (profile['public_ssh_keys'] === undefined) {
         INotification.error("Injecting user's SSH key failed - SSH Key undefined.");
         return;
     }
+    let key = profile['public_ssh_keys'];
 
     let getUrl = new URL(PageConfig.getBaseUrl() + "show_ssh_info/inject_public_key");
     getUrl.searchParams.append("key", key);
