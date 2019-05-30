@@ -20,7 +20,8 @@ export class ProjectsPull extends Widget {
         let json_response:any = res.json();
         let message = json_response['status'];
         this.pull_result = message;
-        let contents = document.createTextNode(message);
+	INotification.success(this.pull_result);
+	let contents = document.createTextNode(message);
         body.appendChild(contents);
       }
     });
@@ -28,6 +29,7 @@ export class ProjectsPull extends Widget {
   }
 
   get_pull_result_message() {
+    console.log("pull request message is: " + this.pull_result);
     return this.pull_result;
   }
 }
@@ -74,10 +76,6 @@ export function popup(b:any): void {
   });
 }
 
-export function toastify_notification(b:any): void {
-
-  INotification.success(b.get_pull_result_message());
-}
 
 function activate_pull(app: JupyterLab,
                   palette: ICommandPalette,
@@ -90,7 +88,7 @@ function activate_pull(app: JupyterLab,
     label: 'Pull All Projects',
     isEnabled: () => true,
     execute: args => {
-      toastify_notification(new ProjectsPull());
+      new ProjectsPull();
     }
   });
 
