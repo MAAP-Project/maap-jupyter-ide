@@ -89,29 +89,31 @@ class InstallSshWidget extends Widget {
 
 class InjectSSH {
   constructor() {
-    let profile = getKeycloak.getUserInfo();
-    if (profile == "error") {
-        INotification.error("Injecting user's SSH key failed - Keycloak profile not found.");
-        return;
-    }
-    console.log(profile);
 
-    if (profile['public_ssh_keys'] === undefined) {
-        INotification.error("Injecting user's SSH key failed - SSH Key undefined.");
-        return;
-    }
-    let key = profile['public_ssh_keys'];
+    getKeycloak.getUserInfo(function(profile: any) {
+        console.log(profile);
 
-    let getUrl = new URL(PageConfig.getBaseUrl() + "show_ssh_info/inject_public_key");
-    getUrl.searchParams.append("key", key);
+        if (profile['public_ssh_keys'] === undefined) {
+            INotification.error("Injecting user's SSH key failed - SSH Key undefined.");
+            return;
+        }
+        let key = profile['public_ssh_keys'];
 
-    // Make call to back end
-    let xhr = new XMLHttpRequest();
-    xhr.onload = function() {
-        console.log("SSH Key injected");
-    };
-    xhr.open("GET", getUrl.href, true);
-    xhr.send(null);
+        let getUrl = new URL(PageConfig.getBaseUrl() + "show_ssh_info/inject_public_key");
+        getUrl.searchParams.append("key", key);
+
+        // Make call to back end
+        let xhr = new XMLHttpRequest();
+        xhr.onload = function() {
+            console.log("SSH Key injected");
+        };
+        xhr.open("GET", getUrl.href, true);
+        xhr.send(null);
+    });
+    // if (profile == "error") {
+    //     INotification.error("Injecting user's SSH key failed - Keycloak profile not found.");
+    //     return;
+    // }
 
   }
 }

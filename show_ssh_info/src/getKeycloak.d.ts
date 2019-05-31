@@ -1,3 +1,3 @@
-export function getUserInfo(): any;
+export function getUserInfo(callback: any): any;
 export function getToken(): any;
 
