@@ -67,9 +67,9 @@ export function showDialog<T>(
   return;
 }
 
-export function popup(b:any): void {
+export function popup(b:any, title:string): void {
   showDialog({
-    title: 'Pull All Projects:',
+    title: title,
     body: b,
     focusNodeSelector: 'input',
     buttons: [Dialog.okButton({ label: 'Ok' })]
@@ -110,7 +110,7 @@ function activate_list(app: JupyterLab,
     label: 'List All Projects',
     isEnabled: () => true,
     execute: args => {
-      popup(new ProjectsList());
+      popup(new ProjectsList(), "List All Projects");
     }
   });
 
