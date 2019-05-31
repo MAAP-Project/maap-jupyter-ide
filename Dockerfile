@@ -4,13 +4,6 @@ RUN conda install -c conda-forge jupyterlab
 RUN conda install -c conda-forge nodejs 
 RUN conda install -c conda-forge gitpython
 
-# jlab show ssh extension
-COPY show_ssh_info /show_ssh_info
-RUN cd /show_ssh_info && npm run build
-RUN cd /show_ssh_info && jupyter labextension link .
-RUN cd /show_ssh_info && pip install -e .
-RUN cd /show_ssh_info && jupyter serverextension enable --py show_ssh_info --sys-prefix
-
 # jlab pull projects into /projects directory
 COPY pull_projects /pull_projects
 RUN cd /pull_projects && pip install -e .
@@ -27,11 +20,11 @@ RUN cd /jupyterlab-git && pip install -e .
 RUN cd /jupyterlab-git && jupyter serverextension enable --py jupyterlab_git --sys-prefix
 
 # jlab show ssh extension
-COPY inject_ssh /inject_ssh
-RUN cd /inject_ssh && npm install
-RUN cd /inject_ssh && jupyter labextension link .
-RUN cd /inject_ssh && pip install -e .
-RUN cd /inject_ssh && jupyter serverextension enable --py inject_ssh --sys-prefix
+#COPY inject_ssh /inject_ssh
+#RUN cd /inject_ssh && npm install
+#RUN cd /inject_ssh && jupyter labextension link .
+#RUN cd /inject_ssh && pip install -e .
+#RUN cd /inject_ssh && jupyter serverextension enable --py inject_ssh --sys-prefix
 
 # jlab submit_jobs extension
 COPY submit_jobs /submit_jobs
@@ -73,6 +66,14 @@ RUN cd /ipycmc && pip install -e .
 RUN cd /ipycmc && jupyter nbextension install --py --symlink --sys-prefix ipycmc
 RUN cd /ipycmc && jupyter nbextension enable --py --sys-prefix ipycmc
 RUN cd /ipycmc && jupyter labextension link .
+
+# jlab show ssh extension
+COPY show_ssh_info /show_ssh_info
+RUN cd /show_ssh_info && npm run build
+RUN cd /show_ssh_info && jupyter labextension link .
+RUN cd /show_ssh_info && pip install -e .
+RUN cd /show_ssh_info && jupyter serverextension enable --py show_ssh_info --sys-prefix
+
 
 RUN touch /root/.bashrc && echo "cd /projects >& /dev/null" >> /root/.bashrc
 
