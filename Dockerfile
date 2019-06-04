@@ -45,13 +45,6 @@ RUN cd /show_ssh_info && jupyter labextension link .
 RUN cd /show_ssh_info && pip install -e .
 RUN cd /show_ssh_info && jupyter serverextension enable --py show_ssh_info --sys-prefix
 
-# jlab inject ssh extension
-COPY inject_ssh /inject_ssh
-RUN cd /inject_ssh && npm install
-RUN cd /inject_ssh && jupyter labextension link .
-RUN cd /inject_ssh && pip install -e .
-RUN cd /inject_ssh && jupyter serverextension enable --py inject_ssh --sys-prefix
-
 # jlab earthdata search extension
 COPY edsc_extension /edsc_extension
 RUN cd /edsc_extension && npm run build
