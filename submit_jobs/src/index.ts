@@ -50,7 +50,7 @@ function activateGetCapabilities(app: JupyterLab,
     label: 'Get Capabilities',
     isEnabled: () => true,
     execute: args => {
-      popup(new HySDSWidget('getCapabilities',getCapabilitiesFields,jobsPanel));
+      popup(new HySDSWidget('getCapabilities',getCapabilitiesFields,jobsPanel,{}));
     }
   });
   palette.addItem({command: open_command, category: 'DPS'});
@@ -65,7 +65,7 @@ function activateGetStatus(app: JupyterLab,
     label: 'Get DPS Job Status',
     isEnabled: () => true,
     execute: args => {
-      popup(new HySDSWidget('getStatus',getStatusFields,jobsPanel));
+      popup(new HySDSWidget('getStatus',getStatusFields,jobsPanel,{}));
     }
   });
   palette.addItem({command: open_command, category: 'DPS'});
@@ -80,7 +80,7 @@ function activateGetResult(app: JupyterLab,
     label: 'Get DPS Job Result',
     isEnabled: () => true,
     execute: args => {
-      popup(new HySDSWidget('getResult',getResultFields,jobsPanel));
+      popup(new HySDSWidget('getResult',getResultFields,jobsPanel,{}));
     }
   });
   palette.addItem({command: open_command, category: 'DPS'});
@@ -95,7 +95,7 @@ function activateExecute(app: JupyterLab,
     label: 'Execute DPS Job',
     isEnabled: () => true,
     execute: args => {
-      popup(new HySDSWidget('executeInputs',executeInputsFields,jobsPanel));
+      popup(new HySDSWidget('executeInputs',executeInputsFields,jobsPanel,{}));
     }
   });
   palette.addItem({command: open_command, category: 'DPS'});
@@ -111,7 +111,7 @@ function activateDismiss(app: JupyterLab,
     label: 'Dismiss DPS Job',
     isEnabled: () => true,
     execute: args => {
-      popup(new HySDSWidget('dismiss',dismissFields,jobsPanel));
+      popup(new HySDSWidget('dismiss',dismissFields,jobsPanel,{}));
     }
   });
   palette.addItem({command: open_command, category: 'DPS'});
@@ -126,7 +126,7 @@ function activateDescribe(app: JupyterLab,
     label: 'Describe Algorithm',
     isEnabled: () => true,
     execute: args => {
-      popup(new HySDSWidget('describeProcess',describeProcessFields,jobsPanel));
+      popup(new HySDSWidget('describeProcess',describeProcessFields,jobsPanel,{}));
     }
   });
   palette.addItem({command: open_command, category: 'DPS'});
@@ -141,7 +141,7 @@ function activateList(app: JupyterLab,
     label: 'List Algorithms',
     isEnabled: () => true,
     execute: args => {
-      popup(new HySDSWidget('listAlgorithms',listAlgorithmsFields,jobsPanel));
+      popup(new HySDSWidget('listAlgorithms',listAlgorithmsFields,jobsPanel,{}));
     }
   });
   palette.addItem({command: open_command, category: 'DPS'});
@@ -156,7 +156,7 @@ function activateDelete(app: JupyterLab,
     label: 'Delete Algorithm',
     isEnabled: () => true,
     execute: args => {
-      popup(new HySDSWidget('deleteAlgorithm',deleteAlgorithmFields,jobsPanel));
+      popup(new HySDSWidget('deleteAlgorithm',deleteAlgorithmFields,jobsPanel,{}));
     }
   });
   palette.addItem({command: open_command, category: 'DPS'});

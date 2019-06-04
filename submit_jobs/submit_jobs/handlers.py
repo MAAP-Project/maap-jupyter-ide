@@ -974,7 +974,7 @@ class ExecuteInputsHandler(IPythonHandler):
 class DefaultValuesHandler(IPythonHandler):
 	# inputs: code_path
 	# outputs: repo_url, algo_name, run_cmd, dockerfile_path, environment_name, branch
-	def get():
+	def get(self):
 		# ==================================
 		# Part 1: Get Notebook Information Processed in UI
 		# ==================================
@@ -987,14 +987,14 @@ class DefaultValuesHandler(IPythonHandler):
 				params[f] = arg
 			except:
 				params[f] = ''
-		params['code_path'] = '/projects/'+params['code_path']
+		proj_path = '/projects/'+params['code_path']
 
 		# ==================================
 		# Part 2: GitLab Token
 		# ==================================
 		# set key and path
 		ENV_TOKEN_KEY = 'gitlab_token'
-		proj_path = params['code_path']
+		proj_path = '/'.join(proj_path.split('/')[:-1])
 		# if proj_path != '/':
 		os.chdir(proj_path)
 
@@ -1054,9 +1054,9 @@ class DefaultValuesHandler(IPythonHandler):
 		# Part 4: Extract Required Register Parameters
 		# ==================================
 		vals = {}
-
-		file_name = params['code_path'].split('/')[-1]
-		algo_name = algo_name.replace('/',':').replace(' ', '_').replace('"','')
+		code_path = params['code_path']
+		file_name = code_path.split('/')[-1]
+		algo_name = file_name.replace('/',':').replace(' ', '_').replace('"','').replace("'",'')
 		vals['algo_name'] = ('.').join(algo_name.split('.')[:-1])
 
 		if code_path.split('.')[-1] in ['.py','ipynb']:
