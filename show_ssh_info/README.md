@@ -1,6 +1,10 @@
 # show_ssh_info
 
-This extension displays ssh info for a kubernetes cluster container. This won't work unless it is being run in the Jupyter Lab instance inside Che.
+This extension displays ssh info for a user to get onto the kubernetes cluster container for 
+their workspace. It also injects the users SSH key into their workspace from their auth 
+profile (keycloak). 
+
+This extension is dependent upon being run inside the Eclipse Che environment.
 
 
 ## Development

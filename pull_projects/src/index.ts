@@ -3,9 +3,13 @@ import { PageConfig } from '@jupyterlab/coreutils'
 import { JupyterLab, JupyterLabPlugin } from '@jupyterlab/application';
 import { ILauncher } from '@jupyterlab/launcher';
 import { Widget } from '@phosphor/widgets';
+import { INotification } from "jupyterlab_toastify";
 import { request, RequestResult } from './request';
 
 export class ProjectsPull extends Widget {
+
+  pull_result: string;
+  
   constructor() {
     let body = document.createElement('div');
     body.style.display = 'flex';
@@ -15,11 +19,18 @@ export class ProjectsPull extends Widget {
       if(res.ok){
         let json_response:any = res.json();
         let message = json_response['status'];
-        let contents = document.createTextNode(message);
+        this.pull_result = message;
+	INotification.success(this.pull_result);
+	let contents = document.createTextNode(message);
         body.appendChild(contents);
       }
     });
     super({ node: body });
+  }
+
+  get_pull_result_message() {
+    console.log("pull request message is: " + this.pull_result);
+    return this.pull_result;
   }
 }
 
@@ -44,6 +55,7 @@ export class ProjectsList extends Widget {
     });
     super({ node: body });
   }
+
 }
 
 export function showDialog<T>(
@@ -55,14 +67,15 @@ export function showDialog<T>(
   return;
 }
 
-export function popup(b:any): void {
+export function popup(b:any, title:string): void {
   showDialog({
-    title: 'Pull All Projects:',
+    title: title,
     body: b,
     focusNodeSelector: 'input',
     buttons: [Dialog.okButton({ label: 'Ok' })]
   });
 }
+
 
 function activate_pull(app: JupyterLab,
                   palette: ICommandPalette,
@@ -75,14 +88,14 @@ function activate_pull(app: JupyterLab,
     label: 'Pull All Projects',
     isEnabled: () => true,
     execute: args => {
-      popup(new ProjectsPull());
+      new ProjectsPull();
     }
   });
 
   palette.addItem({command: open_command, category: 'Projects'});
 
   console.log('JupyterLab pull is activated!');
-  popup(new ProjectsPull());
+  new ProjectsPull();
   console.log('Autopulled projects');
 };
 
@@ -97,7 +110,7 @@ function activate_list(app: JupyterLab,
     label: 'List All Projects',
     isEnabled: () => true,
     execute: args => {
-      popup(new ProjectsList());
+      popup(new ProjectsList(), "List All Projects");
     }
   });
 
