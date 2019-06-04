@@ -54,7 +54,7 @@ export class HySDSWidget extends Widget {
   jobs_panel: JobCache;    // for execute
   ins_dict: {[k:string]:string};          // for execute
 
-  constructor(req:string, method_fields:string[],panel:JobCache) {
+  constructor(req:string, method_fields:string[],panel:JobCache, defaultValues:{[k:string]:string}) {
     let body = document.createElement('div');
     body.style.display = 'flex';
     body.style.flexDirection = 'column';
@@ -164,6 +164,10 @@ export class HySDSWidget extends Widget {
 
           var fieldInput = document.createElement('input');
           fieldInput.id = (field.toLowerCase() + '-input');
+          // set default values
+          if (field in defaultValues) {
+            fieldInput.value = defaultValues[field];
+          }
           this.node.appendChild(fieldInput);
         
           // BREAK
@@ -430,7 +434,7 @@ export class HySDSWidget extends Widget {
               var old_fields = json_response['old'];
               // console.log(new_fields);
               // console.log('pre-popup');
-              var exec = new HySDSWidget('execute',new_fields, me.jobs_panel);
+              var exec = new HySDSWidget('execute',new_fields, me.jobs_panel,{});
               exec.setOldFields(old_fields);
               popup(exec);
               // console.log('post-popup');

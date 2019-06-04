@@ -79,6 +79,10 @@ export class ProjectSelector extends Widget {
   getValue() {
     // var ind = this.dropdown.selected​Index;
     var opt:string = this.dropdown.value;
+    var ind = opt.indexOf('(');
+    if (ind > -1) {
+      opt = opt.substr(0,ind).trim();
+    }
     console.log(opt);
     
     // guarantee RegisterWidget is passed a value
@@ -104,7 +108,7 @@ export class ProjectSelector extends Widget {
       var defaultValues:{[k:string]:string}  = {}
 
       // get list of projects to give dropdown menu
-      var valuesUrl = new URL(PageConfig.getBaseUrl() + 'submit_jobs/defaultValues');
+      var valuesUrl = new URL(PageConfig.getBaseUrl() + 'hysds/defaultValues');
       valuesUrl.searchParams.append('code_path', code_path);
       console.log(valuesUrl.href);
       request('get',valuesUrl.href).then((res: RequestResult) => {
@@ -128,16 +132,9 @@ export class RegisterWidget extends HySDSWidget {
   name_lang:string;
 
   constructor(req:string, method_fields:string[],panel:JobCache,selected:string,defaultValues:{[k:string]:string}) {
-    super(req, method_fields, panel);
+    super(req, method_fields, panel,defaultValues);
     this.auto = (req == 'registerAuto');
     this.name_lang = selected;
-
-    // set default values
-    for (var field of this.fields) {
-      if (field in defaultValues) {
-        (<HTMLInputElement>document.getElementById(field.toLowerCase()+'-input')).value = defaultValues[field];
-      }
-    }
 
     // bind method definitions of "this" to refer to class instance
     this.getValue = this.getValue.bind(this);
