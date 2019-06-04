@@ -970,3 +970,104 @@ class ExecuteInputsHandler(IPythonHandler):
 				self.finish({"status_code": 500, "result": r.reason, "ins": [], "old":params})
 		else:
 			self.finish({"status_code": 400, "result": "Bad Request", "ins": [], "old":params})
+
+class DefaultValuesHandler(IPythonHandler):
+	# inputs: code_path
+	# outputs: repo_url, algo_name, run_cmd, dockerfile_path, environment_name, branch
+	def get():
+		# ==================================
+		# Part 1: Get Notebook Information Processed in UI
+		# ==================================
+		fields = ['code_path']
+
+		params = {}
+		for f in fields:
+			try:
+				arg = self.get_argument(f.lower(), '').strip()
+				params[f] = arg
+			except:
+				params[f] = ''
+		params['code_path'] = '/projects/'+params['code_path']
+
+		# ==================================
+		# Part 2: GitLab Token
+		# ==================================
+		# set key and path
+		ENV_TOKEN_KEY = 'gitlab_token'
+		proj_path = params['code_path']
+		# if proj_path != '/':
+		os.chdir(proj_path)
+
+		# check if GitLab token has been set
+		git_url = subprocess.check_output("git remote get-url origin", shell=True).decode('utf-8').strip()
+		print(git_url)
+		token = git_url.split("repo.nasa")[0][:-1]
+		ind = token.find("gitlab-ci-token:")
+		notoken = True
+
+		# if repo url has token, no problems
+		if ind != -1:
+			token = token[ind+len("gitlab-ci-token:"):]
+			if len(token) != 0:
+				print("token has been set")
+				notoken = False
+		
+		# token needs to be set
+		if notoken:
+			# if saved in environment, set for user
+			if ENV_TOKEN_KEY in os.environ:
+				token = os.environ[ENV_TOKEN_KEY]
+				print(token)
+				url = git_url.split("//")
+				new_url = "{pre}//gitlab-ci-token:{tkn}@{rep}".format(pre=url[0],tkn=token,rep=url[1])
+				status = subprocess.call("git remote set-url origin {}".format(new_url), shell=True)
+
+				if status != 0:
+					self.finish({"status_code": 412, "result": "Error {} setting GitLab Token".format(status)})
+					return
+			else:
+				self.finish({"status_code": 412, "result": "Error: GitLab Token not set in environment\n{}".format(git_url)})
+				return
+
+		# self.finish({"status_code":200,"result":"finish checking token"})
+
+		# ==================================
+		# Part 3: Check if User Has Committed
+		# ==================================
+		# get git status
+		git_status_out = subprocess.check_output("git status --porcelain", shell=True).decode("utf-8")
+		git_status = git_status_out.splitlines()
+		git_status = [e.strip() for e in git_status]
+
+		# filter for unsaved python files
+		unsaved = list(filter(lambda e: ( (e.split('.')[-1] in ['ipynb','py']) and (e[0] in ['M','?']) ), git_status))
+
+		# if there are unsaved python files, user needs to commit
+		if len(unsaved) != 0:
+			self.finish({"status_code": 412, "result": "Error: Notebook(s) and/or script(s) have not been committed\n{}".format('\n'.join(unsaved))})
+			return
+
+		# self.finish({"status_code" : 200, "result": "Done checking commit"})
+		# return
+
+		# ==================================
+		# Part 4: Extract Required Register Parameters
+		# ==================================
+		vals = {}
+
+		file_name = params['code_path'].split('/')[-1]
+		algo_name = algo_name.replace('/',':').replace(' ', '_').replace('"','')
+		vals['algo_name'] = ('.').join(algo_name.split('.')[:-1])
+
+		if code_path.split('.')[-1] in ['.py','ipynb']:
+			vals['run_cmd'] = 'python '+code_path
+		else:
+			vals['run_cmd'] = code_path
+
+		vals['repo_url'] = git_url
+		vals['branch'] = subprocess.check_output("git branch | grep \\* | cut -d ' ' -f2", shell=True).decode('utf-8').strip()
+		vals['env_name'] = "ubuntu"
+		vals['dockerfile_path'] = os.environ['DOCKERFILE_PATH']
+
+		# outputs: repo_url, algo_name, run_cmd, dockerfile_path, environment_name, branch
+		self.finish({"status_code": 200, "default_values":vals})
