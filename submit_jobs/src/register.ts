@@ -76,10 +76,6 @@ export class ProjectSelector extends Widget {
     });
   }
 
-  listProjectFiles() {
-
-  }
-
   getValue() {
     // var ind = this.dropdown.selected​Index;
     var opt:string = this.dropdown.value;
@@ -90,14 +86,36 @@ export class ProjectSelector extends Widget {
       console.log('no option selected');
       popupResult("No Option Selected","Select Failed");
     } else {
-      if (this.automate) {
-        console.log('create registerAuto');
-        popup(new RegisterWidget('registerAuto',this.registerFields,this.jobsPanel,opt));
-      } else {
-        console.log('create register');
-        popup(new RegisterWidget('register',this.registerFields,this.jobsPanel,opt));
-      }
+      this.getDefaultValues(opt).then((defaultValues) => {
+        console.log(defaultValues);
+        if (this.automate) {
+          console.log('create registerAuto');
+          popup(new RegisterWidget('registerAuto',this.registerFields,this.jobsPanel,opt,defaultValues));
+        } else {
+          console.log('create register');
+          popup(new RegisterWidget('register',this.registerFields,this.jobsPanel,opt,defaultValues));
+        }
+      });
     }
+  }
+
+  getDefaultValues(code_path) {
+    return new Promise<{[k:string]:string}>((resolve, reject) => {
+      var defaultValues:{[k:string]:string}  = {}
+
+      // get list of projects to give dropdown menu
+      var valuesUrl = new URL(PageConfig.getBaseUrl() + 'submit_jobs/defaultValues');
+      valuesUrl.searchParams.append('code_path', code_path);
+      console.log(valuesUrl.href);
+      request('get',valuesUrl.href).then((res: RequestResult) => {
+        if (res.ok) {
+          var json_response:any = res.json();
+          var values = json_response['default_values'];
+          defaultValues = values;
+        resolve(defaultValues);
+        }
+      });
+    });
   }
 }
 
@@ -109,10 +127,17 @@ export class RegisterWidget extends HySDSWidget {
   public readonly auto:boolean;
   name_lang:string;
 
-  constructor(req:string, method_fields:string[],panel:JobCache,selected:string) {
+  constructor(req:string, method_fields:string[],panel:JobCache,selected:string,defaultValues:{[k:string]:string}) {
     super(req, method_fields, panel);
     this.auto = (req == 'registerAuto');
     this.name_lang = selected;
+
+    // set default values
+    for (var field of this.fields) {
+      if (field in defaultValues) {
+        (<HTMLInputElement>document.getElementById(field.toLowerCase()+'-input')).value = defaultValues[field];
+      }
+    }
 
     // bind method definitions of "this" to refer to class instance
     this.getValue = this.getValue.bind(this);
@@ -144,7 +169,7 @@ export class RegisterWidget extends HySDSWidget {
       console.log('selected '+this.name_lang);
 
       // Make sure there is content to read
-      if (this.name_lang != '') {
+      if (this.name_lang != 'unknown') {
         params = this.name_lang.split('(');
         nb_name = params[0].trim();
         lang = params[1].trim();
