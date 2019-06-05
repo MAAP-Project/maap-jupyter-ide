@@ -77,10 +77,10 @@ export class HySDSWidget extends Widget {
         this.popup_title = "Register Algorithm";
         console.log('register');
         break;
-      case 'registerAuto':
-        this.popup_title = "Register Algorithm";
-        console.log('registerAuto');
-        break;
+      // case 'registerAuto':
+      //   this.popup_title = "Register Algorithm";
+      //   console.log('registerAuto');
+      //   break;
       case 'deleteAlgorithm':
         this.popup_title = "Delete Algorithm";
         console.log('deleteAlgorithm');
@@ -113,9 +113,11 @@ export class HySDSWidget extends Widget {
       case 'describeProcess':
         this.popup_title = "Describe Process";
         console.log('describeProcess');
+        break;
       case 'listAlgorithms':
         this.popup_title = "List Algorithms";
         console.log('listAlgorithms');
+        break;
     }
     // console.log(this.fields);
 
@@ -125,11 +127,11 @@ export class HySDSWidget extends Widget {
     this.setOldFields = this.setOldFields.bind(this);
     this.buildRequestUrl = this.buildRequestUrl.bind(this);
 
-    if (this.popup_title == "registerAuto") {
-      var msg = document.createElement("Label");
-      msg.innerHTML = "Your Docker container must have cloned the repository in the following path: /app";
-      this.node.appendChild(msg);
-    }
+    // if (this.popup_title == "registerAuto") {
+    //   var msg = document.createElement("Label");
+    //   msg.innerHTML = "Your Docker container must have cloned the repository in the following path: /app";
+    //   this.node.appendChild(msg);
+    // }
 
     // BREAK
     var x = document.createElement("BR");

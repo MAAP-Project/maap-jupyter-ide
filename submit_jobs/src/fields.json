@@ -1,6 +1,6 @@
 {
 	"register": ["repo_url","algo_name","algo_desc","run_cmd","inputs"],
-	"registerAuto": ["inputs"],
+	// "registerAuto": ["inputs"],
 	"deleteAlgorithm": ["algo_id","version"],
 	"getCapabilities": [],
 	"listAlgorithms": [],

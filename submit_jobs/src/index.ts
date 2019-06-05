@@ -10,7 +10,7 @@ import { ProjectSelector } from './register';
 import * as data from './fields.json';
 
 const registerFields = data.register;
-const registerAutoFields = data.registerAuto;
+// const registerAutoFields = data.registerAuto;
 const deleteAlgorithmFields = data.deleteAlgorithm;
 const getCapabilitiesFields = data.getCapabilities;
 const listAlgorithmsFields = data.listAlgorithms;
@@ -162,22 +162,22 @@ function activateDelete(app: JupyterLab,
   palette.addItem({command: open_command, category: 'DPS'});
   console.log('HySDS Describe Job is activated!');
 }
-function activateRegisterAuto(app: JupyterLab, 
-                        palette: ICommandPalette, 
-                        restorer: ILauncher | null): void{
-  const open_command = 'hysds: register-auto';
+// function activateRegisterAuto(app: JupyterLab, 
+//                         palette: ICommandPalette, 
+//                         restorer: ILauncher | null): void{
+//   const open_command = 'hysds: register-auto';
 
-  app.commands.addCommand(open_command, {
-    label: 'Register Algorithm Automatically',
-    isEnabled: () => true,
-    execute: args => {
-      popupResult(new ProjectSelector(true,registerAutoFields,jobsPanel),"Select a Project");
-      // popupResult(new HySDSWidget('registerAuto',registerAutoFields,jobsPanel);
-    }
-  });
-  palette.addItem({command: open_command, category: 'DPS'});
-  console.log('HySDS Register Algorithm is activated!');
-}
+//   app.commands.addCommand(open_command, {
+//     label: 'Register Algorithm Automatically',
+//     isEnabled: () => true,
+//     execute: args => {
+//       popupResult(new ProjectSelector(true,registerAutoFields,jobsPanel),"Select a Project");
+//       // popupResult(new HySDSWidget('registerAuto',registerAutoFields,jobsPanel);
+//     }
+//   });
+//   palette.addItem({command: open_command, category: 'DPS'});
+//   console.log('HySDS Register Algorithm is activated!');
+// }
 
 function activateJobCache(app: JupyterLab): void{
 
@@ -190,13 +190,13 @@ function activateJobCache(app: JupyterLab): void{
 }
 
 // export extensions
-const extensionRegisterAuto: JupyterLabPlugin<void> = {
-  id: 'dps-register-auto',
-  autoStart: true,
-  requires: [ICommandPalette],
-  optional: [ILauncher],
-  activate: activateRegisterAuto
-};
+// const extensionRegisterAuto: JupyterLabPlugin<void> = {
+//   id: 'dps-register-auto',
+//   autoStart: true,
+//   requires: [ICommandPalette],
+//   optional: [ILauncher],
+//   activate: activateRegisterAuto
+// };
 const extensionRegister: JupyterLabPlugin<void> = {
   id: 'dps-register',
   autoStart: true,
