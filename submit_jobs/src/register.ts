@@ -7,15 +7,13 @@ import { JobCache, HySDSWidget, popup, popupResult } from './hysds';
 export class ProjectSelector extends Widget {
   public readonly registerFields: string[];
   jobsPanel: JobCache;
-  automate: boolean;
   public selection:string;
   dropdown:HTMLSelectElement;
 
-  constructor(automate,fields,jobs_panel) {
+  constructor(fields,jobs_panel) {
     super();
     this.registerFields = fields;
     this.jobsPanel = jobs_panel;
-    this.automate = automate;
     this.selection = '';
     // this.popup_title = "Select Project";
 
@@ -92,13 +90,8 @@ export class ProjectSelector extends Widget {
     } else {
       this.getDefaultValues(opt).then((defaultValues) => {
         console.log(defaultValues);
-        if (this.automate) {
-          console.log('create registerAuto');
-          popup(new RegisterWidget('registerAuto',this.registerFields,this.jobsPanel,opt,defaultValues));
-        } else {
-          console.log('create register');
-          popup(new RegisterWidget('register',this.registerFields,this.jobsPanel,opt,defaultValues));
-        }
+        console.log('create register');
+        popup(new RegisterWidget('register',this.registerFields,this.jobsPanel,opt,defaultValues));
       });
     }
   }
@@ -128,12 +121,10 @@ export class RegisterWidget extends HySDSWidget {
   // TODO: protect instance vars
   // public readonly req: string;
   // public readonly popup_title: string;
-  public readonly auto:boolean;
   name_lang:string;
 
   constructor(req:string, method_fields:string[],panel:JobCache,selected:string,defaultValues:{[k:string]:string}) {
     super(req, method_fields, panel,defaultValues);
-    this.auto = (req == 'registerAuto');
     this.name_lang = selected;
 
     // bind method definitions of "this" to refer to class instance
