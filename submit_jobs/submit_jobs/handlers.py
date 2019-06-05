@@ -8,13 +8,17 @@ import datetime
 import copy
 import sys
 import os
+import logging
+
+# logger = logging.getLogger()
+# logger.setLevel(logging.DEBUG)
 
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 from fields import getFields
 # USE https when pointing to actual MAAP API server
 #BASE_URL = "http://localhost:5000/api"
 BASE_URL = "https://api.maap.xyz/api"
-WORKDIR = os.getcwd()+'/../submit_jobs'
+WORKDIR = os.getcwd()+'/../../submit_jobs'
 
 def dig(node):
 	# print("dig!")
@@ -71,21 +75,28 @@ def printInputs(resp,inputs):
 	return result
 
 class RegisterAlgorithmHandler(IPythonHandler):
-	def get(self):
+	def get(self,**params):
 		# ==================================
 		# Part 1: Parse Required Arguments
 		# ==================================
+		# logging.debug('workdir is '+WORKDIR)
 		fields = ['nb_name'] + getFields('register')
+		# logging.debug('fields')
+		# logging.debug(fields)
 
 		params = {}
 		for f in fields:
 			try:
 				arg = self.get_argument(f.lower(), '').strip()
 				params[f] = arg
+				# logging.debug('found '+f)
 			except:
 				params[f] = ''
+				# logging.debug('no '+f)
 		
 		print(params)
+		# logging.debug('params are')
+		# logging.debug(params)
 		nb_name = params['nb_name']
 
 		if params['repo_url'] == '':
@@ -103,7 +114,7 @@ class RegisterAlgorithmHandler(IPythonHandler):
 		if nb_name != '':
 			# navigate to project directory
 			proj_path = ('/').join(['/projects']+nb_name.split('/')[:-1])
-			os.chdir(proj_path)
+			# os.chdir(proj_path)
 
 			# get git status
 			git_status_out = subprocess.check_output("git status --porcelain", shell=True).decode("utf-8")
