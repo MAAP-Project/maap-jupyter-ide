@@ -77,10 +77,6 @@ export class HySDSWidget extends Widget {
         this.popup_title = "Register Algorithm";
         console.log('register');
         break;
-      // case 'registerAuto':
-      //   this.popup_title = "Register Algorithm";
-      //   console.log('registerAuto');
-      //   break;
       case 'deleteAlgorithm':
         this.popup_title = "Delete Algorithm";
         console.log('deleteAlgorithm');
@@ -383,10 +379,6 @@ export class HySDSWidget extends Widget {
           urllst.push(getUrl);
           resolve(urllst);
         }
-
-      // for getting notebook info with auto register
-      } else if (me.req == 'registerAuto') {
-        resolve(urllst);
 
       // Get Notebook information to pass to Register Handler
       } else if (me.req == 'register') {
