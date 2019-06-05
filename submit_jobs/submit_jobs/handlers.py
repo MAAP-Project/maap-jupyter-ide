@@ -8,13 +8,17 @@ import datetime
 import copy
 import sys
 import os
+import logging
+
+# logger = logging.getLogger()
+# logger.setLevel(logging.DEBUG)
 
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 from fields import getFields
 # USE https when pointing to actual MAAP API server
 #BASE_URL = "http://localhost:5000/api"
 BASE_URL = "https://api.maap.xyz/api"
-WORKDIR = os.getcwd()+'/../submit_jobs'
+WORKDIR = os.getcwd()+'/../../submit_jobs'
 
 def dig(node):
 	# print("dig!")
@@ -71,21 +75,28 @@ def printInputs(resp,inputs):
 	return result
 
 class RegisterAlgorithmHandler(IPythonHandler):
-	def get(self):
+	def get(self,**params):
 		# ==================================
 		# Part 1: Parse Required Arguments
 		# ==================================
+		# logging.debug('workdir is '+WORKDIR)
 		fields = ['nb_name'] + getFields('register')
+		# logging.debug('fields')
+		# logging.debug(fields)
 
 		params = {}
 		for f in fields:
 			try:
 				arg = self.get_argument(f.lower(), '').strip()
 				params[f] = arg
+				# logging.debug('found '+f)
 			except:
 				params[f] = ''
+				# logging.debug('no '+f)
 		
 		print(params)
+		# logging.debug('params are')
+		# logging.debug(params)
 		nb_name = params['nb_name']
 
 		if params['repo_url'] == '':
@@ -164,186 +175,6 @@ class RegisterAlgorithmHandler(IPythonHandler):
 			)
 			print(r.text)
 			if r.status_code == 200:
-				try:
-					# MAAP API response
-					resp = json.loads(r.text)
-					# show registered inputs
-					result = printInputs(resp,inputs)
-					self.finish({"status_code": resp['code'], "result": result})
-				except:
-					self.finish({"status_code": r.status_code, "result": r.text})
-			else:
-				print('failed')
-				self.finish({"status_code": r.status_code, "result": r.reason})
-		except:
-			self.finish({"status_code": 400, "result": "Bad Request"})
-
-class RegisterAutoHandler(IPythonHandler):
-	def get(self):
-		# ==================================
-		# Part 1: Get Notebook Information Processed in UI
-		# ==================================
-		# include user-defined inputs
-		fields =  getFields('register') + ['lang','nb_name']#,'algo_name']
-		params = {}
-		for f in fields:
-			try:
-				arg = self.get_argument(f,'').strip()
-				params[f] = arg
-			except:
-				params[f] = ''
-
-		# print(params)
-		lang = params['lang']
-		nb_name = params['nb_name']
-		algo_name = nb_name
-		params['algo_name'] = nb_name
-
-		# ==================================
-		# Part 2: GitLab Token
-		# ==================================
-		# set key and path
-		ENV_TOKEN_KEY = 'gitlab_token'
-		proj_path = ('/').join(['/projects']+nb_name.split('/')[:-1])
-		# if proj_path != '/':
-		os.chdir(proj_path)
-
-		# check if GitLab token has been set
-		git_url = subprocess.check_output("git remote get-url origin", shell=True).decode('utf-8').strip()
-		print(git_url)
-		token = git_url.split("repo.nasa")[0][:-1]
-		ind = token.find("gitlab-ci-token:")
-		notoken = True
-
-		# if repo url has token, no problems
-		if ind != -1:
-			token = token[ind+len("gitlab-ci-token:"):]
-			if len(token) != 0:
-				print("token has been set")
-				notoken = False
-		
-		# token needs to be set
-		if notoken:
-			# if saved in environment, set for user
-			if ENV_TOKEN_KEY in os.environ:
-				token = os.environ[ENV_TOKEN_KEY]
-				print(token)
-				url = git_url.split("//")
-				new_url = "{pre}//gitlab-ci-token:{tkn}@{rep}".format(pre=url[0],tkn=token,rep=url[1])
-				status = subprocess.call("git remote set-url origin {}".format(new_url), shell=True)
-
-				if status != 0:
-					self.finish({"status_code": 412, "result": "Error {} setting GitLab Token".format(status)})
-					return
-			else:
-				self.finish({"status_code": 412, "result": "Error: GitLab Token not set in environment\n{}".format(git_url)})
-				return
-
-		# self.finish({"status_code":200,"result":"finish checking token"})
-
-		# ==================================
-		# Part 3: Check if User Has Committed
-		# ==================================
-		# get git status
-		git_status_out = subprocess.check_output("git status --porcelain", shell=True).decode("utf-8")
-		git_status = git_status_out.splitlines()
-		git_status = [e.strip() for e in git_status]
-
-		# filter for unsaved python files
-		unsaved = list(filter(lambda e: ( (e.split('.')[-1] in ['ipynb','py']) and (e[0] in ['M','?']) ), git_status))
-
-		# if there are unsaved python files, user needs to commit
-		if len(unsaved) != 0:
-			self.finish({"status_code": 412, "result": "Error: Notebook(s) and/or script(s) have not been committed\n{}".format('\n'.join(unsaved))})
-			return
-
-		# self.finish({"status_code" : 200, "result": "Done checking commit"})
-		# return
-
-		# ==================================
-		# Part 4: Extract Required Register Parameters
-		# ==================================
-		# sanitize algo_name input
-		# 	not allowed: '/' ' ' '"'
-		# 	remove filename extension
-		file_name = algo_name.split('/')[-1]
-		algo_name = algo_name.replace('/',':').replace(' ', '_').replace('"','')
-		algo_name = ('.').join(algo_name.split('.')[:-1])
-		# lang = tab['kernel']['name']
-		# nb_name = tab['path'] 
-		git_url = str(subprocess.check_output("git remote get-url origin", shell=True).decode('utf-8').strip())
-
-		# convert python notebook to python script
-		status = subprocess.call("ipython nbconvert --to python {}".format(file_name), shell=True)
-		if status != 0:
-			self.finish({"status_code": 500, "result": "Could not convert .ipynb to .py"})
-			return
-
-		# push converted python script to git
-		status = subprocess.call("git add {}\ngit commit -m 'commit converted notebook'\ngit push".format(file_name.replace('ipynb','py')), shell=True)
-		if status !=0:
-			self.finish({"status_code": 500, "result": "Could not commit converted notebook to git"})	
-			return		
-
-		run_cmd = '{} {}'.format(lang,nb_name.replace('.ipynb','.py'))
-
-		# looks like:
-		# 	algo_name 		che-test:GetKernelData
-		# 	run_cmd 		python3 che-test/GetKernelData.py
-		# self.finish({"status_code" : 200, "result": "Done getting params\n{}\n{}".format(algo_name,run_cmd)})
-		# return
-		
-		# ==================================
-		# Part 5: Build Request
-		# ==================================
-		json_file = WORKDIR+"/submit_jobs/register_url.json"
-		json_in_file = WORKDIR+"/submit_jobs/register_inputs.json"
-		url = BASE_URL+'/mas/algorithm'
-		headers = {'Content-Type':'application/json'}
-
-		with open(json_in_file) as f:
-			ins_json = f.read()
-
-		# build inputs json		
-		popped = params.pop('inputs')
-		inputs = parseInputs(popped)
-
-		ins = ''
-		for name in inputs.keys():
-			if len(name) > 0:
-				ins += ins_json.format(field_name=name,dl=inputs[name])
-
-		# print(ins)
-		# add inputs json to params for template substitution
-
-		with open(json_file) as jso:
-			req_json = jso.read()
-
-		# rebuild params dictionary with required parameters for registering
-		# some may have been modified since initial UI processing
-		params = {}
-		params["repo_url"] = git_url
-		params["run_cmd"] = run_cmd
-		params["algo_name"] = algo_name
-		params["algo_desc"] = 'auto-register {}'.format(algo_name)
-		params['algo_inputs'] = ins
-
-		req_json = req_json.format(**params)
-		# print(req_json)
-		# self.finish({"status_code" : 200, "result": json.dumps(req_json)})
-		# return
-
-		# ==================================
-		# Part 6: Send Request & Check Response
-		# ==================================
-		try:
-			r = requests.post(
-				url=url,
-				data=req_json,
-				headers=headers
-			)
-			if r.status_code == 200:
-				# print(r.text)
 				try:
 					# MAAP API response
 					resp = json.loads(r.text)
@@ -970,3 +801,104 @@ class ExecuteInputsHandler(IPythonHandler):
 				self.finish({"status_code": 500, "result": r.reason, "ins": [], "old":params})
 		else:
 			self.finish({"status_code": 400, "result": "Bad Request", "ins": [], "old":params})
+
+class DefaultValuesHandler(IPythonHandler):
+	# inputs: code_path
+	# outputs: repo_url, algo_name, run_cmd, dockerfile_path, environment_name, branch
+	def get(self):
+		# ==================================
+		# Part 1: Get Notebook Information Processed in UI
+		# ==================================
+		fields = ['code_path']
+
+		params = {}
+		for f in fields:
+			try:
+				arg = self.get_argument(f.lower(), '').strip()
+				params[f] = arg
+			except:
+				params[f] = ''
+		proj_path = '/projects/'+params['code_path']
+
+		# ==================================
+		# Part 2: GitLab Token
+		# ==================================
+		# set key and path
+		ENV_TOKEN_KEY = 'gitlab_token'
+		proj_path = '/'.join(proj_path.split('/')[:-1])
+		# if proj_path != '/':
+		os.chdir(proj_path)
+
+		# check if GitLab token has been set
+		git_url = subprocess.check_output("git remote get-url origin", shell=True).decode('utf-8').strip()
+		print(git_url)
+		token = git_url.split("repo.nasa")[0][:-1]
+		ind = token.find("gitlab-ci-token:")
+		notoken = True
+
+		# if repo url has token, no problems
+		if ind != -1:
+			token = token[ind+len("gitlab-ci-token:"):]
+			if len(token) != 0:
+				print("token has been set")
+				notoken = False
+		
+		# token needs to be set
+		if notoken:
+			# if saved in environment, set for user
+			if ENV_TOKEN_KEY in os.environ:
+				token = os.environ[ENV_TOKEN_KEY]
+				print(token)
+				url = git_url.split("//")
+				new_url = "{pre}//gitlab-ci-token:{tkn}@{rep}".format(pre=url[0],tkn=token,rep=url[1])
+				status = subprocess.call("git remote set-url origin {}".format(new_url), shell=True)
+
+				if status != 0:
+					self.finish({"status_code": 412, "result": "Error {} setting GitLab Token".format(status)})
+					return
+			else:
+				self.finish({"status_code": 412, "result": "Error: GitLab Token not set in environment\n{}".format(git_url)})
+				return
+
+		# self.finish({"status_code":200,"result":"finish checking token"})
+
+		# ==================================
+		# Part 3: Check if User Has Committed
+		# ==================================
+		# get git status
+		git_status_out = subprocess.check_output("git status --porcelain", shell=True).decode("utf-8")
+		git_status = git_status_out.splitlines()
+		git_status = [e.strip() for e in git_status]
+
+		# filter for unsaved python files
+		unsaved = list(filter(lambda e: ( (e.split('.')[-1] in ['ipynb','py']) and (e[0] in ['M','?']) ), git_status))
+
+		# if there are unsaved python files, user needs to commit
+		if len(unsaved) != 0:
+			self.finish({"status_code": 412, "result": "Error: Notebook(s) and/or script(s) have not been committed\n{}".format('\n'.join(unsaved))})
+			return
+
+		# self.finish({"status_code" : 200, "result": "Done checking commit"})
+		# return
+
+		# ==================================
+		# Part 4: Extract Required Register Parameters
+		# ==================================
+		vals = {}
+		code_path = params['code_path']
+		file_name = code_path.split('/')[-1]
+		algo_name = file_name.replace('/',':').replace(' ', '_').replace('"','').replace("'",'')
+		vals['algo_name'] = ('.').join(algo_name.split('.')[:-1])
+
+		if code_path.split('.')[-1] in ['.py','ipynb']:
+			vals['run_cmd'] = 'python '+code_path
+		else:
+			vals['run_cmd'] = code_path
+
+		vals['repo_url'] = git_url
+		vals['branch'] = subprocess.check_output("git branch | grep \\* | cut -d ' ' -f2", shell=True).decode('utf-8').strip()
+		vals['env_name'] = "ubuntu"
+		vals['dockerfile_path'] = os.environ['DOCKERFILE_PATH']
+
+		# outputs: repo_url, algo_name, run_cmd, dockerfile_path, environment_name, branch
+		self.finish({"status_code": 200, "default_values":vals})

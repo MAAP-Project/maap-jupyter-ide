@@ -54,7 +54,7 @@ export class HySDSWidget extends Widget {
   jobs_panel: JobCache;    // for execute
   ins_dict: {[k:string]:string};          // for execute
 
-  constructor(req:string, method_fields:string[],panel:JobCache) {
+  constructor(req:string, method_fields:string[],panel:JobCache, defaultValues:{[k:string]:string}) {
     let body = document.createElement('div');
     body.style.display = 'flex';
     body.style.flexDirection = 'column';
@@ -76,10 +76,6 @@ export class HySDSWidget extends Widget {
       case 'register':
         this.popup_title = "Register Algorithm";
         console.log('register');
-        break;
-      case 'registerAuto':
-        this.popup_title = "Register Algorithm";
-        console.log('registerAuto');
         break;
       case 'deleteAlgorithm':
         this.popup_title = "Delete Algorithm";
@@ -113,9 +109,11 @@ export class HySDSWidget extends Widget {
       case 'describeProcess':
         this.popup_title = "Describe Process";
         console.log('describeProcess');
+        break;
       case 'listAlgorithms':
         this.popup_title = "List Algorithms";
         console.log('listAlgorithms');
+        break;
     }
     // console.log(this.fields);
 
@@ -125,11 +123,11 @@ export class HySDSWidget extends Widget {
     this.setOldFields = this.setOldFields.bind(this);
     this.buildRequestUrl = this.buildRequestUrl.bind(this);
 
-    if (this.popup_title == "registerAuto") {
-      var msg = document.createElement("Label");
-      msg.innerHTML = "Your Docker container must have cloned the repository in the following path: /app";
-      this.node.appendChild(msg);
-    }
+    // if (this.popup_title == "registerAuto") {
+    //   var msg = document.createElement("Label");
+    //   msg.innerHTML = "Your Docker container must have cloned the repository in the following path: /app";
+    //   this.node.appendChild(msg);
+    // }
 
     // BREAK
     var x = document.createElement("BR");
@@ -164,6 +162,10 @@ export class HySDSWidget extends Widget {
 
           var fieldInput = document.createElement('input');
           fieldInput.id = (field.toLowerCase() + '-input');
+          // set default values
+          if (field in defaultValues) {
+            fieldInput.value = defaultValues[field];
+          }
           this.node.appendChild(fieldInput);
         
           // BREAK
@@ -378,10 +380,6 @@ export class HySDSWidget extends Widget {
           resolve(urllst);
         }
 
-      // for getting notebook info with auto register
-      } else if (me.req == 'registerAuto') {
-        resolve(urllst);
-
       // Get Notebook information to pass to Register Handler
       } else if (me.req == 'register') {
         resolve(urllst);
@@ -430,7 +428,7 @@ export class HySDSWidget extends Widget {
               var old_fields = json_response['old'];
               // console.log(new_fields);
               // console.log('pre-popup');
-              var exec = new HySDSWidget('execute',new_fields, me.jobs_panel);
+              var exec = new HySDSWidget('execute',new_fields, me.jobs_panel,{});
               exec.setOldFields(old_fields);
               popup(exec);
               // console.log('post-popup');

@@ -7,15 +7,13 @@ import { JobCache, HySDSWidget, popup, popupResult } from './hysds';
 export class ProjectSelector extends Widget {
   public readonly registerFields: string[];
   jobsPanel: JobCache;
-  automate: boolean;
   public selection:string;
   dropdown:HTMLSelectElement;
 
-  constructor(automate,fields,jobs_panel) {
+  constructor(fields,jobs_panel) {
     super();
     this.registerFields = fields;
     this.jobsPanel = jobs_panel;
-    this.automate = automate;
     this.selection = '';
     // this.popup_title = "Select Project";
 
@@ -76,13 +74,13 @@ export class ProjectSelector extends Widget {
     });
   }
 
-  listProjectFiles() {
-
-  }
-
   getValue() {
     // var ind = this.dropdown.selected​Index;
     var opt:string = this.dropdown.value;
+    var ind = opt.indexOf('(');
+    if (ind > -1) {
+      opt = opt.substr(0,ind).trim();
+    }
     console.log(opt);
     
     // guarantee RegisterWidget is passed a value
@@ -90,14 +88,31 @@ export class ProjectSelector extends Widget {
       console.log('no option selected');
       popupResult("No Option Selected","Select Failed");
     } else {
-      if (this.automate) {
-        console.log('create registerAuto');
-        popup(new RegisterWidget('registerAuto',this.registerFields,this.jobsPanel,opt));
-      } else {
+      this.getDefaultValues(opt).then((defaultValues) => {
+        console.log(defaultValues);
         console.log('create register');
-        popup(new RegisterWidget('register',this.registerFields,this.jobsPanel,opt));
-      }
+        popup(new RegisterWidget('register',this.registerFields,this.jobsPanel,opt,defaultValues));
+      });
     }
+  }
+
+  getDefaultValues(code_path) {
+    return new Promise<{[k:string]:string}>((resolve, reject) => {
+      var defaultValues:{[k:string]:string}  = {}
+
+      // get list of projects to give dropdown menu
+      var valuesUrl = new URL(PageConfig.getBaseUrl() + 'hysds/defaultValues');
+      valuesUrl.searchParams.append('code_path', code_path);
+      console.log(valuesUrl.href);
+      request('get',valuesUrl.href).then((res: RequestResult) => {
+        if (res.ok) {
+          var json_response:any = res.json();
+          var values = json_response['default_values'];
+          defaultValues = values;
+        resolve(defaultValues);
+        }
+      });
+    });
   }
 }
 
@@ -106,12 +121,10 @@ export class RegisterWidget extends HySDSWidget {
   // TODO: protect instance vars
   // public readonly req: string;
   // public readonly popup_title: string;
-  public readonly auto:boolean;
   name_lang:string;
 
-  constructor(req:string, method_fields:string[],panel:JobCache,selected:string) {
-    super(req, method_fields, panel);
-    this.auto = (req == 'registerAuto');
+  constructor(req:string, method_fields:string[],panel:JobCache,selected:string,defaultValues:{[k:string]:string}) {
+    super(req, method_fields, panel,defaultValues);
     this.name_lang = selected;
 
     // bind method definitions of "this" to refer to class instance
@@ -122,7 +135,7 @@ export class RegisterWidget extends HySDSWidget {
   }
 
   buildRequestUrl() {
-    var me:RegisterWidget = this;
+    // var me:RegisterWidget = this;
     return new Promise<Array<URL>>((resolve, reject) => {
       // var skip = false;
       // create API call to server extension
@@ -136,35 +149,6 @@ export class RegisterWidget extends HySDSWidget {
         console.log(field+' input is '+fieldText);
         getUrl.searchParams.append(field.toLowerCase(), fieldText);
       }
-
-      // Pull notebook name and language for automatic register
-      var params:string[];
-      var nb_name = '';
-      var lang = '';
-      console.log('selected '+this.name_lang);
-
-      // Make sure there is content to read
-      if (this.name_lang != '') {
-        params = this.name_lang.split('(');
-        nb_name = params[0].trim();
-        lang = params[1].trim();
-        lang = lang.substring(0,lang.length-1);
-      }
-      if ([this.name_lang,nb_name,lang].includes('')) {
-        console.log("no notebook open");
-        me.response_text = "No notebook open";
-        me.updateSearchResults();
-        return;
-      }
-
-      // AutoRegister also requires knowing language for run command
-      if (me.auto) {
-        console.log(lang);
-        getUrl.searchParams.append('lang', lang);
-      }
-
-      console.log(nb_name);
-      getUrl.searchParams.append('nb_name', nb_name);
 
       console.log(getUrl.href);
       console.log('done setting url');

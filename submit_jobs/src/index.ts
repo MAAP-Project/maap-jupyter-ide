@@ -4,23 +4,19 @@ import { ICommandPalette } from '@jupyterlab/apputils';
 import { ILauncher } from '@jupyterlab/launcher';
 import { JobCache, HySDSWidget, popup, popupResult } from './hysds';
 import { ProjectSelector } from './register';
-// import { INotebookTracker, Notebook, NotebookPanel } from '@jupyterlab/notebook';
 // import * as $ from "jquery";
 // import { format } from "xml-formatter";
 import * as data from './fields.json';
 
 const registerFields = data.register;
-const registerAutoFields = data.registerAuto;
 const deleteAlgorithmFields = data.deleteAlgorithm;
 const getCapabilitiesFields = data.getCapabilities;
 const listAlgorithmsFields = data.listAlgorithms;
 const executeInputsFields = data.executeInputs;
-// const executeFields = data.execute;
 const getStatusFields = data.getStatus;
 const getResultFields = data.getResult;
 const dismissFields = data.dismiss;
 const describeProcessFields = data.describeProcess;
-// const resultFields: string[] = ['status_code', 'result'];
 
 // I really don't like this hack
 const jobsPanel = new JobCache();
@@ -34,8 +30,7 @@ function activateRegister(app: JupyterLab,
     label: 'Register Algorithm',
     isEnabled: () => true,
     execute: args => {
-      popupResult(new ProjectSelector(false,registerFields,jobsPanel),"Select a Project");
-      // popup(new HySDSWidget('register',registerFields,jobsPanel));
+      popupResult(new ProjectSelector(registerFields,jobsPanel),"Select a Project");
     }
   });
   palette.addItem({command: open_command, category: 'DPS'});
@@ -50,7 +45,7 @@ function activateGetCapabilities(app: JupyterLab,
     label: 'Get Capabilities',
     isEnabled: () => true,
     execute: args => {
-      popup(new HySDSWidget('getCapabilities',getCapabilitiesFields,jobsPanel));
+      popup(new HySDSWidget('getCapabilities',getCapabilitiesFields,jobsPanel,{}));
     }
   });
   palette.addItem({command: open_command, category: 'DPS'});
@@ -65,7 +60,7 @@ function activateGetStatus(app: JupyterLab,
     label: 'Get DPS Job Status',
     isEnabled: () => true,
     execute: args => {
-      popup(new HySDSWidget('getStatus',getStatusFields,jobsPanel));
+      popup(new HySDSWidget('getStatus',getStatusFields,jobsPanel,{}));
     }
   });
   palette.addItem({command: open_command, category: 'DPS'});
@@ -80,7 +75,7 @@ function activateGetResult(app: JupyterLab,
     label: 'Get DPS Job Result',
     isEnabled: () => true,
     execute: args => {
-      popup(new HySDSWidget('getResult',getResultFields,jobsPanel));
+      popup(new HySDSWidget('getResult',getResultFields,jobsPanel,{}));
     }
   });
   palette.addItem({command: open_command, category: 'DPS'});
@@ -95,7 +90,7 @@ function activateExecute(app: JupyterLab,
     label: 'Execute DPS Job',
     isEnabled: () => true,
     execute: args => {
-      popup(new HySDSWidget('executeInputs',executeInputsFields,jobsPanel));
+      popup(new HySDSWidget('executeInputs',executeInputsFields,jobsPanel,{}));
     }
   });
   palette.addItem({command: open_command, category: 'DPS'});
@@ -111,7 +106,7 @@ function activateDismiss(app: JupyterLab,
     label: 'Dismiss DPS Job',
     isEnabled: () => true,
     execute: args => {
-      popup(new HySDSWidget('dismiss',dismissFields,jobsPanel));
+      popup(new HySDSWidget('dismiss',dismissFields,jobsPanel,{}));
     }
   });
   palette.addItem({command: open_command, category: 'DPS'});
@@ -126,7 +121,7 @@ function activateDescribe(app: JupyterLab,
     label: 'Describe Algorithm',
     isEnabled: () => true,
     execute: args => {
-      popup(new HySDSWidget('describeProcess',describeProcessFields,jobsPanel));
+      popup(new HySDSWidget('describeProcess',describeProcessFields,jobsPanel,{}));
     }
   });
   palette.addItem({command: open_command, category: 'DPS'});
@@ -141,7 +136,7 @@ function activateList(app: JupyterLab,
     label: 'List Algorithms',
     isEnabled: () => true,
     execute: args => {
-      popup(new HySDSWidget('listAlgorithms',listAlgorithmsFields,jobsPanel));
+      popup(new HySDSWidget('listAlgorithms',listAlgorithmsFields,jobsPanel,{}));
     }
   });
   palette.addItem({command: open_command, category: 'DPS'});
@@ -156,27 +151,11 @@ function activateDelete(app: JupyterLab,
     label: 'Delete Algorithm',
     isEnabled: () => true,
     execute: args => {
-      popup(new HySDSWidget('deleteAlgorithm',deleteAlgorithmFields,jobsPanel));
+      popup(new HySDSWidget('deleteAlgorithm',deleteAlgorithmFields,jobsPanel,{}));
     }
   });
   palette.addItem({command: open_command, category: 'DPS'});
   console.log('HySDS Describe Job is activated!');
-}
-function activateRegisterAuto(app: JupyterLab, 
-                        palette: ICommandPalette, 
-                        restorer: ILauncher | null): void{
-  const open_command = 'hysds: register-auto';
-
-  app.commands.addCommand(open_command, {
-    label: 'Register Algorithm Automatically',
-    isEnabled: () => true,
-    execute: args => {
-      popupResult(new ProjectSelector(true,registerAutoFields,jobsPanel),"Select a Project");
-      // popupResult(new HySDSWidget('registerAuto',registerAutoFields,jobsPanel);
-    }
-  });
-  palette.addItem({command: open_command, category: 'DPS'});
-  console.log('HySDS Register Algorithm is activated!');
 }
 
 function activateJobCache(app: JupyterLab): void{
@@ -189,14 +168,6 @@ function activateJobCache(app: JupyterLab): void{
   app.shell.addToLeftArea(infoPanel, {rank:300});
 }
 
-// export extensions
-const extensionRegisterAuto: JupyterLabPlugin<void> = {
-  id: 'dps-register-auto',
-  autoStart: true,
-  requires: [ICommandPalette],
-  optional: [ILauncher],
-  activate: activateRegisterAuto
-};
 const extensionRegister: JupyterLabPlugin<void> = {
   id: 'dps-register',
   autoStart: true,
@@ -268,4 +239,4 @@ const extensionJobCache: JupyterLabPlugin<void> = {
   activate: activateJobCache
 };
 
-export default [extensionDelete,extensionRegisterAuto,extensionRegister,extensionCapabilities,extensionStatus,extensionResult,extensionExecute,extensionDismiss,extensionDescribe,extensionList,extensionJobCache];
+export default [extensionDelete,extensionRegister,extensionCapabilities,extensionStatus,extensionResult,extensionExecute,extensionDismiss,extensionDescribe,extensionList,extensionJobCache];

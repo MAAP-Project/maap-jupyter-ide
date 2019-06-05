@@ -1,15 +1,8 @@
 FROM localhost:32000/vanilla
 
 RUN conda install -c conda-forge jupyterlab
-RUN conda install -c conda-forge nodejs 
+RUN conda install -c conda-forge nodejs
 RUN conda install -c conda-forge gitpython
-
-# jlab pull projects into /projects directory
-COPY pull_projects /pull_projects
-RUN cd /pull_projects && pip install -e .
-RUN cd /pull_projects && jupyter serverextension enable --py pull_projects --sys-prefix
-RUN cd /pull_projects && npm run build
-RUN cd /pull_projects && jupyter labextension link .
 
 # install git extension
 COPY jupyterlab-git /jupyterlab-git
@@ -19,43 +12,14 @@ RUN cd /jupyterlab-git && npm run build
 RUN cd /jupyterlab-git && pip install -e .
 RUN cd /jupyterlab-git && jupyter serverextension enable --py jupyterlab_git --sys-prefix
 
-# jlab show ssh extension
-#COPY inject_ssh /inject_ssh
-#RUN cd /inject_ssh && npm install
-#RUN cd /inject_ssh && jupyter labextension link .
-#RUN cd /inject_ssh && pip install -e .
-#RUN cd /inject_ssh && jupyter serverextension enable --py inject_ssh --sys-prefix
-
-# jlab submit_jobs extension
-COPY submit_jobs /submit_jobs
-RUN cd /submit_jobs && npm run build
-RUN cd /submit_jobs && jupyter labextension link .
-RUN cd /submit_jobs && pip install -e .
-RUN cd /submit_jobs && jupyter serverextension enable --py submit_jobs --sys-prefix
-
 # install toastify for error messaging
 RUN jupyter labextension install jupyterlab_toastify
 RUN npm i jupyterlab_toastify
-
-# jlab earthdata search extension
-COPY edsc_extension /edsc_extension
-RUN cd /edsc_extension && npm run build
-RUN cd /edsc_extension && jupyter labextension link .
-RUN cd /edsc_extension && pip install -e .
-RUN cd /edsc_extension/maap-py && python setup.py install
-RUN cd /edsc_extension && jupyter serverextension enable --py edsc_extension --sys-prefix
-ENV MAAP_CONF='/edsc_extension/maap-py/'
 
 # control che side panel extension
 COPY hide_side_panel /hide_side_panel
 RUN cd /hide_side_panel && npm run build
 RUN cd /hide_side_panel && jupyter labextension link .
-
-# dps job magics
-COPY dps_magic /dps_magic
-RUN cd /dps_magic && pip install -e .
-RUN cd /dps_magic && jupyter nbextension install --symlink --py dps_magic --sys-prefix
-RUN cd /dps_magic && jupyter nbextension enable --py dps_magic --sys-prefix
 
 # cmc widget
 COPY ipycmc /ipycmc
@@ -67,6 +31,13 @@ RUN cd /ipycmc && jupyter nbextension install --py --symlink --sys-prefix ipycmc
 RUN cd /ipycmc && jupyter nbextension enable --py --sys-prefix ipycmc
 RUN cd /ipycmc && jupyter labextension link .
 
+# jlab pull projects into /projects directory
+COPY pull_projects /pull_projects
+RUN cd /pull_projects && pip install -e .
+RUN cd /pull_projects && jupyter serverextension enable --py pull_projects --sys-prefix
+RUN cd /pull_projects && npm run build
+RUN cd /pull_projects && jupyter labextension link .
+
 # jlab show ssh extension
 COPY show_ssh_info /show_ssh_info
 RUN cd /show_ssh_info && npm run build
@@ -74,6 +45,27 @@ RUN cd /show_ssh_info && jupyter labextension link .
 RUN cd /show_ssh_info && pip install -e .
 RUN cd /show_ssh_info && jupyter serverextension enable --py show_ssh_info --sys-prefix
 
+# jlab earthdata search extension
+COPY edsc_extension /edsc_extension
+RUN cd /edsc_extension && npm run build
+RUN cd /edsc_extension && jupyter labextension link .
+RUN cd /edsc_extension && pip install -e .
+RUN cd /edsc_extension/maap-py && python setup.py install
+RUN cd /edsc_extension && jupyter serverextension enable --py edsc_extension --sys-prefix
+ENV MAAP_CONF='/edsc_extension/maap-py/'
+
+# jlab submit_jobs extension
+COPY submit_jobs /submit_jobs
+RUN cd /submit_jobs && npm run build
+RUN cd /submit_jobs && jupyter labextension link .
+RUN cd /submit_jobs && pip install -e .
+RUN cd /submit_jobs && jupyter serverextension enable --py submit_jobs --sys-prefix
+
+# dps job magics
+COPY dps_magic /dps_magic
+RUN cd /dps_magic && pip install -e .
+RUN cd /dps_magic && jupyter nbextension install --symlink --py dps_magic --sys-prefix
+RUN cd /dps_magic && jupyter nbextension enable --py dps_magic --sys-prefix
 
 RUN touch /root/.bashrc && echo "cd /projects >& /dev/null" >> /root/.bashrc
 

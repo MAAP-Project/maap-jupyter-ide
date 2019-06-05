@@ -1,6 +1,8 @@
 import json
+import os
 
-fields_path = '../submit_jobs/src/fields.json'
+WORKDIR = os.getcwd()+'/../../submit_jobs'
+fields_path = WORKDIR+'/src/fields.json'
 # getCapabilities, execute, getStatus, getResult, dismiss, describe
 
 def getFields(param):
