@@ -159,35 +159,6 @@ export class RegisterWidget extends HySDSWidget {
         getUrl.searchParams.append(field.toLowerCase(), fieldText);
       }
 
-      // Pull notebook name and language for automatic register
-      // var params:string[];
-      // var nb_name = '';
-      // var lang = '';
-      // console.log('selected '+this.name_lang);
-
-      // // Make sure there is content to read
-      // if (this.name_lang != 'unknown') {
-      //   params = this.name_lang.split('(');
-      //   nb_name = params[0].trim();
-      //   lang = params[1].trim();
-      //   lang = lang.substring(0,lang.length-1);
-      // }
-      // if ([this.name_lang,nb_name,lang].includes('')) {
-      //   console.log("no notebook open");
-      //   me.response_text = "No notebook open";
-      //   me.updateSearchResults();
-      //   return;
-      // }
-
-      // // AutoRegister also requires knowing language for run command
-      // if (me.auto) {
-      //   console.log(lang);
-      //   getUrl.searchParams.append('lang', lang);
-      // }
-
-      // console.log(nb_name);
-      // getUrl.searchParams.append('nb_name', nb_name);
-
       console.log(getUrl.href);
       console.log('done setting url');
       urllst.push(getUrl);
