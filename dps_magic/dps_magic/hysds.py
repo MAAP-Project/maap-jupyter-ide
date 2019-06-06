@@ -2,6 +2,7 @@ from IPython.core.magic import (Magics, magics_class, line_magic, cell_magic)
 import requests
 import json
 import os
+from IPython.display import display, HTML
 
 @magics_class
 class HysdsMagic(Magics):
@@ -43,7 +44,7 @@ class HysdsMagic(Magics):
     def execute(self, line):
         call = ''
         endpoint = '/hysds/execute'
-        if line.strip() in ['h','help']:
+        if line.strip() in ['','h','help']:
             exec_help = 'Execute Job Help<br>Execute a job through DPS.  You need to know the parameters of your algorithm.  Use %describe to check if you are unsure.'
             sample_str = '    %execute plot_algo:master(pass_number=3,username=liz)'
             sample_dict = "    d = {'pass_number':'6','username':'liz','algo_id':'plot_algo','version':'master'} <br>    %execute $d"
@@ -72,7 +73,7 @@ class HysdsMagic(Magics):
     
     @line_magic
     def status(self, line):
-        if line.strip() in ['h','help']:
+        if line.strip() in ['','h','help']:
             stat_help = 'Job Status Help<br><br>Check the status of a job in DPS.  You need to know your job ID.'
             stat_str = 'Example Status Call:<br>    %status ef6fde9e-0975-4556-b8a7-ee52e91d8e61'
             self.html(stat_help,stat_str)
@@ -88,7 +89,7 @@ class HysdsMagic(Magics):
     
     @line_magic
     def result(self, line):
-        if line.strip() in ['h','help']:
+        if line.strip() in ['','h','help']:
             res_help = 'Job Result Help<br><br>Check the result of a completed job in DPS.  You need to know your job ID.'
             res_str = 'Example Result Call:<br>    %result ef6fde9e-0975-4556-b8a7-ee52e91d8e61'
             self.html(res_help,res_str)
@@ -133,7 +134,7 @@ class HysdsMagic(Magics):
         
     @line_magic
     def describe(self, line):
-        if line.strip() in ['h','help']:
+        if line.strip() in ['','h','help']:
             res_help = 'Describe Algorithm Help<br><br>Check the inputs required for an algorithm stored in MAS.  You need to know your algorithm name and version.'
             res_str = 'Example Describe Call:<br>    %describe plot_algo:master'
             self.html(res_help,res_str)
