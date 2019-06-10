@@ -30,7 +30,7 @@ function activateRegister(app: JupyterLab,
     label: 'Register Algorithm',
     isEnabled: () => true,
     execute: args => {
-      popupResult(new ProjectSelector(registerFields,jobsPanel),"Select a Project");
+      popupResult(new ProjectSelector('register',registerFields,jobsPanel),"Select a Project");
     }
   });
   palette.addItem({command: open_command, category: 'DPS'});
@@ -90,7 +90,7 @@ function activateExecute(app: JupyterLab,
     label: 'Execute DPS Job',
     isEnabled: () => true,
     execute: args => {
-      popup(new HySDSWidget('executeInputs',executeInputsFields,jobsPanel,{}));
+      popupResult(new ProjectSelector('executeInputs',executeInputsFields,jobsPanel),"Select an Algorithm");
     }
   });
   palette.addItem({command: open_command, category: 'DPS'});
@@ -121,7 +121,7 @@ function activateDescribe(app: JupyterLab,
     label: 'Describe Algorithm',
     isEnabled: () => true,
     execute: args => {
-      popup(new HySDSWidget('describeProcess',describeProcessFields,jobsPanel,{}));
+      popupResult(new ProjectSelector('describeProcess',describeProcessFields,jobsPanel),"Select an Algorithm");
     }
   });
   palette.addItem({command: open_command, category: 'DPS'});

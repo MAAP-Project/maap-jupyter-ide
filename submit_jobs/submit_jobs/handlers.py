@@ -664,12 +664,8 @@ class DescribeProcessHandler(IPythonHandler):
 		# ==================================
 
 		if r.status_code == 200:
+			algo_lst = []
 			try:
-				# if 'AttributeError' in r.text:
-				# 	# print('attribute error')
-				# 	result = 'Bad Request\nThe provided parameters were\n\talgo_id:{}\n\tversion:{}\n'.format(params['algo_id'],params['version'])
-				# 	self.finish({"status_code": 400, "result": result})
-				# elif complete:
 				if complete:
 					# parse out capability names & request info
 					rt = ET.fromstring(r.text)
@@ -684,11 +680,23 @@ class DescribeProcessHandler(IPythonHandler):
 							result += '\n'
 						else:
 							result += '{tag}:\t{txt}\n'.format(tag=tag,txt=txt)
+				# if no algorithm passed, list all algorithms
 				else:
 					resp = json.loads(r.text)
 					result = 'Algorithms:\n'
 					for e in resp['algorithms']:
 						result += '\t{}:{}\n'.format(e['type'],e['version'])
+
+					# return set of algos, each mapped to list of versions
+					lst = result.replace('\n','').split('\t')[1:]
+					splt_lst = [e.split(':') for e in lst]
+					algo_lst = {}
+
+					for a in splt_lst:
+						if not a[0] in algo_lst:
+							algo_lst[a[0]] = [a[1]]
+						else:
+							algo_lst[a[0]].append(a[1])
 
 				if result.strip() == '':
 					result = 'Bad Request\nThe provided parameters were\n\talgo_id:{}\n\tversion:{}\n'.format(params['algo_id'],params['version'])
@@ -696,7 +704,7 @@ class DescribeProcessHandler(IPythonHandler):
 					return
 
 				# print(result)
-				self.finish({"status_code": r.status_code, "result": result})
+				self.finish({"status_code": r.status_code, "result": result, "algo_set": algo_lst})
 			except:
 				self.finish({"status_code": r.status_code, "result": r.text})
 
@@ -902,3 +910,5 @@ class DefaultValuesHandler(IPythonHandler):
 
 		# outputs: repo_url, algo_name, run_cmd, dockerfile_path, environment_name, branch
 		self.finish({"status_code": 200, "default_values":vals})
+
+
