@@ -197,17 +197,17 @@ export class HySDSWidget extends Widget {
         fieldInput.classList.add(fieldName);
         this.node.appendChild(fieldInput);
       
-        // newline
-        var br = document.createElement("BR");
-        this.node.appendChild(br);
+        // // newline
+        // var br = document.createElement("BR");
+        // this.node.appendChild(br);
 
-        // add button
-        var fieldAdd = document.createElement('button');
-        fieldAdd.innerHTML = 'Add Run Input';
-        fieldAdd.id = (fieldName + '-add');
-        fieldAdd.name = fieldName;
-        fieldAdd.addEventListener('click', (e:Event) => this.insertField(e), false);
-        this.node.appendChild(fieldAdd);
+        // // add button
+        // var fieldAdd = document.createElement('button');
+        // fieldAdd.innerHTML = 'Add Run Input';
+        // fieldAdd.id = (fieldName + '-add');
+        // fieldAdd.name = fieldName;
+        // fieldAdd.addEventListener('click', (e:Event) => this.insertField(e), false);
+        // this.node.appendChild(fieldAdd);
 
         // newline
         var br = document.createElement("BR");
