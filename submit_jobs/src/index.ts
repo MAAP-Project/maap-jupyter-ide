@@ -90,7 +90,7 @@ function activateExecute(app: JupyterLab,
     label: 'Execute DPS Job',
     isEnabled: () => true,
     execute: args => {
-      popup(new HySDSWidget('executeInputs',executeInputsFields,jobsPanel,{}));
+      popupResult(new ProjectSelector('executeInputs',executeInputsFields,jobsPanel),"Select an Algorithm");
     }
   });
   palette.addItem({command: open_command, category: 'DPS'});

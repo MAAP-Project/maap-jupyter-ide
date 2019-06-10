@@ -95,6 +95,7 @@ export class HySDSWidget extends Widget {
         break;
       case 'executeInputs':
         this.popup_title = "Execute Job";
+        this.get_inputs = true;
         console.log('executeInputs');
         break;
       case 'execute':
@@ -388,7 +389,7 @@ export class HySDSWidget extends Widget {
         }
 
       // Get Notebook information to pass to Register Handler
-      } else if (me.req == 'describeProcess') {
+      } else if (me.req == 'describeProcess' || me.req == 'executeInputs') {
         console.log(getUrl.href);
         urllst.push(getUrl);
         resolve(urllst);
