@@ -75,10 +75,14 @@ export class MapCMCView extends DOMWidgetView {
         this.model.on('change:_argv', this.argvUpdate, this);
 
         // standard HTML DOM change from JS
-        let appDiv = document.createElement('div');
+        const wrapperDiv = document.createElement('div');
+        wrapperDiv.style.width = '100%';
+        wrapperDiv.style.height = '500px';
+        const appDiv = document.createElement('div');
         appDiv.style.width = '100%';
-        appDiv.style.height = '550px';
-        this.el.appendChild(appDiv);
+        appDiv.style.height = '100%';
+        wrapperDiv.appendChild(appDiv);
+        this.el.appendChild(wrapperDiv);
 
         this.appDiv = appDiv;
         this.displayed.then(() => this.render_cmc());
