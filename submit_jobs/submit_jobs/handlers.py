@@ -664,6 +664,7 @@ class DescribeProcessHandler(IPythonHandler):
 		# ==================================
 
 		if r.status_code == 200:
+			algo_lst = []
 			try:
 				if complete:
 					# parse out capability names & request info
