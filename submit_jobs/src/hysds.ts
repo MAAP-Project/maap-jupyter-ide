@@ -108,6 +108,7 @@ export class HySDSWidget extends Widget {
         break;
       case 'describeProcess':
         this.popup_title = "Describe Process";
+        this.get_inputs = true;
         console.log('describeProcess');
         break;
       case 'listAlgorithms':
@@ -129,13 +130,19 @@ export class HySDSWidget extends Widget {
     //   this.node.appendChild(msg);
     // }
 
+    // skip 1st popup if nothing to fill out
+    if (this.fields.length == 0) {
+      // this.getValue();
+      return;
+    }
+
     // BREAK
     var x = document.createElement("BR");
     this.node.appendChild(x)
 
     // TODO enforce input types
     // Construct labels and inputs for fields
-    if (! this.get_inputs) {
+    if (! this.get_inputs && this.req != 'describeProcess') {
       for (var field of this.fields) {
         
         // textarea for inputs field in register
@@ -325,13 +332,16 @@ export class HySDSWidget extends Widget {
       var urllst: Array<URL> = []
       var getUrl = new URL(PageConfig.getBaseUrl() + 'hysds/'+this.req); // REMINDER: hack this url until fixed
 
-      // for calling execute after getting user inputs
+      // filling out old fields, currently for algo info (id, version) in execute & describe
       if (this.get_inputs) {
-        // filling out algo info (id, version)
         for (let key in this.old_fields) {
           var fieldText = this.old_fields[key].toLowerCase();
           getUrl.searchParams.append(key.toLowerCase(), fieldText);
         }
+      }
+
+      // for calling execute after getting user inputs
+      if (this.req == 'execute') {
         // filling out algo inputs
         var new_input_list = "";
         var range = false;
@@ -366,21 +376,22 @@ export class HySDSWidget extends Widget {
           // var len = last - start + 1;
           for (var i = start; i <= last; i++) {
             var multiUrl = this.buildCopyUrl(rangeField,String(i));
-            // console.log(multiUrl);
-            // const build = new Promise<void>((resolve, reject) => { getUrl.searchParams.set(rangeField,String(i)); resolve(); });
-            // build.then(() => {
-            // multiUrl.searchParams.set(rangeField,String(i))
             console.log(multiUrl.href);
             urllst.push(multiUrl);
             // });
           }
           resolve(urllst);
         } else {
+          console.log(getUrl.href);
           urllst.push(getUrl);
           resolve(urllst);
         }
 
       // Get Notebook information to pass to Register Handler
+      } else if (me.req == 'describeProcess') {
+        console.log(getUrl.href);
+        urllst.push(getUrl);
+        resolve(urllst);
       } else if (me.req == 'register') {
         resolve(urllst);
 
@@ -398,6 +409,7 @@ export class HySDSWidget extends Widget {
             getUrl.searchParams.append(field.toLowerCase(), fieldText);
           }
         }
+        console.log(getUrl.href);
         urllst.push(getUrl);
         resolve(urllst);
       }
@@ -419,7 +431,7 @@ export class HySDSWidget extends Widget {
           if(res.ok){
             let json_response:any = res.json();
             // console.log(json_response['status_code']);
-            console.log(json_response['result']);
+            // console.log(json_response['result']);
 
             if (json_response['status_code'] == 200){
               // console.log(json_response['ins']);
@@ -448,6 +460,7 @@ export class HySDSWidget extends Widget {
         request('get', getUrl.href).then((res: RequestResult) => {
           if(res.ok){
             let json_response:any = res.json();
+            // console.log(json_response);
             me.response_text = me.response_text + '\n' + json_response['result'];
           } else {
             me.response_text = "Error Sending Request.";
@@ -466,7 +479,6 @@ export class HySDSWidget extends Widget {
   // overrides the resolution of popup dialog
   getValue(): void {
     this.buildRequestUrl().then((url) => {
-      // console.log('then');
       console.log(url);
       this.sendRequest(url);
     });
