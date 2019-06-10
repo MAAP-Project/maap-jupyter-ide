@@ -50,7 +50,7 @@ export class ProjectSelector extends Widget {
         }
         this.node.appendChild(this.dropdown);
       });
-    } else if (type == 'describeProcess' || type == 'execute') {
+    } else if (type == 'describeProcess' || type == 'executeInputs') {
       this.getAlgorithms().then((algo_lst:{[k:string]:Array<string>}) => {
         var opt:HTMLOptionElement;
         var txt:string;
@@ -136,12 +136,12 @@ export class ProjectSelector extends Widget {
     if (opt == null || opt == '') {
       console.log('no option selected');
       popupResult("No Option Selected","Select Failed");
-    } else if (this.type == 'describeProcess') {
+    } else if (this.type == 'describeProcess' || this.type == 'executeInputs') {
       var lst = opt.split(':');
       var selection = {};
       selection['algo_id'] = lst[0];
       selection['version'] = lst[1];
-      var w = new HySDSWidget('describeProcess',[],this.jobsPanel,{});
+      var w = new HySDSWidget(this.type,[],this.jobsPanel,{});
       w.setOldFields(selection);
       w.getValue();
     } else if (this.type == 'register') {
