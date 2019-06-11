@@ -39,6 +39,7 @@ This connects the JupyterLab UI with the HySDS/DPS backend.  There will be 10 AP
 	- endpoint pt1: `hysds/executeInputs`
 	- sends a GET request to get information about specified algorithm's inputs
 		- GET request sent to https://api.maap.xyz/api/mas/algorithm/{algorithm_id}:{algorithm_version}
+	<br>
 
 	- endpoint pt2:: `hysds/execute`
 	- use this endpoint if calling API directly
