@@ -1,17 +1,7 @@
 # hide_side_panel
 
-hide the che side panel from jupyter IDE
+Hide or show the che side panel from jupyter IDE - this extension is only relevant in the context of Eclipse Che.
 
-
-## Prerequisites
-
-* JupyterLab
-
-## Installation
-
-```bash
-jupyter labextension install hide_side_panel
-```
 
 ## Development
 
