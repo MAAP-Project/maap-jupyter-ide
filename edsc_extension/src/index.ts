@@ -1,42 +1,29 @@
 /// <reference path="./widgets.ts" />
 
-import {
-  JupyterLab, JupyterLabPlugin, ILayoutRestorer
-} from '@jupyterlab/application';
-
-import {
-  ICommandPalette, Dialog, showDialog//, Clipboard, ToolbarButton
-} from '@jupyterlab/apputils';
-
-import {
-  PageConfig
-} from '@jupyterlab/coreutils'
-
-import {
-  IDocumentManager
-} from '@jupyterlab/docmanager';
-
+/** jupyterlab imports **/
+import { JupyterLab, JupyterLabPlugin, ILayoutRestorer } from '@jupyterlab/application';
+import { ICommandPalette, Dialog, showDialog, InstanceTracker } from '@jupyterlab/apputils';
+import { PageConfig } from '@jupyterlab/coreutils'
+import { IDocumentManager } from '@jupyterlab/docmanager';
 import { IMainMenu } from '@jupyterlab/mainmenu';
+import { NotebookActions, NotebookPanel, INotebookTracker } from '@jupyterlab/notebook';
+
+
+/** phosphor imports **/
 import { Menu } from '@phosphor/widgets';
+import { ReadonlyJSONObject, JSONExt } from '@phosphor/coreutils';
 
-import {
-    NotebookActions, NotebookPanel, INotebookTracker
-} from '@jupyterlab/notebook';
-
-import { ReadonlyJSONObject } from '@phosphor/coreutils';
-
+/** other external imports **/
 import { INotification } from "jupyterlab_toastify";
-
 import * as $ from "jquery";
 
+/** internal imports **/
 import '../style/index.css';
-
 import { IFrameWidget, ParamsPopupWidget, LimitPopupWidget} from './widgets';
-
 import globals = require("./globals");
 
 
-const extension: JupyterLabPlugin<void> = {
+const extension: JupyterLabPlugin<InstanceTracker<IFrameWidget>> = {
   id: 'edsc_extension',
   autoStart: true,
   requires: [IDocumentManager, ICommandPalette, ILayoutRestorer, IMainMenu, INotebookTracker],
@@ -109,9 +96,14 @@ function activate(app: JupyterLab,
                   restorer: ILayoutRestorer,
                   mainMenu: IMainMenu,
                   tracker: INotebookTracker,
-                  panel: NotebookPanel) {
+                  panel: NotebookPanel): InstanceTracker<IFrameWidget> {
 
   let widget: IFrameWidget;
+
+  const namespace = 'tracker-iframe';
+  let instanceTracker = new InstanceTracker<IFrameWidget>({ namespace });
+
+
 
   //
   // Listen for messages being sent by the iframe - this will be all of the parameter
@@ -236,6 +228,7 @@ function activate(app: JupyterLab,
       xhr.send(null);
     }
 
+
   }
 
 
@@ -247,9 +240,16 @@ function activate(app: JupyterLab,
     label: 'Open EarthData Search',
     isEnabled: () => true,
     execute: args => {
+
       widget = new IFrameWidget('https://che-k8s.maap.xyz:3052/search');
       app.shell.addToMainArea(widget);
       app.shell.activateById(widget.id);
+
+      if (!instanceTracker.has(widget)) {
+          console.log("in has widget");
+        // Track the state of the widget for later restoration
+        instanceTracker.add(widget);
+      }
     }
   });
   palette.addItem({command: open_command, category: 'Search'});
@@ -311,7 +311,16 @@ function activate(app: JupyterLab,
   mainMenu.addMenu(searchMenu, { rank: 100 });
 
 
+  // Track and restore the widget state
+  restorer.restore(instanceTracker, {
+    command: open_command,
+    args: () => JSONExt.emptyObject,
+    name: () => namespace
+  });
+
+
   console.log('JupyterLab extension edsc_extension is activated!');
+  return instanceTracker;
 };
 
 
