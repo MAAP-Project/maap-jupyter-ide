@@ -552,7 +552,10 @@ class GetResultHandler(IPythonHandler):
 						prods = rt[1][0]
 						p = getProds(prods)
 
-						result = 'JobID is {}\n'.format(job_id)
+						result = "<table>"
+						result += '<thead><tr><th colspan="2" style="text-align:left"> Job Results</th></tr></thead>'
+						result += '<tbody>'
+						result += '<tr><td>JobID: </td><td style="text-align:left">{}</td></tr>'.format(job_id)
 
 						for product in p[1]:
 							for attrib in product[1]:
@@ -561,15 +564,17 @@ class GetResultHandler(IPythonHandler):
 									lnk = lst[-1]
 									lst[-1] = "<a href=\"{}\">{}</a>".format(lnk,lnk)
 									prop = ('\n	').join(lst)
-									result += '{}: {}\n'.format(attrib[0],prop)
+									result += '<tr><td>{}: </td><td style="text-align:left">{}</td></tr>'.format(attrib[0],prop)
 								else:
-									result += '{}: {}\n'.format(attrib[0],attrib[1])
-							result += '\n'
+									result += '<tr><td>{}: </td><td style="text-align:left">{}</td></tr>'.format(attrib[0],attrib[1])
+							# result += '\n'
 
+						result += '</tbody>'
+						result += '</table>'
 						print(result)
 						# result = result.replace(',',',<br>	')
-						result = result.replace('\n','<br>')
-						print(result)
+						# result = result.replace('\n','<br>')
+						# print(result)
 
 						# print("success!")
 						self.finish({"status_code": r.status_code, "result": result})
