@@ -135,29 +135,63 @@ class HysdsMagic(Magics):
     @line_magic
     def describe(self, line):
         if line.strip() in ['','h','help']:
-            res_help = 'Describe Algorithm Help<br><br>Check the inputs required for an algorithm stored in MAS.  You need to know your algorithm name and version.'
-            res_str = 'Example Describe Call:<br>    %describe plot_algo:master'
-            self.html(res_help,res_str)
+            des_help = 'Describe Algorithm Help<br><br>Check the inputs required for an algorithm stored in MAS.  You need to know your algorithm name and version.'
+            sample_str = '    %describe plot_algo:master'
+            sample_dict = "    d = {'algo_id':'plot_algo','version':'master'} <br>    %describe $d"
+            self.html(des_help, '<br>Example Describe Call:<br>{}<br>Example Dictionary Call: <br>{}'.format(sample_str,sample_dict))
             return
 
-        endpoint = '/hysds/describeProcess'
-        params = line.strip().split(':')
-        call = '?algo_id={}&version={}'.format(*params)
-        url = self.lk + endpoint + call
-        r = requests.get(url)
-        resp = json.loads(r.text)
-        self.html(url,resp['result'])
-        return
-    
-    @cell_magic
-    def hysds(self, line, cell):
-#         print(line)
-        print(cell)
-        print(type(cell))
+        call = ''
+        if line[0] == '{' and line[-1] == '}':
+            params = eval(line)
+            call = '?algo_id={algo_id}&version={version}'.format(**params)
+        elif ':' in line:
+            params = line.strip().split(':')
+            call = '?algo_id={}&version={}'.format(*params)
+        else:
+            print('unable to parse')
+
+        if call != '':
+            endpoint = '/hysds/describeProcess'    
+            url = self.lk + endpoint + call
+            r = requests.get(url)
+            try:
+                resp = json.loads(r.text)
+                self.html(url,resp['result'])
+            except:
+                self.html(url,'Error Status '+r.status_code)
+        else:
+            print('unable to parse')
         return
     
     @line_magic
-    def test(self,line):
-        print(line)
-        print(type(eval(line)))
+    def delete(self, line):
+        if line.strip() in ['','h','help']:
+            del_help = 'Delete Algorithm Help<br><br>Check the inputs required for an algorithm stored in MAS.  You need to know your algorithm name and version.'
+            sample_str = '    %delete plot_algo:master'
+            sample_dict = "    d = {'algo_id':'plot_algo','version':'master'} <br>    %delete $d"
+            self.html(del_help, '<br>Example Delete Call:<br>{}<br>Example Dictionary Call: <br>{}'.format(sample_str,sample_dict))
+            return
+
+        call = ''
+        if line[0] == '{' and line[-1] == '}':
+            params = eval(line)
+            call = '?algo_id={algo_id}&version={version}'.format(**params)
+        elif ':' in line:
+            params = line.strip().split(':')
+            call = '?algo_id={}&version={}'.format(*params)
+        else:
+            print('unable to parse')
+
+        if call != '':
+            endpoint = '/hysds/deleteAlgorithm'   
+            url = self.lk + endpoint + call
+            r = requests.get(url)
+            try:
+                resp = json.loads(r.text)
+                self.html(url,resp['result'])
+            except:
+                self.html(url,'Error Status '+r.status_code)
+        else:
+            print('unable to parse')
         return
