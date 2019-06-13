@@ -234,12 +234,25 @@ function activate(app: JupyterLab,
 
   /******** Set commands for command palette and main menu *********/
 
-  // Add an application command to open ESDS
+  // Add an application command to open ESDC
   const open_command = 'iframe:open';
   app.commands.addCommand(open_command, {
     label: 'Open EarthData Search',
     isEnabled: () => true,
     execute: args => {
+
+      console.log(widget);
+
+      // Only allow user to have one EDSC window
+      // if (widget === undefined) {
+      //     widget = new IFrameWidget('https://che-k8s.maap.xyz:3052/search');
+      //     app.shell.addToMainArea(widget);
+      //     app.shell.activateById(widget.id);
+      // } else {
+      //     // if user already has EDSC, just switch to tab
+      //     app.shell.addToMainArea(widget);
+      //     app.shell.activateById(widget.id);
+      // }
 
       widget = new IFrameWidget('https://che-k8s.maap.xyz:3052/search');
       app.shell.addToMainArea(widget);
