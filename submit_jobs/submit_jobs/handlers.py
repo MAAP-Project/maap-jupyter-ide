@@ -94,9 +94,9 @@ class RegisterAlgorithmHandler(IPythonHandler):
 				params[f] = ''
 				# logging.debug('no '+f)
 		
-		print(params)
-		# logging.debug('params are')
-		# logging.debug(params)
+		# print(params)
+		logging.debug('params are')
+		logging.debug(params)
 		nb_name = params['nb_name']
 
 		if params['repo_url'] == '':
@@ -162,7 +162,8 @@ class RegisterAlgorithmHandler(IPythonHandler):
 			req_json = jso.read()
 
 		req_json = req_json.format(**params)
-		print(req_json)
+		logging.debug('request is')
+		logging.debug(req_json)
 
 		# ==================================
 		# Part 4: Check Response
@@ -208,8 +209,9 @@ class DeleteAlgorithmHandler(IPythonHandler):
 		if all(e == '' for e in list(params.values())):
 			complete = False
 
-		print(params)
 		print(complete)
+		logging.debug('params are')
+		logging.debug(params)
 
 		# ==================================
 		# Part 2: Build & Send Request
@@ -348,6 +350,9 @@ class ExecuteHandler(IPythonHandler):
 			except:
 				inputs[f] = ''
 
+		logging.debug('params are')
+		logging.debug(params)
+
 		params['timestamp'] = str(datetime.datetime.today())
 		if 'username' in params.keys() and inputs['username'] =='':
 			inputs['username'] = 'anonymous'
@@ -383,6 +388,9 @@ class ExecuteHandler(IPythonHandler):
 
 		req_xml = req_xml.format(**params)
 		print(req_xml)
+
+		logging.debug('request is')
+		logging.debug(req_xml)
 
 		# -------------------------------
 		# Send Request
@@ -444,6 +452,8 @@ class GetStatusHandler(IPythonHandler):
 				arg = ''
 
 		# print(params)
+		logging.debug('params are')
+		logging.debug(params)
 
 		# ==================================
 		# Part 2: Build & Send Request
@@ -511,6 +521,8 @@ class GetResultHandler(IPythonHandler):
 				arg = ''
 
 		# print(params)
+		logging.debug('params are')
+		logging.debug(params)
 
 		# ==================================
 		# Part 2: Build & Send Request
@@ -637,8 +649,10 @@ class DescribeProcessHandler(IPythonHandler):
 		if all(e == '' for e in list(params.values())):
 			complete = False
 
-		print(params)
+		# print(params)
 		print(complete)
+		logging.debug('params are')
+		logging.debug(params)
 
 		# ==================================
 		# Part 2: Build & Send Request
@@ -738,10 +752,12 @@ class ExecuteInputsHandler(IPythonHandler):
 		if all(e == '' for e in list(params.values())):
 			complete = False
 
-		print(params)
+		# print(params)
 		params2 = copy.deepcopy(params)
 		# params2.pop('identifier')
 		# print(params)
+		logging.debug('params are')
+		logging.debug(params)
 
 		# ==================================
 		# Part 2: Build & Send Request
@@ -827,6 +843,9 @@ class DefaultValuesHandler(IPythonHandler):
 			except:
 				params[f] = ''
 		proj_path = '/projects/'+params['code_path']
+		
+		logging.debug('params are')
+		logging.debug(params)
 
 		# ==================================
 		# Part 2: GitLab Token
@@ -903,10 +922,13 @@ class DefaultValuesHandler(IPythonHandler):
 		else:
 			vals['run_cmd'] = code_path
 
+		vals['version'] = "master"
 		vals['repo_url'] = git_url
 		vals['branch'] = subprocess.check_output("git branch | grep \\* | cut -d ' ' -f2", shell=True).decode('utf-8').strip()
-		vals['env_name'] = "ubuntu"
-		vals['dockerfile_path'] = os.environ['DOCKERFILE_PATH']
+		vals['environment'] = "ubuntu"
+		# FIX IN DOCKER IMAGE
+		# vals['dockerfile_path'] = os.environ['DOCKERFILE_PATH']
+		vals['dockerfile_path'] = 'registry.nasa.maap.xyz/root/dps_plot:master'
 
 		# outputs: repo_url, algo_name, run_cmd, dockerfile_path, environment_name, branch
 		self.finish({"status_code": 200, "default_values":vals})
