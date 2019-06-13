@@ -1,11 +1,18 @@
 {{ 
   "script_command" : "{run_cmd}",
   "algorithm_name" : "{algo_name}",
+  "code_version": "{version}",
   "algorithm_description" : "{algo_desc}",
+  "environment_name": "{environment}",
+  "docker_container_url": "{docker_url}",
   "algorithm_params" : [
     {algo_inputs}
     {{
       "field": "timestamp",
+      "download": false
+    }},
+    {{
+      "field": "username",
       "download": false
     }}
   ]

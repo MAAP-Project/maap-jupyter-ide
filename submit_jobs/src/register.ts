@@ -21,6 +21,7 @@ export class ProjectSelector extends Widget {
 
     this.dropdown = <HTMLSelectElement>document.createElement("SELECT");
     this.dropdown.id = "project-dropdown";
+    this.dropdown.style = "font-size:25px;";
 
     if (type == 'register') {
       this.getProjects().then((projectList) => {
