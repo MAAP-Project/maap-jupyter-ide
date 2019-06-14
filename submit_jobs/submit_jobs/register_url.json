@@ -11,10 +11,6 @@
 		{{
 			"field": "timestamp",
 			"download": false
-		}},
-		{{
-	      "field": "username",
-	      "download": false
-	    }}
+		}}
 	]
 }}
