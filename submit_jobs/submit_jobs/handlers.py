@@ -871,10 +871,10 @@ class DefaultValuesHandler(IPythonHandler):
 		algo_name = file_name.replace('/',':').replace(' ', '_').replace('"','').replace("'",'')
 		vals['algo_name'] = ('.').join(algo_name.split('.')[:-1])
 
-		if code_path.split('.')[-1] in ['.py','ipynb']:
-			vals['run_cmd'] = 'python '+code_path
-		else:
-			vals['run_cmd'] = code_path
+		# if code_path.split('.')[-1] in ['.py','ipynb']:
+		# 	vals['run_cmd'] = 'python '+code_path
+		# else:
+		# 	vals['run_cmd'] = code_path
 
 		vals['version'] = "master"
 		vals['repo_url'] = git_url
@@ -886,5 +886,3 @@ class DefaultValuesHandler(IPythonHandler):
 
 		# outputs: repo_url, algo_name, run_cmd, dockerfile_path, environment_name, branch
 		self.finish({"status_code": 200, "default_values":vals})
-
-
