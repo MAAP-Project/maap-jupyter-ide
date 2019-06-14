@@ -88,6 +88,8 @@ class RegisterAlgorithmHandler(IPythonHandler):
 		# TODO: need way to build registry url instead of hardcoded
 		# user doesn't need to know how to make this parameter
 		params['docker_url'] = 'registry.nasa.maap.xyz/root/dps_plot:master'
+		params['version'] = 'master'
+		params['environment'] = 'ubuntu'
 		for f in fields:
 			try:
 				arg = self.get_argument(f.lower(), '').strip()
