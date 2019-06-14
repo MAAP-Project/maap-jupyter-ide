@@ -16,8 +16,11 @@ class HysdsMagic(Magics):
         self.lk = CHE_BASE_URL+PREVIEW_URL
         # self.lk = 'http://localhost:8888'
 
-    def html(self,txt1,txt2):
-        display(HTML("<pre>{}<br>{}</pre>".format(txt1,txt2)))
+    def html(self,txt1,txt2=None):
+        if txt2 == None:
+            display(HTML("<pre>{}<br>{}</pre>".format(txt1,txt2)))
+        else:
+            display(HTML("<pre>{}</pre>".format(txt1)))
 
     def execute_fn(self,line):
         algo_ver,params = line.split('(')
@@ -60,11 +63,11 @@ class HysdsMagic(Magics):
 
         if call != '':
             url = self.lk + endpoint + call
-            print('url is '+url)
+            # print('url is '+url)
             r = requests.get(url)
             try:
                 resp = json.loads(r.text)
-                self.html(url,resp['result'])
+                self.html(resp['result'])
             except:
                 self.html(url,'Error Status '+r.status_code)
         else:
@@ -84,7 +87,7 @@ class HysdsMagic(Magics):
         url = self.lk + endpoint + call
         r = requests.get(url)
         resp = json.loads(r.text)
-        self.html(url,resp['result'])
+        self.html(resp['result'])
         return
     
     @line_magic
@@ -100,7 +103,7 @@ class HysdsMagic(Magics):
         url = self.lk + endpoint + call
         r = requests.get(url)
         resp = json.loads(r.text)
-        self.html(url,resp['result'])
+        self.html(resp['result'])
         return
 
     @line_magic
@@ -115,7 +118,7 @@ class HysdsMagic(Magics):
         url = self.lk + endpoint
         r = requests.get(url)
         resp = json.loads(r.text)
-        self.html(url,resp['result'])
+        self.html(resp['result'])
     
         
     @line_magic
@@ -130,7 +133,7 @@ class HysdsMagic(Magics):
         url = self.lk + endpoint
         r = requests.get(url)
         resp = json.loads(r.text)
-        self.html(url,resp['result'])
+        self.html(resp['result'])
         
     @line_magic
     def describe(self, line):
@@ -157,7 +160,7 @@ class HysdsMagic(Magics):
             r = requests.get(url)
             try:
                 resp = json.loads(r.text)
-                self.html(url,resp['result'])
+                self.html(resp['result'])
             except:
                 self.html(url,'Error Status '+r.status_code)
         else:
@@ -189,7 +192,7 @@ class HysdsMagic(Magics):
             r = requests.get(url)
             try:
                 resp = json.loads(r.text)
-                self.html(url,resp['result'])
+                self.html(resp['result'])
             except:
                 self.html(url,'Error Status '+r.status_code)
         else:
