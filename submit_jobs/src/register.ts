@@ -170,6 +170,8 @@ export class ProjectSelector extends Widget {
           var values = json_response['default_values'];
           defaultValues = values;
         resolve(defaultValues);
+        } else {
+          resolve({});
         }
       });
     });
