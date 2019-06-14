@@ -18,9 +18,9 @@ class HysdsMagic(Magics):
 
     def html(self,txt1,txt2=None):
         if txt2 == None:
-            display(HTML("<pre>{}<br>{}</pre>".format(txt1,txt2)))
-        else:
             display(HTML("<pre>{}</pre>".format(txt1)))
+        else:
+            display(HTML("<pre>{}<br>{}</pre>".format(txt1,txt2)))
 
     def execute_fn(self,line):
         algo_ver,params = line.split('(')
