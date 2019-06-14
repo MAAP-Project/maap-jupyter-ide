@@ -30,7 +30,7 @@ Che workspace is launched with. The dockerfile that extensions are included in i
 in this repo. At the point of adding your extension into the Docker image, some minor changes may have to be made 
 (mainly path issues). This will be explained in the bullets below.
 
-An instance of this repository lives on the Che server. Once an extension has been tested locally, rebuild the docker 
+An instance of this repository lives on the Che server under `~/che/dockerfiles/maap-jupyter-ide`. Once an extension has been tested locally, rebuild the docker 
 image with your new extensions.
 
 
@@ -52,12 +52,12 @@ your `load_jupyter_server_extension` function is)
         ```bash
         perl -pi -e "s|web_app.settings\['base_url'\]|'/'|g" /show_ssh_info/show_ssh_info/__init__.py
         ```
-- Then rebuild the docker image. `microk8s.docker build -t localhost:32000/che-jupyterlab-extensions .` 
-- Push! `microk8s.docker push localhost:32000/che-jupyterlab-extensions `
-- Now when you build a new workspace with the `localhost:32000/che-jupyterlab-extensions` image it will automatically 
+- Then rebuild the docker image. `microk8s.docker build -t localhost:32000/che-jupyter-lab-ide .` 
+- Push! `microk8s.docker push localhost:32000/che-jupyter-lab-ide `
+- Now when you build a new workspace with the `localhost:32000/che-jupyter-lab-ide` image it will automatically 
 fetch the new image. (found in the stack's `Recipe` or `Raw Configuration`)
     - you can also specify the image tag to use in your build on the stack if you want to use a previous build
-- Any change pushed to `microk8s.docker push localhost:32000/che-jupyterlab-extensions ` will affect the default stacks
+- Any change pushed to `microk8s.docker push localhost:32000/che-jupyter-lab-ide ` will affect the default stacks
 on all user accounts. If you are testing something, you can create your own image and your own stack to play around with.
 
 ##### Che Stack Raw Configuration
@@ -73,7 +73,7 @@ on all user accounts. If you are testing something, you can create your own imag
         "recipe": {
           "contentType": "text/x-yaml",
           "type": "kubernetes",
-          "content": "kind: List\nitems:\n - \n  apiVersion: v1\n  kind: Pod\n  metadata:\n   name: ws\n   labels:\n    name: ws\n  spec:\n   containers:\n    - \n     name: jupyter\n     image: 'localhost:32000/che-jupyterlab-extensions:latest'\n     resources:\n      limits:\n       memory: 1024Mi\n - \n  apiVersion: v1\n  kind: Service\n  metadata:\n   name: ws\n  spec:\n   type: NodePort\n   ports:\n    - \n     port: 22\n   selector:\n    name: ws\n"
+          "content": "kind: List\nitems:\n - \n  apiVersion: v1\n  kind: Pod\n  metadata:\n   name: ws\n   labels:\n    name: ws\n  spec:\n   containers:\n    - \n     name: jupyter\n     image: 'localhost:32000/che-jupyter-lab-ide:latest'\n     resources:\n      limits:\n       memory: 1024Mi\n - \n  apiVersion: v1\n  kind: Service\n  metadata:\n   name: ws\n  spec:\n   type: NodePort\n   ports:\n    - \n     port: 22\n   selector:\n    name: ws\n"
         },
         "machines": {
           "ws/jupyter": {
