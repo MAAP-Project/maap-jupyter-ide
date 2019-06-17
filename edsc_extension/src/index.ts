@@ -244,19 +244,15 @@ function activate(app: JupyterLab,
       console.log(widget);
 
       // Only allow user to have one EDSC window
-      // if (widget === undefined) {
-      //     widget = new IFrameWidget('https://che-k8s.maap.xyz:3052/search');
-      //     app.shell.addToMainArea(widget);
-      //     app.shell.activateById(widget.id);
-      // } else {
-      //     // if user already has EDSC, just switch to tab
-      //     app.shell.addToMainArea(widget);
-      //     app.shell.activateById(widget.id);
-      // }
-
-      widget = new IFrameWidget('https://che-k8s.maap.xyz:3052/search');
-      app.shell.addToMainArea(widget);
-      app.shell.activateById(widget.id);
+      if (widget == undefined) {
+          widget = new IFrameWidget('https://che-k8s.maap.xyz:3052/search');
+          app.shell.addToMainArea(widget);
+          app.shell.activateById(widget.id);
+      } else {
+          // if user already has EDSC, just switch to tab
+          app.shell.addToMainArea(widget);
+          app.shell.activateById(widget.id);
+      }
 
       if (!instanceTracker.has(widget)) {
           console.log("in has widget");
