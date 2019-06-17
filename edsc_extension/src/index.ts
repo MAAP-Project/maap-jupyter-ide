@@ -1,151 +1,39 @@
-import {
-  JupyterLab, JupyterLabPlugin, ILayoutRestorer
-} from '@jupyterlab/application';
+/// <reference path="./widgets.ts" />
 
-import {
-  ICommandPalette, Dialog, showDialog//, Clipboard, ToolbarButton
-} from '@jupyterlab/apputils';
-
-import {
-  PageConfig
-} from '@jupyterlab/coreutils'
-
-import {
-  IDocumentManager
-} from '@jupyterlab/docmanager';
-
+/** jupyterlab imports **/
+import { JupyterLab, JupyterLabPlugin, ILayoutRestorer } from '@jupyterlab/application';
+import { ICommandPalette, Dialog, showDialog, InstanceTracker } from '@jupyterlab/apputils';
+import { PageConfig } from '@jupyterlab/coreutils'
+import { IDocumentManager } from '@jupyterlab/docmanager';
 import { IMainMenu } from '@jupyterlab/mainmenu';
+import { NotebookActions, NotebookPanel, INotebookTracker } from '@jupyterlab/notebook';
+
+
+/** phosphor imports **/
 import { Menu } from '@phosphor/widgets';
+import { ReadonlyJSONObject, JSONExt } from '@phosphor/coreutils';
 
-import {
-  Widget
-} from '@phosphor/widgets';
-
-import {
-    NotebookActions, NotebookPanel, INotebookTracker
-} from '@jupyterlab/notebook';
-
-import { ReadonlyJSONObject } from '@phosphor/coreutils';
-
+/** other external imports **/
 import { INotification } from "jupyterlab_toastify";
-// import INotification = require('jupyterlab_toastify');
-
-import {
-  request, RequestResult
-} from './request';
-
 import * as $ from "jquery";
 
+/** internal imports **/
 import '../style/index.css';
-
-let unique = 0;
-// let searchParamURL = "test";
-let params:any = {};
-let limit = "1000";
+import { IFrameWidget, ParamsPopupWidget, LimitPopupWidget} from './widgets';
+import globals = require("./globals");
 
 
-const extension: JupyterLabPlugin<void> = {
+const extension: JupyterLabPlugin<InstanceTracker<IFrameWidget>> = {
   id: 'edsc_extension',
   autoStart: true,
   requires: [IDocumentManager, ICommandPalette, ILayoutRestorer, IMainMenu, INotebookTracker],
   activate: activate
 };
 
-/* WIDGETS */
 
-class IFrameWidget extends Widget {
-
-  constructor(path: string) {
-    super();
-    this.id = path + '-' + unique;
-    unique += 1;
-
-    this.title.label = "Earthdata Search";
-    this.title.closable = true;
-
-    let div = document.createElement('div');
-    div.classList.add('iframe-widget');
-    let iframe = document.createElement('iframe');
-    iframe.id = "iframeid";
-
-    // set proxy to ESDS
-    request('get', path).then((res: RequestResult) => {
-      if (res.ok){
-        console.log('site accesible: proceeding');
-        iframe.src = path;
-      } else {
-        iframe.setAttribute('baseURI', PageConfig.getBaseUrl());
-
-        console.log('site failed with code ' + res.status.toString());
-        if(res.status == 404){
-
-        } else if(res.status == 401){
-
-        } else {
-          console.log('setting proxy');
-          path = "edsc/proxy/" + path;
-          iframe.src = path;
-        }
-      }
-    });
-
-    div.appendChild(iframe);
-    this.node.appendChild(div);
-  }
-};
-
-export 
-class ParamsPopupWidget extends Widget {
-  constructor() {
-    let body = document.createElement('div');
-    body.style.display = 'flex';
-    body.style.flexDirection = 'column';
-    body.innerHTML = "<pre>" + JSON.stringify(params, null, " ") + "</pre><br>"
-        + "<pre>Results Limit: " + limit + "</pre>";
-
-    super({ node: body });
-  }
-}
-
-export
-class FlexiblePopupWidget extends Widget {
-  constructor(text:string) {
-    let body = document.createElement('div');
-    body.style.display = 'flex';
-    body.style.flexDirection = 'column';
-    body.innerHTML = text;
-
-    super({ node: body });
-  }
-}
-
-export
-class LimitPopupWidget extends Widget {
-  constructor() {
-      let body = document.createElement('div');
-      body.style.display = 'flex';
-      body.style.flexDirection = 'column';
-
-      super({node: body});
-
-      this.getValue = this.getValue.bind(this);
-
-      let inputLimit = document.createElement('input');
-      inputLimit.id = 'inputLimit';
-      this.node.appendChild(inputLimit);
-  }
-
-  getValue() {
-    limit = (<HTMLInputElement>document.getElementById('inputLimit')).value;
-    // (<HTMLInputElement>document.getElementById('setLimitBtn')).innerHTML = "Results Limit: " + limit;
-    console.log("new limit is: ", limit)
-    INotification.success("Results limit is now set to " + limit);
-  }
-
-}
 
 function setResultsLimit() {
-    console.log("old limit is: ", limit)
+    console.log("old limit is: ", globals.limit)
     showDialog({
         title: 'Set Results Limit:',
         body: new LimitPopupWidget(),
@@ -167,8 +55,8 @@ function displaySearchParams() {
 function copySearchResults() {
   // Construct url to hit backend
   var getUrl = new URL(PageConfig.getBaseUrl() + 'edsc/getGranules');
-  getUrl.searchParams.append("json_obj", JSON.stringify(params));
-  getUrl.searchParams.append("limit", limit);
+  getUrl.searchParams.append("json_obj", JSON.stringify(globals.params));
+  getUrl.searchParams.append("limit", globals.limit);
 
 
   // Make call to back end
@@ -199,22 +87,30 @@ export function getUrls() {
 }
 
 
+
+
+
 function activate(app: JupyterLab,
                   docManager: IDocumentManager,
                   palette: ICommandPalette,
                   restorer: ILayoutRestorer,
                   mainMenu: IMainMenu,
                   tracker: INotebookTracker,
-                  panel: NotebookPanel) {
+                  panel: NotebookPanel): InstanceTracker<IFrameWidget> {
 
   let widget: IFrameWidget;
+
+  const namespace = 'tracker-iframe';
+  let instanceTracker = new InstanceTracker<IFrameWidget>({ namespace });
+
+
 
   //
   // Listen for messages being sent by the iframe - this will be all of the parameter
   // objects from the EDSC instance
   //
   window.addEventListener("message", (event: MessageEvent) => {
-    params = event.data;
+    globals.params = event.data;
     console.log("at event listen: ", event.data);
   });
 
@@ -239,26 +135,19 @@ function activate(app: JupyterLab,
     const current = getCurrent(args);
     console.log(result_type);
 
-    if (Object.keys(params).length == 0) {
-        // showDialog({
-        //     title: 'Error',
-        //     body: new FlexiblePopupWidget("No Search Selected"),
-        //     focusNodeSelector: 'input',
-        //     buttons: [Dialog.okButton({ label: 'Ok' })]
-        // });
-        // return;
+    // If no search is selected, send an error
+    if (Object.keys(globals.params).length == 0) {
         INotification.error("Error: No Search Selected.");
         return;
     }
-    // INotification.error("Error");
-    
+
 
     // Paste Search Query
     if (result_type == "query") {
 
         var getUrl = new URL(PageConfig.getBaseUrl() + 'edsc/getQuery');
-        getUrl.searchParams.append("json_obj", JSON.stringify(params));
-        getUrl.searchParams.append("limit", limit);
+        getUrl.searchParams.append("json_obj", JSON.stringify(globals.params));
+        getUrl.searchParams.append("limit", globals.limit);
 
         // Make call to back end
         var xhr = new XMLHttpRequest();
@@ -283,13 +172,6 @@ function activate(app: JupyterLab,
           }
           else {
               console.log("Error making call to get query. Status is " + xhr.status);
-
-              // showDialog({
-              //   title: 'Error',
-              //   body: new FlexiblePopupWidget("Error making call to get search query. Have you selected valid search parameters?"),
-              //   focusNodeSelector: 'input',
-              //   buttons: [Dialog.okButton({ label: 'Ok' })]
-              // });
               INotification.error("Error making call to get search query. Have you selected valid search parameters?");
           }
         };
@@ -301,12 +183,13 @@ function activate(app: JupyterLab,
         xhr.open("GET", getUrl.href, true);
         xhr.send(null);
 
+
     // Paste Search Results
     } else {
 
       var getUrl = new URL(PageConfig.getBaseUrl() + 'edsc/getGranules');
-      getUrl.searchParams.append("json_obj", JSON.stringify(params));
-      getUrl.searchParams.append("limit", limit);
+      getUrl.searchParams.append("json_obj", JSON.stringify(globals.params));
+      getUrl.searchParams.append("limit", globals.limit);
 
 
       // Make call to back end
@@ -333,13 +216,6 @@ function activate(app: JupyterLab,
           }
           else {
               console.log("Error making call to get results. Status is " + xhr.status);
-
-              // showDialog({
-              //   title: 'Error:',
-              //   body: new FlexiblePopupWidget("Error making call to get search results. Have you selected valid search parameters?"),
-              //   focusNodeSelector: 'input',
-              //   buttons: [Dialog.okButton({ label: 'Ok' })]
-              // });
                INotification.error("Error making call to get search results. Have you selected valid search parameters?");
           }
       };
@@ -352,20 +228,37 @@ function activate(app: JupyterLab,
       xhr.send(null);
     }
 
+
   }
 
 
   /******** Set commands for command palette and main menu *********/
 
-  // Add an application command to open ESDS
+  // Add an application command to open ESDC
   const open_command = 'iframe:open';
   app.commands.addCommand(open_command, {
     label: 'Open EarthData Search',
     isEnabled: () => true,
     execute: args => {
-      widget = new IFrameWidget('https://che-k8s.maap.xyz:3052/search');
-      app.shell.addToMainArea(widget);
-      app.shell.activateById(widget.id);
+
+      console.log(widget);
+
+      // Only allow user to have one EDSC window
+      if (widget == undefined) {
+          widget = new IFrameWidget('https://che-k8s.maap.xyz:3052/search');
+          app.shell.addToMainArea(widget);
+          app.shell.activateById(widget.id);
+      } else {
+          // if user already has EDSC, just switch to tab
+          app.shell.addToMainArea(widget);
+          app.shell.activateById(widget.id);
+      }
+
+      if (!instanceTracker.has(widget)) {
+          console.log("in has widget");
+        // Track the state of the widget for later restoration
+        instanceTracker.add(widget);
+      }
     }
   });
   palette.addItem({command: open_command, category: 'Search'});
@@ -427,7 +320,16 @@ function activate(app: JupyterLab,
   mainMenu.addMenu(searchMenu, { rank: 100 });
 
 
+  // Track and restore the widget state
+  restorer.restore(instanceTracker, {
+    command: open_command,
+    args: () => JSONExt.emptyObject,
+    name: () => namespace
+  });
+
+
   console.log('JupyterLab extension edsc_extension is activated!');
+  return instanceTracker;
 };
 
 
