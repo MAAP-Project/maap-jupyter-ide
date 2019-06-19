@@ -73,7 +73,7 @@ on all user accounts. If you are testing something, you can create your own imag
         "recipe": {
           "contentType": "text/x-yaml",
           "type": "kubernetes",
-          "content": "kind: List\nitems:\n - \n  apiVersion: v1\n  kind: Pod\n  metadata:\n   name: ws\n   labels:\n    name: ws\n  spec:\n   containers:\n    - \n     name: jupyter\n     image: 'localhost:32000/che-jupyter-lab-ide:latest'\n     resources:\n      limits:\n       memory: 1024Mi\n - \n  apiVersion: v1\n  kind: Service\n  metadata:\n   name: ws\n  spec:\n   type: NodePort\n   ports:\n    - \n     port: 22\n   selector:\n    name: ws\n"
+          "content": "kind: List\nitems:\n - \n  apiVersion: v1\n  kind: Pod\n  metadata:\n   name: ws\n   labels:\n    name: ws\n  spec:\n   containers:\n    - \n     name: jupyter\n     image: 'localhost:32000/che-jupyter-lab-ide:latest'\n     resources:\n      limits:\n       memory: 1024Mi\n     securityContext:\n       privileged: true\n - \n  apiVersion: v1\n  kind: Service\n  metadata:\n   name: ws\n  spec:\n   type: NodePort\n   ports:\n    - \n     port: 22\n   selector:\n    name: ws\n    "
         },
         "machines": {
           "ws/jupyter": {
