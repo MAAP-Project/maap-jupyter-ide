@@ -55,7 +55,7 @@ class ButtonExtension implements DocumentRegistry.IWidgetExtension<NotebookPanel
       NotebookActions.insertAbove(panel.content);
       panel.content.activeCell.model.value.text = default_code;
     };
-    
+
     let button = new ToolbarButton({
       className: 'myButton',
       iconClassName: 'jp-MaapIcon foo jp-Icon jp-Icon-16 jp-ToolbarButtonComponent-icon',
