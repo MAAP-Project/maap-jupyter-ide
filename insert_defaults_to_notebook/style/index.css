@@ -1,0 +1,8 @@
+
+:root {
+    --jp-icon-maap: url('maap.svg');
+}
+
+.jp-MaapIcon {
+  background-image: var(--jp-icon-maap);
+}
