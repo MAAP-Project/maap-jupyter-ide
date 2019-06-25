@@ -1,17 +1,13 @@
 # insert_defaults_to_notebook
 
-insert the default libraries for MAAP into users notebooks
+Add a button to the notebook toolbar. When clicked it will insert the default libraries for MAAP
+as the top cell in user's notebook.
 
 
 ## Prerequisites
 
 * JupyterLab
 
-## Installation
-
-```bash
-jupyter labextension install insert_defaults_to_notebook
-```
 
 ## Development
 
