@@ -38,7 +38,7 @@ class ButtonExtension implements DocumentRegistry.IWidgetExtension<NotebookPanel
   createNew(panel: NotebookPanel, context: DocumentRegistry.IContext<INotebookModel>): IDisposable {
     let callback = () => {
 
-
+      // Select the first cell of the notebook
       panel.content.activeCellIndex = 0;
       panel.content.deselectAll();
       ElementExt.scrollIntoViewIfNeeded(
@@ -51,9 +51,11 @@ class ButtonExtension implements DocumentRegistry.IWidgetExtension<NotebookPanel
                          'import ipycmc\n' +
                          'w = ipycmc.MapCMC()';
 
+      // Insert code above selected first cell
       NotebookActions.insertAbove(panel.content);
       panel.content.activeCell.model.value.text = default_code;
     };
+    
     let button = new ToolbarButton({
       className: 'myButton',
       iconClassName: 'jp-MaapIcon foo jp-Icon jp-Icon-16 jp-ToolbarButtonComponent-icon',
