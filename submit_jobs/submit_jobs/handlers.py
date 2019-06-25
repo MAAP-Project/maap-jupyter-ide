@@ -85,6 +85,11 @@ class RegisterAlgorithmHandler(IPythonHandler):
 		# logging.debug(fields)
 
 		params = {}
+		# TODO: need way to build registry url instead of hardcoded
+		# user doesn't need to know how to make this parameter
+		params['docker_url'] = 'registry.nasa.maap.xyz/root/dps_plot:master'
+		params['version'] = 'master'
+		params['environment'] = 'ubuntu'
 		for f in fields:
 			try:
 				arg = self.get_argument(f.lower(), '').strip()
@@ -94,9 +99,9 @@ class RegisterAlgorithmHandler(IPythonHandler):
 				params[f] = ''
 				# logging.debug('no '+f)
 		
-		print(params)
-		# logging.debug('params are')
-		# logging.debug(params)
+		# print(params)
+		logging.debug('params are')
+		logging.debug(params)
 		nb_name = params['nb_name']
 
 		if params['repo_url'] == '':
@@ -162,7 +167,8 @@ class RegisterAlgorithmHandler(IPythonHandler):
 			req_json = jso.read()
 
 		req_json = req_json.format(**params)
-		print(req_json)
+		logging.debug('request is')
+		logging.debug(req_json)
 
 		# ==================================
 		# Part 4: Check Response
@@ -208,8 +214,9 @@ class DeleteAlgorithmHandler(IPythonHandler):
 		if all(e == '' for e in list(params.values())):
 			complete = False
 
-		print(params)
 		print(complete)
+		logging.debug('params are')
+		logging.debug(params)
 
 		# ==================================
 		# Part 2: Build & Send Request
@@ -348,6 +355,9 @@ class ExecuteHandler(IPythonHandler):
 			except:
 				inputs[f] = ''
 
+		logging.debug('params are')
+		logging.debug(params)
+
 		params['timestamp'] = str(datetime.datetime.today())
 		if 'username' in params.keys() and inputs['username'] =='':
 			inputs['username'] = 'anonymous'
@@ -383,6 +393,9 @@ class ExecuteHandler(IPythonHandler):
 
 		req_xml = req_xml.format(**params)
 		print(req_xml)
+
+		logging.debug('request is')
+		logging.debug(req_xml)
 
 		# -------------------------------
 		# Send Request
@@ -444,6 +457,8 @@ class GetStatusHandler(IPythonHandler):
 				arg = ''
 
 		# print(params)
+		logging.debug('params are')
+		logging.debug(params)
 
 		# ==================================
 		# Part 2: Build & Send Request
@@ -511,6 +526,8 @@ class GetResultHandler(IPythonHandler):
 				arg = ''
 
 		# print(params)
+		logging.debug('params are')
+		logging.debug(params)
 
 		# ==================================
 		# Part 2: Build & Send Request
@@ -552,7 +569,10 @@ class GetResultHandler(IPythonHandler):
 						prods = rt[1][0]
 						p = getProds(prods)
 
-						result = 'JobID is {}\n'.format(job_id)
+						result = "<table>"
+						result += '<thead><tr><th colspan="2" style="text-align:left"> Job Results</th></tr></thead>'
+						result += '<tbody>'
+						result += '<tr><td>JobID: </td><td style="text-align:left">{}</td></tr>'.format(job_id)
 
 						for product in p[1]:
 							for attrib in product[1]:
@@ -560,16 +580,18 @@ class GetResultHandler(IPythonHandler):
 									lst = attrib[1]
 									lnk = lst[-1]
 									lst[-1] = "<a href=\"{}\">{}</a>".format(lnk,lnk)
-									prop = ('\n	').join(lst)
-									result += '{}: {}\n'.format(attrib[0],prop)
+									prop = ('<br>	').join(lst)
+									result += '<tr><td>{}: </td><td style="text-align:left">{}</td></tr>'.format(attrib[0],prop)
 								else:
-									result += '{}: {}\n'.format(attrib[0],attrib[1])
-							result += '\n'
+									result += '<tr><td>{}: </td><td style="text-align:left">{}</td></tr>'.format(attrib[0],attrib[1])
+							# result += '\n'
 
+						result += '</tbody>'
+						result += '</table>'
 						print(result)
 						# result = result.replace(',',',<br>	')
-						result = result.replace('\n','<br>')
-						print(result)
+						# result = result.replace('\n','<br>')
+						# print(result)
 
 						# print("success!")
 						self.finish({"status_code": r.status_code, "result": result})
@@ -637,8 +659,10 @@ class DescribeProcessHandler(IPythonHandler):
 		if all(e == '' for e in list(params.values())):
 			complete = False
 
-		print(params)
+		# print(params)
 		print(complete)
+		logging.debug('params are')
+		logging.debug(params)
 
 		# ==================================
 		# Part 2: Build & Send Request
@@ -664,12 +688,8 @@ class DescribeProcessHandler(IPythonHandler):
 		# ==================================
 
 		if r.status_code == 200:
+			algo_lst = []
 			try:
-				# if 'AttributeError' in r.text:
-				# 	# print('attribute error')
-				# 	result = 'Bad Request\nThe provided parameters were\n\talgo_id:{}\n\tversion:{}\n'.format(params['algo_id'],params['version'])
-				# 	self.finish({"status_code": 400, "result": result})
-				# elif complete:
 				if complete:
 					# parse out capability names & request info
 					rt = ET.fromstring(r.text)
@@ -684,11 +704,23 @@ class DescribeProcessHandler(IPythonHandler):
 							result += '\n'
 						else:
 							result += '{tag}:\t{txt}\n'.format(tag=tag,txt=txt)
+				# if no algorithm passed, list all algorithms
 				else:
 					resp = json.loads(r.text)
 					result = 'Algorithms:\n'
 					for e in resp['algorithms']:
 						result += '\t{}:{}\n'.format(e['type'],e['version'])
+
+					# return set of algos, each mapped to list of versions
+					lst = result.replace('\n','').split('\t')[1:]
+					splt_lst = [e.split(':') for e in lst]
+					algo_lst = {}
+
+					for a in splt_lst:
+						if not a[0] in algo_lst:
+							algo_lst[a[0]] = [a[1]]
+						else:
+							algo_lst[a[0]].append(a[1])
 
 				if result.strip() == '':
 					result = 'Bad Request\nThe provided parameters were\n\talgo_id:{}\n\tversion:{}\n'.format(params['algo_id'],params['version'])
@@ -696,7 +728,7 @@ class DescribeProcessHandler(IPythonHandler):
 					return
 
 				# print(result)
-				self.finish({"status_code": r.status_code, "result": result})
+				self.finish({"status_code": r.status_code, "result": result, "algo_set": algo_lst})
 			except:
 				self.finish({"status_code": r.status_code, "result": r.text})
 
@@ -730,10 +762,12 @@ class ExecuteInputsHandler(IPythonHandler):
 		if all(e == '' for e in list(params.values())):
 			complete = False
 
-		print(params)
+		# print(params)
 		params2 = copy.deepcopy(params)
 		# params2.pop('identifier')
 		# print(params)
+		logging.debug('params are')
+		logging.debug(params)
 
 		# ==================================
 		# Part 2: Build & Send Request
@@ -819,86 +853,36 @@ class DefaultValuesHandler(IPythonHandler):
 			except:
 				params[f] = ''
 		proj_path = '/projects/'+params['code_path']
+		
+		logging.debug('params are')
+		logging.debug(params)
 
 		# ==================================
-		# Part 2: GitLab Token
+		# Part 2: Extract Required Register Parameters
 		# ==================================
-		# set key and path
-		ENV_TOKEN_KEY = 'gitlab_token'
 		proj_path = '/'.join(proj_path.split('/')[:-1])
-		# if proj_path != '/':
 		os.chdir(proj_path)
-
-		# check if GitLab token has been set
 		git_url = subprocess.check_output("git remote get-url origin", shell=True).decode('utf-8').strip()
 		print(git_url)
-		token = git_url.split("repo.nasa")[0][:-1]
-		ind = token.find("gitlab-ci-token:")
-		notoken = True
 
-		# if repo url has token, no problems
-		if ind != -1:
-			token = token[ind+len("gitlab-ci-token:"):]
-			if len(token) != 0:
-				print("token has been set")
-				notoken = False
-		
-		# token needs to be set
-		if notoken:
-			# if saved in environment, set for user
-			if ENV_TOKEN_KEY in os.environ:
-				token = os.environ[ENV_TOKEN_KEY]
-				print(token)
-				url = git_url.split("//")
-				new_url = "{pre}//gitlab-ci-token:{tkn}@{rep}".format(pre=url[0],tkn=token,rep=url[1])
-				status = subprocess.call("git remote set-url origin {}".format(new_url), shell=True)
-
-				if status != 0:
-					self.finish({"status_code": 412, "result": "Error {} setting GitLab Token".format(status)})
-					return
-			else:
-				self.finish({"status_code": 412, "result": "Error: GitLab Token not set in environment\n{}".format(git_url)})
-				return
-
-		# self.finish({"status_code":200,"result":"finish checking token"})
-
-		# ==================================
-		# Part 3: Check if User Has Committed
-		# ==================================
-		# get git status
-		git_status_out = subprocess.check_output("git status --porcelain", shell=True).decode("utf-8")
-		git_status = git_status_out.splitlines()
-		git_status = [e.strip() for e in git_status]
-
-		# filter for unsaved python files
-		unsaved = list(filter(lambda e: ( (e.split('.')[-1] in ['ipynb','py']) and (e[0] in ['M','?']) ), git_status))
-
-		# if there are unsaved python files, user needs to commit
-		if len(unsaved) != 0:
-			self.finish({"status_code": 412, "result": "Error: Notebook(s) and/or script(s) have not been committed\n{}".format('\n'.join(unsaved))})
-			return
-
-		# self.finish({"status_code" : 200, "result": "Done checking commit"})
-		# return
-
-		# ==================================
-		# Part 4: Extract Required Register Parameters
-		# ==================================
 		vals = {}
 		code_path = params['code_path']
 		file_name = code_path.split('/')[-1]
 		algo_name = file_name.replace('/',':').replace(' ', '_').replace('"','').replace("'",'')
 		vals['algo_name'] = ('.').join(algo_name.split('.')[:-1])
 
-		if code_path.split('.')[-1] in ['.py','ipynb']:
-			vals['run_cmd'] = 'python '+code_path
-		else:
-			vals['run_cmd'] = code_path
+		# if code_path.split('.')[-1] in ['.py','ipynb']:
+		# 	vals['run_cmd'] = 'python '+code_path
+		# else:
+		# 	vals['run_cmd'] = code_path
 
+		vals['version'] = "master"
 		vals['repo_url'] = git_url
 		vals['branch'] = subprocess.check_output("git branch | grep \\* | cut -d ' ' -f2", shell=True).decode('utf-8').strip()
-		vals['env_name'] = "ubuntu"
-		vals['dockerfile_path'] = os.environ['DOCKERFILE_PATH']
+		vals['environment'] = "ubuntu"
+		# FIX IN DOCKER IMAGE
+		# vals['dockerfile_path'] = os.environ['DOCKERFILE_PATH']
+		# vals['dockerfile_path'] = 'registry.nasa.maap.xyz/root/dps_plot:master'
 
 		# outputs: repo_url, algo_name, run_cmd, dockerfile_path, environment_name, branch
 		self.finish({"status_code": 200, "default_values":vals})

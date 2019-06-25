@@ -1,7 +1,10 @@
 {{ 
 	"script_command" : "{run_cmd}",
 	"algorithm_name" : "{algo_name}",
+	"code_version": "{version}",
 	"algorithm_description" : "{algo_desc}",
+	"environment_name": "{environment}",
+	"docker_container_url": "{docker_url}",
 	"repo_url" : "{repo_url}",
 	"algorithm_params" : [
 		{algo_inputs}
