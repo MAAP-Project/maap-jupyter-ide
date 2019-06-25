@@ -19,6 +19,9 @@ import {
   NotebookActions, NotebookPanel, INotebookModel
 } from '@jupyterlab/notebook';
 
+import {
+    ElementExt
+} from '@phosphor/domutils';
 
 import '../style/index.css';
 
@@ -34,6 +37,14 @@ class ButtonExtension implements DocumentRegistry.IWidgetExtension<NotebookPanel
    */
   createNew(panel: NotebookPanel, context: DocumentRegistry.IContext<INotebookModel>): IDisposable {
     let callback = () => {
+
+
+      panel.content.activeCellIndex = 0;
+      panel.content.deselectAll();
+      ElementExt.scrollIntoViewIfNeeded(
+          panel.content.node,
+          panel.content.activeCell.node
+      );
 
       let default_code = 'from maap.maap import MAAP\n' +
                          'maap = MAAP()\n\n' +
