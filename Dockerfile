@@ -67,6 +67,11 @@ RUN cd /dps_magic && pip install -e .
 RUN cd /dps_magic && jupyter nbextension install --symlink --py dps_magic --sys-prefix
 RUN cd /dps_magic && jupyter nbextension enable --py dps_magic --sys-prefix
 
+# add maap libraries to notebook
+COPY insert_defaults_to_notebook /insert_defaults_to_notebook
+RUN cd /insert_defaults_to_notebook && npm run build
+RUN cd /insert_defaults_to_notebook && jupyter labextension link .
+
 RUN touch /root/.bashrc && echo "cd /projects >& /dev/null" >> /root/.bashrc
 
 RUN mkdir /projects
