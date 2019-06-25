@@ -6,9 +6,13 @@ There are 3 API endpoints for handling projects listed under _Che_ with the Jupy
 
 1. ListAllProjects
 	- registered on the Command Palette
-	- endpoint `pull_projects/ListAllProjects`
+	- endpoint `pull_projects/list`
 	- creates a small popup Dialog with unformatted dictionary of project info
 		- to be improved
+2. ListFiles
+	- NOT on Command Palette
+	- endpoint `pull_projects/listFiles`
+	- helper for Job Registration under `submit_jobs` extension to get available files within the workspace's projects
 2. GetProject
 	- NOT on Command Palette
 	- endpoint `pull_projects/getProject`

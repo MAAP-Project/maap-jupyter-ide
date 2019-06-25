@@ -2,7 +2,8 @@
 
 This extension displays ssh info for a user to get onto the kubernetes cluster container for 
 their workspace. It also injects the users SSH key into their workspace from their auth 
-profile (keycloak). 
+profile (keycloak). This injection happens automatically when any user opens up the workspace, so no additional
+step is needed to allow a user to ssh into the container.
 
 This extension is dependent upon being run inside the Eclipse Che environment.
 
