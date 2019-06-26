@@ -88,7 +88,6 @@ class RegisterAlgorithmHandler(IPythonHandler):
 		# TODO: need way to build registry url instead of hardcoded
 		# user doesn't need to know how to make this parameter
 		params['docker_url'] = 'registry.nasa.maap.xyz/root/dps_plot:master'
-		params['version'] = 'master'
 		params['environment'] = 'ubuntu'
 		for f in fields:
 			try:
@@ -875,8 +874,9 @@ class DefaultValuesHandler(IPythonHandler):
 		# 	vals['run_cmd'] = 'python '+code_path
 		# else:
 		# 	vals['run_cmd'] = code_path
-
-		vals['version'] = "master"
+		branch_name = subprocess.check_output("git branch | grep '*' | awk '{print $2}'",shell=True).decode('utf-8').strip()
+		# logging.debug('branch name is {}'.format(branch_name))
+		vals['version'] = branch_name
 		vals['repo_url'] = git_url
 		vals['branch'] = subprocess.check_output("git branch | grep \\* | cut -d ' ' -f2", shell=True).decode('utf-8').strip()
 		vals['environment'] = "ubuntu"
