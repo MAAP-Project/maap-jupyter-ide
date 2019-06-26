@@ -3,9 +3,13 @@
 
 import { DOMWidgetModel, DOMWidgetView, ISerializers } from '@jupyter-widgets/base';
 
+// import { NotebookActions } from '@jupyterlab/notebook';
+
 import { MODULE_NAME, MODULE_VERSION } from './version';
 
-import path from "path";
+import { generatePlotCommand } from './plot';
+
+import path from 'path';
 import moment from 'moment';
 import CMC_Module = require('maap-common-mapping-client');
 const CMC = CMC_Module.CMC;
@@ -60,6 +64,7 @@ export class MapCMCView extends DOMWidgetView {
 
     _syncCMC() {
         const state = this.cmc._store.getState();
+        const prevState = this.model.get('_state');
         this.model.set('_state', {
             date: moment.utc(state.map.get('date')).toISOString(),
             layers: state.map.get('layers').toJS(),
@@ -67,8 +72,17 @@ export class MapCMCView extends DOMWidgetView {
                 .get('areaSelections')
                 .toList()
                 .toJS(),
+            plot: state.plot.toJS(),
         });
         this.touch();
+        const currState = this.model.get('_state');
+
+        if (
+            currState.plot.commandGenCtr >= 0 &&
+            currState.plot.commandGenCtr !== prevState.plot.commandGenCtr
+        ) {
+            this.loadPlotCommand();
+        }
     }
 
     render() {
@@ -89,7 +103,7 @@ export class MapCMCView extends DOMWidgetView {
     }
 
     render_cmc() {
-        let baseUrl = path.join(this.model.get('_workspace_base_url'), "/lab/static");
+        let baseUrl = path.join(this.model.get('_workspace_base_url'), '/lab/static');
         this.cmc = new CMC({ target: this.appDiv, base_url: baseUrl });
         this._syncCMC();
 
@@ -146,5 +160,11 @@ export class MapCMCView extends DOMWidgetView {
     setProjection(argv: Array<any>) {
         const [projStr] = argv;
         this.cmc.dispatch.setMapProjection(projStr);
+    }
+
+    loadPlotCommand() {
+        const currState = this.model.get('_state');
+        const commandStr = generatePlotCommand(currState.plot.commandInfo);
+        console.log(commandStr);
     }
 }
