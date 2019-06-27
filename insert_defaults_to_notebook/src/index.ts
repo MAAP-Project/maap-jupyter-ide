@@ -23,9 +23,15 @@ import {
     ElementExt
 } from '@phosphor/domutils';
 
+import { INotification } from "jupyterlab_toastify";
+
 import '../style/index.css';
 
-
+const DEFAULT_CODE = 'from maap.maap import MAAP\n' +
+                     'maap = MAAP()\n\n' +
+                     'import ipycmc\n' +
+                     'w = ipycmc.MapCMC()\n' +
+                     'w';
 
 /**
  * A notebook widget extension that adds a button to the toolbar.
@@ -46,14 +52,16 @@ class ButtonExtension implements DocumentRegistry.IWidgetExtension<NotebookPanel
           panel.content.activeCell.node
       );
 
-      let default_code = 'from maap.maap import MAAP\n' +
-                         'maap = MAAP()\n\n' +
-                         'import ipycmc\n' +
-                         'w = ipycmc.MapCMC()';
+      // Check if already there
+      if (panel.content.activeCell.model.value.text == DEFAULT_CODE) {
+        INotification.error("MAAP defaults already imported to notebook.");
+      }
+      else {
+        // Insert code above selected first cell
+        NotebookActions.insertAbove(panel.content);
+        panel.content.activeCell.model.value.text = DEFAULT_CODE;
+      }
 
-      // Insert code above selected first cell
-      NotebookActions.insertAbove(panel.content);
-      panel.content.activeCell.model.value.text = default_code;
     };
 
     let button = new ToolbarButton({
