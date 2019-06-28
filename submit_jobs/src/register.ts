@@ -150,7 +150,10 @@ export class ProjectSelector extends Widget {
       this.getDefaultValues(opt).then((defaultValues) => {
         console.log(defaultValues);
         console.log('create register');
-        popup(new RegisterWidget('register',this.fields,this.jobsPanel,defaultValues));
+        var w = new RegisterWidget('register',this.fields,this.jobsPanel,defaultValues);
+        w.setOldFields(defaultValues);
+        console.log(w);
+        popup(w);
       });
     }
     return;
@@ -202,12 +205,22 @@ export class RegisterWidget extends HySDSWidget {
       var urllst: Array<URL> = []
       var getUrl = new URL(PageConfig.getBaseUrl() + 'hysds/'+this.req); // REMINDER: hack this url until fixed
 
+      for (let key in this.old_fields) {
+        if (! (key in this.fields)) {
+          var fieldText = this.old_fields[key].toLowerCase();
+          getUrl.searchParams.append(key.toLowerCase(), fieldText);
+        }
+      }
+      console.log('old fields done');
+      console.log(getUrl.href);
+
       // add user-defined fields
       for (var field of this.fields) {
         var fieldText = (<HTMLInputElement>document.getElementById(field.toLowerCase()+'-input')).value;
         // if (fieldText != "") { getUrl.searchParams.append(field.toLowerCase(), fieldText); }
         console.log(field+' input is '+fieldText);
         getUrl.searchParams.append(field.toLowerCase(), fieldText);
+        console.log(getUrl.href);
       }
 
       console.log(getUrl.href);
