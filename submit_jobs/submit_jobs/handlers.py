@@ -9,16 +9,18 @@ import copy
 import sys
 import os
 import logging
+from .fields import getFields
 
-# logger = logging.getLogger()
-# logger.setLevel(logging.DEBUG)
+logger = logging.getLogger()
+logger.setLevel(logging.DEBUG)
 
-sys.path.append(os.path.dirname(os.path.abspath(__file__)))
-from fields import getFields
+FILEPATH = os.path.dirname(os.path.abspath(__file__))
+WORKDIR = FILEPATH+'/..'
+# WORKDIR = os.getcwd()+'/../../submit_jobs'
+sys.path.append(WORKDIR)
 # USE https when pointing to actual MAAP API server
 #BASE_URL = "http://localhost:5000/api"
 BASE_URL = "https://api.maap.xyz/api"
-WORKDIR = os.getcwd()+'/../../submit_jobs'
 
 def dig(node):
 	# print("dig!")
@@ -55,7 +57,7 @@ def parseInputs(popped):
 	a = popped.strip()
 	a = a.replace('\n',';')
 	inputs = [e.split(',') for e in a.split(';')]							# split lines into inputs
-	inputs = [[e.strip().replace(' ','_') for e in e1] for e1 in inputs]	# strip whitespace
+	inputs = [[e.strip().replace(' ','_') for e in e1] for e1 in inputs]	# strip whitespace & replace <space> with _
 	inputs = [e+['false'] if len(e) == 1 else e for e in inputs]			# set false if dl not set
 	inputs = [[e[0],'true'] if e[1].lower() in ['true','download','dl'] else [e[0],'false'] for e in inputs] 	# replace anything not dl=true to false
 	inputs = {e[0]:e[1] for e in inputs}									# convert to dictionary & overwrite duplicate input names
@@ -80,15 +82,17 @@ class RegisterAlgorithmHandler(IPythonHandler):
 		# Part 1: Parse Required Arguments
 		# ==================================
 		# logging.debug('workdir is '+WORKDIR)
-		fields = ['nb_name'] + getFields('register')
-		# logging.debug('fields')
-		# logging.debug(fields)
+		fields = ['nb_name','repo_url'] + getFields('register')
+		logging.debug('fields')
+		logging.debug(fields)
 
 		params = {}
 		# TODO: need way to build registry url instead of hardcoded
 		# user doesn't need to know how to make this parameter
+		params['docker_url'] = os.environ['DOCKERIMAGE_PATH']
 		params['docker_url'] = 'registry.nasa.maap.xyz/root/dps_plot:master'
-		params['environment'] = 'ubuntu'
+		# params['docker_url'] = 'registry.nasa.maap.xyz/maap-devs/base-images/plant'
+		# params['environment'] = 'ubuntu'
 		for f in fields:
 			try:
 				arg = self.get_argument(f.lower(), '').strip()
@@ -111,6 +115,13 @@ class RegisterAlgorithmHandler(IPythonHandler):
 
 		# replace spaces in algorithm name
 		params['algo_name'] = params['algo_name'].replace(' ', '_')
+
+		# get repo url
+		# proj_path = '/'.join(proj_path.split('/')[:-1])
+		# os.chdir(proj_path)
+		# git_url = subprocess.check_output("git remote get-url origin", shell=True).decode('utf-8').strip()
+		# logging.debug(git_url)
+		# params['repo_url'] = git_url
 
 		# ==================================
 		# Part 2: Check if User Has Committed
@@ -837,7 +848,7 @@ class ExecuteInputsHandler(IPythonHandler):
 
 class DefaultValuesHandler(IPythonHandler):
 	# inputs: code_path
-	# outputs: repo_url, algo_name, run_cmd, dockerfile_path, environment_name, branch
+	# outputs: repo_url, algo_name, version, run_cmd, dockerfile_path, environment_name
 	def get(self):
 		# ==================================
 		# Part 1: Get Notebook Information Processed in UI
@@ -874,11 +885,12 @@ class DefaultValuesHandler(IPythonHandler):
 		# 	vals['run_cmd'] = 'python '+code_path
 		# else:
 		# 	vals['run_cmd'] = code_path
+
+		# version is branch name
 		branch_name = subprocess.check_output("git branch | grep '*' | awk '{print $2}'",shell=True).decode('utf-8').strip()
 		# logging.debug('branch name is {}'.format(branch_name))
 		vals['version'] = branch_name
 		vals['repo_url'] = git_url
-		vals['branch'] = subprocess.check_output("git branch | grep \\* | cut -d ' ' -f2", shell=True).decode('utf-8').strip()
 		vals['environment'] = "ubuntu"
 		# FIX IN DOCKER IMAGE
 		# vals['dockerfile_path'] = os.environ['DOCKERFILE_PATH']

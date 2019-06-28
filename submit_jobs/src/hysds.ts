@@ -59,11 +59,8 @@ export class HySDSWidget extends Widget {
     body.style.display = 'flex';
     body.style.flexDirection = 'column';
     super({node: body});
-    // const el = document.getElementById('jupyter-config-data');
-    // console.log(PageConfig.getOption('');
-    // console.log(el);
 
-     // Default text
+    // Default text
     this.req = req;
     this.response_text = "";
     this.old_fields = {};
@@ -299,7 +296,7 @@ export class HySDSWidget extends Widget {
   // helper to deepcopy aka rebuild URL because deepcopy is a pain rn
   buildCopyUrl(fieldName:string,fieldValue:string): URL {
     var getUrl = new URL(PageConfig.getBaseUrl() + 'hysds/'+this.req);
-    // only call when execute
+    // only call when passed inputs not provided by user
     if (this.get_inputs) {
       // filling out algo info (id, version)
       for (let key in this.old_fields) {
@@ -576,4 +573,8 @@ export function popupResult(b:any,popup_title:string): void {
     focusNodeSelector: 'input',
     buttons: [Dialog.okButton({ label: 'Ok' })]
   });
+}
+
+export function isEmpty(obj) {
+  return Object.keys(obj).length === 0;
 }
