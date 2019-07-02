@@ -48,6 +48,7 @@ RUN cd /show_ssh_info && jupyter serverextension enable --py show_ssh_info --sys
 
 # jlab earthdata search extension
 COPY edsc_extension /edsc_extension
+RUN pip install git+https://github.com/MAAP-Project/maap-py@stable-dev#egg=maapPy
 RUN cd /edsc_extension && npm run build
 RUN cd /edsc_extension && jupyter labextension link .
 RUN cd /edsc_extension && pip install -e .
