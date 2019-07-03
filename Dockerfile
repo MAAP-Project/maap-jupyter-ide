@@ -47,14 +47,14 @@ RUN cd /show_ssh_info && pip install -e .
 RUN cd /show_ssh_info && jupyter serverextension enable --py show_ssh_info --sys-prefix
 
 # jlab earthdata search extension
+ENV MAAP_CONF='/maap-py/'
+RUN git clone --single-branch --branch stable-dev https://github.com/MAAP-Project/maap-py.git && cd maap-py && python setup.py install 
+#RUN pip install git+https://github.com/MAAP-Project/maap-py@stable-dev#egg=maapPy
 COPY edsc_extension /edsc_extension
-RUN pip install git+https://github.com/MAAP-Project/maap-py@stable-dev#egg=maapPy
 RUN cd /edsc_extension && npm run build
 RUN cd /edsc_extension && jupyter labextension link .
 RUN cd /edsc_extension && pip install -e .
-RUN cd /edsc_extension/maap-py && python setup.py install
 RUN cd /edsc_extension && jupyter serverextension enable --py edsc_extension --sys-prefix
-ENV MAAP_CONF='/edsc_extension/maap-py/'
 
 # jlab submit_jobs extension
 COPY submit_jobs /submit_jobs
