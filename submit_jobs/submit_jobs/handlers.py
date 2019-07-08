@@ -82,7 +82,7 @@ class RegisterAlgorithmHandler(IPythonHandler):
 		# Part 1: Parse Required Arguments
 		# ==================================
 		# logging.debug('workdir is '+WORKDIR)
-		fields = ['nb_name','repo_url'] + getFields('register')
+		fields = ['nb_name','repo_url','version'] + getFields('register')
 		logging.debug('fields')
 		logging.debug(fields)
 
