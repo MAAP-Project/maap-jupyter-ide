@@ -30,8 +30,7 @@ jupyter nbextension enable --py [--sys-prefix|--user|--system] ipycmc
 
 
 ## NOTES
-`jupyter labextension install .`
-`npm install --save-dev /Users/fplatt/Workspace/maap/common-mapping-client-jupyter`
+`npm run everything`
 
 *third party libs*
  * https://github.com/jupyterlab/jupyter-renderers/tree/master/packages/plotly-extension
