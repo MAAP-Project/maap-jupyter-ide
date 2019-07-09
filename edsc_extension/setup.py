@@ -7,8 +7,15 @@ here = path.abspath(path.dirname(__file__))
 with open(path.join(here, 'README.md'), encoding='utf-8') as f:
     long_description = f.read()
 
-with open(path.join(here, 'requirements.txt'), encoding='utf-8') as f:
-    requires = f.read().split()
+# with open(path.join(here, 'requirements.txt'), encoding='utf-8') as f:
+#     requires = f.read().split()
+
+def read_requirements():
+    """Parse requirements from requirements.txt."""
+    reqs_path = path.join('.', 'requirements.txt')
+    with open(reqs_path, 'r') as f:
+        requirements = [line.rstrip() for line in f]
+    return requirements
 
 
 setup(
@@ -35,6 +42,8 @@ setup(
     keywords='jupyter jupyterlab',
     packages=find_packages(exclude=['tests', ]),
     zip_safe=False,
-    install_requires=requires,
-    extras_require={'dev': requires + ['nose2', 'pylint', 'flake8']}
+    install_requires=read_requirements(),
+    # maapPy @ git+https://github.com/MAAP-Project/maap-py@stable-dev#egg=maapPy
+    # dependency_links=['git+https://github.com/MAAP-Project/maap-py@stable-dev#egg=maapPy'],
+    extras_require={'dev': ['nose2', 'pylint', 'flake8']}
 )
