@@ -30,9 +30,12 @@ jupyter nbextension enable --py [--sys-prefix|--user|--system] ipycmc
 
 
 ## NOTES
-`npm run everything`
+ * `jupyter labextension install @jupyter-widgets/jupyterlab-manager`
+ * `jupyter labextension install @jupyterlab/plotly-extension`
+ * `npm run everything`
 
 *third party libs*
  * https://github.com/jupyterlab/jupyter-renderers/tree/master/packages/plotly-extension
  * https://github.com/plotly/plotly.py
  * https://2.python-requests.org/en/master/
+
