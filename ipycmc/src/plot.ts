@@ -23,5 +23,5 @@ export function generatePlotCommand(commandInfo: {
         `data = ipycmc.retrieve_data(plotType, startDate, endDate, ds, geometry)`,
         `# Plot the data`,
         `ipycmc.plot_data(plotType, data)`,
-    ].join('\r\n');
+    ].join('\n');
 }
