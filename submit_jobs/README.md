@@ -15,14 +15,16 @@ This connects the JupyterLab UI with the HySDS/DPS backend.  There will be 10 AP
 	- sends a POST request to DPS to register a new algorithm
 		- POST request sent to https://api.maap.xyz/api/mas/algorithm
 	- user-provided required parameters:
-		- repository URL
 		- algorithm name
 		- run command
+		- environment
 	- user-provided optional parameters:	
 		- algorithm description
 		- inputs
 	- UI-provided required parameters:
+		- repository URL
 		- nb_name: path to notebook file
+		- version: algorithm version, taken from branch name
 3. Delete Algorithm
 	- endpoint: `hysds/deleteAlgorithm`
 	- sends DELETE request to remove specified algorithm
@@ -36,6 +38,8 @@ This connects the JupyterLab UI with the HySDS/DPS backend.  There will be 10 AP
 	- sends a GET request to get information about the specified algorithm
 		- GET request sent to https://api.maap.xyz/api/mas/algorithm/{algorithm_id}:{algorithm_version}
 6. Execute
+	- first sends a GET request to `hysds/listAlgorithms` to get a list of registered algoirthms and populates a dropdown menu for user to choose from
+	- after user has chosen an algorithm, gets algorithm information and required inputs for user to populate and submit
 	- endpoint pt1: `hysds/executeInputs`
 	- sends a GET request to get information about specified algorithm's inputs
 		- GET request sent to https://api.maap.xyz/api/mas/algorithm/{algorithm_id}:{algorithm_version}

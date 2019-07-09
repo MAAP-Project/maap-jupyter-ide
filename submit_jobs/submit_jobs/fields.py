@@ -1,7 +1,8 @@
 import json
 import os
 
-WORKDIR = os.getcwd()+'/../../submit_jobs'
+FILEPATH = os.path.dirname(os.path.abspath(__file__))
+WORKDIR = FILEPATH+'/..'
 fields_path = WORKDIR+'/src/fields.json'
 # getCapabilities, execute, getStatus, getResult, dismiss, describe
 

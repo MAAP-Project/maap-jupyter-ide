@@ -6,26 +6,36 @@ When opening the workspace (or any time the kernel has been restarted), the exte
 1. Get Capabilities
 	- calls `hysds/getCapabilities`
 	- inline call: `%capabilities`
+	- displays MAAP API Capabilities
 2. List Algorithms
 	- calls `hysds/listAlgorithms`
 	- inline call: `%list`
+	- displays list of registered algorithms
 3. Describe Process
 	- calls `hysds/describeProcess`
 	- inline call: `%describe algorithm_name:version`
+	- displays algorithm information and required inputs
 4. Execute
 	- calls `hysds/execute`
-	- inline call: `%execute algorithm_name:version(param1:val1,param2:val2`
+	- inline call: `%execute algorithm_name:version(param1:val1,param2:val2)`
+	- submits a job, displaying job id if successful or error message when provided bad inputs
 5. Get Status
 	- calls `hysds/getStatus`
 	- inline call: `%status job_id`
+	- displays job's status (queued, started, completed, failed)
 6. Get Result
 	- calls `hysds/getResult`
 	- inline call: `%result job_id`
+	- displays job's results; links in a formatted table with s3 links hyperlinked
 7. Delete Algorithm
 	- calls `hysds/deleteAlgorithm`
 	- inline call: `%delete algorithm_name:version`
+	- deletes and echos name of deleted algorithm
+8. Help
+	- inline call: `%help`
+	- displays table of possible inline calls with brief descriptions
 
-If you are unsure of how to use the line magics, you can view the help text by calling `%function help`, for example `%execute help`.
+If you are unsure of how to use the line magics, you can view the help text by calling `%function help`, for example `%execute help`.  To list all of them, call `%help`.
 
 ## Installation
 
