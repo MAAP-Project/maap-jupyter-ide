@@ -45,7 +45,8 @@ function activateGetCapabilities(app: JupyterLab,
     label: 'Get Capabilities',
     isEnabled: () => true,
     execute: args => {
-      popup(new HySDSWidget('getCapabilities',getCapabilitiesFields,jobsPanel,{}));
+      var w = new HySDSWidget('getCapabilities',getCapabilitiesFields,jobsPanel,{});
+      w.getValue();
     }
   });
   palette.addItem({command: open_command, category: 'DPS'});
@@ -136,7 +137,8 @@ function activateList(app: JupyterLab,
     label: 'List Algorithms',
     isEnabled: () => true,
     execute: args => {
-      popup(new HySDSWidget('listAlgorithms',listAlgorithmsFields,jobsPanel,{}));
+      var w = new HySDSWidget('listAlgorithms',listAlgorithmsFields,jobsPanel,{});
+      w.getValue();
     }
   });
   palette.addItem({command: open_command, category: 'DPS'});

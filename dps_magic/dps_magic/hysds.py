@@ -22,6 +22,29 @@ class HysdsMagic(Magics):
         else:
             display(HTML("<pre>{}<br>{}</pre>".format(txt1,txt2)))
 
+    def to_html_table(self,lstt):
+        table = '<table>'
+        table += '<tr><th>Magic Command</th><th style="text-align:left">Description</th></tr>'
+        for e in lstt:
+            table += '<tr><td style="text-align:left">{}</td><td style="text-align:left">{}</td></tr>'.format(e[0],e[1])
+        table += '</table>'
+        return table
+        
+    @line_magic
+    def help(self,line):
+        lstt = []
+        lstt.append(['%capabilities','get information about MAAP API services'])
+        lstt.append(['%list','list algorithms registered in MAS'])
+        lstt.append(['%describe','describe the selected algorithm'])
+        lstt.append(['%execute', 'submit a job to DPS using an algorithm registered in MAS'])
+        lstt.append(['%status','check the status of a submitted job'])
+        lstt.append(['%result','get the results for a completed job'])
+        lstt.append(['%delete','remove a registered algorithm from MAS'])
+        lstt.append(['%help','print this help info'])
+        table = self.to_html_table(lstt)
+        extra_text = 'For more information, call the command of interest with parameter "help"<br>Example:<br>&nbsp&nbsp&nbsp&nbsp%describe help'
+        self.html(table,extra_text)
+
     def execute_fn(self,line):
         algo_ver,params = line.split('(')
         params = params[:-1]
