@@ -49,14 +49,14 @@ class MapCMC(DOMWidget, InteractMixin):
     def __init__(self, **kwargs):
         super(MapCMC, self).__init__(**kwargs)
 
-    def load_layer_config(self, url, handleAs):
-        self._argv = ["loadLayerConfig", url, handleAs]
+    def load_layer_config(self, url, handle_as, default_ops = {}):
+        self._argv = ["loadLayerConfig", url, handle_as, default_ops]
 
-    def set_date(self, dateStr, formatStr=""):
-        self._argv = ["setDate", dateStr, formatStr]
+    def set_date(self, date_str, format_str=""):
+        self._argv = ["setDate", date_str, format_str]
 
-    def set_projection(self, projectionStr="EPSG:4326"):
-        self._argv = ["setProjection", projectionStr]
+    def set_projection(self, projection_str="EPSG:4326"):
+        self._argv = ["setProjection", projection_str]
 
     def get_date(self):
         return self._state["date"]

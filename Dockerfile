@@ -23,6 +23,7 @@ RUN cd /hide_side_panel && jupyter labextension link .
 
 # cmc widget
 COPY ipycmc /ipycmc
+RUN conda install -c plotly plotly 
 # RUN cd /ipycmc && pip install ipywidgets
 RUN cd /ipycmc && jupyter labextension install @jupyter-widgets/jupyterlab-manager
 RUN cd /ipycmc && npm install && npm run build
@@ -46,13 +47,14 @@ RUN cd /show_ssh_info && pip install -e .
 RUN cd /show_ssh_info && jupyter serverextension enable --py show_ssh_info --sys-prefix
 
 # jlab earthdata search extension
+ENV MAAP_CONF='/maap-py/'
+RUN git clone --single-branch --branch stable-dev https://github.com/MAAP-Project/maap-py.git && cd maap-py && python setup.py install 
+#RUN pip install git+https://github.com/MAAP-Project/maap-py@stable-dev#egg=maapPy
 COPY edsc_extension /edsc_extension
 RUN cd /edsc_extension && npm run build
 RUN cd /edsc_extension && jupyter labextension link .
 RUN cd /edsc_extension && pip install -e .
-RUN cd /edsc_extension/maap-py && python setup.py install
 RUN cd /edsc_extension && jupyter serverextension enable --py edsc_extension --sys-prefix
-ENV MAAP_CONF='/edsc_extension/maap-py/'
 
 # jlab submit_jobs extension
 COPY submit_jobs /submit_jobs
@@ -66,6 +68,12 @@ COPY dps_magic /dps_magic
 RUN cd /dps_magic && pip install -e .
 RUN cd /dps_magic && jupyter nbextension install --symlink --py dps_magic --sys-prefix
 RUN cd /dps_magic && jupyter nbextension enable --py dps_magic --sys-prefix
+
+# add maap libraries to notebook
+COPY insert_defaults_to_notebook /insert_defaults_to_notebook
+RUN cd /insert_defaults_to_notebook && npm install
+RUN cd /insert_defaults_to_notebook && npm run build
+RUN cd /insert_defaults_to_notebook && jupyter labextension link .
 
 RUN touch /root/.bashrc && echo "cd /projects >& /dev/null" >> /root/.bashrc
 
@@ -82,3 +90,4 @@ ARG aws_secret_access_key
 ENV AWS_SECRET_ACCESS_KEY=$aws_secret_access_key
 
 ENTRYPOINT ["/entrypoint.sh"]
+
