@@ -12,10 +12,10 @@ Required by API:
 - algorithm_params (algo_inputs)
 
 User-Provided:
-- script_command (run_cmd), pre-populated
+- script_command (run_cmd), to be pre-populated
 - algorithm_name (algo_name), pre-populated with filename/path
+- environment_name (environment), pre-populated as `ubuntu`
 - optional: algorithm_description (algo_desc)
-- optional: repo_url (repo_url), pre-populated with `git remote get-url origin`
 - optional: algorithm_params (algo_inputs)
 	- separated by newline
 	- if input needs to be downloaded, add `true`,`download`, or `dl` after a comma; default if unspecified is false
@@ -26,14 +26,14 @@ username, false
 ```
 
 Provided by Jupyter UI:
+- repo_url (repo_url), pre-populated with `git remote get-url origin`
 - code_version (version), pre-populated with `git branch`
 - algorithm_description (algo_desc), defaults to empty string
-- environment_name (environment), currently hardcoded to `ubuntu`
 
 
 Other:
 - docker_container_url (docker_url), currently hardcoded to `registry.nasa.maap.xyz/root/dps_plot:master`
-	- will be pre-populated as environment variable when workspace docker image is built in GitLab
+	- will be pre-populated as environment variable when solution is found for running without wrapper script
 
 ### Example POST Request
 url: https://api.maap.xyz/api/mas/algorithm
