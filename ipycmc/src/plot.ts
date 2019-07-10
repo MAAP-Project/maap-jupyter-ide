@@ -10,7 +10,7 @@ export function generatePlotCommand(commandInfo: {
     const { plotType, startDate, endDate, geometry, datasets } = commandInfo;
     return [
         `# Initialize parameter variables`,
-        `plotType = ${plotType}`,
+        `plotType = "${plotType}"`,
         `startDate = "${moment(startDate)
             .utc()
             .toISOString()}"`,
