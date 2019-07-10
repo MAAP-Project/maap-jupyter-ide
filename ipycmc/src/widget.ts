@@ -3,7 +3,7 @@
 
 import { DOMWidgetModel, DOMWidgetView, ISerializers } from '@jupyter-widgets/base';
 
-// import { NotebookActions } from '@jupyterlab/notebook';
+import { NotebookActions } from '@jupyterlab/notebook';
 
 import { MODULE_NAME, MODULE_VERSION } from './version';
 
@@ -165,6 +165,18 @@ export class MapCMCView extends DOMWidgetView {
     loadPlotCommand() {
         const currState = this.model.get('_state');
         const commandStr = generatePlotCommand(currState.plot.commandInfo);
-        console.log(commandStr);
+        // @ts-ignore: context doesn't exist in manager
+        const tracker = this.model.widget_manager.context._tracker;
+        // @ts-ignore: context doesn't exist in manager
+        const app = this.model.widget_manager.context._app;
+
+        const current = tracker.currentWidget;
+        if (current) {
+            app.shell.activateById(current.id);
+            NotebookActions.insertBelow(current.content);
+            NotebookActions.paste(current.content);
+            current.content.mode = 'edit';
+            current.content.activeCell.model.value.text = commandStr;
+        }
     }
 }
