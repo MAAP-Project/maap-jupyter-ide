@@ -1,4 +1,4 @@
-import { Widget } from '@phosphor/widgets';
+import { Widget, Panel } from '@phosphor/widgets';
 import { Dialog } from '@jupyterlab/apputils';
 import { PageConfig } from '@jupyterlab/coreutils'
 import { request, RequestResult } from './request';
@@ -6,18 +6,24 @@ import { request, RequestResult } from './request';
 // import * as $ from "jquery";
 // import { format } from "xml-formatter";
 
+const DEFAULT_CONTENT_CLASS = 'jp-Inspector-default-content';
+const CONTENT_CLASS = 'jp-Inspector-content';
 // primitive text panel for storing submitted job information
-export class JobCache extends Widget {
+export class JobCache extends Panel {
   public response_text: string[];
   public opt:string;
 
   constructor() {
     super();
-    this.response_text = [];
+    this.response_text = ['test content'];
+    this.addClass(DEFAULT_CONTENT_CLASS);
+    this.addClass(CONTENT_CLASS);
   }
 
   updateDisplay(): void {
     // document.getElementById('search-text').innerHTML = this.response_text;
+    var x = document.createElement("BR");
+    this.node.appendChild(x);
     var catted = this.response_text.join("\n");
     if (document.getElementById('job-cache') != null){
       (<HTMLTextAreaElement>document.getElementById('job-cache')).value = catted;
@@ -25,9 +31,12 @@ export class JobCache extends Widget {
       var textarea = document.createElement("TEXTAREA");
       textarea.id = 'job-cache';
       (<HTMLTextAreaElement>textarea).readOnly = true;
-      (<HTMLTextAreaElement>textarea).cols = 40;
-      (<HTMLTextAreaElement>textarea).rows = 50;
+      (<HTMLTextAreaElement>textarea).cols = 30;
+      (<HTMLTextAreaElement>textarea).rows = 30;
       (<HTMLTextAreaElement>textarea).value = catted;
+      textarea.setAttribute("resize", "none");
+      textarea.className = 'jp-JSONEditor-host jp-CodeMirrorEditor jp-Editor';
+      textarea.className += 'jp-Widget jp-MetadataEditorTool jp-CellTools-tool';
       this.node.appendChild(textarea);
     }
   }

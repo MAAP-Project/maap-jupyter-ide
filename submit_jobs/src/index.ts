@@ -1,4 +1,4 @@
-import { JupyterLab, JupyterLabPlugin } from '@jupyterlab/application';
+import { JupyterLab, JupyterLabPlugin, ILayoutRestorer } from '@jupyterlab/application';
 // import { Widget } from '@phosphor/widgets';
 import { ICommandPalette } from '@jupyterlab/apputils';
 import { ILauncher } from '@jupyterlab/launcher';
@@ -6,6 +6,7 @@ import { JobCache, HySDSWidget, popup, popupResult } from './hysds';
 import { ProjectSelector } from './register';
 // import * as $ from "jquery";
 // import { format } from "xml-formatter";
+
 import * as data from './fields.json';
 
 const registerFields = data.register;
@@ -160,14 +161,13 @@ function activateDelete(app: JupyterLab,
   console.log('HySDS Describe Job is activated!');
 }
 
-function activateJobCache(app: JupyterLab): void{
-
-  var infoPanel = jobsPanel;
-  infoPanel.id = 'job-cache-display';
-  infoPanel.title.label = 'Submitted Jobs';
-  infoPanel.title.caption = 'jobs sent to DPS';
-
-  app.shell.addToLeftArea(infoPanel, {rank:300});
+function activateCache(app: JupyterLab, restorer: ILayoutRestorer): void {
+  const { shell } = app;
+  const panel = jobsPanel;
+  restorer.add(panel, 'job-cache-display');
+  panel.id = 'job-cache-display';
+  panel.title.label = 'Jobs';
+  shell.addToLeftArea(panel, {rank: 600});
 }
 
 const extensionRegister: JupyterLabPlugin<void> = {
@@ -234,11 +234,11 @@ const extensionDelete: JupyterLabPlugin<void> = {
   activate: activateDelete
 };
 
-const extensionJobCache: JupyterLabPlugin<void> = {
-  requires: [],
-  id: 'job-cache-panel',
-  autoStart:true,
-  activate: activateJobCache
+const cacheExtension: JupyterLabPlugin<void> = {
+  id: 'jupyterlab_dps_job_cache',
+  activate: activateCache,
+  autoStart: true,
+  requires: [ILayoutRestorer]
 };
 
-export default [extensionDelete,extensionRegister,extensionCapabilities,extensionStatus,extensionResult,extensionExecute,extensionDismiss,extensionDescribe,extensionList,extensionJobCache];
+export default [extensionDelete,extensionRegister,extensionCapabilities,extensionStatus,extensionResult,extensionExecute,extensionDismiss,extensionDescribe,extensionList, cacheExtension];
