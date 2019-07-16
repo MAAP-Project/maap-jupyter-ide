@@ -146,7 +146,7 @@ $RECYCLE.BIN/
 
 **/node_modules/
 ipycmc/nbextension/static/
-# !ipycmc/nbextension/static/extension.js
+!ipycmc/nbextension/static/extension.js
 
 # Coverage data
 # -------------
