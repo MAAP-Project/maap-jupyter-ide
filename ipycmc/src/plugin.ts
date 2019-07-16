@@ -7,7 +7,7 @@ import { Widget } from '@phosphor/widgets';
 
 import { IJupyterWidgetRegistry } from '@jupyter-widgets/base';
 
-import { INotebookTracker } from '@jupyterlab/notebook';
+import { INotebookTracker, NotebookActions } from '@jupyterlab/notebook';
 
 import * as widgetExports from './widget';
 
@@ -18,14 +18,14 @@ const EXTENSION_ID = 'ipycmc:plugin';
 /**
  * The example plugin.
  */
-const ipycmcPlugin: IPlugin<Application<Widget>, void> = {
+const examplePlugin: IPlugin<Application<Widget>, void> = {
     id: EXTENSION_ID,
     requires: [IJupyterWidgetRegistry, INotebookTracker],
     activate: activateWidgetExtension,
-    autoStart: true,
+    autoStart: true
 };
 
-export default ipycmcPlugin;
+export default examplePlugin;
 
 /**
  * Activate the widget extension.
@@ -41,13 +41,32 @@ function activateWidgetExtension(
         exports: widgetExports,
     });
 
+
+    const appendCellWithContent = (content: string) => {
+        if(notebooks) {
+            const current = notebooks.currentWidget;
+            if (current) {
+                // @ts-ignore: activateById doesn't exist in app.shell
+                app.shell.activateById(current.id);
+                NotebookActions.insertBelow(current.content);
+                NotebookActions.paste(current.content);
+                current.content.mode = 'edit';
+                // @ts-ignore: could be null
+                current.content.activeCell.model.value.text = content;
+            }
+        }
+    };
+
     // Use a very hacky hack to attach the notebook tracker somewhere the widget can see
     if (notebooks) {
         notebooks.currentChanged.connect(() => {
-            // @ts-ignore: object may be null and `_tracker` doesn't exist
-            notebooks.currentWidget.context._tracker = notebooks;
-            // @ts-ignore: `_app` doesn't exist
-            notebooks.currentWidget.context._app = app;
+            // @ts-ignore: missing keys
+            const context = notebooks.currentWidget.context;
+            // @ts-ignore: missing keys
+            if(!context._appendCellWithContent) {
+            // @ts-ignore: missing keys
+                context._appendCellWithContent = appendCellWithContent;
+            }
         });
     }
 }
