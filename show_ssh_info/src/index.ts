@@ -9,7 +9,7 @@ import {
 
 
 import {
-  JupyterLab, JupyterLabPlugin, ILayoutRestorer
+  JupyterFrontEnd, JupyterFrontEndPlugin, ILayoutRestorer
 } from '@jupyterlab/application';
 
 import {
@@ -38,11 +38,12 @@ import {
 
 import { INotification } from "jupyterlab_toastify";
 
-import getKeycloak = require("./getKeycloak");
+// import getKeycloak = require("./getKeycloak");
+import { getUserInfo } from "./getKeycloak";
 
 import '../style/index.css';
 
-const extension: JupyterLabPlugin<void> = {
+const extension: JupyterFrontEndPlugin<void> = {
   id: 'display_ssh_info',
   autoStart: true,
   requires: [IDocumentManager, ICommandPalette, ILayoutRestorer, IMainMenu, IFileBrowserFactory],
@@ -90,7 +91,7 @@ class InstallSshWidget extends Widget {
 class InjectSSH {
   constructor() {
 
-    getKeycloak.getUserInfo(function(profile: any) {
+    getUserInfo(function(profile: any) {
         console.log(profile);
 
         if (profile['public_ssh_keys'] === undefined) {
@@ -174,7 +175,7 @@ function checkSSH(): void {
 }
 
 
-function activate(app: JupyterLab,
+function activate(app: JupyterFrontEnd,
                   docManager: IDocumentManager,
                   palette: ICommandPalette,
                   restorer: ILayoutRestorer,
