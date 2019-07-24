@@ -5,12 +5,16 @@ RUN conda install -c conda-forge nodejs
 RUN conda install -c conda-forge gitpython
 
 # install git extension
-COPY jupyterlab-git /jupyterlab-git
-RUN cd /jupyterlab-git && npm install && npm run build
-RUN cd /jupyterlab-git && jupyter labextension link .
-RUN cd /jupyterlab-git && npm run build
-RUN cd /jupyterlab-git && pip install -e .
-RUN cd /jupyterlab-git && jupyter serverextension enable --py jupyterlab_git --sys-prefix
+#TODO: make sure we are pulling a stable released verison here, that doesn't exist yet
+jupyter labextension install @jupyterlab/git
+pip install --upgrade jupyterlab-git
+jupyter serverextension enable --py jupyterlab_git
+#COPY jupyterlab-git /jupyterlab-git
+#RUN cd /jupyterlab-git && npm install && npm run build
+#RUN cd /jupyterlab-git && jupyter labextension link .
+#RUN cd /jupyterlab-git && npm run build
+#RUN cd /jupyterlab-git && pip install -e .
+#RUN cd /jupyterlab-git && jupyter serverextension enable --py jupyterlab_git --sys-prefix
 
 # install toastify for error messaging
 RUN jupyter labextension install jupyterlab_toastify@2.3.0
@@ -48,7 +52,7 @@ RUN cd /show_ssh_info && jupyter serverextension enable --py show_ssh_info --sys
 
 # jlab earthdata search extension
 ENV MAAP_CONF='/maap-py/'
-RUN git clone --single-branch --branch stable-dev https://github.com/MAAP-Project/maap-py.git && cd maap-py && python setup.py install 
+RUN git clone --single-branch --branch stable-dev https://github.com/MAAP-Project/maap-py.git && cd maap-py && python setup.py install
 #RUN pip install git+https://github.com/MAAP-Project/maap-py@stable-dev#egg=maapPy
 COPY edsc_extension /edsc_extension
 RUN cd /edsc_extension && npm run build
