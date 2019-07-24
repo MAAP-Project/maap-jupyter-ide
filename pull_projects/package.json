@@ -33,7 +33,7 @@
     "@types/node": "^11.9.4",
     "jupyterlab_toastify": "^2.3.0",
     "rimraf": "^2.6.3",
-    "typescript": "^3.3.3333"
+    "typescript": "^3.5.3"
   },
   "devDependencies": {}
 }
