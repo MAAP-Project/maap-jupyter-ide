@@ -6,9 +6,9 @@ RUN conda install -c conda-forge gitpython
 
 # install git extension
 #TODO: make sure we are pulling a stable released verison here, that doesn't exist yet
-jupyter labextension install @jupyterlab/git
-pip install --upgrade jupyterlab-git
-jupyter serverextension enable --py jupyterlab_git
+RUN jupyter labextension install @jupyterlab/git
+RUN pip install --upgrade jupyterlab-git
+RUN jupyter serverextension enable --py jupyterlab_git
 #COPY jupyterlab-git /jupyterlab-git
 #RUN cd /jupyterlab-git && npm install && npm run build
 #RUN cd /jupyterlab-git && jupyter labextension link .
@@ -25,16 +25,16 @@ COPY hide_side_panel /hide_side_panel
 RUN cd /hide_side_panel && npm run build
 RUN cd /hide_side_panel && jupyter labextension link .
 
-# cmc widget
-COPY ipycmc /ipycmc
-RUN conda install -c plotly plotly 
-# RUN cd /ipycmc && pip install ipywidgets
-RUN cd /ipycmc && jupyter labextension install @jupyter-widgets/jupyterlab-manager@1.0
-RUN cd /ipycmc && npm install && npm run build
-RUN cd /ipycmc && pip install -e .
-RUN cd /ipycmc && jupyter nbextension install --py --symlink --sys-prefix ipycmc
-RUN cd /ipycmc && jupyter nbextension enable --py --sys-prefix ipycmc
-RUN cd /ipycmc && jupyter labextension link .
+## cmc widget
+#COPY ipycmc /ipycmc
+#RUN conda install -c plotly plotly 
+## RUN cd /ipycmc && pip install ipywidgets
+#RUN cd /ipycmc && jupyter labextension install @jupyter-widgets/jupyterlab-manager@1.0
+#RUN cd /ipycmc && npm install && npm run build
+#RUN cd /ipycmc && pip install -e .
+#RUN cd /ipycmc && jupyter nbextension install --py --symlink --sys-prefix ipycmc
+#RUN cd /ipycmc && jupyter nbextension enable --py --sys-prefix ipycmc
+#RUN cd /ipycmc && jupyter labextension link .
 
 # jlab pull projects into /projects directory
 COPY pull_projects /pull_projects
@@ -94,4 +94,5 @@ ARG aws_secret_access_key
 ENV AWS_SECRET_ACCESS_KEY=$aws_secret_access_key
 
 ENTRYPOINT ["/entrypoint.sh"]
+
 
