@@ -1,6 +1,6 @@
 {
   "name": "dps_magic",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "An nbextension to allow inline submission of DPS jobs",
   "keywords": [
     "jupyter",
@@ -12,20 +12,20 @@
     "lib/**/*.js",
     "dist/*.js"
   ],
-  "homepage": "https://github.com//dps_magic",
+  "homepage": "https://github.com/MAAP-Project/maap-jupyter-ide/dps_magic",
   "bugs": {
-    "url": "https://github.com//dps_magic/issues"
+    "url": "https://github.com/MAAP-Project/maap-jupyter-ide/dps_magic/issues"
   },
   "license": "BSD-3-Clause",
   "author": {
     "name": "Elizabeth Yam",
-    "email": "Elizabeth.Yam@jpl.nasa.gov"
+    "email": "elizabeth.yam@jpl.nasa.gov"
   },
   "main": "lib/index.js",
   "types": "./lib/index.d.ts",
   "repository": {
     "type": "git",
-    "url": "https://github.com//dps_magic"
+    "url": "https://github.com/MAAP-Project/maap-jupyter-ide/dps_magic"
   },
   "scripts": {
     "build": "npm run build:lib && npm run build:nbextension",
