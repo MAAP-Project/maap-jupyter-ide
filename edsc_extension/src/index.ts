@@ -1,8 +1,8 @@
 /// <reference path="./widgets.ts" />
 
 /** jupyterlab imports **/
-import { JupyterLab, JupyterLabPlugin, ILayoutRestorer } from '@jupyterlab/application';
-import { ICommandPalette, Dialog, showDialog, InstanceTracker } from '@jupyterlab/apputils';
+import { JupyterFrontEnd, JupyterFrontEndPlugin, ILayoutRestorer } from '@jupyterlab/application';
+import { ICommandPalette, Dialog, showDialog, WidgetTracker } from '@jupyterlab/apputils';
 import { PageConfig } from '@jupyterlab/coreutils'
 import { IDocumentManager } from '@jupyterlab/docmanager';
 import { IMainMenu } from '@jupyterlab/mainmenu';
@@ -11,7 +11,7 @@ import { NotebookActions, NotebookPanel, INotebookTracker } from '@jupyterlab/no
 
 /** phosphor imports **/
 import { Menu } from '@phosphor/widgets';
-import { ReadonlyJSONObject, JSONExt } from '@phosphor/coreutils';
+import { ReadonlyJSONObject } from '@phosphor/coreutils';
 
 /** other external imports **/
 import { INotification } from "jupyterlab_toastify";
@@ -23,7 +23,7 @@ import { IFrameWidget, ParamsPopupWidget, LimitPopupWidget} from './widgets';
 import globals = require("./globals");
 
 
-const extension: JupyterLabPlugin<InstanceTracker<IFrameWidget>> = {
+const extension: JupyterFrontEndPlugin<WidgetTracker<IFrameWidget>> = {
   id: 'edsc_extension',
   autoStart: true,
   requires: [IDocumentManager, ICommandPalette, ILayoutRestorer, IMainMenu, INotebookTracker],
@@ -90,18 +90,18 @@ export function getUrls() {
 
 
 
-function activate(app: JupyterLab,
+function activate(app: JupyterFrontEnd,
                   docManager: IDocumentManager,
                   palette: ICommandPalette,
                   restorer: ILayoutRestorer,
                   mainMenu: IMainMenu,
                   tracker: INotebookTracker,
-                  panel: NotebookPanel): InstanceTracker<IFrameWidget> {
+                  panel: NotebookPanel): WidgetTracker<IFrameWidget> {
 
   let widget: IFrameWidget;
 
   const namespace = 'tracker-iframe';
-  let instanceTracker = new InstanceTracker<IFrameWidget>({ namespace });
+  let instanceTracker = new WidgetTracker<IFrameWidget>({ namespace });
 
 
 
@@ -246,11 +246,11 @@ function activate(app: JupyterLab,
       // Only allow user to have one EDSC window
       if (widget == undefined) {
           widget = new IFrameWidget('https://che-k8s.maap.xyz:3052/search');
-          app.shell.addToMainArea(widget);
+          app.shell.add(widget, 'main');
           app.shell.activateById(widget.id);
       } else {
           // if user already has EDSC, just switch to tab
-          app.shell.addToMainArea(widget);
+          app.shell.add(widget, 'main');
           app.shell.activateById(widget.id);
       }
 
@@ -323,7 +323,7 @@ function activate(app: JupyterLab,
   // Track and restore the widget state
   restorer.restore(instanceTracker, {
     command: open_command,
-    args: () => JSONExt.emptyObject,
+    // args: () => JSONExt.emptyObject,
     name: () => namespace
   });
 
