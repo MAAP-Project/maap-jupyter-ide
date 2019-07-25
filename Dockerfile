@@ -21,7 +21,7 @@ RUN cd /hide_side_panel && jupyter labextension link .
 
 # cmc widget
 COPY ipycmc /ipycmc
-RUN conda install -c plotly plotly
+RUN pip install plotly==4.0.0
 # RUN cd /ipycmc && pip install ipywidgets
 RUN cd /ipycmc && jupyter labextension install @jupyter-widgets/jupyterlab-manager@1.0
 RUN cd /ipycmc && npm install && npm run build
