@@ -1,41 +1,12 @@
-
-import {
-  ICommandPalette, showDialog, Dialog
-} from '@jupyterlab/apputils';
-
-import {
-  PageConfig
-} from '@jupyterlab/coreutils'
-
-
-import {
-  JupyterFrontEnd, JupyterFrontEndPlugin, ILayoutRestorer
-} from '@jupyterlab/application';
-
-import {
-  IDocumentManager
-} from '@jupyterlab/docmanager';
-
-import {
-  IFileBrowserFactory
-} from '@jupyterlab/filebrowser';
-
-import {
-  ILauncher
-} from '@jupyterlab/launcher';
-
-import {
-  IMainMenu
-} from '@jupyterlab/mainmenu';
-
-import {
-  Widget
-} from '@phosphor/widgets';
-
-import {
-  request, RequestResult
-} from './request';
-
+import { ICommandPalette, showDialog, Dialog } from '@jupyterlab/apputils';
+import { PageConfig } from '@jupyterlab/coreutils'
+import { JupyterFrontEnd, JupyterFrontEndPlugin, ILayoutRestorer } from '@jupyterlab/application';
+import { IDocumentManager } from '@jupyterlab/docmanager';
+import { IFileBrowserFactory } from '@jupyterlab/filebrowser';
+import { ILauncher } from '@jupyterlab/launcher';
+import { IMainMenu } from '@jupyterlab/mainmenu';
+import { Widget } from '@phosphor/widgets';
+import { request, RequestResult } from './request';
 import { INotification } from "jupyterlab_toastify";
 
 // import getKeycloak = require("./getKeycloak");
@@ -50,6 +21,38 @@ const extension: JupyterFrontEndPlugin<void> = {
   optional: [ILauncher],
   activate: activate
 };
+
+const extensionUser: JupyterFrontEndPlugin<void> = {
+  id: 'display_user_info',
+  autoStart: true,
+  requires: [ICommandPalette],
+  activate: (app: JupyterFrontEnd, palette: ICommandPalette) => {
+    const open_command = 'sshinfo:user';
+
+    app.commands.addCommand(open_command, {
+      label: 'Display User Info',
+      isEnabled: () => true,
+      execute: args => {
+        checkUserInfo();
+      }
+    });
+
+    palette.addItem({command:open_command,category:'User Info'});
+    console.log('display user info ext activated');
+
+    // add as button
+    // let rightAreaofTopPanel = new Widget();
+    // rightAreaofTopPanel.id = 'jp-topPanel-rightArea';
+
+    // let displayBtn = document.createElement('button');
+    // displayBtn.id = 'userinfo';
+    // displayBtn.className = 'btn';
+    // displayBtn.innerHTML = 'Display User Info';
+    // displayBtn.addEventListener('click', checkUserInfo, false);
+    // rightAreaofTopPanel.node.appendChild(displayBtn);
+    // app.shell.add(rightAreaofTopPanel,'top');
+  }
+}
 
 
 export
@@ -119,6 +122,25 @@ class InjectSSH {
   }
 }
 
+export 
+class UserInfoWidget extends Widget {
+  constructor(username:string,email:string,org:string) {
+    let body = document.createElement('div');
+    body.style.display = 'flex';
+    body.style.flexDirection = 'column';
+
+    let user_node = document.createTextNode('Username: '+username);
+    body.appendChild(user_node);
+    body.appendChild(document.createElement('br'));
+    let email_node = document.createTextNode('Email: '+email);
+    body.appendChild(email_node);
+    body.appendChild(document.createElement('br'));
+    let org_node = document.createTextNode('Organization: '+org);
+    body.appendChild(org_node);
+    super({node: body});
+  }
+}
+
 
 export
 function checkSSH(): void {
@@ -169,8 +191,30 @@ function checkSSH(): void {
 
             }
         });
+}
 
+export
+function checkUserInfo(): void {
+  getUserInfo(function(profile: any) {
+    // console.log(profile);
 
+    if (profile['cas:username'] === undefined) {
+        INotification.error("Get user profile failed.");
+        return;
+    }
+    let username = profile['cas:username']
+    let email = profile['cas:email']
+    let org = profile['organization']
+
+    // popup info
+    showDialog({
+      title: 'User Information:',
+      body: new UserInfoWidget(username,email,org),
+      focusNodeSelector: 'input',
+      buttons: [Dialog.okButton({label: 'Ok'})]
+    });
+
+  });
 
 }
 
@@ -203,5 +247,5 @@ function activate(app: JupyterFrontEnd,
 };
 
 
-export default extension;
+export default [extension,extensionUser];
 export {activate as _activate};
