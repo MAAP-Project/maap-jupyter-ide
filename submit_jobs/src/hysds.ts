@@ -5,6 +5,7 @@ import { request, RequestResult } from './request';
 // import { INotebookTracker, Notebook, NotebookPanel } from '@jupyterlab/notebook';
 // import * as $ from "jquery";
 // import { format } from "xml-formatter";
+import { getUserInfo } from "./getKeycloak";
 
 const DEFAULT_CONTENT_CLASS = 'jp-Inspector-default-content';
 const CONTENT_CLASS = 'jp-Inspector-content';
@@ -302,7 +303,7 @@ export class HySDSWidget extends Widget {
     }
   }
 
-  // helper to deepcopy aka rebuild URL because deepcopy is a pain rn
+  // helper to deepcopy aka rebuild URL for execute because deepcopy is a pain rn
   buildCopyUrl(fieldName:string,fieldValue:string): URL {
     var getUrl = new URL(PageConfig.getBaseUrl() + 'hysds/'+this.req);
     // only call when passed inputs not provided by user
@@ -327,6 +328,18 @@ export class HySDSWidget extends Widget {
         }
       }
       getUrl.searchParams.append("inputs",new_input_list);
+      // add username
+      getUserInfo(function(profile: any) {
+        var username:string;
+        if profile['cas:username'] === undefined) {
+          INotification.error("Get username failed.");
+          username = 'anonymous';
+        return;
+        } else {
+          username = profile['cas:username'];
+        }
+        getUrl.searchParams.append('username',username);
+      });
     }
     return getUrl;
   }
@@ -376,6 +389,7 @@ export class HySDSWidget extends Widget {
         console.log(new_input_list);
         getUrl.searchParams.append("inputs",new_input_list);
 
+        // if multiple runs over one input
         if (range) {
           var start = Number(rangeFieldValue[0]);
           var last = Number(rangeFieldValue[1]);
@@ -388,7 +402,21 @@ export class HySDSWidget extends Widget {
             // });
           }
           resolve(urllst);
+
+        // just 1 job
         } else {
+          // add username
+          getUserInfo(function(profile: any) {
+            var username:string;
+            if profile['cas:username'] === undefined) {
+              INotification.error("Get username failed.");
+              username = 'anonymous';
+            return;
+            } else {
+              username = profile['cas:username'];
+            }
+            getUrl.searchParams.append('username',username);
+          });
           console.log(getUrl.href);
           urllst.push(getUrl);
           resolve(urllst);
