@@ -50,7 +50,7 @@
     "dependencies": {
         "@jupyter-widgets/base": "^2.0.1",
         "@jupyterlab/notebook": "^1.0.1",
-        "maap-common-mapping-client": "MAAP-Project/maap-ade-common-mapping-client#dev-pub"
+        "maap-common-mapping-client": "MAAP-Project/maap-ade-common-mapping-client#stable-pub"
     },
     "devDependencies": {
         "@phosphor/application": "^1.6.0",
