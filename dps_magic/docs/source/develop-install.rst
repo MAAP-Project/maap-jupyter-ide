@@ -6,7 +6,7 @@ Developer install
 To install a developer version of dps_magic, you will first need to clone
 the repository::
 
-    git clone https://github.com//dps_magic
+    git clone https://github.com/MAAP-Project/dps_magic
     cd dps_magic
 
 Next, install it with a develop install using pip::

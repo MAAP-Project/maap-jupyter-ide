@@ -1,5 +1,5 @@
 import {
-  JupyterLab, JupyterLabPlugin
+  JupyterFrontEnd, JupyterFrontEndPlugin
 } from '@jupyterlab/application';
 
 import {
@@ -81,7 +81,7 @@ class ButtonExtension implements DocumentRegistry.IWidgetExtension<NotebookPanel
 /**
  * Activate the extension.
  */
-function activate(app: JupyterLab) {
+function activate(app: JupyterFrontEnd) {
   app.docRegistry.addWidgetExtension('Notebook', new ButtonExtension());
 };
 
@@ -89,7 +89,7 @@ function activate(app: JupyterLab) {
 /**
  * Initialization data for the insert_defaults_to_notebook extension.
  */
-const extension: JupyterLabPlugin<void> = {
+const extension: JupyterFrontEndPlugin<void> = {
   id: 'insert_defaults_to_notebook',
   autoStart: true,
   activate: activate

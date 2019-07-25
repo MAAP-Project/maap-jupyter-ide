@@ -1,6 +1,6 @@
 import { ICommandPalette, Dialog } from '@jupyterlab/apputils';
 import { PageConfig } from '@jupyterlab/coreutils'
-import { JupyterLab, JupyterLabPlugin } from '@jupyterlab/application';
+import { JupyterFrontEnd, JupyterFrontEndPlugin } from '@jupyterlab/application';
 import { ILauncher } from '@jupyterlab/launcher';
 import { Widget } from '@phosphor/widgets';
 import { INotification } from "jupyterlab_toastify";
@@ -77,7 +77,7 @@ export function popup(b:any, title:string): void {
 }
 
 
-function activate_pull(app: JupyterLab,
+function activate_pull(app: JupyterFrontEnd,
                   palette: ICommandPalette,
                   launcher: ILauncher | null) {
 
@@ -94,12 +94,12 @@ function activate_pull(app: JupyterLab,
 
   palette.addItem({command: open_command, category: 'Projects'});
 
-  console.log('JupyterLab pull is activated!');
+  console.log('JupyterFrontEnd pull is activated!');
   new ProjectsPull();
   console.log('Autopulled projects');
 };
 
-function activate_list(app: JupyterLab,
+function activate_list(app: JupyterFrontEnd,
                   palette: ICommandPalette,
                   launcher: ILauncher | null) {
 
@@ -116,10 +116,10 @@ function activate_list(app: JupyterLab,
 
   palette.addItem({command: open_command, category: 'Projects'});
 
-  console.log('JupyterLab list is activated!');
+  console.log('JupyterFrontEnd list is activated!');
 };
 
-const pull_extension: JupyterLabPlugin<void> = {
+const pull_extension: JupyterFrontEndPlugin<void> = {
   id: 'pull_projects',
   autoStart: true,
   requires: [ICommandPalette],
@@ -127,7 +127,7 @@ const pull_extension: JupyterLabPlugin<void> = {
   activate: activate_pull
 };
 
-const get_extension: JupyterLabPlugin<void> = {
+const get_extension: JupyterFrontEndPlugin<void> = {
   id: 'list_projects',
   autoStart: true,
   requires: [ICommandPalette],
