@@ -33,6 +33,7 @@
     "@types/jquery": "^3.3.29",
     "@types/node": "^11.11.5",
     "jquery": "^3.3.1",
+    "jupyterlab_toastify": "^2.3.0",
     "require": "^2.4.20",
     "tsc": "^1.20150623.0",
     "xml-formatter": "^1.1.0"
