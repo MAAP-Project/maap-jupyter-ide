@@ -9,12 +9,6 @@ RUN conda install -c conda-forge gitpython
 RUN jupyter labextension install @jupyterlab/git
 RUN pip install --upgrade jupyterlab-git
 RUN jupyter serverextension enable --py jupyterlab_git
-#COPY jupyterlab-git /jupyterlab-git
-#RUN cd /jupyterlab-git && npm install && npm run build
-#RUN cd /jupyterlab-git && jupyter labextension link .
-#RUN cd /jupyterlab-git && npm run build
-#RUN cd /jupyterlab-git && pip install -e .
-#RUN cd /jupyterlab-git && jupyter serverextension enable --py jupyterlab_git --sys-prefix
 
 # install toastify for error messaging
 RUN jupyter labextension install jupyterlab_toastify@2.3.0
@@ -25,16 +19,16 @@ COPY hide_side_panel /hide_side_panel
 RUN cd /hide_side_panel && npm run build
 RUN cd /hide_side_panel && jupyter labextension link .
 
-## cmc widget
-#COPY ipycmc /ipycmc
-#RUN conda install -c plotly plotly 
-## RUN cd /ipycmc && pip install ipywidgets
-#RUN cd /ipycmc && jupyter labextension install @jupyter-widgets/jupyterlab-manager@1.0
-#RUN cd /ipycmc && npm install && npm run build
-#RUN cd /ipycmc && pip install -e .
-#RUN cd /ipycmc && jupyter nbextension install --py --symlink --sys-prefix ipycmc
-#RUN cd /ipycmc && jupyter nbextension enable --py --sys-prefix ipycmc
-#RUN cd /ipycmc && jupyter labextension link .
+# cmc widget
+COPY ipycmc /ipycmc
+RUN conda install -c plotly plotly
+# RUN cd /ipycmc && pip install ipywidgets
+RUN cd /ipycmc && jupyter labextension install @jupyter-widgets/jupyterlab-manager@1.0
+RUN cd /ipycmc && npm install && npm run build
+RUN cd /ipycmc && pip install -e .
+RUN cd /ipycmc && jupyter nbextension install --py --symlink --sys-prefix ipycmc
+RUN cd /ipycmc && jupyter nbextension enable --py --sys-prefix ipycmc
+RUN cd /ipycmc && jupyter labextension link .
 
 # jlab pull projects into /projects directory
 COPY pull_projects /pull_projects
