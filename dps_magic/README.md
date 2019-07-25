@@ -1,6 +1,8 @@
 # dps_magic
 
-An nbextension to allow inline submission of DPS jobs, corresponding to and dependent on API endpoints from the `submit_jobs` extension, using jupyter notebook line magics.<br>
+[![Build Status](https://travis-ci.org/MAAP/dps_magic.svg?branch=master)](https://travis-ci.org/MAAP/dps_magic)
+[![codecov](https://codecov.io/gh/MAAP/dps_magic/branch/master/graph/badge.svg)](https://codecov.io/gh/MAAP/dps_magic)
+An nbextension to allow inline submission of DPS jobs, corresponding to and **dependent** on API endpoints from the `submit_jobs` extension, using jupyter notebook line magics.<br>
 When opening the workspace (or any time the kernel has been restarted), the extension must be loaded by running `%load_ext dps_magic` in a cell.  Currently implemented are:
 
 1. Get Capabilities

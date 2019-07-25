@@ -30,18 +30,20 @@
     "watch": "tsc -w"
   },
   "dependencies": {
-    "@jupyterlab/application": "^0.19.1",
-    "@jupyterlab/apputils": "^0.19.1",
-    "@jupyterlab/coreutils": "^2.2.1",
-    "@jupyterlab/docmanager": "^0.19.1",
-    "@jupyterlab/filebrowser": "^0.19.3",
-    "@jupyterlab/launcher": "^0.19.1",
-    "@jupyterlab/mainmenu": "^0.8.1",
-    "jupyterlab_toastify": "^2.2.0"
+    "@jupyterlab/application": "^1.0.1",
+    "@jupyterlab/apputils": "^1.0.1",
+    "@jupyterlab/coreutils": "^3.0.0",
+    "@jupyterlab/docmanager": "^1.0.1",
+    "@jupyterlab/filebrowser": "^1.0.1",
+    "@jupyterlab/launcher": "^1.0.1",
+    "@jupyterlab/mainmenu": "^1.0.1",
+    "@phosphor/widgets": "^1.8.1",
+    "jupyterlab_toastify": "^2.3.0",
+    "tsc": "^1.20150623.0"
   },
   "devDependencies": {
     "rimraf": "^2.6.1",
-    "typescript": "~3.1.1"
+    "typescript": "^3.5.3"
   },
   "jupyterlab": {
     "extension": true

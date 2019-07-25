@@ -1,36 +1,40 @@
 FROM localhost:32000/vanilla
 
-RUN conda install -c conda-forge jupyterlab
+RUN conda install -c conda-forge jupyterlab=1.0.2
 RUN conda install -c conda-forge nodejs
 RUN conda install -c conda-forge gitpython
 
 # install git extension
-COPY jupyterlab-git /jupyterlab-git
-RUN cd /jupyterlab-git && npm install && npm run build
-RUN cd /jupyterlab-git && jupyter labextension link .
-RUN cd /jupyterlab-git && npm run build
-RUN cd /jupyterlab-git && pip install -e .
-RUN cd /jupyterlab-git && jupyter serverextension enable --py jupyterlab_git --sys-prefix
+#TODO: make sure we are pulling a stable released verison here, that doesn't exist yet
+RUN jupyter labextension install @jupyterlab/git
+RUN pip install --upgrade jupyterlab-git
+RUN jupyter serverextension enable --py jupyterlab_git
+#COPY jupyterlab-git /jupyterlab-git
+#RUN cd /jupyterlab-git && npm install && npm run build
+#RUN cd /jupyterlab-git && jupyter labextension link .
+#RUN cd /jupyterlab-git && npm run build
+#RUN cd /jupyterlab-git && pip install -e .
+#RUN cd /jupyterlab-git && jupyter serverextension enable --py jupyterlab_git --sys-prefix
 
 # install toastify for error messaging
-RUN jupyter labextension install jupyterlab_toastify
-RUN npm i jupyterlab_toastify
+RUN jupyter labextension install jupyterlab_toastify@2.3.0
+RUN npm i jupyterlab_toastify@2.3.0
 
 # control che side panel extension
 COPY hide_side_panel /hide_side_panel
 RUN cd /hide_side_panel && npm run build
 RUN cd /hide_side_panel && jupyter labextension link .
 
-# cmc widget
-COPY ipycmc /ipycmc
-RUN conda install -c plotly plotly 
-# RUN cd /ipycmc && pip install ipywidgets
-RUN cd /ipycmc && jupyter labextension install @jupyter-widgets/jupyterlab-manager
-RUN cd /ipycmc && npm install && npm run build
-RUN cd /ipycmc && pip install -e .
-RUN cd /ipycmc && jupyter nbextension install --py --symlink --sys-prefix ipycmc
-RUN cd /ipycmc && jupyter nbextension enable --py --sys-prefix ipycmc
-RUN cd /ipycmc && jupyter labextension link .
+## cmc widget
+#COPY ipycmc /ipycmc
+#RUN conda install -c plotly plotly 
+## RUN cd /ipycmc && pip install ipywidgets
+#RUN cd /ipycmc && jupyter labextension install @jupyter-widgets/jupyterlab-manager@1.0
+#RUN cd /ipycmc && npm install && npm run build
+#RUN cd /ipycmc && pip install -e .
+#RUN cd /ipycmc && jupyter nbextension install --py --symlink --sys-prefix ipycmc
+#RUN cd /ipycmc && jupyter nbextension enable --py --sys-prefix ipycmc
+#RUN cd /ipycmc && jupyter labextension link .
 
 # jlab pull projects into /projects directory
 COPY pull_projects /pull_projects
@@ -48,7 +52,7 @@ RUN cd /show_ssh_info && jupyter serverextension enable --py show_ssh_info --sys
 
 # jlab earthdata search extension
 ENV MAAP_CONF='/maap-py/'
-RUN git clone --single-branch --branch stable-dev https://github.com/MAAP-Project/maap-py.git && cd maap-py && python setup.py install 
+RUN git clone --single-branch --branch stable-dev https://github.com/MAAP-Project/maap-py.git && cd maap-py && python setup.py install
 #RUN pip install git+https://github.com/MAAP-Project/maap-py@stable-dev#egg=maapPy
 COPY edsc_extension /edsc_extension
 RUN cd /edsc_extension && npm run build
@@ -90,4 +94,5 @@ ARG aws_secret_access_key
 ENV AWS_SECRET_ACCESS_KEY=$aws_secret_access_key
 
 ENTRYPOINT ["/entrypoint.sh"]
+
 

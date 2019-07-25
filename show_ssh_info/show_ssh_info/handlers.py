@@ -12,10 +12,15 @@ class InjectKeyHandler(IPythonHandler):
 
         print("=== Injecting SSH KEY ===")
 
-        # Check if .ssh directory exists
+        # Check if .ssh directory exists, if not create it
         os.chdir('/root')
         if not os.path.exists(".ssh"):
             os.makedirs(".ssh")
+
+        # Check if authorized_keys file exits, if not create it
+        if not os.path.exists(".ssh/authorized_keys"):
+            with open(".ssh/authorized_keys", 'w'):
+                pass
 
         # Check if key already in file
         with open('.ssh/authorized_keys', 'r') as f:
@@ -32,6 +37,8 @@ class InjectKeyHandler(IPythonHandler):
             cmd = "echo " + public_key + " >> .ssh/authorized_keys && chmod 700 .ssh/ && chmod 600 .ssh/authorized_keys"
             print(cmd)
             subprocess.check_output(cmd, shell=True)
+            os.chdir('/projects')
+        else:
             os.chdir('/projects')
             print("====== SUCCESS ========")
 

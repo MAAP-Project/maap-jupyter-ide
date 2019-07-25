@@ -3,8 +3,6 @@
 
 import { DOMWidgetModel, DOMWidgetView, ISerializers } from '@jupyter-widgets/base';
 
-// import { NotebookActions } from '@jupyterlab/notebook';
-
 import { MODULE_NAME, MODULE_VERSION } from './version';
 
 import { generatePlotCommand } from './plot';
@@ -165,6 +163,11 @@ export class MapCMCView extends DOMWidgetView {
     loadPlotCommand() {
         const currState = this.model.get('_state');
         const commandStr = generatePlotCommand(currState.plot.commandInfo);
-        console.log(commandStr);
+
+        // @ts-ignore: context doesn't exist in manager
+        const callback = this.model.widget_manager.context._appendCellWithContent;
+        if(callback) {
+            callback(commandStr);
+        }
     }
 }

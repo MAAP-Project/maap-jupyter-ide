@@ -61,9 +61,8 @@ instance/
 
 # Sphinx documentation
 docs/_build/
-docs/source/_static/embed-bundle.js
-docs/source/_static/embed-bundle.js.map
-docs/source/_static/assets
+docs/source/_static/
+!docs/source/_static/helper.js
 
 # PyBuilder
 target/
@@ -146,9 +145,8 @@ $RECYCLE.BIN/
 # ----
 
 **/node_modules/
-ipycmc/nbextension/static/index.*
-ipycmc/nbextension/static/assets/
-ipycmc/labextension/*.tgz
+ipycmc/nbextension/static/
+!ipycmc/nbextension/static/extension.js
 
 # Coverage data
 # -------------

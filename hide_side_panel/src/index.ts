@@ -1,12 +1,12 @@
 import {
-  JupyterLab, JupyterLabPlugin
+  JupyterFrontEnd, JupyterFrontEndPlugin
 } from '@jupyterlab/application';
 import { ICommandPalette } from '@jupyterlab/apputils';
 import '../style/index.css';
 import cheControls = require("./cheControls");
 
 
-function activate(app: JupyterLab, palette: ICommandPalette) {
+function activate(app: JupyterFrontEnd, palette: ICommandPalette) {
 
    // HIDE
   const hide_command = 'hide_side_panel:hide';
@@ -41,7 +41,7 @@ function activate(app: JupyterLab, palette: ICommandPalette) {
 /**
  * Initialization data for the hide_side_panel extension.
  */
-const extension: JupyterLabPlugin<void> = {
+const extension: JupyterFrontEndPlugin<void> = {
   id: 'hide_side_panel',
   autoStart: true,
   requires: [ICommandPalette],
