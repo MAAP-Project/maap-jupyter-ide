@@ -2,10 +2,10 @@
 
 This repo includes JupyterLab extensions that have been built for the MAAP project (https://che-k8s.maap.xyz/)
 
-In order to use each of these extensions they must be installed and enabled. Instructions for each extension can be 
+In order to use each of these extensions they must be installed and enabled in your environment. Instructions for each extension can be 
 found in the respective folder. 
 
-These extensions have been developed on `Jupyter 4.4.0` and `Jupyter Lab 0.32.1`.
+These extensions have been developed for `Jupyter 4.4.0` and `Jupyter Lab 1.0.2`.
 
 To build additional extensions for the project, it is recommended to start from 
 a [cookie-cutter](https://github.com/jupyterlab/extension-cookiecutter-ts) or off a previously built extension.
@@ -22,6 +22,9 @@ Some Jupyter Extensions/Resources we have found helpful:
 * [jupyterlab](https://github.com/jupyterlab/jupyterlab) A lot of figuring out how to add things where has happened through looking at the source code of jupyter
 * [Jupyterlab-html](https://github.com/mflevine/jupyterlab_html) 
 * [Jupyterlab-sandbox](https://github.com/canavandl/jupyterlab_sandbox)
+
+In JupyterLab's update to the stable 1.0 version, they have also updated and added lots of documentation on extension 
+development. I recommend taking a look at [this](https://jupyterlab.readthedocs.io/en/stable/developer/extension_dev.html).
 
 ##### Deploying extensions as part of Eclipse Che
 Our development process involves building and running an extension locally in jupyterlab using a conda env before 
