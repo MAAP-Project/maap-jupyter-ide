@@ -6,6 +6,7 @@ import { request, RequestResult } from './request';
 // import * as $ from "jquery";
 // import { format } from "xml-formatter";
 import { getUserInfo } from "./getKeycloak";
+import { INotification } from "jupyterlab_toastify";
 
 const DEFAULT_CONTENT_CLASS = 'jp-Inspector-default-content';
 const CONTENT_CLASS = 'jp-Inspector-content';
@@ -331,7 +332,7 @@ export class HySDSWidget extends Widget {
       // add username
       getUserInfo(function(profile: any) {
         var username:string;
-        if profile['cas:username'] === undefined) {
+        if (profile['cas:username'] === undefined) {
           INotification.error("Get username failed.");
           username = 'anonymous';
         return;
@@ -408,7 +409,7 @@ export class HySDSWidget extends Widget {
           // add username
           getUserInfo(function(profile: any) {
             var username:string;
-            if profile['cas:username'] === undefined) {
+            if (profile['cas:username'] === undefined) {
               INotification.error("Get username failed.");
               username = 'anonymous';
             return;

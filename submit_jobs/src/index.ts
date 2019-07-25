@@ -236,7 +236,7 @@ const extensionDelete: JupyterFrontEndPlugin<void> = {
   activate: activateDelete
 };
 
-const extensionJobCache: JupyterFrontEndPlugin<void> = {
+const cacheExtension: JupyterFrontEndPlugin<void> = {
   requires: [],
   id: 'job-cache-panel',
   autoStart:true,
