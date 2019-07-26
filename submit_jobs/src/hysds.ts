@@ -339,6 +339,7 @@ export class HySDSWidget extends Widget {
         } else {
           username = profile['cas:username'];
         }
+        console.log('added username '+fieldValue);
         getUrl.searchParams.append('username',username);
       });
     }
@@ -417,6 +418,7 @@ export class HySDSWidget extends Widget {
               username = profile['cas:username'];
             }
             getUrl.searchParams.append('username',username);
+            console.log('added username');
           });
           console.log(getUrl.href);
           urllst.push(getUrl);
