@@ -712,8 +712,14 @@ class DescribeProcessHandler(IPythonHandler):
 							for (tag1,txt1) in txt:
 								result += '\t{tag1}:\t{txt1}\n'.format(tag1=tag1,txt1=txt1)
 							result += '\n'
+
+						elif tag == 'Title':
+							txt = txt.split(';')
+							for itm in txt:
+								result += '{}\n'.format(itm.strip())
 						else:
 							result += '{tag}:\t{txt}\n'.format(tag=tag,txt=txt)
+
 				# if no algorithm passed, list all algorithms
 				else:
 					resp = json.loads(r.text)
