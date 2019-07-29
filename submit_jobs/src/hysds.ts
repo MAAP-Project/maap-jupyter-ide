@@ -263,6 +263,7 @@ export class HySDSWidget extends Widget {
         }
       }
       this.jobs_panel.addJob("inputs: ");
+      this.jobs_panel.addJob("username: " + this.old_fields["username"]);
       this.jobs_panel.addJob("algo: " + this.old_fields["algo_id"]);
     }
   }
@@ -342,6 +343,7 @@ export class HySDSWidget extends Widget {
         console.log('added username '+fieldValue);
         getUrl.searchParams.append('username',username);
       });
+      this.old_fields['username'] = username;
     }
     return getUrl;
   }
