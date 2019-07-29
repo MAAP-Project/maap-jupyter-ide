@@ -8,7 +8,6 @@ import { request, RequestResult } from './request';
 import { getUserInfo } from "./getKeycloak";
 import { INotification } from "jupyterlab_toastify";
 
-const DEFAULT_CONTENT_CLASS = 'jp-Inspector-default-content';
 const CONTENT_CLASS = 'jp-Inspector-content';
 // primitive text panel for storing submitted job information
 export class JobCache extends Panel {
@@ -18,7 +17,6 @@ export class JobCache extends Panel {
   constructor() {
     super();
     this.response_text = ['test content'];
-    this.addClass(DEFAULT_CONTENT_CLASS);
     this.addClass(CONTENT_CLASS);
   }
 
@@ -331,6 +329,7 @@ export class HySDSWidget extends Widget {
       }
       getUrl.searchParams.append("inputs",new_input_list);
       // add username
+      let me = this;
       getUserInfo(function(profile: any) {
         var username:string;
         if (profile['cas:username'] === undefined) {
@@ -340,10 +339,10 @@ export class HySDSWidget extends Widget {
         } else {
           username = profile['cas:username'];
         }
+        me.old_fields['username'] = username;
         console.log('added username '+fieldValue);
         getUrl.searchParams.append('username',username);
       });
-      this.old_fields['username'] = username;
     }
     return getUrl;
   }
@@ -410,6 +409,7 @@ export class HySDSWidget extends Widget {
         // just 1 job
         } else {
           // add username
+          let me = this;
           getUserInfo(function(profile: any) {
             var username:string;
             if (profile['cas:username'] === undefined) {
@@ -419,6 +419,7 @@ export class HySDSWidget extends Widget {
             } else {
               username = profile['cas:username'];
             }
+            me.old_fields['username'] = username;
             getUrl.searchParams.append('username',username);
             console.log('added username');
             console.log(getUrl.href);

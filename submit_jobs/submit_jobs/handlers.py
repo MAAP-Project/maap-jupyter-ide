@@ -345,7 +345,7 @@ class ExecuteHandler(IPythonHandler):
 		# Part 1: Parse Required Arguments
 		# ==================================
 		fields = getFields('execute')
-		input_names = self.get_argument("inputs", '').split(',')[:-1]
+		input_names = ["username"]+self.get_argument("inputs", '').split(',')[:-1]
 		# print(inputs)
 		# print(fields)
 
@@ -367,6 +367,9 @@ class ExecuteHandler(IPythonHandler):
 
 		logging.debug('params are')
 		logging.debug(params)
+
+		logging.debug('inputs are')
+		logging.debug(inputs)
 
 		params['timestamp'] = str(datetime.datetime.today())
 		if 'username' in params.keys() and inputs['username'] =='':
@@ -416,8 +419,8 @@ class ExecuteHandler(IPythonHandler):
 				data=req_xml, 
 				headers=headers
 			)
-			print(r.status_code)
-			print(r.text)
+			logging.debug('status code '+r.status_code)
+			logging.debug('response text\n'+r.text)
 
 			# ==================================
 			# Part 3: Check & Parse Response
@@ -819,6 +822,7 @@ class ExecuteInputsHandler(IPythonHandler):
 					inputs = [e[1] for e in attrib[2:-1]]
 					ins_req = [[e[1][1],e[2][1]] for e in inputs] 					# extract identifier & type for each input
 					ins_req = list(filter(lambda e: e[0] != 'timestamp', ins_req)) 	# filter out automatic timestamp req input
+					ins_req = list(filter(lambda e: e[0] != 'username', ins_req)) 	# filter out automatic username req input
 
 					result = ''
 					for (identifier,typ) in ins_req:
