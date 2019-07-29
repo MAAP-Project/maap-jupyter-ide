@@ -346,9 +346,9 @@ export class HySDSWidget extends Widget {
     return getUrl;
   }
 
-  buildRequestUrl() {
+  async buildRequestUrl() {
     var me:HySDSWidget = this;
-    return new Promise<Array<URL>>((resolve, reject) => {
+    return new Promise<Array<URL>>(async (resolve, reject) => {
       // var skip = false;
       // create API call to server extension
       var urllst: Array<URL> = []
@@ -408,7 +408,7 @@ export class HySDSWidget extends Widget {
         // just 1 job
         } else {
           // add username
-          getUserInfo(function(profile: any) {
+          await getUserInfo(function(profile: any) {
             var username:string;
             if (profile['cas:username'] === undefined) {
               INotification.error("Get username failed.");
@@ -419,10 +419,10 @@ export class HySDSWidget extends Widget {
             }
             getUrl.searchParams.append('username',username);
             console.log('added username');
+            console.log(getUrl.href);
+            urllst.push(getUrl);
+            resolve(urllst);
           });
-          console.log(getUrl.href);
-          urllst.push(getUrl);
-          resolve(urllst);
         }
 
       // Get Notebook information to pass to Register Handler
