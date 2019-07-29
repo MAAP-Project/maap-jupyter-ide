@@ -346,7 +346,7 @@ export class HySDSWidget extends Widget {
     return getUrl;
   }
 
-  async buildRequestUrl() {
+  buildRequestUrl() {
     var me:HySDSWidget = this;
     return new Promise<Array<URL>>(async (resolve, reject) => {
       // var skip = false;
@@ -408,7 +408,7 @@ export class HySDSWidget extends Widget {
         // just 1 job
         } else {
           // add username
-          await getUserInfo(function(profile: any) {
+          getUserInfo(function(profile: any) {
             var username:string;
             if (profile['cas:username'] === undefined) {
               INotification.error("Get username failed.");
