@@ -824,6 +824,8 @@ class ExecuteInputsHandler(IPythonHandler):
 						self.finish({"status_code": 400, "result": result})
 						return
 
+					logging.debug(params)
+					logging.debug(ins_req)
 					self.finish({"status_code": r.status_code, "result": result, "ins": ins_req, "old":params})
 					return
 
