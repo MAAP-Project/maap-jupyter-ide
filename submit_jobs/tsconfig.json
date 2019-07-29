@@ -1,6 +1,5 @@
 {
   "compilerOptions": {
-    "declaration": true,
     "lib": ["es2015", "dom","es2017"],
     "module": "commonjs",
     "moduleResolution": "node",
@@ -14,6 +13,7 @@
     "types": ["node"],
     "resolveJsonModule": true,
     "esModuleInterop": true,
+    "allowJs": true,
     "noImplicitAny": false
   },
   "include": ["src/*"]

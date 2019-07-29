@@ -6,6 +6,7 @@ import { JobCache, HySDSWidget, popup, popupResult } from './hysds';
 import { ProjectSelector } from './register';
 // import * as $ from "jquery";
 // import { format } from "xml-formatter";
+
 import * as data from './fields.json';
 
 const registerFields = data.register;
@@ -235,11 +236,11 @@ const extensionDelete: JupyterFrontEndPlugin<void> = {
   activate: activateDelete
 };
 
-const extensionJobCache: JupyterFrontEndPlugin<void> = {
+const cacheExtension: JupyterFrontEndPlugin<void> = {
   requires: [],
   id: 'job-cache-panel',
   autoStart:true,
   activate: activateJobCache
 };
 
-export default [extensionDelete,extensionRegister,extensionCapabilities,extensionStatus,extensionResult,extensionExecute,extensionDismiss,extensionDescribe,extensionList,extensionJobCache];
+export default [extensionDelete,extensionRegister,extensionCapabilities,extensionStatus,extensionResult,extensionExecute,extensionDismiss,extensionDescribe,extensionList, cacheExtension];

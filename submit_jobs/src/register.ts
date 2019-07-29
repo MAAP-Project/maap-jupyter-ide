@@ -203,8 +203,9 @@ export class RegisterWidget extends HySDSWidget {
       // var skip = false;
       // create API call to server extension
       var urllst: Array<URL> = []
-      var getUrl = new URL(PageConfig.getBaseUrl() + 'hysds/'+this.req); // REMINDER: hack this url until fixed
+      var getUrl = new URL(PageConfig.getBaseUrl() + 'hysds/'+this.req);
 
+      // default values not exposed to user set here,  along with algo name and version
       for (let key in this.old_fields) {
         if (! (key in this.fields)) {
           var fieldText = this.old_fields[key].toLowerCase();
