@@ -1,23 +1,29 @@
-import { Widget } from '@phosphor/widgets';
+import { Widget, Panel } from '@phosphor/widgets';
 import { Dialog } from '@jupyterlab/apputils';
 import { PageConfig } from '@jupyterlab/coreutils'
 import { request, RequestResult } from './request';
 // import { INotebookTracker, Notebook, NotebookPanel } from '@jupyterlab/notebook';
 // import * as $ from "jquery";
 // import { format } from "xml-formatter";
+import { getUserInfo } from "./getKeycloak";
+import { INotification } from "jupyterlab_toastify";
 
+const CONTENT_CLASS = 'jp-Inspector-content';
 // primitive text panel for storing submitted job information
-export class JobCache extends Widget {
+export class JobCache extends Panel {
   public response_text: string[];
   public opt:string;
 
   constructor() {
     super();
-    this.response_text = [];
+    this.response_text = ['test content'];
+    this.addClass(CONTENT_CLASS);
   }
 
   updateDisplay(): void {
     // document.getElementById('search-text').innerHTML = this.response_text;
+    var x = document.createElement("BR");
+    this.node.appendChild(x);
     var catted = this.response_text.join("\n");
     if (document.getElementById('job-cache') != null){
       (<HTMLTextAreaElement>document.getElementById('job-cache')).value = catted;
@@ -25,9 +31,11 @@ export class JobCache extends Widget {
       var textarea = document.createElement("TEXTAREA");
       textarea.id = 'job-cache';
       (<HTMLTextAreaElement>textarea).readOnly = true;
-      (<HTMLTextAreaElement>textarea).cols = 40;
-      (<HTMLTextAreaElement>textarea).rows = 50;
+      (<HTMLTextAreaElement>textarea).cols = 30;
+      (<HTMLTextAreaElement>textarea).rows = 30;
       (<HTMLTextAreaElement>textarea).value = catted;
+      textarea.setAttribute("resize", "none");
+      textarea.className = 'jp-JSONEditor-host';
       this.node.appendChild(textarea);
     }
   }
@@ -252,6 +260,7 @@ export class HySDSWidget extends Widget {
         }
       }
       this.jobs_panel.addJob("inputs: ");
+      this.jobs_panel.addJob("username: " + this.old_fields["username"]);
       this.jobs_panel.addJob("algo: " + this.old_fields["algo_id"]);
     }
   }
@@ -293,7 +302,7 @@ export class HySDSWidget extends Widget {
     }
   }
 
-  // helper to deepcopy aka rebuild URL because deepcopy is a pain rn
+  // helper to deepcopy aka rebuild URL for execute because deepcopy is a pain rn
   buildCopyUrl(fieldName:string,fieldValue:string): URL {
     var getUrl = new URL(PageConfig.getBaseUrl() + 'hysds/'+this.req);
     // only call when passed inputs not provided by user
@@ -318,13 +327,28 @@ export class HySDSWidget extends Widget {
         }
       }
       getUrl.searchParams.append("inputs",new_input_list);
+      // add username
+      let me = this;
+      getUserInfo(function(profile: any) {
+        var username:string;
+        if (profile['cas:username'] === undefined) {
+          INotification.error("Get username failed.");
+          username = 'anonymous';
+        return;
+        } else {
+          username = profile['cas:username'];
+        }
+        me.old_fields['username'] = username;
+        console.log('added username '+fieldValue);
+        getUrl.searchParams.append('username',username);
+      });
     }
     return getUrl;
   }
 
   buildRequestUrl() {
     var me:HySDSWidget = this;
-    return new Promise<Array<URL>>((resolve, reject) => {
+    return new Promise<Array<URL>>(async (resolve, reject) => {
       // var skip = false;
       // create API call to server extension
       var urllst: Array<URL> = []
@@ -367,6 +391,7 @@ export class HySDSWidget extends Widget {
         console.log(new_input_list);
         getUrl.searchParams.append("inputs",new_input_list);
 
+        // if multiple runs over one input
         if (range) {
           var start = Number(rangeFieldValue[0]);
           var last = Number(rangeFieldValue[1]);
@@ -379,10 +404,27 @@ export class HySDSWidget extends Widget {
             // });
           }
           resolve(urllst);
+
+        // just 1 job
         } else {
-          console.log(getUrl.href);
-          urllst.push(getUrl);
-          resolve(urllst);
+          // add username
+          let me = this;
+          getUserInfo(function(profile: any) {
+            var username:string;
+            if (profile['cas:username'] === undefined) {
+              INotification.error("Get username failed.");
+              username = 'anonymous';
+            return;
+            } else {
+              username = profile['cas:username'];
+            }
+            me.old_fields['username'] = username;
+            getUrl.searchParams.append('username',username);
+            console.log('added username');
+            console.log(getUrl.href);
+            urllst.push(getUrl);
+            resolve(urllst);
+          });
         }
 
       // Get Notebook information to pass to Register Handler
