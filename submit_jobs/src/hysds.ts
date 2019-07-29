@@ -35,8 +35,7 @@ export class JobCache extends Panel {
       (<HTMLTextAreaElement>textarea).rows = 30;
       (<HTMLTextAreaElement>textarea).value = catted;
       textarea.setAttribute("resize", "none");
-      textarea.className = 'jp-JSONEditor-host jp-CodeMirrorEditor jp-Editor';
-      textarea.className += 'jp-Widget jp-MetadataEditorTool jp-CellTools-tool';
+      textarea.className = 'jp-JSONEditor-host';
       this.node.appendChild(textarea);
     }
   }
