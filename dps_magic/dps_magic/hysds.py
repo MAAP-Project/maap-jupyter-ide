@@ -2,7 +2,11 @@ from IPython.core.magic import (Magics, magics_class, line_magic, cell_magic)
 import requests
 import json
 import os
+import logging
 from IPython.display import display, HTML
+
+logger = logging.getLogger()
+logger.setLevel(logging.DEBUG)
 
 @magics_class
 class HysdsMagic(Magics):
@@ -68,6 +72,9 @@ class HysdsMagic(Magics):
 
     @line_magic
     def execute(self, line):
+        logging.debug('line call is')
+        logging.debug(line)
+
         call = ''
         endpoint = '/hysds/execute'
         if line.strip() in ['','h','help']:
@@ -84,6 +91,8 @@ class HysdsMagic(Magics):
         else:
             print('unable to parse')
 
+        logging.debug("call is")
+        logging.debug(call)
         if call != '':
             url = self.lk + endpoint + call
             # print('url is '+url)
@@ -99,6 +108,9 @@ class HysdsMagic(Magics):
     
     @line_magic
     def status(self, line):
+        logging.debug('line call is')
+        logging.debug(line)
+
         if line.strip() in ['','h','help']:
             stat_help = 'Job Status Help<br><br>Check the status of a job in DPS.  You need to know your job ID.'
             stat_str = 'Example Status Call:<br>    %status ef6fde9e-0975-4556-b8a7-ee52e91d8e61'
@@ -107,6 +119,10 @@ class HysdsMagic(Magics):
 
         endpoint = '/hysds/getStatus'
         call = '?job_id={}'.format(line.strip())
+
+        logging.debug("call is")
+        logging.debug(call)
+
         url = self.lk + endpoint + call
         r = requests.get(url)
         resp = json.loads(r.text)
@@ -115,6 +131,9 @@ class HysdsMagic(Magics):
     
     @line_magic
     def result(self, line):
+        logging.debug('line call is')
+        logging.debug(line)
+
         if line.strip() in ['','h','help']:
             res_help = 'Job Result Help<br><br>Check the result of a completed job in DPS.  You need to know your job ID.'
             res_str = 'Example Result Call:<br>    %result ef6fde9e-0975-4556-b8a7-ee52e91d8e61'
@@ -123,6 +142,10 @@ class HysdsMagic(Magics):
 
         endpoint = '/hysds/getResult'
         call = '?job_id={}'.format(line.strip())
+
+        logging.debug("call is")
+        logging.debug(call)
+
         url = self.lk + endpoint + call
         r = requests.get(url)
         resp = json.loads(r.text)
@@ -131,6 +154,9 @@ class HysdsMagic(Magics):
 
     @line_magic
     def capabilities(self,line):
+        logging.debug('line call is')
+        logging.debug(line)
+
         if line.strip() in ['h','help']:
             cap_help = 'Capabilities Help<br><br>Get the capabilities of the MAAP API.  You don\'t need any parameters.'
             cap_str = 'Example Capabilities Call:<br>    %capabilities'
@@ -146,6 +172,9 @@ class HysdsMagic(Magics):
         
     @line_magic
     def list(self, line):
+        logging.debug('line call is')
+        logging.debug(line)
+
         if line.strip() in ['h','help']:
             lst_help = 'List Algorithms Help<br><br>Get a list of the algorithms stored in the MAS.  You don\'t need any parameters.'
             lst_str = 'Example List Call:<br>    %list'
@@ -160,6 +189,9 @@ class HysdsMagic(Magics):
         
     @line_magic
     def describe(self, line):
+        logging.debug('line call is')
+        logging.debug(line)
+
         if line.strip() in ['','h','help']:
             des_help = 'Describe Algorithm Help<br><br>Check the inputs required for an algorithm stored in MAS.  You need to know your algorithm name and version.'
             sample_str = '    %describe plot_algo:master'
@@ -177,6 +209,9 @@ class HysdsMagic(Magics):
         else:
             print('unable to parse')
 
+        logging.debug("call is")
+        logging.debug(call)
+
         if call != '':
             endpoint = '/hysds/describeProcess'    
             url = self.lk + endpoint + call
@@ -192,6 +227,9 @@ class HysdsMagic(Magics):
     
     @line_magic
     def delete(self, line):
+        logging.debug('line call is')
+        logging.debug(line)
+
         if line.strip() in ['','h','help']:
             del_help = 'Delete Algorithm Help<br><br>Check the inputs required for an algorithm stored in MAS.  You need to know your algorithm name and version.'
             sample_str = '    %delete plot_algo:master'
@@ -208,6 +246,9 @@ class HysdsMagic(Magics):
             call = '?algo_id={}&version={}'.format(*params)
         else:
             print('unable to parse')
+
+        logging.debug("call is")
+        logging.debug(call)
 
         if call != '':
             endpoint = '/hysds/deleteAlgorithm'   

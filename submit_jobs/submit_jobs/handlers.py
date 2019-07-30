@@ -345,9 +345,9 @@ class ExecuteHandler(IPythonHandler):
 		# Part 1: Parse Required Arguments
 		# ==================================
 		fields = getFields('execute')
-		input_names = ["username"]+self.get_argument("inputs", '').split(',')[:-1]
-		# print(inputs)
-		# print(fields)
+		input_names = self.get_argument("inputs", '').split(',')[:-1]
+		if not 'username' in input_names:
+			input_names.append('username')
 
 		params = {}
 		for f in fields:
@@ -364,6 +364,9 @@ class ExecuteHandler(IPythonHandler):
 				inputs[f] = arg
 			except:
 				inputs[f] = ''
+
+		logging.debug('fields are')
+		logging.debug(fields)
 
 		logging.debug('params are')
 		logging.debug(params)
