@@ -1,12 +1,11 @@
 import { Widget, Panel } from '@phosphor/widgets';
 import { Dialog } from '@jupyterlab/apputils';
 import { PageConfig } from '@jupyterlab/coreutils'
+import { INotification } from "jupyterlab_toastify";
+import { getUserInfo } from "./getKeycloak";
 import { request, RequestResult } from './request';
-// import { INotebookTracker, Notebook, NotebookPanel } from '@jupyterlab/notebook';
 // import * as $ from "jquery";
 // import { format } from "xml-formatter";
-import { getUserInfo } from "./getKeycloak";
-import { INotification } from "jupyterlab_toastify";
 
 const CONTENT_CLASS = 'jp-Inspector-content';
 // primitive text panel for storing submitted job information
@@ -59,10 +58,11 @@ export class HySDSWidget extends Widget {
   public old_fields: {[k:string]:string}; // for execute
   public readonly fields: string[];       // user inputs
   public readonly get_inputs: boolean;    // for execute
+  public username: string;                // for execute & listing jobs in case of timeout
   jobs_panel: JobCache;    // for execute
   ins_dict: {[k:string]:string};          // for execute
 
-  constructor(req:string, method_fields:string[],panel:JobCache, defaultValues:{[k:string]:string}) {
+  constructor(req:string, method_fields:string[],uname:string, panel:JobCache, defaultValues:{[k:string]:string}) {
     let body = document.createElement('div');
     body.style.display = 'flex';
     body.style.flexDirection = 'column';
@@ -74,6 +74,7 @@ export class HySDSWidget extends Widget {
     this.old_fields = {};
     this.fields = method_fields;
     this.get_inputs = false;
+    this.username = uname;
     this.jobs_panel = panel;
     this.ins_dict = {};
 
@@ -399,6 +400,7 @@ export class HySDSWidget extends Widget {
           // var len = last - start + 1;
           for (var i = start; i <= last; i++) {
             var multiUrl = this.buildCopyUrl(rangeField,String(i));
+            multiUrl.searchParams.append("username",this.username);
             console.log(multiUrl.href);
             urllst.push(multiUrl);
             // });
@@ -408,23 +410,28 @@ export class HySDSWidget extends Widget {
         // just 1 job
         } else {
           // add username
-          let me = this;
-          getUserInfo(function(profile: any) {
-            var username:string;
-            if (profile['cas:username'] === undefined) {
-              INotification.error("Get username failed.");
-              username = 'anonymous';
-            return;
-            } else {
-              username = profile['cas:username'];
-            }
-            me.old_fields['username'] = username;
-            getUrl.searchParams.append('username',username);
-            console.log('added username');
-            console.log(getUrl.href);
-            urllst.push(getUrl);
-            resolve(urllst);
-          });
+          // let me = this;
+          // getUserInfo(function(profile: any) {
+          //   var username:string;
+          //   if (profile['cas:username'] === undefined) {
+          //     INotification.error("Get username failed.");
+          //     username = 'anonymous';
+          //   return;
+          //   } else {
+          //     username = profile['cas:username'];
+          //   }
+          //   me.old_fields['username'] = username;
+          //   getUrl.searchParams.append('username',username);
+          //   console.log('added username');
+          //   console.log(getUrl.href);
+          //   urllst.push(getUrl);
+          //   resolve(urllst);
+          // });
+          getUrl.searchParams.append('username',this.username);
+          console.log('added username');
+          console.log(getUrl.href);
+          urllst.push(getUrl);
+          resolve(urllst);
         }
 
       // Get Notebook information to pass to Register Handler
@@ -480,7 +487,7 @@ export class HySDSWidget extends Widget {
               var old_fields = json_response['old'];
               // console.log(new_fields);
               // console.log('pre-popup');
-              var exec = new HySDSWidget('execute',new_fields, me.jobs_panel,{});
+              var exec = new HySDSWidget('execute',new_fields,me.username,me.jobs_panel,{});
               exec.setOldFields(old_fields);
               popup(exec);
               // console.log('post-popup');
