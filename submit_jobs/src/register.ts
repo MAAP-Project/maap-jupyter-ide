@@ -6,14 +6,16 @@ import { JobCache, HySDSWidget, popup, popupResult } from './hysds';
 // popup helper for register to select project
 export class ProjectSelector extends Widget {
   public readonly fields: string[];
+  username:string;
   jobsPanel: JobCache;
   public selection:string;
   type: string;
   dropdown:HTMLSelectElement;
 
-  constructor(type,fields,jobs_panel) {
+  constructor(type,fields,uname,jobs_panel) {
     super();
     this.fields = fields;
+    this.username = uname;
     this.jobsPanel = jobs_panel;
     this.selection = '';
     this.type = type;
@@ -124,7 +126,7 @@ export class ProjectSelector extends Widget {
     });
   }
 
-  // overrides resolution of popup dialogue
+  // overrides resolution of popup dialog
   getValue() {
     // var ind = this.dropdown.selected​Index;
     var opt:string = this.dropdown.value;
@@ -143,14 +145,14 @@ export class ProjectSelector extends Widget {
       var selection = {};
       selection['algo_id'] = lst[0];
       selection['version'] = lst[1];
-      var w = new HySDSWidget(this.type,[],this.jobsPanel,{});
+      var w = new HySDSWidget(this.type,[],this.username,this.jobsPanel,{});
       w.setOldFields(selection);
       w.getValue();
     } else if (this.type == 'register') {
       this.getDefaultValues(opt).then((defaultValues) => {
         console.log(defaultValues);
         console.log('create register');
-        var w = new RegisterWidget('register',this.fields,this.jobsPanel,defaultValues);
+        var w = new RegisterWidget('register',this.fields,this.username,this.jobsPanel,defaultValues);
         w.setOldFields(defaultValues);
         console.log(w);
         popup(w);
@@ -187,8 +189,8 @@ export class RegisterWidget extends HySDSWidget {
   // public readonly req: string;
   // public readonly popup_title: string;
 
-  constructor(req:string, method_fields:string[],panel:JobCache,defaultValues:{[k:string]:string}) {
-    super(req, method_fields, panel,defaultValues);
+  constructor(req:string, method_fields:string[],uname:string,panel:JobCache,defaultValues:{[k:string]:string}) {
+    super(req, method_fields,uname,panel,defaultValues);
 
     // bind method definitions of "this" to refer to class instance
     this.getValue = this.getValue.bind(this);
