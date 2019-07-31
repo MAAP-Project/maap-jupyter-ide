@@ -12,10 +12,14 @@ const CONTENT_CLASS = 'jp-Inspector-content';
 export class JobCache extends Panel {
   public response_text: string[];
   public opt:string;
+  table: string;
+  jobs: {[k:string]:string};
 
   constructor() {
     super();
     this.response_text = ['test content'];
+    this.table = '';
+    this.jobs = {};
     this.addClass(CONTENT_CLASS);
   }
 
@@ -23,23 +27,45 @@ export class JobCache extends Panel {
     // document.getElementById('search-text').innerHTML = this.response_text;
     var x = document.createElement("BR");
     this.node.appendChild(x);
-    var catted = this.response_text.join("\n");
-    if (document.getElementById('job-cache') != null){
-      (<HTMLTextAreaElement>document.getElementById('job-cache')).value = catted;
+    var getUrl = new URL(PageConfig.getBaseUrl() + 'hysds/listJobs');
+    request('get', getUrl.href).then((res: RequestResult) => {
+      if(res.ok){
+        let json_response:any = res.json();
+        // console.log(json_response['status_code']);
+        console.log(json_response['result']);
+
+        if (json_response['status_code'] == 200){
+          this.table = json_response['table'];
+          this.jobs = json_response['jobs'];
+
+        } else {
+          console.log('unable to get user job list');
+          INotification.error("Get user jobs failed.");
+        }
+      } else {
+        console.log('unable to get user job list');
+        INotification.error("Get user jobs failed.");
+      }
+    });
+
+    // var catted = this.response_text.join("\n");
+    if (document.getElementById('job-list') != null){
+      (<HTMLTextAreaElement>document.getElementById('job-cache')).innerHTML = this.table;
     } else {
       var textarea = document.createElement("TEXTAREA");
-      textarea.id = 'job-cache';
+      textarea.id = 'job-list';
       (<HTMLTextAreaElement>textarea).readOnly = true;
       (<HTMLTextAreaElement>textarea).cols = 30;
       (<HTMLTextAreaElement>textarea).rows = 30;
-      (<HTMLTextAreaElement>textarea).value = catted;
+      (<HTMLTextAreaElement>textarea).innerHTML = this.table;
       textarea.setAttribute("resize", "none");
       textarea.className = 'jp-JSONEditor-host';
       this.node.appendChild(textarea);
     }
   }
+
   addJob(job:string): void {
-    this.response_text.unshift(job);
+    // this.response_text.unshift(job);
     this.updateDisplay();
   }
 }

@@ -7,7 +7,6 @@ import { JobCache, HySDSWidget, popup, popupResult } from './hysds';
 import { ProjectSelector } from './register';
 // import * as $ from "jquery";
 // import { format } from "xml-formatter";
-
 import * as data from './fields.json';
 
 const registerFields = data.register;
@@ -21,7 +20,11 @@ const dismissFields = data.dismiss;
 const describeProcessFields = data.describeProcess;
 
 // I really don't like these hacks
+// ------------------------------------------------------------
+// reference to jobsPanel passed through each submit_job widget
 const jobsPanel = new JobCache();
+// ------------------------------------------------------------
+// get Keycloak profile on load and save username to workaround session timeout
 var username:string;
 getUserInfo(function(profile: any) {
   if (profile['cas:username'] === undefined) {
@@ -36,7 +39,10 @@ getUserInfo(function(profile: any) {
 
 if (username == 'anonymous') {
   INotification.error("Get username failed.");
+} else {
+  INotification.success("username is "+username);
 }
+// ------------------------------------------------------------
 
 function activateRegister(app: JupyterFrontEnd, 
                         palette: ICommandPalette, 
