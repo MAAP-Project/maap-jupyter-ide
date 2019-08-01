@@ -1,8 +1,8 @@
 import { JupyterFrontEnd, JupyterFrontEndPlugin } from '@jupyterlab/application';
 import { ICommandPalette } from '@jupyterlab/apputils';
 import { ILauncher } from '@jupyterlab/launcher';
-import { INotification } from "jupyterlab_toastify";
-import { getUserInfo } from "./getKeycloak";
+// import { INotification } from "jupyterlab_toastify";
+// import { getUserInfo } from "./getKeycloak";
 import { JobCache, HySDSWidget, popup, popupResult } from './hysds';
 import { ProjectSelector } from './register';
 // import * as $ from "jquery";
@@ -21,27 +21,29 @@ const describeProcessFields = data.describeProcess;
 
 // I really don't like these hacks
 // ------------------------------------------------------------
-// reference to jobsPanel passed through each submit_job widget
-const jobsPanel = new JobCache();
-// ------------------------------------------------------------
 // get Keycloak profile on load and save username to workaround session timeout
 var username:string;
-getUserInfo(function(profile: any) {
-  if (profile['cas:username'] === undefined) {
-    INotification.error("Get username failed.");
-    username = 'anonymous';
-  return;
-  } else {
-    username = profile['cas:username'];
-  }
-  console.log('username is '+username);
-});
+// getUserInfo(function(profile: any) {
+//   if (profile['cas:username'] === undefined) {
+//     INotification.error("Get username failed.");
+//     username = 'anonymous';
+//   return;
+//   } else {
+//     username = profile['cas:username'];
+//     INotification.success("username is "+username);
+//   }
+//   console.log('username is '+username);
+// });
 
-if (username == 'anonymous') {
-  INotification.error("Get username failed.");
-} else {
-  INotification.success("username is "+username);
-}
+// if (username == 'anonymous') {
+//   INotification.error("Get username failed.");
+// } else {
+// }
+// ------------------------------------------------------------
+// reference to jobsPanel passed through each submit_job widget
+const jobsPanel = new JobCache();
+// const jobsPanel = new JobCache(username);
+jobsPanel.updateDisplay();
 // ------------------------------------------------------------
 
 function activateRegister(app: JupyterFrontEnd, 

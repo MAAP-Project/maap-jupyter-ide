@@ -982,8 +982,11 @@ class ListUserJobsHandler(IPythonHandler):
 					resp = json.loads(r.text)
 					jobs = [parse_job(job) for job in resp['jobs']]
 
-
-					result = '<table>'
+					result = '<div style="margin-top: 20px; height: 40%; overflow: auto; font-size:11px;">'
+					result += '<table style="overflow: scroll">'
+					result += '<col width=33%>'
+					result += '<col width=33%>'
+					result += '<col width=33%>'
 					result += '<thead><tr>'
 					result += '<th style="text-align:left">Job Id</th>'
 					result += '<th style="text-align:left">Status</th>'
@@ -997,6 +1000,7 @@ class ListUserJobsHandler(IPythonHandler):
 
 					result += '</tbody>'
 					result += '</table>'
+					result += '</div>'
 					print(result)
 
 					# print("success!")

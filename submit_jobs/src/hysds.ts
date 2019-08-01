@@ -14,12 +14,16 @@ export class JobCache extends Panel {
   public opt:string;
   table: string;
   jobs: {[k:string]:string};
+  // username: string;
 
+  // constructor(uname:string) {
   constructor() {
     super();
     this.response_text = ['test content'];
     this.table = '';
     this.jobs = {};
+    // this.username = uname;
+    // console.log('setting username to '+this.username);
     this.addClass(CONTENT_CLASS);
   }
 
@@ -28,43 +32,57 @@ export class JobCache extends Panel {
     var x = document.createElement("BR");
     this.node.appendChild(x);
     var getUrl = new URL(PageConfig.getBaseUrl() + 'hysds/listJobs');
-    request('get', getUrl.href).then((res: RequestResult) => {
-      if(res.ok){
-        let json_response:any = res.json();
-        // console.log(json_response['status_code']);
-        console.log(json_response['result']);
+    let me = this;
+    getUserInfo(function(profile: any) {
+      var username:string;
+      if (profile['cas:username'] === undefined) {
+        INotification.error("Get username failed.");
+        username = 'anonymous';
+      return;
+      } else {
+        username = profile['cas:username'];
+      }
+      getUrl.searchParams.append('username',username);
+      console.log(getUrl.href);
+      request('get', getUrl.href).then((res: RequestResult) => {
+        if(res.ok){
+          let json_response:any = res.json();
+          console.log(json_response['status_code']);
+          console.log(json_response['result']);
 
-        if (json_response['status_code'] == 200){
-          this.table = json_response['table'];
-          this.jobs = json_response['jobs'];
+          if (json_response['status_code'] == 200){
+            me.table = json_response['table'];
+            me.jobs = json_response['jobs'];
 
+          } else {
+            console.log('unable to get user job list');
+            INotification.error("Get user jobs failed.");
+          }
         } else {
           console.log('unable to get user job list');
           INotification.error("Get user jobs failed.");
         }
+      });
+
+      console.log('got table, setting panel display');
+      // var catted = this.response_text.join("\n");
+      if (document.getElementById('job-cache-display') != null){
+        (<HTMLTextAreaElement>document.getElementById('job-cache-display')).innerHTML = me.table;
       } else {
-        console.log('unable to get user job list');
-        INotification.error("Get user jobs failed.");
+        var textarea = document.createElement("TEXTAREA");
+        textarea.id = 'job-cache-display';
+        (<HTMLTextAreaElement>textarea).readOnly = true;
+        (<HTMLTextAreaElement>textarea).cols = 30;
+        (<HTMLTextAreaElement>textarea).rows = 30;
+        (<HTMLTextAreaElement>textarea).innerHTML = me.table;
+        textarea.setAttribute("resize", "none");
+        textarea.className = 'jp-JSONEditor-host';
+        me.node.appendChild(textarea);
       }
     });
-
-    // var catted = this.response_text.join("\n");
-    if (document.getElementById('job-list') != null){
-      (<HTMLTextAreaElement>document.getElementById('job-cache')).innerHTML = this.table;
-    } else {
-      var textarea = document.createElement("TEXTAREA");
-      textarea.id = 'job-list';
-      (<HTMLTextAreaElement>textarea).readOnly = true;
-      (<HTMLTextAreaElement>textarea).cols = 30;
-      (<HTMLTextAreaElement>textarea).rows = 30;
-      (<HTMLTextAreaElement>textarea).innerHTML = this.table;
-      textarea.setAttribute("resize", "none");
-      textarea.className = 'jp-JSONEditor-host';
-      this.node.appendChild(textarea);
-    }
   }
 
-  addJob(job:string): void {
+  addJob(): void {
     // this.response_text.unshift(job);
     this.updateDisplay();
   }
@@ -274,22 +292,23 @@ export class HySDSWidget extends Widget {
   // TODO: add jobs to response text
   updateJobCache(){
     // console.log(this.fields);
-    if (this.req == 'execute') {
-      this.jobs_panel.addJob('------------------------------');
-      this.jobs_panel.addJob(this.response_text);
-      for (var e of this.fields) {
-        var fieldName = e[0].toLowerCase();
-        console.log(fieldName);
-        if (!['timestamp'].includes(fieldName)){
-          var fieldText = this.ins_dict[fieldName];
-          console.log(fieldText);
-          this.jobs_panel.addJob("\t" + fieldName + " : " + fieldText);
-        }
-      }
-      this.jobs_panel.addJob("inputs: ");
-      this.jobs_panel.addJob("username: " + this.old_fields["username"]);
-      this.jobs_panel.addJob("algo: " + this.old_fields["algo_id"]);
-    }
+    // if (this.req == 'execute') {
+    //   this.jobs_panel.addJob('------------------------------');
+    //   this.jobs_panel.addJob(this.response_text);
+    //   for (var e of this.fields) {
+    //     var fieldName = e[0].toLowerCase();
+    //     console.log(fieldName);
+    //     if (!['timestamp'].includes(fieldName)){
+    //       var fieldText = this.ins_dict[fieldName];
+    //       console.log(fieldText);
+    //       this.jobs_panel.addJob("\t" + fieldName + " : " + fieldText);
+    //     }
+    //   }
+    //   this.jobs_panel.addJob("inputs: ");
+    //   this.jobs_panel.addJob("username: " + this.old_fields["username"]);
+    //   this.jobs_panel.addJob("algo: " + this.old_fields["algo_id"]);
+    // }
+    this.jobs_panel.addJob();
   }
 
   updateSearchResults(): void {
@@ -436,28 +455,28 @@ export class HySDSWidget extends Widget {
         // just 1 job
         } else {
           // add username
-          // let me = this;
-          // getUserInfo(function(profile: any) {
-          //   var username:string;
-          //   if (profile['cas:username'] === undefined) {
-          //     INotification.error("Get username failed.");
-          //     username = 'anonymous';
-          //   return;
-          //   } else {
-          //     username = profile['cas:username'];
-          //   }
-          //   me.old_fields['username'] = username;
-          //   getUrl.searchParams.append('username',username);
-          //   console.log('added username');
-          //   console.log(getUrl.href);
-          //   urllst.push(getUrl);
-          //   resolve(urllst);
-          // });
-          getUrl.searchParams.append('username',this.username);
-          console.log('added username');
-          console.log(getUrl.href);
-          urllst.push(getUrl);
-          resolve(urllst);
+          let me = this;
+          getUserInfo(function(profile: any) {
+            var username:string;
+            if (profile['cas:username'] === undefined) {
+              INotification.error("Get username failed.");
+              username = 'anonymous';
+            return;
+            } else {
+              username = profile['cas:username'];
+            }
+            me.old_fields['username'] = username;
+            getUrl.searchParams.append('username',username);
+            console.log('added username');
+            console.log(getUrl.href);
+            urllst.push(getUrl);
+            resolve(urllst);
+          });
+          // getUrl.searchParams.append('username',this.username);
+          // console.log('added username');
+          // console.log(getUrl.href);
+          // urllst.push(getUrl);
+          // resolve(urllst);
         }
 
       // Get Notebook information to pass to Register Handler
