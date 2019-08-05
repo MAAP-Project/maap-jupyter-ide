@@ -43,7 +43,6 @@ var username:string;
 // reference to jobsPanel passed through each submit_job widget
 const jobsPanel = new JobCache();
 // const jobsPanel = new JobCache(username);
-jobsPanel.updateDisplay();
 // ------------------------------------------------------------
 
 function activateRegister(app: JupyterFrontEnd, 
@@ -185,7 +184,8 @@ function activateDelete(app: JupyterFrontEnd,
   console.log('HySDS Describe Job is activated!');
 }
 
-function activateJobCache(app: JupyterFrontEnd): void{
+function activateJobCache(app: JupyterFrontEnd,
+                          palette: ICommandPalette): void{
 
   var infoPanel = jobsPanel;
   infoPanel.id = 'job-cache-display';
@@ -194,6 +194,19 @@ function activateJobCache(app: JupyterFrontEnd): void{
 
   // app.shell.addToLeftArea(infoPanel, {rank:300});
   app.shell.add(infoPanel, 'left', {rank: 300});
+  jobsPanel.updateDisplay();
+
+  const open_command = 'jobs: list';
+
+  app.commands.addCommand(open_command, {
+    label: 'Refresh Job List',
+    isEnabled: () => true,
+    execute: args => {
+      jobsPanel.updateDisplay();
+    }
+  });
+  palette.addItem({command: open_command, category: 'DPS'});
+  console.log('HySDS JobList is activated!');
 }
 
 const extensionRegister: JupyterFrontEndPlugin<void> = {
@@ -261,9 +274,9 @@ const extensionDelete: JupyterFrontEndPlugin<void> = {
 };
 
 const cacheExtension: JupyterFrontEndPlugin<void> = {
-  requires: [],
   id: 'job-cache-panel',
   autoStart:true,
+  requires: [ICommandPalette],
   activate: activateJobCache
 };
 

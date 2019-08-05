@@ -976,37 +976,37 @@ class ListUserJobsHandler(IPythonHandler):
 			# bad job id will still give 200
 			if r.status_code == 200:
 				jobs = []
+				details = {}
 				result = ""
 				try:
 					# parse out JobID from response
 					resp = json.loads(r.text)
 					jobs = [parse_job(job) for job in resp['jobs']]
 
-					result = '<div style="margin-top: 20px; height: 40%; overflow: auto; font-size:11px;">'
-					result += '<table style="overflow: scroll">'
+					result += '<table id="job-cache-display"; style="height: 40%; font-size:11px;" overflow="auto">'
 					result += '<col width=33%>'
 					result += '<col width=33%>'
 					result += '<col width=33%>'
 					result += '<thead><tr>'
-					result += '<th style="text-align:left">Job Id</th>'
-					result += '<th style="text-align:left">Status</th>'
-					result += '<th style="text-align:left">Algorithm</th>'
+					result += '<th style="">Job Id</th>'
+					result += '<th style="">Status</th>'
+					result += '<th style="">Algorithm</th>'
 					result += '</tr></thead>'
 					result += '<tbody>'
 					
 					for job in jobs:
 						job['detailed'] = detailed_display(job)
 						result += '<tr><td>{}</td><td>{}</td><td>{}</td></tr>'.format(job['job_id'],job['status'],job['algo_id'])
+						details[job['job_id']] = detailed_display(job)
 
 					result += '</tbody>'
 					result += '</table>'
-					result += '</div>'
 					print(result)
 
 					# print("success!")
-					self.finish({"status_code": r.status_code, "result": result, "table":result,"jobs": jobs})
+					self.finish({"status_code": r.status_code, "result": result, "table":result,"jobs": jobs, "displays": details})
 				except:
-					self.finish({"status_code": r.status_code, "result": r.text, "table":result,"jobs": jobs})
+					self.finish({"status_code": r.status_code, "result": r.text, "table":result,"jobs": jobs, "displays": details})
 			# if no job id provided
 			elif r.status_code in [404]:
 				# print('404?')
