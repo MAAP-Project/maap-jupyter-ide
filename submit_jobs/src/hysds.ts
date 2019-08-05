@@ -13,6 +13,8 @@ export class JobCache extends Panel {
   public response_text: string[];
   public opt:string;
   table: string;
+  display: string;
+  results: string;
   jobs: {[k:string]:string};
   // username: string;
 
@@ -21,6 +23,8 @@ export class JobCache extends Panel {
     super();
     this.response_text = ['test content'];
     this.table = '';
+    this.display = '';
+    this.results = '';
     this.jobs = {};
     // this.username = uname;
     // console.log('setting username to '+this.username);
@@ -48,11 +52,15 @@ export class JobCache extends Panel {
         if(res.ok){
           let json_response:any = res.json();
           console.log(json_response['status_code']);
-          console.log(json_response['result']);
+          // console.log(json_response['result']);
+          // console.log(json_response['displays']);
 
           if (json_response['status_code'] == 200){
             me.table = json_response['table'];
             me.jobs = json_response['jobs'];
+            // later get user to pick the job
+            me.display = json_response['displays'][json_response['jobs'][0]['job_id']];
+
 
           } else {
             console.log('unable to get user job list');
@@ -65,20 +73,103 @@ export class JobCache extends Panel {
       });
 
       console.log('got table, setting panel display');
-      // var catted = this.response_text.join("\n");
-      if (document.getElementById('job-cache-display') != null){
+      if (document.getElementById('job-cache-display') != null) {
         (<HTMLTextAreaElement>document.getElementById('job-cache-display')).innerHTML = me.table;
       } else {
-        var textarea = document.createElement("TEXTAREA");
+        var div2 = document.createElement('div');
+        div2.setAttribute('id', 'job-table');
+        div2.setAttribute('resize','none');
+        div2.setAttribute('class','jp-JSONEditor-host');
+        div2.setAttribute('style','height:40%; border-style:none; display:table;');
+
+        // jobs table
+        var textarea = document.createElement("table");
         textarea.id = 'job-cache-display';
-        (<HTMLTextAreaElement>textarea).readOnly = true;
-        (<HTMLTextAreaElement>textarea).cols = 30;
-        (<HTMLTextAreaElement>textarea).rows = 30;
-        (<HTMLTextAreaElement>textarea).innerHTML = me.table;
-        textarea.setAttribute("resize", "none");
+        textarea.innerHTML = me.table;
         textarea.className = 'jp-JSONEditor-host';
-        me.node.appendChild(textarea);
+        div2.appendChild(textarea);
+        // div.appendChild(div2);
+        me.node.appendChild(div2);
       }
+
+
+        // if (document.getElementById('job-detail-display') != null) {
+        //   (<HTMLTextAreaElement>document.getElementById('job-detail-display')).innerHTML = me.display;
+        // } else {
+        //   // line break
+        //   var line = document.createElement('hr');
+        //   div.appendChild(line);
+          
+        //   // div3 display
+        //   var div3 = document.createElement('div');
+        //   div3.setAttribute('id','job-detail-div');
+        //   div3.setAttribute('resize','none');
+        //   div3.setAttribute('class','jp-JSONEditor-host');
+        //   div3.setAttribute('style','height:25%;width:98%; border-style:none');
+          
+        //   // display header
+        //   var detailHeader = document.createElement('h4');
+        //   detailHeader.setAttribute('style','margin:0px');
+        //   detailHeader.innerText = 'Job Information';
+        //   div3.appendChild(detailHeader);
+
+        //   // detailed info on one job
+        //   var display = document.createElement("textarea");
+        //   display.id = 'job-detail-display';
+        //   (<HTMLTextAreaElement>display).readOnly = true;
+        //   (<HTMLTextAreaElement>display).cols = 30;
+        //   (<HTMLTextAreaElement>display).innerHTML = me.display;
+        //   display.setAttribute("resize", "none");
+        //   display.className = 'jp-JSONEditor-host';
+        //   div3.appendChild(display);
+        //   div.appendChild(div3);
+        // }
+      // } else {
+        // main div
+        // var div = document.createElement("div");
+        // div.setAttribute('id','jobs-div');
+        // div.setAttribute('overflow','hidden');
+
+        // var div2 = document.createElement('div');
+        // div2.setAttribute('id', 'job-table');
+        // div2.setAttribute('resize','none');
+        // div2.setAttribute('class','jp-JSONEditor-host');
+        // div2.setAttribute('style','height:40%; border-style:none; display:table;');
+
+        // // jobs table
+        // var textarea = document.createElement("table");
+        // textarea.id = 'job-cache-display';
+        // textarea.innerHTML = me.table;
+        // div2.appendChild(textarea);
+        // div.appendChild(div2);
+        
+        // line break
+        // var line = document.createElement('hr');
+        // div.appendChild(line);
+        
+        // // div3 display
+        // var div3 = document.createElement('div');
+        // div3.setAttribute('id','job-detail-div');
+        // div3.setAttribute('style','height:25%;width:98%; border-style:none');
+        
+        // // display header
+        // var detailHeader = document.createElement('h4');
+        // detailHeader.setAttribute('style','margin:0px');
+        // detailHeader.innerText = 'Job Information';
+        // div3.appendChild(detailHeader);
+
+        // // detailed info on one job
+        // var display = document.createElement("textarea");
+        // display.id = 'job-detail-display';
+        // (<HTMLTextAreaElement>display).readOnly = true;
+        // (<HTMLTextAreaElement>display).cols = 30;
+        // (<HTMLTextAreaElement>display).innerHTML = me.display;
+        // display.setAttribute("resize", "none");
+        // display.className = 'jp-JSONEditor-host';
+        // div3.appendChild(display);
+        // div.appendChild(div3);
+        // me.node.appendChild(div);
+      // }
     });
   }
 
