@@ -75,101 +75,54 @@ export class JobCache extends Panel {
       console.log('got table, setting panel display');
       if (document.getElementById('job-cache-display') != null) {
         (<HTMLTextAreaElement>document.getElementById('job-cache-display')).innerHTML = me.table;
+        // (<HTMLTextAreaElement>document.getElementById('jobs-div')).setAttribute('style','height:40%;font-size:11px');
       } else {
-        var div2 = document.createElement('div');
-        div2.setAttribute('id', 'job-table');
-        div2.setAttribute('resize','none');
-        div2.setAttribute('class','jp-JSONEditor-host');
-        div2.setAttribute('style','height:40%; border-style:none; display:table;');
+        var div = document.createElement('div');
+        div.setAttribute('id', 'job-table');
+        div.setAttribute('resize','none');
+        div.setAttribute('class','jp-JSONEditor-host');
+        div.setAttribute('style','border-style:none;');
 
         // jobs table
         var textarea = document.createElement("table");
         textarea.id = 'job-cache-display';
         textarea.innerHTML = me.table;
         textarea.className = 'jp-JSONEditor-host';
-        div2.appendChild(textarea);
-        // div.appendChild(div2);
-        me.node.appendChild(div2);
+        div.appendChild(textarea);
+        me.node.appendChild(div);
       }
+      if (document.getElementById('jobs-div') != null) {
+        let div2 = (<HTMLDivElement>document.getElementById('jobs-div'));
 
+        if (document.getElementById('job-info-head') == null) {
+          // line break
+          var line = document.createElement('hr');
+          div2.appendChild(line);
 
-        // if (document.getElementById('job-detail-display') != null) {
-        //   (<HTMLTextAreaElement>document.getElementById('job-detail-display')).innerHTML = me.display;
-        // } else {
-        //   // line break
-        //   var line = document.createElement('hr');
-        //   div.appendChild(line);
-          
-        //   // div3 display
-        //   var div3 = document.createElement('div');
-        //   div3.setAttribute('id','job-detail-div');
-        //   div3.setAttribute('resize','none');
-        //   div3.setAttribute('class','jp-JSONEditor-host');
-        //   div3.setAttribute('style','height:25%;width:98%; border-style:none');
-          
-        //   // display header
-        //   var detailHeader = document.createElement('h4');
-        //   detailHeader.setAttribute('style','margin:0px');
-        //   detailHeader.innerText = 'Job Information';
-        //   div3.appendChild(detailHeader);
-
-        //   // detailed info on one job
-        //   var display = document.createElement("textarea");
-        //   display.id = 'job-detail-display';
-        //   (<HTMLTextAreaElement>display).readOnly = true;
-        //   (<HTMLTextAreaElement>display).cols = 30;
-        //   (<HTMLTextAreaElement>display).innerHTML = me.display;
-        //   display.setAttribute("resize", "none");
-        //   display.className = 'jp-JSONEditor-host';
-        //   div3.appendChild(display);
-        //   div.appendChild(div3);
-        // }
-      // } else {
-        // main div
-        // var div = document.createElement("div");
-        // div.setAttribute('id','jobs-div');
-        // div.setAttribute('overflow','hidden');
-
-        // var div2 = document.createElement('div');
-        // div2.setAttribute('id', 'job-table');
-        // div2.setAttribute('resize','none');
-        // div2.setAttribute('class','jp-JSONEditor-host');
-        // div2.setAttribute('style','height:40%; border-style:none; display:table;');
-
-        // // jobs table
-        // var textarea = document.createElement("table");
-        // textarea.id = 'job-cache-display';
-        // textarea.innerHTML = me.table;
-        // div2.appendChild(textarea);
-        // div.appendChild(div2);
-        
-        // line break
-        // var line = document.createElement('hr');
-        // div.appendChild(line);
-        
-        // // div3 display
-        // var div3 = document.createElement('div');
-        // div3.setAttribute('id','job-detail-div');
-        // div3.setAttribute('style','height:25%;width:98%; border-style:none');
-        
-        // // display header
-        // var detailHeader = document.createElement('h4');
-        // detailHeader.setAttribute('style','margin:0px');
-        // detailHeader.innerText = 'Job Information';
-        // div3.appendChild(detailHeader);
-
-        // // detailed info on one job
-        // var display = document.createElement("textarea");
-        // display.id = 'job-detail-display';
-        // (<HTMLTextAreaElement>display).readOnly = true;
-        // (<HTMLTextAreaElement>display).cols = 30;
-        // (<HTMLTextAreaElement>display).innerHTML = me.display;
-        // display.setAttribute("resize", "none");
-        // display.className = 'jp-JSONEditor-host';
-        // div3.appendChild(display);
-        // div.appendChild(div3);
-        // me.node.appendChild(div);
-      // }
+          // display header
+          var detailHeader = document.createElement('h4');
+          detailHeader.setAttribute('id','job-info-head');
+          detailHeader.setAttribute('style','margin:0px');
+          detailHeader.innerText = 'Job Information';
+          div2.appendChild(detailHeader);
+        }
+        if (document.getElementById('job-detail-display') != null) {
+          (<HTMLTextAreaElement>document.getElementById('job-detail-display')).innerHTML = me.display;
+        } else {
+          // detailed info on one job
+          var display = document.createElement("textarea");
+          display.id = 'job-detail-display';
+          (<HTMLTextAreaElement>display).readOnly = true;
+          (<HTMLTextAreaElement>display).cols = 30;
+          (<HTMLTextAreaElement>display).innerHTML = me.display;
+          display.setAttribute('style', 'margin: 0px; height:25%; width: 98%; border:none');
+          display.className = 'jp-JSONEditor-host';
+          div2.appendChild(display);
+        }
+      }
+      if (document.getElementById('job-cache-display') != null) {
+        (<HTMLTableElement>document.getElementById('job-cache-display')).setAttribute('style','');
+      }
     });
   }
 
