@@ -68,8 +68,11 @@ const extension: JupyterFrontEndPlugin<void> = {
         return widget;
         */
       }
-    })
-    palette.addItem({ command, category: 'Test' })
+    });
+
+    palette.addItem({ command: command, category: 'Metadata' });
+    console.log("user_meta_form activated");
+
   }
 };
 

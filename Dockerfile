@@ -74,6 +74,13 @@ RUN cd /insert_defaults_to_notebook && npm install
 RUN cd /insert_defaults_to_notebook && npm run build
 RUN cd /insert_defaults_to_notebook && jupyter labextension link .
 
+
+# user metadata form
+COPY user_meta_form /user_meta_form
+RUN cd /user_meta_form && npm install
+RUN cd /user_meta_form && npm run build
+RUN cd /user_meta_form && jupyter labextension link .
+
 RUN touch /root/.bashrc && echo "cd /projects >& /dev/null" >> /root/.bashrc
 
 RUN mkdir /projects
