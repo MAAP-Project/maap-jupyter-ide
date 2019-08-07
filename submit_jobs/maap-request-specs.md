@@ -153,5 +153,13 @@ Required in URL:
 ### Example GET Request
 url: https://api.maap.xyz/api/dps/job/<job_id>
 
+## List Jobs
+### Parameters
+Required in URL:
+- username (username)
+
+### Example GET Request
+url: http://api.maap.xyz/api/dps/job/<username>/list
+
 ## Dismiss
 not implemented

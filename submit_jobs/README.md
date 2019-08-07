@@ -70,6 +70,12 @@ This connects the JupyterLab UI with the HySDS/DPS backend.  There will be 10 AP
 10. Default Values
 	- NOT user-facing; helper for `Register Algorithm`
 	- used to pre-populate registration fields when provided with a filepath
+11. List Jobs
+	- endpoint: `hysds/listJobs`
+	- sends a GET request to get a user's list of jobs
+		- GET request sent to https://api.maap.xyz/api/dps/job/{username}/list
+	- helper for creating table of user's submitted jobs
+	- returns table in HTML, joblist as list of dictionaries, and dictionary of job-id as key mapped to printable display info
 
 
 #### Lab extension
