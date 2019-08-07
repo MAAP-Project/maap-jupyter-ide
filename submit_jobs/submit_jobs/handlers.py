@@ -85,7 +85,9 @@ def parse_job(job):
 	algo_id = job[2]
 	inputs = job[3]
 	[x.pop('destination') for x in inputs]
-	return {'job_id':job_id, 'status':status, 'algo_id':algo_id, 'inputs':inputs}
+	ts = list(filter(lambda j: j['name'] == 'timestamp', inputs))
+	ts = '0' if ts == [] else ts[0]['value']
+	return {'job_id':job_id, 'status':status, 'algo_id':algo_id, 'inputs':inputs, 'timestamp':ts}
 
 # helper to parse listed job's detailed info in HTML
 def detailed_display(job):
@@ -444,7 +446,7 @@ class ExecuteHandler(IPythonHandler):
 				data=req_xml, 
 				headers=headers
 			)
-			logging.debug('status code '+r.status_code)
+			logging.debug('status code '+str(r.status_code))
 			logging.debug('response text\n'+r.text)
 
 			# ==================================
@@ -981,7 +983,9 @@ class ListUserJobsHandler(IPythonHandler):
 				try:
 					# parse out JobID from response
 					resp = json.loads(r.text)
-					jobs = [parse_job(job) for job in resp['jobs']]
+					jobs = [parse_job(job) for job in resp['jobs']] 					# parse inputs from string to dict
+					jobs = sorted(jobs, key=lambda j: j['timestamp'],reverse=True) 	# sort list of jobs by timestamp (most recent)
+
 
 					result += '<div id="jobs-div">'
 					result += '<table id="job-cache-display" style="height:40%;font-size:11px;" overflow="auto">'
