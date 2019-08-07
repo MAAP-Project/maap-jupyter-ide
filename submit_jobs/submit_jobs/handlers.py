@@ -76,6 +76,31 @@ def printInputs(resp,inputs):
 					result += '\t{} (no download)\n'.format(name)
 	return result
 
+# helper to parse user job history
+# convert list of strings to list of jobs, rep as dicts
+def parse_job(job):
+	job = eval(job)
+	job_id = job[0]
+	status = job[1]
+	algo_id = job[2]
+	inputs = job[3]
+	[x.pop('destination') for x in inputs]
+	ts = list(filter(lambda j: j['name'] == 'timestamp', inputs))
+	ts = '0' if ts == [] else ts[0]['value']
+	return {'job_id':job_id, 'status':status, 'algo_id':algo_id, 'inputs':inputs, 'timestamp':ts}
+
+# helper to parse listed job's detailed info in HTML
+def detailed_display(job):
+	job_id = job['job_id']
+	status = job['status']
+	algo_id = job['algo_id']
+	inputs = job['inputs']
+
+	result = 'JobID: {}\nStatus: {}\nAlgorithm: {}\nInputs:\n'.format(job_id,status, algo_id)
+	for i in inputs:
+		result +='	{}: {}\n'.format(i['name'],i['value'])
+	return result
+
 class RegisterAlgorithmHandler(IPythonHandler):
 	def get(self,**params):
 		# ==================================
@@ -345,9 +370,9 @@ class ExecuteHandler(IPythonHandler):
 		# Part 1: Parse Required Arguments
 		# ==================================
 		fields = getFields('execute')
-		input_names = ["username"]+self.get_argument("inputs", '').split(',')[:-1]
-		# print(inputs)
-		# print(fields)
+		input_names = self.get_argument("inputs", '').split(',')[:-1]
+		if not 'username' in input_names:
+			input_names.append('username')
 
 		params = {}
 		for f in fields:
@@ -364,6 +389,9 @@ class ExecuteHandler(IPythonHandler):
 				inputs[f] = arg
 			except:
 				inputs[f] = ''
+
+		logging.debug('fields are')
+		logging.debug(fields)
 
 		logging.debug('params are')
 		logging.debug(params)
@@ -405,7 +433,6 @@ class ExecuteHandler(IPythonHandler):
 			req_xml = xml.read()
 
 		req_xml = req_xml.format(**params)
-		print(req_xml)
 
 		logging.debug('request is')
 		logging.debug(req_xml)
@@ -419,7 +446,7 @@ class ExecuteHandler(IPythonHandler):
 				data=req_xml, 
 				headers=headers
 			)
-			logging.debug('status code '+r.status_code)
+			logging.debug('status code '+str(r.status_code))
 			logging.debug('response text\n'+r.text)
 
 			# ==================================
@@ -865,7 +892,8 @@ class DefaultValuesHandler(IPythonHandler):
 		# ==================================
 		# Part 1: Get Notebook Information Processed in UI
 		# ==================================
-		fields = ['code_path']
+		# fields = ['code_path']
+		fields = getFields('defaultValues')
 
 		params = {}
 		for f in fields:
@@ -910,3 +938,92 @@ class DefaultValuesHandler(IPythonHandler):
 
 		# outputs: repo_url, algo_name, run_cmd, dockerfile_path, environment_name, branch
 		self.finish({"status_code": 200, "default_values":vals})
+
+class ListUserJobsHandler(IPythonHandler):
+	# inputs: username
+	# outputs: job list, containing job_id, status, algo_id, and inputs
+	def get(self):
+		fields = getFields('listUserJobs')
+
+		params = {}
+		for f in fields:
+			try:
+				arg = self.get_argument(f.lower(), '').strip()
+				params[f] = arg
+			except:
+				arg = ''
+
+		# print(params)
+		logging.debug('params are')
+		logging.debug(params)
+
+		# ==================================
+		# Part 2: Build & Send Request
+		# ==================================
+		url = BASE_URL+'/dps/job/{username}/list'.format(**params)
+		headers = {'Content-Type':'application/xml'}
+
+		try:
+			r = requests.get(
+				url,
+				headers=headers
+			)
+
+			# print(r.status_code)
+			# print(r.text)
+
+			# ==================================
+			# Part 3: Check Response
+			# ==================================
+			# bad job id will still give 200
+			if r.status_code == 200:
+				jobs = []
+				details = {}
+				result = ""
+				try:
+					# parse out JobID from response
+					resp = json.loads(r.text)
+					jobs = [parse_job(job) for job in resp['jobs']] 					# parse inputs from string to dict
+					jobs = sorted(jobs, key=lambda j: j['timestamp'],reverse=True) 	# sort list of jobs by timestamp (most recent)
+
+
+					result += '<div id="jobs-div">'
+					result += '<table id="job-cache-display" style="height:40%;font-size:11px;" overflow="auto">'
+					result += '<col width=33%>'
+					result += '<col width=33%>'
+					result += '<col width=33%>'
+					result += '<thead><tr>'
+					result += '<th>Job Id</th>'
+					result += '<th>Status</th>'
+					result += '<th>Algorithm</th>'
+					result += '</tr></thead>'
+					result += '<tbody>'
+					
+					for job in jobs:
+						job['detailed'] = detailed_display(job)
+						result += '<tr><td>{}</td><td>{}</td><td>{}</td></tr>'.format(job['job_id'],job['status'],job['algo_id'])
+						details[job['job_id']] = detailed_display(job)
+
+					result += '</tbody>'
+					result += '</table>'
+					result += '</div>'
+					print(result)
+
+					# print("success!")
+					self.finish({"status_code": r.status_code, "result": result, "table":result,"jobs": jobs, "displays": details})
+				except:
+					self.finish({"status_code": r.status_code, "result": r.text, "table":result,"jobs": jobs, "displays": details})
+			# if no job id provided
+			elif r.status_code in [404]:
+				# print('404?')
+				# if bad job id, show provided parameters
+				result = 'Exception: {}\nMessage: {}\n(Did you provide a valid JobID?)\n'.format(rt[0].attrib['exceptionCode'], rt[0][0].text)
+				result += '\nThe provided parameters were:\n'
+				for f in fields:
+					result += '\t{}: {}\n'.format(f,params[f])
+				result += '\n'
+				self.finish({"status_code": 404, "result": result})
+			else:
+				self.finish({"status_code": r.status_code, "result": r.reason})
+		except:
+			self.finish({"status_code": 400, "result": "Bad Request"})

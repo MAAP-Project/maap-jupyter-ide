@@ -8,5 +8,7 @@
 	"execute" : ["identifier","algo_id","version","inputs"],
 	"getStatus": ["job_id"],
 	"getResult": ["job_id"],
-	"dismiss": ["job_id"]
+	"dismiss": ["job_id"],
+	"defaultValues": ["code_path"],
+	"listUserJobs": ["username"]
 }
