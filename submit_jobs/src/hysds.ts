@@ -1,22 +1,33 @@
 import { Widget, Panel } from '@phosphor/widgets';
 import { Dialog } from '@jupyterlab/apputils';
 import { PageConfig } from '@jupyterlab/coreutils'
+import { INotification } from "jupyterlab_toastify";
+import { getUserInfo } from "./getKeycloak";
 import { request, RequestResult } from './request';
-// import { INotebookTracker, Notebook, NotebookPanel } from '@jupyterlab/notebook';
 // import * as $ from "jquery";
 // import { format } from "xml-formatter";
-import { getUserInfo } from "./getKeycloak";
-import { INotification } from "jupyterlab_toastify";
 
 const CONTENT_CLASS = 'jp-Inspector-content';
 // primitive text panel for storing submitted job information
 export class JobCache extends Panel {
   public response_text: string[];
   public opt:string;
+  table: string;
+  display: string;
+  results: string;
+  jobs: {[k:string]:string};
+  // username: string;
 
+  // constructor(uname:string) {
   constructor() {
     super();
     this.response_text = ['test content'];
+    this.table = '';
+    this.display = '';
+    this.results = '';
+    this.jobs = {};
+    // this.username = uname;
+    // console.log('setting username to '+this.username);
     this.addClass(CONTENT_CLASS);
   }
 
@@ -24,23 +35,99 @@ export class JobCache extends Panel {
     // document.getElementById('search-text').innerHTML = this.response_text;
     var x = document.createElement("BR");
     this.node.appendChild(x);
-    var catted = this.response_text.join("\n");
-    if (document.getElementById('job-cache') != null){
-      (<HTMLTextAreaElement>document.getElementById('job-cache')).value = catted;
-    } else {
-      var textarea = document.createElement("TEXTAREA");
-      textarea.id = 'job-cache';
-      (<HTMLTextAreaElement>textarea).readOnly = true;
-      (<HTMLTextAreaElement>textarea).cols = 30;
-      (<HTMLTextAreaElement>textarea).rows = 30;
-      (<HTMLTextAreaElement>textarea).value = catted;
-      textarea.setAttribute("resize", "none");
-      textarea.className = 'jp-JSONEditor-host';
-      this.node.appendChild(textarea);
-    }
+    var getUrl = new URL(PageConfig.getBaseUrl() + 'hysds/listJobs');
+    let me = this;
+    getUserInfo(function(profile: any) {
+      var username:string;
+      if (profile['cas:username'] === undefined) {
+        INotification.error("Get username failed.");
+        username = 'anonymous';
+      return;
+      } else {
+        username = profile['cas:username'];
+      }
+      getUrl.searchParams.append('username',username);
+      console.log(getUrl.href);
+      request('get', getUrl.href).then((res: RequestResult) => {
+        if(res.ok){
+          let json_response:any = res.json();
+          console.log(json_response['status_code']);
+          // console.log(json_response['result']);
+          // console.log(json_response['displays']);
+
+          if (json_response['status_code'] == 200){
+            me.table = json_response['table'];
+            me.jobs = json_response['jobs'];
+            // later get user to pick the job
+            me.display = json_response['displays'][json_response['jobs'][0]['job_id']];
+
+
+          } else {
+            console.log('unable to get user job list');
+            INotification.error("Get user jobs failed.");
+          }
+        } else {
+          console.log('unable to get user job list');
+          INotification.error("Get user jobs failed.");
+        }
+      });
+
+      console.log('got table, setting panel display');
+      if (document.getElementById('job-cache-display') != null) {
+        (<HTMLTextAreaElement>document.getElementById('job-cache-display')).innerHTML = me.table;
+        // (<HTMLTextAreaElement>document.getElementById('jobs-div')).setAttribute('style','height:40%;font-size:11px');
+      } else {
+        var div = document.createElement('div');
+        div.setAttribute('id', 'job-table');
+        div.setAttribute('resize','none');
+        div.setAttribute('class','jp-JSONEditor-host');
+        div.setAttribute('style','border-style:none;');
+
+        // jobs table
+        var textarea = document.createElement("table");
+        textarea.id = 'job-cache-display';
+        textarea.innerHTML = me.table;
+        textarea.className = 'jp-JSONEditor-host';
+        div.appendChild(textarea);
+        me.node.appendChild(div);
+      }
+      if (document.getElementById('jobs-div') != null) {
+        let div2 = (<HTMLDivElement>document.getElementById('jobs-div'));
+
+        if (document.getElementById('job-info-head') == null) {
+          // line break
+          var line = document.createElement('hr');
+          div2.appendChild(line);
+
+          // display header
+          var detailHeader = document.createElement('h4');
+          detailHeader.setAttribute('id','job-info-head');
+          detailHeader.setAttribute('style','margin:0px');
+          detailHeader.innerText = 'Job Information';
+          div2.appendChild(detailHeader);
+        }
+        if (document.getElementById('job-detail-display') != null) {
+          (<HTMLTextAreaElement>document.getElementById('job-detail-display')).innerHTML = me.display;
+        } else {
+          // detailed info on one job
+          var display = document.createElement("textarea");
+          display.id = 'job-detail-display';
+          (<HTMLTextAreaElement>display).readOnly = true;
+          (<HTMLTextAreaElement>display).cols = 30;
+          (<HTMLTextAreaElement>display).innerHTML = me.display;
+          display.setAttribute('style', 'margin: 0px; height:25%; width: 98%; border:none');
+          display.className = 'jp-JSONEditor-host';
+          div2.appendChild(display);
+        }
+      }
+      if (document.getElementById('job-cache-display') != null) {
+        (<HTMLTableElement>document.getElementById('job-cache-display')).setAttribute('style','');
+      }
+    });
   }
-  addJob(job:string): void {
-    this.response_text.unshift(job);
+
+  addJob(): void {
+    // this.response_text.unshift(job);
     this.updateDisplay();
   }
 }
@@ -59,10 +146,11 @@ export class HySDSWidget extends Widget {
   public old_fields: {[k:string]:string}; // for execute
   public readonly fields: string[];       // user inputs
   public readonly get_inputs: boolean;    // for execute
+  public username: string;                // for execute & listing jobs in case of timeout
   jobs_panel: JobCache;    // for execute
   ins_dict: {[k:string]:string};          // for execute
 
-  constructor(req:string, method_fields:string[],panel:JobCache, defaultValues:{[k:string]:string}) {
+  constructor(req:string, method_fields:string[],uname:string, panel:JobCache, defaultValues:{[k:string]:string}) {
     let body = document.createElement('div');
     body.style.display = 'flex';
     body.style.flexDirection = 'column';
@@ -74,6 +162,7 @@ export class HySDSWidget extends Widget {
     this.old_fields = {};
     this.fields = method_fields;
     this.get_inputs = false;
+    this.username = uname;
     this.jobs_panel = panel;
     this.ins_dict = {};
 
@@ -247,22 +336,23 @@ export class HySDSWidget extends Widget {
   // TODO: add jobs to response text
   updateJobCache(){
     // console.log(this.fields);
-    if (this.req == 'execute') {
-      this.jobs_panel.addJob('------------------------------');
-      this.jobs_panel.addJob(this.response_text);
-      for (var e of this.fields) {
-        var fieldName = e[0].toLowerCase();
-        console.log(fieldName);
-        if (!['timestamp'].includes(fieldName)){
-          var fieldText = this.ins_dict[fieldName];
-          console.log(fieldText);
-          this.jobs_panel.addJob("\t" + fieldName + " : " + fieldText);
-        }
-      }
-      this.jobs_panel.addJob("inputs: ");
-      this.jobs_panel.addJob("username: " + this.old_fields["username"]);
-      this.jobs_panel.addJob("algo: " + this.old_fields["algo_id"]);
-    }
+    // if (this.req == 'execute') {
+    //   this.jobs_panel.addJob('------------------------------');
+    //   this.jobs_panel.addJob(this.response_text);
+    //   for (var e of this.fields) {
+    //     var fieldName = e[0].toLowerCase();
+    //     console.log(fieldName);
+    //     if (!['timestamp'].includes(fieldName)){
+    //       var fieldText = this.ins_dict[fieldName];
+    //       console.log(fieldText);
+    //       this.jobs_panel.addJob("\t" + fieldName + " : " + fieldText);
+    //     }
+    //   }
+    //   this.jobs_panel.addJob("inputs: ");
+    //   this.jobs_panel.addJob("username: " + this.old_fields["username"]);
+    //   this.jobs_panel.addJob("algo: " + this.old_fields["algo_id"]);
+    // }
+    this.jobs_panel.addJob();
   }
 
   updateSearchResults(): void {
@@ -399,6 +489,7 @@ export class HySDSWidget extends Widget {
           // var len = last - start + 1;
           for (var i = start; i <= last; i++) {
             var multiUrl = this.buildCopyUrl(rangeField,String(i));
+            multiUrl.searchParams.append("username",this.username);
             console.log(multiUrl.href);
             urllst.push(multiUrl);
             // });
@@ -425,6 +516,11 @@ export class HySDSWidget extends Widget {
             urllst.push(getUrl);
             resolve(urllst);
           });
+          // getUrl.searchParams.append('username',this.username);
+          // console.log('added username');
+          // console.log(getUrl.href);
+          // urllst.push(getUrl);
+          // resolve(urllst);
         }
 
       // Get Notebook information to pass to Register Handler
@@ -480,7 +576,7 @@ export class HySDSWidget extends Widget {
               var old_fields = json_response['old'];
               // console.log(new_fields);
               // console.log('pre-popup');
-              var exec = new HySDSWidget('execute',new_fields, me.jobs_panel,{});
+              var exec = new HySDSWidget('execute',new_fields,me.username,me.jobs_panel,{});
               exec.setOldFields(old_fields);
               popup(exec);
               // console.log('post-popup');
