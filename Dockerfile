@@ -5,10 +5,12 @@ RUN conda install -c conda-forge nodejs
 RUN conda install -c conda-forge gitpython
 
 # install git extension
-#TODO: make sure we are pulling a stable released verison here, that doesn't exist yet
-RUN jupyter labextension install @jupyterlab/git
-RUN pip install --upgrade jupyterlab-git
-RUN jupyter serverextension enable --py jupyterlab_git
+RUN git clone -b v0.8 https://github.com/jupyterlab/jupyterlab-git.git
+RUN cd /jupyterlab-git && npm install
+RUN cd /jupyterlab-git && npm run build
+RUN cd /jupyterlab-git && jupyter labextension link .
+RUN cd /jupyterlab-git && pip install -e .
+RUN cd /jupyterlab-git && jupyter serverextension enable --py jupyterlab_git
 
 # install toastify for error messaging
 RUN jupyter labextension install jupyterlab_toastify@2.3.0
