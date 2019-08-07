@@ -1,24 +1,11 @@
 // Copyright (c) Elizabeth Yam
 // Distributed under the terms of the Modified BSD License.
 
-import {
-  Application, IPlugin
-} from '@phosphor/application';
-
-import {
-  Widget
-} from '@phosphor/widgets';
-
-import {
-  IJupyterWidgetRegistry
- } from '@jupyter-widgets/base';
-
+import { Application, IPlugin } from '@phosphor/application';
+import { Widget } from '@phosphor/widgets';
+import { IJupyterWidgetRegistry } from '@jupyter-widgets/base';
 import * as widgetExports from './widget';
-
-import {
-  MODULE_NAME, MODULE_VERSION
-} from './version';
-
+import { MODULE_NAME, MODULE_VERSION } from './version';
 const EXTENSION_ID = 'dps_magic:plugin';
 
 /**
