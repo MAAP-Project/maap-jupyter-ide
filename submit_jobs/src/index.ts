@@ -1,12 +1,12 @@
 import { JupyterFrontEnd, JupyterFrontEndPlugin } from '@jupyterlab/application';
-// import { Widget } from '@phosphor/widgets';
 import { ICommandPalette } from '@jupyterlab/apputils';
 import { ILauncher } from '@jupyterlab/launcher';
+// import { INotification } from "jupyterlab_toastify";
+// import { getUserInfo } from "./getKeycloak";
 import { JobCache, HySDSWidget, popup, popupResult } from './hysds';
 import { ProjectSelector } from './register';
 // import * as $ from "jquery";
 // import { format } from "xml-formatter";
-
 import * as data from './fields.json';
 
 const registerFields = data.register;
@@ -19,8 +19,31 @@ const getResultFields = data.getResult;
 const dismissFields = data.dismiss;
 const describeProcessFields = data.describeProcess;
 
-// I really don't like this hack
+// I really don't like these hacks
+// ------------------------------------------------------------
+// get Keycloak profile on load and save username to workaround session timeout
+var username:string;
+// getUserInfo(function(profile: any) {
+//   if (profile['cas:username'] === undefined) {
+//     INotification.error("Get username failed.");
+//     username = 'anonymous';
+//   return;
+//   } else {
+//     username = profile['cas:username'];
+//     INotification.success("username is "+username);
+//   }
+//   console.log('username is '+username);
+// });
+
+// if (username == 'anonymous') {
+//   INotification.error("Get username failed.");
+// } else {
+// }
+// ------------------------------------------------------------
+// reference to jobsPanel passed through each submit_job widget
 const jobsPanel = new JobCache();
+// const jobsPanel = new JobCache(username);
+// ------------------------------------------------------------
 
 function activateRegister(app: JupyterFrontEnd, 
                         palette: ICommandPalette, 
@@ -31,7 +54,7 @@ function activateRegister(app: JupyterFrontEnd,
     label: 'Register Algorithm',
     isEnabled: () => true,
     execute: args => {
-      popupResult(new ProjectSelector('register',registerFields,jobsPanel),"Select a Project");
+      popupResult(new ProjectSelector('register',registerFields,username,jobsPanel),"Select a Project");
     }
   });
   palette.addItem({command: open_command, category: 'DPS'});
@@ -46,7 +69,7 @@ function activateGetCapabilities(app: JupyterFrontEnd,
     label: 'Get Capabilities',
     isEnabled: () => true,
     execute: args => {
-      var w = new HySDSWidget('getCapabilities',getCapabilitiesFields,jobsPanel,{});
+      var w = new HySDSWidget('getCapabilities',getCapabilitiesFields,username,jobsPanel,{});
       w.getValue();
     }
   });
@@ -62,7 +85,7 @@ function activateGetStatus(app: JupyterFrontEnd,
     label: 'Get DPS Job Status',
     isEnabled: () => true,
     execute: args => {
-      popup(new HySDSWidget('getStatus',getStatusFields,jobsPanel,{}));
+      popup(new HySDSWidget('getStatus',getStatusFields,username,jobsPanel,{}));
     }
   });
   palette.addItem({command: open_command, category: 'DPS'});
@@ -77,7 +100,7 @@ function activateGetResult(app: JupyterFrontEnd,
     label: 'Get DPS Job Result',
     isEnabled: () => true,
     execute: args => {
-      popup(new HySDSWidget('getResult',getResultFields,jobsPanel,{}));
+      popup(new HySDSWidget('getResult',getResultFields,username,jobsPanel,{}));
     }
   });
   palette.addItem({command: open_command, category: 'DPS'});
@@ -92,7 +115,7 @@ function activateExecute(app: JupyterFrontEnd,
     label: 'Execute DPS Job',
     isEnabled: () => true,
     execute: args => {
-      popupResult(new ProjectSelector('executeInputs',executeInputsFields,jobsPanel),"Select an Algorithm");
+      popupResult(new ProjectSelector('executeInputs',executeInputsFields,username,jobsPanel),"Select an Algorithm");
     }
   });
   palette.addItem({command: open_command, category: 'DPS'});
@@ -108,7 +131,7 @@ function activateDismiss(app: JupyterFrontEnd,
     label: 'Dismiss DPS Job',
     isEnabled: () => true,
     execute: args => {
-      popup(new HySDSWidget('dismiss',dismissFields,jobsPanel,{}));
+      popup(new HySDSWidget('dismiss',dismissFields,username,jobsPanel,{}));
     }
   });
   palette.addItem({command: open_command, category: 'DPS'});
@@ -123,7 +146,7 @@ function activateDescribe(app: JupyterFrontEnd,
     label: 'Describe Algorithm',
     isEnabled: () => true,
     execute: args => {
-      popupResult(new ProjectSelector('describeProcess',describeProcessFields,jobsPanel),"Select an Algorithm");
+      popupResult(new ProjectSelector('describeProcess',describeProcessFields,username,jobsPanel),"Select an Algorithm");
     }
   });
   palette.addItem({command: open_command, category: 'DPS'});
@@ -138,7 +161,7 @@ function activateList(app: JupyterFrontEnd,
     label: 'List Algorithms',
     isEnabled: () => true,
     execute: args => {
-      var w = new HySDSWidget('listAlgorithms',listAlgorithmsFields,jobsPanel,{});
+      var w = new HySDSWidget('listAlgorithms',listAlgorithmsFields,username,jobsPanel,{});
       w.getValue();
     }
   });
@@ -154,14 +177,15 @@ function activateDelete(app: JupyterFrontEnd,
     label: 'Delete Algorithm',
     isEnabled: () => true,
     execute: args => {
-      popup(new HySDSWidget('deleteAlgorithm',deleteAlgorithmFields,jobsPanel,{}));
+      popup(new HySDSWidget('deleteAlgorithm',deleteAlgorithmFields,username,jobsPanel,{}));
     }
   });
   palette.addItem({command: open_command, category: 'DPS'});
   console.log('HySDS Describe Job is activated!');
 }
 
-function activateJobCache(app: JupyterFrontEnd): void{
+function activateJobCache(app: JupyterFrontEnd,
+                          palette: ICommandPalette): void{
 
   var infoPanel = jobsPanel;
   infoPanel.id = 'job-cache-display';
@@ -170,6 +194,19 @@ function activateJobCache(app: JupyterFrontEnd): void{
 
   // app.shell.addToLeftArea(infoPanel, {rank:300});
   app.shell.add(infoPanel, 'left', {rank: 300});
+  jobsPanel.updateDisplay();
+
+  const open_command = 'jobs: list';
+
+  app.commands.addCommand(open_command, {
+    label: 'Refresh Job List',
+    isEnabled: () => true,
+    execute: args => {
+      jobsPanel.updateDisplay();
+    }
+  });
+  palette.addItem({command: open_command, category: 'DPS'});
+  console.log('HySDS JobList is activated!');
 }
 
 const extensionRegister: JupyterFrontEndPlugin<void> = {
@@ -237,9 +274,9 @@ const extensionDelete: JupyterFrontEndPlugin<void> = {
 };
 
 const cacheExtension: JupyterFrontEndPlugin<void> = {
-  requires: [],
   id: 'job-cache-panel',
   autoStart:true,
+  requires: [ICommandPalette],
   activate: activateJobCache
 };
 
