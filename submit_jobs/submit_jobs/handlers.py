@@ -527,14 +527,14 @@ class GetStatusHandler(IPythonHandler):
 					rt = ET.fromstring(r.text)
 
 					job_id = rt[0].text
-					status = rt[1].text
+					job_status = rt[1].text
 					# print(job_id)
 
-					result = 'JobID is {}\nStatus: {}'.format(job_id,status)
+					result = 'JobID is {}\nStatus: {}'.format(job_id,job_status)
 					# print("success!")
-					self.finish({"status_code": r.status_code, "result": result})
+					self.finish({"status_code": r.status_code, "result": result, "job_status":job_status})
 				except:
-					self.finish({"status_code": r.status_code, "result": r.text})
+					self.finish({"status_code": r.status_code, "result": r.text, "job_status":''})
 			# if no job id provided
 			elif r.status_code in [404]:
 				# print('404?')
@@ -544,11 +544,11 @@ class GetStatusHandler(IPythonHandler):
 				for f in fields:
 					result += '\t{}: {}\n'.format(f,params[f])
 				result += '\n'
-				self.finish({"status_code": 404, "result": result})
+				self.finish({"status_code": 404, "result": result, "job_status":''})
 			else:
-				self.finish({"status_code": r.status_code, "result": r.reason})
+				self.finish({"status_code": r.status_code, "result": r.reason, "job_status":''})
 		except:
-			self.finish({"status_code": 400, "result": "Bad Request"})
+			self.finish({"status_code": 400, "result": "Bad Request","job_status":''})
 
 class GetResultHandler(IPythonHandler):
 	def get(self):
@@ -988,7 +988,8 @@ class ListUserJobsHandler(IPythonHandler):
 
 
 					result += '<div id="jobs-div">'
-					result += '<table id="job-cache-display" style="height:40%;font-size:11px;" overflow="auto">'
+					result += '<div id = "job-table" style="overflow:auto; height:45%">'
+					result += '<table id="job-cache-display" style="font-size:11px;">'
 					result += '<col width=33%>'
 					result += '<col width=33%>'
 					result += '<col width=33%>'
@@ -1006,6 +1007,7 @@ class ListUserJobsHandler(IPythonHandler):
 
 					result += '</tbody>'
 					result += '</table>'
+					result += '</div>'
 					result += '</div>'
 					print(result)
 

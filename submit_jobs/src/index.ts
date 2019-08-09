@@ -42,6 +42,7 @@ var username:string;
 // ------------------------------------------------------------
 // reference to jobsPanel passed through each submit_job widget
 const jobsPanel = new JobCache();
+jobsPanel.updateDisplay();
 // const jobsPanel = new JobCache(username);
 // ------------------------------------------------------------
 
