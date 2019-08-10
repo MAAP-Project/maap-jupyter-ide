@@ -10,34 +10,35 @@ import { request, RequestResult } from './request';
 const CONTENT_CLASS = 'jp-Inspector-content';
 // primitive text panel for storing submitted job information
 export class JobCache extends Panel {
-  public response_text: string[];
   public opt:string;
   table: string;
-  display: string;
+  displays: {[k:string]:string};
   results: string;
   jobs: {[k:string]:string};
+  job_id: string;
   // username: string;
 
   // constructor(uname:string) {
   constructor() {
     super();
-    this.response_text = ['test content'];
     this.table = '';
-    this.display = '';
+    this.displays = {};
     this.results = '';
     this.jobs = {};
+    this.job_id = '';
     // this.username = uname;
     // console.log('setting username to '+this.username);
     this.addClass(CONTENT_CLASS);
   }
 
   updateDisplay(): void {
-    // document.getElementById('search-text').innerHTML = this.response_text;
+    // call list jobs endpoint using wksp username
     var x = document.createElement("BR");
     this.node.appendChild(x);
     var getUrl = new URL(PageConfig.getBaseUrl() + 'hysds/listJobs');
     let me = this;
     getUserInfo(function(profile: any) {
+      // start get username callback
       var username:string;
       if (profile['cas:username'] === undefined) {
         INotification.error("Get username failed.");
@@ -48,10 +49,14 @@ export class JobCache extends Panel {
       }
       getUrl.searchParams.append('username',username);
       console.log(getUrl.href);
+      // --------------------
+      // get jobs list request
+      // --------------------
       request('get', getUrl.href).then((res: RequestResult) => {
         if(res.ok){
           let json_response:any = res.json();
           console.log(json_response['status_code']);
+          INotification.success("Get user jobs success.");
           // console.log(json_response['result']);
           // console.log(json_response['displays']);
 
@@ -59,8 +64,10 @@ export class JobCache extends Panel {
             me.table = json_response['table'];
             me.jobs = json_response['jobs'];
             // later get user to pick the job
-            me.display = json_response['displays'][json_response['jobs'][0]['job_id']];
-
+            me.displays = json_response['displays'];
+            // me.job_id = json_response['jobs'][0]['job_id'];
+            // me.job_id = '58249702-46e7-4b16-8233-5e51bfc20fed';
+            me.job_id = '8109dc64-ce4a-489c-8e77-a61411698bbd';
 
           } else {
             console.log('unable to get user job list');
@@ -73,61 +80,169 @@ export class JobCache extends Panel {
       });
 
       console.log('got table, setting panel display');
-      if (document.getElementById('job-cache-display') != null) {
-        (<HTMLTextAreaElement>document.getElementById('job-cache-display')).innerHTML = me.table;
-        // (<HTMLTextAreaElement>document.getElementById('jobs-div')).setAttribute('style','height:40%;font-size:11px');
-      } else {
-        var div = document.createElement('div');
-        div.setAttribute('id', 'job-table');
-        div.setAttribute('resize','none');
-        div.setAttribute('class','jp-JSONEditor-host');
-        div.setAttribute('style','border-style:none;');
-
-        // jobs table
-        var textarea = document.createElement("table");
-        textarea.id = 'job-cache-display';
-        textarea.innerHTML = me.table;
-        textarea.className = 'jp-JSONEditor-host';
-        div.appendChild(textarea);
-        me.node.appendChild(div);
-      }
-      if (document.getElementById('jobs-div') != null) {
-        let div2 = (<HTMLDivElement>document.getElementById('jobs-div'));
-
-        if (document.getElementById('job-info-head') == null) {
-          // line break
-          var line = document.createElement('hr');
-          div2.appendChild(line);
-
-          // display header
-          var detailHeader = document.createElement('h4');
-          detailHeader.setAttribute('id','job-info-head');
-          detailHeader.setAttribute('style','margin:0px');
-          detailHeader.innerText = 'Job Information';
-          div2.appendChild(detailHeader);
-        }
-        if (document.getElementById('job-detail-display') != null) {
-          (<HTMLTextAreaElement>document.getElementById('job-detail-display')).innerHTML = me.display;
-        } else {
-          // detailed info on one job
-          var display = document.createElement("textarea");
-          display.id = 'job-detail-display';
-          (<HTMLTextAreaElement>display).readOnly = true;
-          (<HTMLTextAreaElement>display).cols = 30;
-          (<HTMLTextAreaElement>display).innerHTML = me.display;
-          display.setAttribute('style', 'margin: 0px; height:25%; width: 98%; border:none');
-          display.className = 'jp-JSONEditor-host';
-          div2.appendChild(display);
-        }
-      }
-      if (document.getElementById('job-cache-display') != null) {
-        (<HTMLTableElement>document.getElementById('job-cache-display')).setAttribute('style','');
-      }
+      me.getJobInfo();
+    // end get username callback
     });
   }
 
+  // front-end side of display jobs table and job info
+  getJobInfo() {
+    // --------------------
+    // job table
+    // --------------------
+    // set table, from response
+    let me = this;
+    if (document.getElementById('job-cache-display') != null) {
+      (<HTMLTextAreaElement>document.getElementById('job-cache-display')).innerHTML = me.table;
+    } else {
+      // create div for table if table doesn't already exist
+      var div = document.createElement('div');
+      div.setAttribute('id', 'job-table');
+      div.setAttribute('resize','none');
+      div.setAttribute('class','jp-JSONEditor-host');
+      div.setAttribute('style','border-style:none;');
+
+      // jobs table
+      var textarea = document.createElement("table");
+      textarea.id = 'job-cache-display';
+      textarea.innerHTML = me.table;
+      textarea.className = 'jp-JSONEditor-host';
+      div.appendChild(textarea);
+      me.node.appendChild(div);
+    }
+
+    // create div for job info section
+    // parent for everything, created in table response
+    if (document.getElementById('jobs-div') != null) {
+      // 1-time add line break and section header for job info
+      let div2 = (<HTMLDivElement>document.getElementById('jobs-div'));
+      if (document.getElementById('job-info-head') == null) {
+        // line break
+        var line = document.createElement('hr');
+        div2.appendChild(line);
+
+        // display header
+        var detailHeader = document.createElement('h4');
+        detailHeader.setAttribute('id','job-info-head');
+        detailHeader.setAttribute('style','margin:0px');
+        detailHeader.innerText = 'Job Information';
+        div2.appendChild(detailHeader);
+      }
+
+      // --------------------
+      // job info
+      // --------------------
+      // set description from response
+      if (document.getElementById('job-detail-display') != null) {
+        (<HTMLTextAreaElement>document.getElementById('job-detail-display')).innerHTML = me.displays[me.job_id];
+      } else {
+        // create textarea if it doesn't already exist
+        // detailed info on one job
+        var display = document.createElement("textarea");
+        display.id = 'job-detail-display';
+        (<HTMLTextAreaElement>display).readOnly = true;
+        (<HTMLTextAreaElement>display).cols = 30;
+        (<HTMLTextAreaElement>display).innerHTML = me.displays[me.job_id];
+        display.setAttribute('style', 'margin: 0px; height:20%; width: 98%; border: none; resize: none');
+        display.className = 'jp-JSONEditor-host';
+        div2.appendChild(display);
+      }
+
+      // --------------------
+      // results button
+      // --------------------
+      if (document.getElementById('job-result-button') == null) {
+        let resultBtn = document.createElement('button');
+        resultBtn.id = 'job-result-button';
+        resultBtn.className = 'jupyter-button';
+        resultBtn.innerHTML = 'Get Job Results';
+        resultBtn.addEventListener('click', function() {me.getJobResult(me)}, false);
+        div2.appendChild(resultBtn);
+      }
+    }
+  }
+
+  // get job result for display
+  getJobResult(me:JobCache) {
+    var resultUrl = new URL(PageConfig.getBaseUrl() + 'hysds/getResult');
+    // console.log(me.jobs[me.job_id]);
+    if (me.jobs[me.job_id]['status'] == 'job-completed') {
+      resultUrl.searchParams.append('job_id',me.job_id);
+      console.log(resultUrl.href);
+
+      request('get', resultUrl.href).then((res: RequestResult) => {
+        if(res.ok){
+          let json_response:any = res.json();
+          console.log(json_response['status_code']);
+          INotification.success("Get user jobs success.");
+          // console.log(json_response['result']);
+          // console.log(json_response['displays']);
+
+          if (json_response['status_code'] == 200){
+            me.results = json_response['result'];
+
+          } else {
+            console.log('unable to get user job list');
+            INotification.error("Get user jobs failed.");
+          }
+        } else {
+          console.log('unable to get user job list');
+          INotification.error("Get user jobs failed.");
+        }
+        this.selectedJobResult(me);
+      });
+    } else {
+      me.results = '<pre>Job '+me.job_id+' not complete</pre>';
+      this.selectedJobResult(me);
+    }
+  }
+
+  // front-end side of display job result table
+  selectedJobResult(me:JobCache) {
+    // let jobResult = this.results[this.job_id];
+    // console.log(me.results);
+    if (document.getElementById('jobs-div') != null) {
+      // 1-time add line break and section header for job result
+      let div2 = (<HTMLDivElement>document.getElementById('jobs-div'));
+      if (document.getElementById('job-result-head') == null) {
+        // line break
+        var line = document.createElement('hr');
+        div2.appendChild(line);
+
+        // display header
+        var detailHeader = document.createElement('h4');
+        detailHeader.setAttribute('id','job-result-head');
+        detailHeader.setAttribute('style','margin:0px');
+        detailHeader.innerText = 'Job Results';
+        div2.appendChild(detailHeader);
+      }
+
+      // --------------------
+      // job result
+      // --------------------
+      console.log('setting results');
+      if (document.getElementById('job-result-display') != null) {
+        (<HTMLTextAreaElement>document.getElementById('job-result-display')).innerHTML = me.results;
+      } else {
+        // create div for table if table doesn't already exist
+        var div = document.createElement('div');
+        div.setAttribute('id', 'result-table');
+        div.setAttribute('resize','none');
+        div.setAttribute('class','jp-JSONEditor-host');
+        div.setAttribute('style','border-style:none; overflow: auto; height: 30%');
+
+        var display = document.createElement("table");
+        display.id = 'job-result-display';
+        display.innerHTML = me.results;
+        display.setAttribute('class','jp-JSONEditor-host');
+        display.setAttribute('style','border-style:none; font-size:11px');
+        div.appendChild(display);
+        div2.appendChild(div);
+      }
+    }
+  }
+
   addJob(): void {
-    // this.response_text.unshift(job);
     this.updateDisplay();
   }
 }
