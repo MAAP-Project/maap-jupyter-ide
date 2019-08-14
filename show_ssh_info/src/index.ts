@@ -54,6 +54,26 @@ const extensionUser: JupyterFrontEndPlugin<void> = {
   }
 }
 
+const extensionMount: JupyterFrontEndPlugin<void> = {
+  id: 'mount-s3-folder',
+  autoStart: true,
+  requires: [ICommandPalette],
+  optional: [],
+  activate: args => {
+    const open_command = 'sshinfo:mount';
+
+    app.commands.addCommand(open_command, {
+      label: 'User Workspace Mount',
+      isEnabled: () => false,
+      execute: args => {
+        mountUserFolder();
+      }
+    })
+    palette.addItem({command:open_command,category:'User Workspace Mount'})
+    mountUserFolder();
+  }
+}
+
 
 export
 class SshWidget extends Widget {
@@ -144,7 +164,6 @@ class UserInfoWidget extends Widget {
 
 export
 function checkSSH(): void {
-
     //
     // Check if SSH and Exec Installers have been activated
     //
@@ -216,6 +235,35 @@ function checkUserInfo(): void {
 
   });
 
+}
+
+export
+function mountUserFolder() : void {
+  getUserInfo(function(profile: any) {
+    // get username from keycloak
+    if (profile['cas:username'] === undefined) {
+      INotification.error("Get username failed, did not mount bucket.");
+      return;
+    }
+    // send username to backend to create local mount point and mount s3 bucket
+    let username = profile['cas:username']
+    var getUrl = new URL(PageConfig.getBaseUrl() + 'show_ssh_info/mountBucket');
+    getUrl.searchParams.append('username',username);
+    request('get', getUrl.href).then((res: RequestResult) => {
+      if (res.ok) {
+        let json_response:any = res.json();
+        if (json_response['status_code'] == 200) {
+          let user_workspace = json_response['user_workspace'];
+          let user_bucket_dir = json_response['user_bucket_dir'];
+          INotification.success('Mounted user workspace '+user_workspace+' to 'user_bucket_dir);
+        } else {
+          INotification.error('Failed to mount user workspace to s3');
+        }
+      } else {
+        INotification.error('Failed to mount user workspace to s3');
+      }
+    });
+  });
 }
 
 
