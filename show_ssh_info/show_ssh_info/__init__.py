@@ -2,7 +2,7 @@ __version__ = '0.1.0'
 import os
 import os.path
 from notebook.utils import url_path_join
-from .handlers import GetHandler, CheckInstallersHandler, InstallHandler, InjectKeyHandler
+from .handlers import GetHandler, CheckInstallersHandler, InstallHandler, InjectKeyHandler, MountBucketHandler
 
 def _jupyter_server_extension_paths():
     return [{
@@ -27,4 +27,5 @@ def load_jupyter_server_extension(nb_server_app):
     web_app.add_handlers(host_pattern, [(url_path_join(base_url, 'show_ssh_info/checkInstallers'), CheckInstallersHandler)])
     web_app.add_handlers(host_pattern, [(url_path_join(base_url, 'show_ssh_info/install'), InstallHandler)])
     web_app.add_handlers(host_pattern, [(url_path_join(base_url, 'show_ssh_info/inject_public_key'), InjectKeyHandler)])
+    web_app.add_handlers(host_pattern, [(url_path_join(base_url, 'show_ssh_info/mountBucket'), MountBucketHandler)])
 

@@ -4,7 +4,10 @@ from requests import get
 from notebook.base.handlers import IPythonHandler
 import subprocess
 import json
+import logging
 
+logger = logging.getLogger()
+logger.setLevel(logging.DEBUG)
 
 class InjectKeyHandler(IPythonHandler):
     def get(self):
@@ -147,3 +150,26 @@ class InstallHandler(IPythonHandler):
         )
 
         self.finish(r.status_code)
+
+class MountBucketHandler(IPythonHandler):
+    def get(self):
+        message = ''
+        try:
+            username = self.get_argument('username','')
+            logging.debug('username is '+username)
+
+            mktmp_output = subprocess.check_output('mkdir /tmp/cache && chmod 777 /tmp/cache', shell=True)
+            message = mktmp_output
+            logging.debug(mktmp_output)
+
+            mkdir_output = subprocess.check_output('mkdir /projects/{}'.format(username), shell=True)
+            message = mkdir_output
+            logging.debug(mkdir_output)
+
+            mount_output = subprocess.check_output('s3fs -o use_cache=/tmp/cache maap-mount-dev /projects/{}'.format(username), shell=True)
+            logging.debug(mount_output)
+            message = mount_output
+
+            self.finish({'status_code':200, 'message':message})
+        except:
+            self.finish({'status_code':500, 'message':message})
