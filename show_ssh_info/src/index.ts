@@ -59,17 +59,18 @@ const extensionMount: JupyterFrontEndPlugin<void> = {
   autoStart: true,
   requires: [ICommandPalette],
   optional: [],
-  activate: args => {
+  activate: (app: JupyterFrontEnd, palette: ICommandPalette) => {
     const open_command = 'sshinfo:mount';
 
     app.commands.addCommand(open_command, {
       label: 'User Workspace Mount',
-      isEnabled: () => false,
+      isEnabled: () => true,
       execute: args => {
         mountUserFolder();
       }
     })
-    palette.addItem({command:open_command,category:'User Workspace Mount'})
+    palette.addItem({command:open_command,category:'User Workspace Mount'});
+    console.log('Mount ext activated');
     mountUserFolder();
   }
 }
@@ -249,13 +250,18 @@ function mountUserFolder() : void {
     let username = profile['cas:username']
     var getUrl = new URL(PageConfig.getBaseUrl() + 'show_ssh_info/mountBucket');
     getUrl.searchParams.append('username',username);
+    console.log('requesting mount API');
     request('get', getUrl.href).then((res: RequestResult) => {
+      console.log('made request. result is:');
+      console.log(res);
       if (res.ok) {
-        let json_response:any = res.json();
+        // let json_response:any = res.json();
+        let json_response:any = res.data;
+        console.log(json_response);
         if (json_response['status_code'] == 200) {
           let user_workspace = json_response['user_workspace'];
           let user_bucket_dir = json_response['user_bucket_dir'];
-          INotification.success('Mounted user workspace '+user_workspace+' to 'user_bucket_dir);
+          INotification.success('Mounted user workspace '+user_workspace+' to '+user_bucket_dir);
         } else {
           INotification.error('Failed to mount user workspace to s3');
         }
@@ -295,5 +301,6 @@ function activate(app: JupyterFrontEnd,
 };
 
 
-export default [extension,extensionUser];
+export default [extension,extensionUser,extensionMount];
 export {activate as _activate};
+
