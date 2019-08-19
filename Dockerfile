@@ -87,6 +87,17 @@ RUN touch /root/.bashrc && echo "cd /projects >& /dev/null" >> /root/.bashrc
 
 RUN mkdir /projects
 
+# install s3fs
+# s3 bucket mount setup pt1
+RUN apt-get update && apt-get install -y build-essential git libfuse-dev libcurl4-openssl-dev libxml2-dev mime-support automake libtool pkg-config libssl-dev
+RUN cd / && git clone https://github.com/s3fs-fuse/s3fs-fuse
+RUN cd /s3fs-fuse/ && ./autogen.sh && ./configure --prefix=/usr --with-openssl && make && make install
+COPY .passwd-s3fs /root/.passwd-s3fs
+RUN chmod 400 /root/.passwd-s3fs
+#RUN mkdir /tmp/cache && chmod 777 /tmp/cache
+#RUN mkdir /projects/s3-bucket
+#RUN s3fs -o use_cache=/tmp/cache maap-mount-dev /projects/s3-bucket
+
 EXPOSE 3100
 
 WORKDIR /projects
