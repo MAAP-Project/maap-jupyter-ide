@@ -301,3 +301,4 @@ function activate(app: JupyterFrontEnd,
 
 export default [extension,extensionUser,extensionMount];
 export {activate as _activate};
+
