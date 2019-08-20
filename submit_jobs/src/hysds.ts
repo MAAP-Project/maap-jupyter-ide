@@ -25,8 +25,7 @@ export class JobCache extends Panel {
     this.results = '';
     this.displays = {};
     this.jobs = {};
-    // this.job_id = '';
-    this.job_id = '8109dc64-ce4a-489c-8e77-a61411698bbd';
+    this.job_id = '';
     // this.username = uname;
     // console.log('setting username to '+this.username);
     this.addClass(CONTENT_CLASS);
@@ -66,9 +65,9 @@ export class JobCache extends Panel {
             me.jobs = json_response['jobs'];
             // later get user to pick the job
             me.displays = json_response['displays'];
-            // me.job_id = json_response['jobs'][0]['job_id'];
-            // me.job_id = '58249702-46e7-4b16-8233-5e51bfc20fed';
-            // me.job_id = '8109dc64-ce4a-489c-8e77-a61411698bbd';
+            if (me.job_id == '') {
+              me.job_id = json_response['result'][0]['job_id'];
+            }
 
           } else {
             console.log('unable to get user job list');
@@ -112,14 +111,8 @@ export class JobCache extends Panel {
       me.node.appendChild(div);
     }
 
-    // make clickable table rows after setting job table
-    this.onRowClick('job-cache-display', function(row){
-      let job_id = row.getElementsByTagName('td')[0].innerHTML;
-      // document.getElementById('click-response').innerHTML = job_id;
-      me.job_id = job_id;
-      me.results = '';
-      
-      // previous is callback, so nested inside "after" function
+    // set display in 2nd callback after making table rows clickable
+    let setDisplays = function (me:JobCache){
       // create div for job info section
       // parent for everything, created in table response
       if (document.getElementById('jobs-div') != null) {
@@ -129,7 +122,7 @@ export class JobCache extends Panel {
           // line break
           var line = document.createElement('hr');
           div2.appendChild(line);
-
+  
           // display header
           var detailHeader = document.createElement('h4');
           detailHeader.setAttribute('id','job-info-head');
@@ -137,12 +130,13 @@ export class JobCache extends Panel {
           detailHeader.innerText = 'Job Information';
           div2.appendChild(detailHeader);
         }
-
+  
         // --------------------
         // job info
         // --------------------
         // set description from response
         if (document.getElementById('job-detail-display') != null) {
+          console.log(me.job_id);
           (<HTMLTextAreaElement>document.getElementById('job-detail-display')).innerHTML = me.displays[me.job_id];
         } else {
           // create textarea if it doesn't already exist
@@ -156,32 +150,42 @@ export class JobCache extends Panel {
           display.className = 'jp-JSONEditor-host';
           div2.appendChild(display);
         }
-
+  
         // --------------------
         // results button
         // --------------------
-        if (document.getElementById('job-result-button') == null) {
-          let resultBtn = document.createElement('button');
-          resultBtn.id = 'job-result-button';
-          resultBtn.className = 'jupyter-button';
-          resultBtn.innerHTML = 'Get Job Results';
-          resultBtn.addEventListener('click', function() {me.getJobResult(me)}, false);
-          div2.appendChild(resultBtn);
-        }
+        // if (document.getElementById('job-result-button') == null) {
+        //   let resultBtn = document.createElement('button');
+        //   resultBtn.id = 'job-result-button';
+        //   resultBtn.className = 'jupyter-button';
+        //   resultBtn.innerHTML = 'Get Job Results';
+        //   resultBtn.addEventListener('click', function() {me.getJobResult(me)}, false);
+        //   div2.appendChild(resultBtn);
+        // }
       }
-    });
+    }
+
+    // make clickable table rows after setting job table
+    this.onRowClick('job-cache-display', function(row){
+      let job_id = row.getElementsByTagName('td')[0].innerHTML;
+      // document.getElementById('click-response').innerHTML = job_id;
+      me.job_id = job_id;
+    }, setDisplays);
 
   }
 
   // clickable table rows helper function
-  onRowClick(tableId, callback) {
+  onRowClick(tableId, setJobId, setDisplays) {
+    let me = this;
     let table = document.getElementById(tableId),
       rows = table.getElementsByTagName('tr'),
       i;
     for (i = 1; i < rows.length; i++) {
       rows[i].onclick = function(row) {
         return function() {
-          callback(row);
+          setJobId(row);
+          setDisplays(me);
+          me.getJobResult(me);
         }
       }(rows[i]);
     }
@@ -201,8 +205,6 @@ export class JobCache extends Panel {
           let json_response:any = res.json();
           console.log(json_response['status_code']);
           INotification.success("Get user job result success.");
-          // console.log(json_response['result']);
-          // console.log(json_response['displays']);
 
           if (json_response['status_code'] == 200){
             me.results = json_response['result'];
@@ -255,7 +257,7 @@ export class JobCache extends Panel {
         div.setAttribute('id', 'result-table');
         div.setAttribute('resize','none');
         div.setAttribute('class','jp-JSONEditor-host');
-        div.setAttribute('style','border-style:none; overflow: auto; height: 30%');
+        div.setAttribute('style','border-style:none; overflow: auto');
 
         var display = document.createElement("table");
         display.id = 'job-result-display';

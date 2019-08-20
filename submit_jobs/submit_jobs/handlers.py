@@ -987,7 +987,7 @@ class ListUserJobsHandler(IPythonHandler):
 					jobs = sorted(jobs, key=lambda j: j['timestamp'],reverse=True) 	# sort list of jobs by timestamp (most recent)
 
 					result += '<div id="jobs-div">'
-					result += '<div id = "job-table" style="overflow:auto; height:45%">'
+					result += '<div id = "job-table" style="overflow:auto; height:45%; width: 330px">'
 					result += '<table id="job-cache-display" style="font-size:11px;">'
 					result += '<col width=33%>'
 					result += '<col width=33%>'
@@ -1016,7 +1016,7 @@ class ListUserJobsHandler(IPythonHandler):
 					logging.debug(jobs_dict)
 
 					# print("success!")
-					self.finish({"status_code": r.status_code, "result": result, "table":result,"jobs": jobs_dict, "displays": details})
+					self.finish({"status_code": r.status_code, "result": jobs, "table":result,"jobs": jobs_dict, "displays": details})
 				except:
 					self.finish({"status_code": r.status_code, "result": r.text, "table":result,"jobs": jobs, "displays": details})
 			# if no job id provided
