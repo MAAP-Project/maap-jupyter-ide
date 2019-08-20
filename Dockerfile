@@ -5,16 +5,12 @@ RUN conda install -c conda-forge nodejs
 RUN conda install -c conda-forge gitpython
 
 # install git extension
-#TODO: make sure we are pulling a stable released verison here, that doesn't exist yet
-RUN jupyter labextension install @jupyterlab/git
-RUN pip install --upgrade jupyterlab-git
-RUN jupyter serverextension enable --py jupyterlab_git
-#COPY jupyterlab-git /jupyterlab-git
-#RUN cd /jupyterlab-git && npm install && npm run build
-#RUN cd /jupyterlab-git && jupyter labextension link .
-#RUN cd /jupyterlab-git && npm run build
-#RUN cd /jupyterlab-git && pip install -e .
-#RUN cd /jupyterlab-git && jupyter serverextension enable --py jupyterlab_git --sys-prefix
+RUN git clone -b v0.8 https://github.com/jupyterlab/jupyterlab-git.git
+RUN cd /jupyterlab-git && npm install
+RUN cd /jupyterlab-git && npm run build
+RUN cd /jupyterlab-git && jupyter labextension link .
+RUN cd /jupyterlab-git && pip install -e .
+RUN cd /jupyterlab-git && jupyter serverextension enable --py jupyterlab_git
 
 # install toastify for error messaging
 RUN jupyter labextension install jupyterlab_toastify@2.3.0
@@ -25,16 +21,17 @@ COPY hide_side_panel /hide_side_panel
 RUN cd /hide_side_panel && npm run build
 RUN cd /hide_side_panel && jupyter labextension link .
 
-## cmc widget
-#COPY ipycmc /ipycmc
-#RUN conda install -c plotly plotly 
-## RUN cd /ipycmc && pip install ipywidgets
-#RUN cd /ipycmc && jupyter labextension install @jupyter-widgets/jupyterlab-manager@1.0
-#RUN cd /ipycmc && npm install && npm run build
-#RUN cd /ipycmc && pip install -e .
-#RUN cd /ipycmc && jupyter nbextension install --py --symlink --sys-prefix ipycmc
-#RUN cd /ipycmc && jupyter nbextension enable --py --sys-prefix ipycmc
-#RUN cd /ipycmc && jupyter labextension link .
+# cmc widget
+COPY ipycmc /ipycmc
+RUN pip install plotly==4.0.0
+RUN jupyter labextension install @jupyterlab/plotly-extension
+RUN jupyter labextension install @jupyter-widgets/jupyterlab-manager@1.0
+
+RUN cd /ipycmc && npm install && npm run build
+RUN cd /ipycmc && pip install -e .
+RUN cd /ipycmc && jupyter nbextension install --py --symlink --sys-prefix ipycmc
+RUN cd /ipycmc && jupyter nbextension enable --py --sys-prefix ipycmc
+RUN cd /ipycmc && jupyter labextension link .
 
 # jlab pull projects into /projects directory
 COPY pull_projects /pull_projects
@@ -79,9 +76,27 @@ RUN cd /insert_defaults_to_notebook && npm install
 RUN cd /insert_defaults_to_notebook && npm run build
 RUN cd /insert_defaults_to_notebook && jupyter labextension link .
 
+
+# user metadata form
+COPY user_meta_form /user_meta_form
+RUN cd /user_meta_form && npm install
+RUN cd /user_meta_form && npm run build
+RUN cd /user_meta_form && jupyter labextension link .
+
 RUN touch /root/.bashrc && echo "cd /projects >& /dev/null" >> /root/.bashrc
 
 RUN mkdir /projects
+
+# install s3fs
+# s3 bucket mount setup pt1
+RUN apt-get update && apt-get install -y build-essential git libfuse-dev libcurl4-openssl-dev libxml2-dev mime-support automake libtool pkg-config libssl-dev
+RUN cd / && git clone https://github.com/s3fs-fuse/s3fs-fuse
+RUN cd /s3fs-fuse/ && ./autogen.sh && ./configure --prefix=/usr --with-openssl && make && make install
+COPY .passwd-s3fs /root/.passwd-s3fs
+RUN chmod 400 /root/.passwd-s3fs
+#RUN mkdir /tmp/cache && chmod 777 /tmp/cache
+#RUN mkdir /projects/s3-bucket
+#RUN s3fs -o use_cache=/tmp/cache maap-mount-dev /projects/s3-bucket
 
 EXPOSE 3100
 

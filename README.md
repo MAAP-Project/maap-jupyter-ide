@@ -2,11 +2,12 @@
 
 This repo includes JupyterLab extensions that have been built for the MAAP project (https://che-k8s.maap.xyz/)
 
-In order to use each of these extensions they must be installed and enabled. Instructions for each extension can be 
+In order to use each of these extensions they must be installed and enabled in your environment. Instructions for each extension can be 
 found in the respective folder. 
 
-These extensions have been developed on `Jupyter 4.4.0` and `Jupyter Lab 0.32.1`.
+These extensions have been developed for `Jupyter 4.4.0` and `Jupyter Lab 1.0.2`.
 
+#### Getting Started on Your Extension
 To build additional extensions for the project, it is recommended to start from 
 a [cookie-cutter](https://github.com/jupyterlab/extension-cookiecutter-ts) or off a previously built extension.
 
@@ -23,7 +24,10 @@ Some Jupyter Extensions/Resources we have found helpful:
 * [Jupyterlab-html](https://github.com/mflevine/jupyterlab_html) 
 * [Jupyterlab-sandbox](https://github.com/canavandl/jupyterlab_sandbox)
 
-##### Deploying extensions as part of Eclipse Che
+In JupyterLab's update to the stable 1.0 version, they have also updated and added lots of documentation on extension 
+development. I recommend taking a look at [this](https://jupyterlab.readthedocs.io/en/stable/developer/extension_dev.html).
+
+#### Deploying Extensions as Part of Eclipse Che
 Our development process involves building and running an extension locally in jupyterlab using a conda env before 
 installing it on the che server. To enable an extension in Che, it must be included in the base docker image/stack that a 
 Che workspace is launched with. The dockerfile that extensions are included in is the `Dockerfile` and the highest level
@@ -118,3 +122,22 @@ on all user accounts. If you are testing something, you can create your own imag
   "id": "stackjfbf5pwojopvx4e7"
 }
 ```
+
+#### Creating and Sharing Stacks
+To create a stack, you write a raw configuration with all the che and docker settings your workspace will require, including installers, volumes, docker run tags, docker images, etc. See the example above.
+
+To share a stack, you will need to be the owner (creator) of the stack.
+Go to the homepage of where your Che instance is hosted and add `/swagger` to the end of the url for an interface with Che's API.   Under the `permissions`section, make a POST request with the users you want to share with and the id of your stack (shows up at the bottom of the configuration after creation).
+POST body:
+```
+{
+"userId": "*",
+  "domainId": "stack",
+  "instanceId": "${STACK_ID}",
+  "actions": [
+    "read",
+    "search"
+  ]
+}
+```
+reference: https://www.eclipse.org/che/docs/che-6/stacks.html#sharing-stacks-and-system-stacks
