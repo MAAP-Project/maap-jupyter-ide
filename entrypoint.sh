@@ -25,4 +25,7 @@ perl -pi -e "s|web_app.settings\['base_url'\]|'/'|g" /ipycmc/ipycmc/nbextension/
 # Dump all env variables into file so they exist still though SSH
 env | grep _ >> /etc/environment
 
+# Add conda bin to path
+export PATH=$PATH:/opt/conda/bin
+
 jupyter lab --ip=0.0.0.0 --port=3100 --allow-root --NotebookApp.token='' --LabApp.base_url=$PREVIEW_URL --no-browser --debug
