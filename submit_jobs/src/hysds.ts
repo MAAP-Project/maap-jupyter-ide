@@ -279,7 +279,7 @@ export class JobCache extends Panel {
 // HySDS stuff
 // -----------------------
 const nonXML: string[] = ['deleteAlgorithm','listAlgorithms','registerAuto','getResult','executeInputs','getStatus','execute','describeProcess','getCapabilities','register'];
-const notImplemented: string[] = ['dismiss'];
+const notImplemented: string[] = ['dismiss','delete'];
 export class HySDSWidget extends Widget {
 
   // TODO: protect instance vars
@@ -343,6 +343,10 @@ export class HySDSWidget extends Widget {
       case 'dismiss':
         this.popup_title = "Dismiss Job";
         console.log('dismiss');
+        break;
+      case 'delete':
+        this.popup_title = "Delete Job";
+        console.log('delete');
         break;
       case 'describeProcess':
         this.popup_title = "Describe Process";
@@ -478,23 +482,6 @@ export class HySDSWidget extends Widget {
 
   // TODO: add jobs to response text
   updateJobCache(){
-    // console.log(this.fields);
-    // if (this.req == 'execute') {
-    //   this.jobs_panel.addJob('------------------------------');
-    //   this.jobs_panel.addJob(this.response_text);
-    //   for (var e of this.fields) {
-    //     var fieldName = e[0].toLowerCase();
-    //     console.log(fieldName);
-    //     if (!['timestamp'].includes(fieldName)){
-    //       var fieldText = this.ins_dict[fieldName];
-    //       console.log(fieldText);
-    //       this.jobs_panel.addJob("\t" + fieldName + " : " + fieldText);
-    //     }
-    //   }
-    //   this.jobs_panel.addJob("inputs: ");
-    //   this.jobs_panel.addJob("username: " + this.old_fields["username"]);
-    //   this.jobs_panel.addJob("algo: " + this.old_fields["algo_id"]);
-    // }
     this.jobs_panel.addJob();
   }
 
