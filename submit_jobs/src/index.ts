@@ -17,6 +17,7 @@ const executeInputsFields = data.executeInputs;
 const getStatusFields = data.getStatus;
 const getResultFields = data.getResult;
 const dismissFields = data.dismiss;
+const deleteFields = data.delete;
 const describeProcessFields = data.describeProcess;
 
 // I really don't like these hacks
@@ -137,6 +138,21 @@ function activateDismiss(app: JupyterFrontEnd,
   palette.addItem({command: open_command, category: 'DPS'});
   console.log('HySDS Dismiss Job is activated!');
 }
+function activateDelete(app: JupyterFrontEnd, 
+                        palette: ICommandPalette, 
+                        restorer: ILauncher | null): void{
+  const open_command = 'hysds: delete-job';
+
+  app.commands.addCommand(open_command, {
+    label: 'Delete DPS Job',
+    isEnabled: () => true,
+    execute: args => {
+      popup(new HySDSWidget('delete',deleteFields,username,jobsPanel,{}));
+    }
+  });
+  palette.addItem({command: open_command, category: 'DPS'});
+  console.log('HySDS Delete Job is activated!');
+}
 function activateDescribe(app: JupyterFrontEnd, 
                         palette: ICommandPalette, 
                         restorer: ILauncher | null): void{
@@ -168,7 +184,7 @@ function activateList(app: JupyterFrontEnd,
   palette.addItem({command: open_command, category: 'DPS'});
   console.log('HySDS Describe Job is activated!');
 }
-function activateDelete(app: JupyterFrontEnd, 
+function activateDeleteAlgorithm(app: JupyterFrontEnd, 
                         palette: ICommandPalette, 
                         restorer: ILauncher | null): void{
   const open_command = 'hysds: delete-algorithm';
@@ -251,6 +267,13 @@ const extensionDismiss: JupyterFrontEndPlugin<void> = {
   optional: [ILauncher],
   activate: activateDismiss
 };
+const extensionDelete: JupyterFrontEndPlugin<void> = {
+  id: 'dps-job-delete',
+  autoStart: true,
+  requires: [ICommandPalette],
+  optional: [ILauncher],
+  activate: activateDelete
+};
 const extensionDescribe: JupyterFrontEndPlugin<void> = {
   id: 'dps-job-describe',
   autoStart: true,
@@ -270,7 +293,7 @@ const extensionDelete: JupyterFrontEndPlugin<void> = {
   autoStart: true,
   requires: [ICommandPalette],
   optional: [ILauncher],
-  activate: activateDelete
+  activate: activateDeleteAlgorithm
 };
 
 const cacheExtension: JupyterFrontEndPlugin<void> = {
@@ -280,4 +303,4 @@ const cacheExtension: JupyterFrontEndPlugin<void> = {
   activate: activateJobCache
 };
 
-export default [extensionDelete,extensionRegister,extensionCapabilities,extensionStatus,extensionResult,extensionExecute,extensionDismiss,extensionDescribe,extensionList, cacheExtension];
+export default [extensionDelete,extensionRegister,extensionCapabilities,extensionStatus,extensionResult,extensionExecute,extensionDismiss,extensionDelete,extensionDescribe,extensionList, cacheExtension];
