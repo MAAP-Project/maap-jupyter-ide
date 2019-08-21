@@ -11,6 +11,8 @@ from git import Repo
 import shutil
 import urllib
 
+GITLAB_REPO = "repo.nasa.maap.xyz"
+
 # Set selected ADE Docker Image 
 class ListProjectsHandler(IPythonHandler):
     def get(self):
@@ -155,6 +157,19 @@ class GetAllProjectsHandler(IPythonHandler):
 
                 if src_type == 'git':
                     if not os.path.exists('/projects'+path):
+
+                        # Check if is stored on our gitlab (repo.nasa.maap.xyz) if so, use the users authentication
+                        # token to allow for the downloads of private repositories
+                        if GITLAB_REPO in location:
+
+                            # If it is, get the authentication token and add to the location path
+                            gitlab_token = self.get_argument('gitlab_token', '')
+                            if gitlab_token == '':
+                                self.finish({"status": "project import failed. no gitlab token"})
+
+                            repo_path_on_gitlab = location.split(":")[-1]
+                            location = "https://oauth2:" + gitlab_token + "@repo.nasa.maap.xyz/" + repo_path_on_gitlab
+
                         Repo.clone_from(location,dl_loc)
                 elif src_type == 'zip':
                     with urllib.urlopen(location) as response, open(dl_loc+'.zip', 'w+') as out_file:
