@@ -5,6 +5,7 @@ import { ILauncher } from '@jupyterlab/launcher';
 import { Widget } from '@phosphor/widgets';
 import { INotification } from "jupyterlab_toastify";
 import { request, RequestResult } from './request';
+import { getUserInfo } from "./getKeycloak";
 
 export class ProjectsPull extends Widget {
 
@@ -13,18 +14,26 @@ export class ProjectsPull extends Widget {
   constructor() {
     let body = document.createElement('div');
     body.style.display = 'flex';
-    body.style.flexDirection = 'column'
+    body.style.flexDirection = 'column';
 
-    request('get', PageConfig.getBaseUrl() + "pull_projects/getAllProjects").then((res: RequestResult) => {
-      if(res.ok){
-        let json_response:any = res.json();
-        let message = json_response['status'];
-        this.pull_result = message;
-	INotification.success(this.pull_result);
-	let contents = document.createTextNode(message);
-        body.appendChild(contents);
-      }
+    // Get gitlab token from keycloak
+    getUserInfo(function(profile: any) {
+        console.log(profile);
+        let gitlab_token = profile.get('gitlab_token', '');
+
+        // Make request to pull all projects
+        request('get', PageConfig.getBaseUrl() + "pull_projects/getAllProjects", {"gitlab_token": gitlab_token}).then((res: RequestResult) => {
+          if(res.ok){
+            let json_response:any = res.json();
+            let message = json_response['status'];
+            this.pull_result = message;
+            INotification.success(this.pull_result);
+            let contents = document.createTextNode(message);
+            body.appendChild(contents);
+          }
+        });
     });
+
     super({ node: body });
   }
 
@@ -38,7 +47,7 @@ export class ProjectsList extends Widget {
   constructor() {
     let body = document.createElement('div');
     body.style.display = 'flex';
-    body.style.flexDirection = 'column'
+    body.style.flexDirection = 'column';
 
     request('get', PageConfig.getBaseUrl() + "pull_projects/list").then((res: RequestResult) => {
       if(res.ok){
