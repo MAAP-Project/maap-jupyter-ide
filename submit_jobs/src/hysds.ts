@@ -69,6 +69,7 @@ export class JobCache extends Panel {
             // catch case if user has no jobs
             let num_jobs = Object.keys(me.jobs).length;
             if (num_jobs > 0 && me.job_id == '') {
+
               me.job_id = json_response['result'][0]['job_id'];
             }
 
@@ -113,9 +114,9 @@ export class JobCache extends Panel {
       div.appendChild(textarea);
       me.node.appendChild(div);
     }
-    
+
     // --------------------
-    // results button
+    // refresh button
     // --------------------
     if (document.getElementById('job-refresh-button') == null) {
       let div = (<HTMLDivElement>document.getElementById('jobs-div'));
@@ -129,7 +130,6 @@ export class JobCache extends Panel {
       div.appendChild(refreshBtn);
     }
 
-
     // set display in 2nd callback after making table rows clickable
     let setDisplays = function (me:JobCache){
       // create div for job info section
@@ -137,7 +137,6 @@ export class JobCache extends Panel {
       if (document.getElementById('jobs-div') != null) {
         // 1-time add line break and section header for job info
         let div2 = (<HTMLDivElement>document.getElementById('jobs-div'));
-
         if (document.getElementById('job-info-head') == null) {
           // line break
           var line = document.createElement('hr');
@@ -175,6 +174,18 @@ export class JobCache extends Panel {
           display.className = 'jp-JSONEditor-host';
           div2.appendChild(display);
         }
+  
+        // --------------------
+        // results button
+        // --------------------
+        // if (document.getElementById('job-result-button') == null) {
+        //   let resultBtn = document.createElement('button');
+        //   resultBtn.id = 'job-result-button';
+        //   resultBtn.className = 'jupyter-button';
+        //   resultBtn.innerHTML = 'Get Job Results';
+        //   resultBtn.addEventListener('click', function() {me.getJobResult(me)}, false);
+        //   div2.appendChild(resultBtn);
+        // }
       }
     }
 
