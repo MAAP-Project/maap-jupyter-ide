@@ -196,6 +196,10 @@ class MountBucketHandler(IPythonHandler):
                 message = mount_output
                 logging.debug('mount log {}'.format(mount_output))
 
+                # create user's folder within s3 bucket if it doesn't already exist
+                if not os.path.exists('{}/{}'.format(user_workspace,username)):
+                    os.mkdir('{}/{}'.format(user_workspace,username))
+
                 # touch & rm file to register folder to filesystem
                 touch_output = subprocess.check_output('touch {path}/{user}/testfile && rm {path}/{user}/testfile'.format(path=user_workspace,user=username), shell=True).decode('utf-8')
                 message = touch_output
