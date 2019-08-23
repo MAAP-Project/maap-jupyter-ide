@@ -217,4 +217,3 @@ class MountBucketHandler(IPythonHandler):
                 self.finish({"status_code":200, "message":message, "user_workspace":user_workspace,"user_bucket_dir":user_bucket_dir})
         except:
             self.finish({"status_code":500, "message":message, "user_workspace":user_workspace,"user_bucket_dir":user_bucket_dir})
-

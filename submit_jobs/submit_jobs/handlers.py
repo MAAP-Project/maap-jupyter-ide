@@ -537,7 +537,6 @@ class GetStatusHandler(IPythonHandler):
 					self.finish({"status_code": r.status_code, "result": r.text, "job_status":''})
 			# if no job id provided
 			elif r.status_code in [404]:
-				# print('404?')
 				# if bad job id, show provided parameters
 				result = 'Exception: {}\nMessage: {}\n(Did you provide a valid JobID?)\n'.format(rt[0].attrib['exceptionCode'], rt[0][0].text)
 				result += '\nThe provided parameters were:\n'
@@ -654,31 +653,138 @@ class GetResultHandler(IPythonHandler):
 			self.finish({"status_code": 400, "result": "Bad Request"})
 
 class DismissHandler(IPythonHandler):
-	def post(self):
+	def get(self):
+		# ==================================
+		# Part 1: Parse Required Arguments
+		# ==================================
 		fields = getFields('dismiss')
-		params = {}
 
+		params = {}
 		for f in fields:
 			try:
-				arg = self.get_argument(f.lower(), '')
+				arg = self.get_argument(f.lower(), '').strip()
 				params[f] = arg
 			except:
-				pass
+				arg = ''
 
-		url = params.pop('url',None)
-		url = 'http://geoprocessing.demo.52north.org:8080/wps/WebProcessingService'
-		params['service'] = 'WPS'
-		params['version'] = '2.0.0'
-		params['request'] = 'Dismiss'
-		r.requests.get(
-			url,
-			params=params
-		)
+		# print(params)
+		logging.debug('params are')
+		logging.debug(params)
+
+		# ==================================
+		# Part 2: Build & Send Request
+		# ==================================
+		url = BASE_URL+'/dps/job/revoke/{job_id}'.format(**params)
+		headers = {'Content-Type':'application/xml'}
+		# print(url)
+		# print(req_xml)
+
 		try:
-			self.finish({"status_code": r.status_code, "result": r.text})
+			r = requests.get(
+				url,
+				headers=headers
+			)
+
+			# print(r.status_code)
+			# print(r.text)
+
+			# ==================================
+			# Part 3: Check Response
+			# ==================================
+			# if no job id provided
+			if params['job_id'] == '':
+				result = 'Exception: {}\nMessage: {}\n(Did you provide a valid JobID?)\n'.format(rt[0].attrib['exceptionCode'], rt[0][0].text)
+				result += '\nThe provided parameters were:\n'
+				for f in fields:
+					result += '\t{}: {}\n'.format(f,params[f])
+				result += '\n'
+				self.finish({"status_code": 404, "result": result})
+			# if dismissal successful
+			elif r.status_code == 200:
+				try:
+					# parse out JobID from response
+					rt = ET.fromstring(r.text)
+
+					job_id = rt[0].text
+					status = rt[1].text
+					# print(job_id)
+
+					result = 'JobID is {}\nStatus: {}'.format(job_id,status)
+					# print("success!")
+					self.finish({"status_code": r.status_code, "result": result})
+				except:
+					self.finish({"status_code": r.status_code, "result": r.text})
+			else:
+				self.finish({"status_code": r.status_code, "result": r.reason})
 		except:
-			print('failed')
-			self.finish({"status_code": r.status_code, "result": r.reason})
+			self.finish({"status_code": 400, "result": "Bad Request"})
+
+class DeleteHandler(IPythonHandler):
+	def get(self):
+		# ==================================
+		# Part 1: Parse Required Arguments
+		# ==================================
+		fields = getFields('delete')
+
+		params = {}
+		for f in fields:
+			try:
+				arg = self.get_argument(f.lower(), '').strip()
+				params[f] = arg
+			except:
+				arg = ''
+
+		# print(params)
+		logging.debug('params are')
+		logging.debug(params)
+
+		# ==================================
+		# Part 2: Build & Send Request
+		# ==================================
+		url = BASE_URL+'/dps/job/{job_id}'.format(**params)
+		headers = {'Content-Type':'application/xml'}
+		# print(url)
+		# print(req_xml)
+
+		try:
+			r = requests.get(
+				url,
+				headers=headers
+			)
+
+			# print(r.status_code)
+			# print(r.text)
+
+			# ==================================
+			# Part 3: Check Response
+			# ==================================
+			# if no job id provided
+			if params['job_id'] == '':
+				result = 'Exception: {}\nMessage: {}\n(Did you provide a valid JobID?)\n'.format(rt[0].attrib['exceptionCode'], rt[0][0].text)
+				result += '\nThe provided parameters were:\n'
+				for f in fields:
+					result += '\t{}: {}\n'.format(f,params[f])
+				result += '\n'
+				self.finish({"status_code": 404, "result": result})
+			# if deletion successful
+			elif r.status_code == 200:
+				try:
+					# parse out JobID from response
+					rt = ET.fromstring(r.text)
+
+					job_id = rt[0].text
+					status = rt[1].text
+					# print(job_id)
+
+					result = 'JobID is {}\nStatus: {}'.format(job_id,status)
+					# print("success!")
+					self.finish({"status_code": r.status_code, "result": result})
+				except:
+					self.finish({"status_code": r.status_code, "result": r.text})
+			else:
+				self.finish({"status_code": r.status_code, "result": r.reason})
+		except:
+			self.finish({"status_code": 400, "result": "Bad Request"})
 
 class DescribeProcessHandler(IPythonHandler):
 	def get(self):
