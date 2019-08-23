@@ -1,7 +1,7 @@
 # Running `npm run build` will create static resources in the static
 # directory of this Python package (and create that directory if necessary).
 from notebook.utils import url_path_join
-from .handlers import DeleteAlgorithmHandler, RegisterAlgorithmHandler, DefaultValuesHandler, GetCapabilitiesHandler, ExecuteHandler, ExecuteInputsHandler, GetStatusHandler, DescribeProcessHandler, GetResultHandler, DismissHandler, DismissHandler, ListUserJobsHandler
+from .handlers import DeleteAlgorithmHandler, RegisterAlgorithmHandler, DefaultValuesHandler, GetCapabilitiesHandler, ExecuteHandler, ExecuteInputsHandler, GetStatusHandler, DescribeProcessHandler, GetResultHandler, DismissHandler, DeleteHandler, ListUserJobsHandler
 
 
 def _jupyter_labextension_paths():

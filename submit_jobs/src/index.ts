@@ -22,28 +22,8 @@ const describeProcessFields = data.describeProcess;
 
 // I really don't like these hacks
 // ------------------------------------------------------------
-// get Keycloak profile on load and save username to workaround session timeout
-var username:string;
-// getUserInfo(function(profile: any) {
-//   if (profile['cas:username'] === undefined) {
-//     INotification.error("Get username failed.");
-//     username = 'anonymous';
-//   return;
-//   } else {
-//     username = profile['cas:username'];
-//     INotification.success("username is "+username);
-//   }
-//   console.log('username is '+username);
-// });
-
-// if (username == 'anonymous') {
-//   INotification.error("Get username failed.");
-// } else {
-// }
-// ------------------------------------------------------------
 // reference to jobsPanel passed through each submit_job widget
 const jobsPanel = new JobCache();
-// const jobsPanel = new JobCache(username);
 // ------------------------------------------------------------
 
 function activateRegister(app: JupyterFrontEnd, 
@@ -205,12 +185,11 @@ function activateJobCache(app: JupyterFrontEnd,
 
   var infoPanel = jobsPanel;
   infoPanel.id = 'job-cache-display';
-  infoPanel.title.label = 'Submitted Jobs';
+  infoPanel.title.label = 'Jobs';
   infoPanel.title.caption = 'jobs sent to DPS';
 
   // app.shell.addToLeftArea(infoPanel, {rank:300});
   app.shell.add(infoPanel, 'left', {rank: 300});
-  jobsPanel.updateDisplay();
 
   const open_command = 'jobs: list';
 
@@ -222,6 +201,7 @@ function activateJobCache(app: JupyterFrontEnd,
     }
   });
   palette.addItem({command: open_command, category: 'DPS'});
+  jobsPanel.updateDisplay();
   console.log('HySDS JobList is activated!');
 }
 
@@ -288,7 +268,7 @@ const extensionList: JupyterFrontEndPlugin<void> = {
   optional: [ILauncher],
   activate: activateList
 };
-const extensionDelete: JupyterFrontEndPlugin<void> = {
+const extensionDeleteAlgorithm: JupyterFrontEndPlugin<void> = {
   id: 'dps-algo-delete',
   autoStart: true,
   requires: [ICommandPalette],
@@ -303,4 +283,4 @@ const cacheExtension: JupyterFrontEndPlugin<void> = {
   activate: activateJobCache
 };
 
-export default [extensionDelete,extensionRegister,extensionCapabilities,extensionStatus,extensionResult,extensionExecute,extensionDismiss,extensionDelete,extensionDescribe,extensionList, cacheExtension];
+export default [extensionDeleteAlgorithm,extensionRegister,extensionCapabilities,extensionStatus,extensionResult,extensionExecute,extensionDismiss,extensionDelete,extensionDescribe,extensionList, cacheExtension];
