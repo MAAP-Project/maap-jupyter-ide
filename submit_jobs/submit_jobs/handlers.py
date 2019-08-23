@@ -527,14 +527,14 @@ class GetStatusHandler(IPythonHandler):
 					rt = ET.fromstring(r.text)
 
 					job_id = rt[0].text
-					status = rt[1].text
+					job_status = rt[1].text
 					# print(job_id)
 
-					result = 'JobID is {}\nStatus: {}'.format(job_id,status)
+					result = 'JobID is {}\nStatus: {}'.format(job_id,job_status)
 					# print("success!")
-					self.finish({"status_code": r.status_code, "result": result})
+					self.finish({"status_code": r.status_code, "result": result, "job_status":job_status})
 				except:
-					self.finish({"status_code": r.status_code, "result": r.text})
+					self.finish({"status_code": r.status_code, "result": r.text, "job_status":''})
 			# if no job id provided
 			elif r.status_code in [404]:
 				# print('404?')
@@ -544,11 +544,11 @@ class GetStatusHandler(IPythonHandler):
 				for f in fields:
 					result += '\t{}: {}\n'.format(f,params[f])
 				result += '\n'
-				self.finish({"status_code": 404, "result": result})
+				self.finish({"status_code": 404, "result": result, "job_status":''})
 			else:
-				self.finish({"status_code": r.status_code, "result": r.reason})
+				self.finish({"status_code": r.status_code, "result": r.reason, "job_status":''})
 		except:
-			self.finish({"status_code": 400, "result": "Bad Request"})
+			self.finish({"status_code": 400, "result": "Bad Request","job_status":''})
 
 class GetResultHandler(IPythonHandler):
 	def get(self):
@@ -609,7 +609,7 @@ class GetResultHandler(IPythonHandler):
 						prods = rt[1][0]
 						p = getProds(prods)
 
-						result = "<table>"
+						result = '<table id="job-result-display" style="border-style: none; font-size: 11px">'
 						result += '<thead><tr><th colspan="2" style="text-align:left"> Job Results</th></tr></thead>'
 						result += '<tbody>'
 						result += '<tr><td>JobID: </td><td style="text-align:left">{}</td></tr>'.format(job_id)
@@ -619,7 +619,7 @@ class GetResultHandler(IPythonHandler):
 								if attrib[0] == 'Locations' and type(attrib[1] == type([])):
 									lst = attrib[1]
 									lnk = lst[-1]
-									lst[-1] = "<a href=\"{}\">{}</a>".format(lnk,lnk)
+									lst[-1] = '<a href="{}" target="_blank" style="border-bottom: 1px solid #0000ff; color: #0000ff;">{}</a>'.format(lnk,lnk)
 									prop = ('<br>	').join(lst)
 									result += '<tr><td>{}: </td><td style="text-align:left">{}</td></tr>'.format(attrib[0],prop)
 								else:
@@ -628,7 +628,7 @@ class GetResultHandler(IPythonHandler):
 
 						result += '</tbody>'
 						result += '</table>'
-						print(result)
+						logging.debug(result)
 						# result = result.replace(',',',<br>	')
 						# result = result.replace('\n','<br>')
 						# print(result)
@@ -986,9 +986,9 @@ class ListUserJobsHandler(IPythonHandler):
 					jobs = [parse_job(job) for job in resp['jobs']] 					# parse inputs from string to dict
 					jobs = sorted(jobs, key=lambda j: j['timestamp'],reverse=True) 	# sort list of jobs by timestamp (most recent)
 
-
 					result += '<div id="jobs-div">'
-					result += '<table id="job-cache-display" style="height:40%;font-size:11px;" overflow="auto">'
+					result += '<div id = "job-table" style="overflow:auto; height:45%; width: 330px">'
+					result += '<table id="job-cache-display" style="font-size:11px;">'
 					result += '<col width=33%>'
 					result += '<col width=33%>'
 					result += '<col width=33%>'
@@ -1007,10 +1007,16 @@ class ListUserJobsHandler(IPythonHandler):
 					result += '</tbody>'
 					result += '</table>'
 					result += '</div>'
-					print(result)
+					result += '</div>'
+					logging.debug(result)
+					
+					# convert jobs list to dict, keyed by id
+					job_ids = [e['job_id'] for e in jobs]
+					jobs_dict = {job_ids[i]:jobs[i] for i in range(0,len(job_ids))}
+					logging.debug(jobs_dict)
 
 					# print("success!")
-					self.finish({"status_code": r.status_code, "result": result, "table":result,"jobs": jobs, "displays": details})
+					self.finish({"status_code": r.status_code, "result": jobs, "table":result,"jobs": jobs_dict, "displays": details})
 				except:
 					self.finish({"status_code": r.status_code, "result": r.text, "table":result,"jobs": jobs, "displays": details})
 			# if no job id provided
