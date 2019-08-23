@@ -22,6 +22,7 @@ const describeProcessFields = data.describeProcess;
 
 // I really don't like these hacks
 // ------------------------------------------------------------
+var username:string;
 // reference to jobsPanel passed through each submit_job widget
 const jobsPanel = new JobCache();
 // ------------------------------------------------------------
