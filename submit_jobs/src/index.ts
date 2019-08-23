@@ -17,32 +17,13 @@ const executeInputsFields = data.executeInputs;
 const getStatusFields = data.getStatus;
 const getResultFields = data.getResult;
 const dismissFields = data.dismiss;
+const deleteFields = data.delete;
 const describeProcessFields = data.describeProcess;
 
 // I really don't like these hacks
 // ------------------------------------------------------------
-// get Keycloak profile on load and save username to workaround session timeout
-var username:string;
-// getUserInfo(function(profile: any) {
-//   if (profile['cas:username'] === undefined) {
-//     INotification.error("Get username failed.");
-//     username = 'anonymous';
-//   return;
-//   } else {
-//     username = profile['cas:username'];
-//     INotification.success("username is "+username);
-//   }
-//   console.log('username is '+username);
-// });
-
-// if (username == 'anonymous') {
-//   INotification.error("Get username failed.");
-// } else {
-// }
-// ------------------------------------------------------------
 // reference to jobsPanel passed through each submit_job widget
 const jobsPanel = new JobCache();
-// const jobsPanel = new JobCache(username);
 // ------------------------------------------------------------
 
 function activateRegister(app: JupyterFrontEnd, 
@@ -137,6 +118,21 @@ function activateDismiss(app: JupyterFrontEnd,
   palette.addItem({command: open_command, category: 'DPS'});
   console.log('HySDS Dismiss Job is activated!');
 }
+function activateDelete(app: JupyterFrontEnd, 
+                        palette: ICommandPalette, 
+                        restorer: ILauncher | null): void{
+  const open_command = 'hysds: delete-job';
+
+  app.commands.addCommand(open_command, {
+    label: 'Delete DPS Job',
+    isEnabled: () => true,
+    execute: args => {
+      popup(new HySDSWidget('delete',deleteFields,username,jobsPanel,{}));
+    }
+  });
+  palette.addItem({command: open_command, category: 'DPS'});
+  console.log('HySDS Delete Job is activated!');
+}
 function activateDescribe(app: JupyterFrontEnd, 
                         palette: ICommandPalette, 
                         restorer: ILauncher | null): void{
@@ -168,7 +164,7 @@ function activateList(app: JupyterFrontEnd,
   palette.addItem({command: open_command, category: 'DPS'});
   console.log('HySDS Describe Job is activated!');
 }
-function activateDelete(app: JupyterFrontEnd, 
+function activateDeleteAlgorithm(app: JupyterFrontEnd, 
                         palette: ICommandPalette, 
                         restorer: ILauncher | null): void{
   const open_command = 'hysds: delete-algorithm';
@@ -189,12 +185,11 @@ function activateJobCache(app: JupyterFrontEnd,
 
   var infoPanel = jobsPanel;
   infoPanel.id = 'job-cache-display';
-  infoPanel.title.label = 'Submitted Jobs';
+  infoPanel.title.label = 'Jobs';
   infoPanel.title.caption = 'jobs sent to DPS';
 
   // app.shell.addToLeftArea(infoPanel, {rank:300});
   app.shell.add(infoPanel, 'left', {rank: 300});
-  jobsPanel.updateDisplay();
 
   const open_command = 'jobs: list';
 
@@ -206,6 +201,7 @@ function activateJobCache(app: JupyterFrontEnd,
     }
   });
   palette.addItem({command: open_command, category: 'DPS'});
+  jobsPanel.updateDisplay();
   console.log('HySDS JobList is activated!');
 }
 
@@ -251,6 +247,13 @@ const extensionDismiss: JupyterFrontEndPlugin<void> = {
   optional: [ILauncher],
   activate: activateDismiss
 };
+const extensionDelete: JupyterFrontEndPlugin<void> = {
+  id: 'dps-job-delete',
+  autoStart: true,
+  requires: [ICommandPalette],
+  optional: [ILauncher],
+  activate: activateDelete
+};
 const extensionDescribe: JupyterFrontEndPlugin<void> = {
   id: 'dps-job-describe',
   autoStart: true,
@@ -265,12 +268,12 @@ const extensionList: JupyterFrontEndPlugin<void> = {
   optional: [ILauncher],
   activate: activateList
 };
-const extensionDelete: JupyterFrontEndPlugin<void> = {
+const extensionDeleteAlgorithm: JupyterFrontEndPlugin<void> = {
   id: 'dps-algo-delete',
   autoStart: true,
   requires: [ICommandPalette],
   optional: [ILauncher],
-  activate: activateDelete
+  activate: activateDeleteAlgorithm
 };
 
 const cacheExtension: JupyterFrontEndPlugin<void> = {
@@ -280,4 +283,4 @@ const cacheExtension: JupyterFrontEndPlugin<void> = {
   activate: activateJobCache
 };
 
-export default [extensionDelete,extensionRegister,extensionCapabilities,extensionStatus,extensionResult,extensionExecute,extensionDismiss,extensionDescribe,extensionList, cacheExtension];
+export default [extensionDeleteAlgorithm,extensionRegister,extensionCapabilities,extensionStatus,extensionResult,extensionExecute,extensionDismiss,extensionDelete,extensionDescribe,extensionList, cacheExtension];
