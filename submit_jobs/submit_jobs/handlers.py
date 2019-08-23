@@ -527,28 +527,27 @@ class GetStatusHandler(IPythonHandler):
 					rt = ET.fromstring(r.text)
 
 					job_id = rt[0].text
-					status = rt[1].text
+					job_status = rt[1].text
 					# print(job_id)
 
-					result = 'JobID is {}\nStatus: {}'.format(job_id,status)
+					result = 'JobID is {}\nStatus: {}'.format(job_id,job_status)
 					# print("success!")
-					self.finish({"status_code": r.status_code, "result": result})
+					self.finish({"status_code": r.status_code, "result": result, "job_status":job_status})
 				except:
-					self.finish({"status_code": r.status_code, "result": r.text})
+					self.finish({"status_code": r.status_code, "result": r.text, "job_status":''})
 			# if no job id provided
 			elif r.status_code in [404]:
-				# print('404?')
 				# if bad job id, show provided parameters
 				result = 'Exception: {}\nMessage: {}\n(Did you provide a valid JobID?)\n'.format(rt[0].attrib['exceptionCode'], rt[0][0].text)
 				result += '\nThe provided parameters were:\n'
 				for f in fields:
 					result += '\t{}: {}\n'.format(f,params[f])
 				result += '\n'
-				self.finish({"status_code": 404, "result": result})
+				self.finish({"status_code": 404, "result": result, "job_status":''})
 			else:
-				self.finish({"status_code": r.status_code, "result": r.reason})
+				self.finish({"status_code": r.status_code, "result": r.reason, "job_status":''})
 		except:
-			self.finish({"status_code": 400, "result": "Bad Request"})
+			self.finish({"status_code": 400, "result": "Bad Request","job_status":''})
 
 class GetResultHandler(IPythonHandler):
 	def get(self):
@@ -609,7 +608,7 @@ class GetResultHandler(IPythonHandler):
 						prods = rt[1][0]
 						p = getProds(prods)
 
-						result = "<table>"
+						result = '<table id="job-result-display" style="border-style: none; font-size: 11px">'
 						result += '<thead><tr><th colspan="2" style="text-align:left"> Job Results</th></tr></thead>'
 						result += '<tbody>'
 						result += '<tr><td>JobID: </td><td style="text-align:left">{}</td></tr>'.format(job_id)
@@ -619,7 +618,7 @@ class GetResultHandler(IPythonHandler):
 								if attrib[0] == 'Locations' and type(attrib[1] == type([])):
 									lst = attrib[1]
 									lnk = lst[-1]
-									lst[-1] = "<a href=\"{}\">{}</a>".format(lnk,lnk)
+									lst[-1] = '<a href="{}" target="_blank" style="border-bottom: 1px solid #0000ff; color: #0000ff;">{}</a>'.format(lnk,lnk)
 									prop = ('<br>	').join(lst)
 									result += '<tr><td>{}: </td><td style="text-align:left">{}</td></tr>'.format(attrib[0],prop)
 								else:
@@ -628,7 +627,7 @@ class GetResultHandler(IPythonHandler):
 
 						result += '</tbody>'
 						result += '</table>'
-						print(result)
+						logging.debug(result)
 						# result = result.replace(',',',<br>	')
 						# result = result.replace('\n','<br>')
 						# print(result)
@@ -654,31 +653,138 @@ class GetResultHandler(IPythonHandler):
 			self.finish({"status_code": 400, "result": "Bad Request"})
 
 class DismissHandler(IPythonHandler):
-	def post(self):
+	def get(self):
+		# ==================================
+		# Part 1: Parse Required Arguments
+		# ==================================
 		fields = getFields('dismiss')
-		params = {}
 
+		params = {}
 		for f in fields:
 			try:
-				arg = self.get_argument(f.lower(), '')
+				arg = self.get_argument(f.lower(), '').strip()
 				params[f] = arg
 			except:
-				pass
+				arg = ''
 
-		url = params.pop('url',None)
-		url = 'http://geoprocessing.demo.52north.org:8080/wps/WebProcessingService'
-		params['service'] = 'WPS'
-		params['version'] = '2.0.0'
-		params['request'] = 'Dismiss'
-		r.requests.get(
-			url,
-			params=params
-		)
+		# print(params)
+		logging.debug('params are')
+		logging.debug(params)
+
+		# ==================================
+		# Part 2: Build & Send Request
+		# ==================================
+		url = BASE_URL+'/dps/job/revoke/{job_id}'.format(**params)
+		headers = {'Content-Type':'application/xml'}
+		# print(url)
+		# print(req_xml)
+
 		try:
-			self.finish({"status_code": r.status_code, "result": r.text})
+			r = requests.get(
+				url,
+				headers=headers
+			)
+
+			# print(r.status_code)
+			# print(r.text)
+
+			# ==================================
+			# Part 3: Check Response
+			# ==================================
+			# if no job id provided
+			if params['job_id'] == '':
+				result = 'Exception: {}\nMessage: {}\n(Did you provide a valid JobID?)\n'.format(rt[0].attrib['exceptionCode'], rt[0][0].text)
+				result += '\nThe provided parameters were:\n'
+				for f in fields:
+					result += '\t{}: {}\n'.format(f,params[f])
+				result += '\n'
+				self.finish({"status_code": 404, "result": result})
+			# if dismissal successful
+			elif r.status_code == 200:
+				try:
+					# parse out JobID from response
+					rt = ET.fromstring(r.text)
+
+					job_id = rt[0].text
+					status = rt[1].text
+					# print(job_id)
+
+					result = 'JobID is {}\nStatus: {}'.format(job_id,status)
+					# print("success!")
+					self.finish({"status_code": r.status_code, "result": result})
+				except:
+					self.finish({"status_code": r.status_code, "result": r.text})
+			else:
+				self.finish({"status_code": r.status_code, "result": r.reason})
 		except:
-			print('failed')
-			self.finish({"status_code": r.status_code, "result": r.reason})
+			self.finish({"status_code": 400, "result": "Bad Request"})
+
+class DeleteHandler(IPythonHandler):
+	def get(self):
+		# ==================================
+		# Part 1: Parse Required Arguments
+		# ==================================
+		fields = getFields('delete')
+
+		params = {}
+		for f in fields:
+			try:
+				arg = self.get_argument(f.lower(), '').strip()
+				params[f] = arg
+			except:
+				arg = ''
+
+		# print(params)
+		logging.debug('params are')
+		logging.debug(params)
+
+		# ==================================
+		# Part 2: Build & Send Request
+		# ==================================
+		url = BASE_URL+'/dps/job/{job_id}'.format(**params)
+		headers = {'Content-Type':'application/xml'}
+		# print(url)
+		# print(req_xml)
+
+		try:
+			r = requests.get(
+				url,
+				headers=headers
+			)
+
+			# print(r.status_code)
+			# print(r.text)
+
+			# ==================================
+			# Part 3: Check Response
+			# ==================================
+			# if no job id provided
+			if params['job_id'] == '':
+				result = 'Exception: {}\nMessage: {}\n(Did you provide a valid JobID?)\n'.format(rt[0].attrib['exceptionCode'], rt[0][0].text)
+				result += '\nThe provided parameters were:\n'
+				for f in fields:
+					result += '\t{}: {}\n'.format(f,params[f])
+				result += '\n'
+				self.finish({"status_code": 404, "result": result})
+			# if deletion successful
+			elif r.status_code == 200:
+				try:
+					# parse out JobID from response
+					rt = ET.fromstring(r.text)
+
+					job_id = rt[0].text
+					status = rt[1].text
+					# print(job_id)
+
+					result = 'JobID is {}\nStatus: {}'.format(job_id,status)
+					# print("success!")
+					self.finish({"status_code": r.status_code, "result": result})
+				except:
+					self.finish({"status_code": r.status_code, "result": r.text})
+			else:
+				self.finish({"status_code": r.status_code, "result": r.reason})
+		except:
+			self.finish({"status_code": 400, "result": "Bad Request"})
 
 class DescribeProcessHandler(IPythonHandler):
 	def get(self):
@@ -986,9 +1092,9 @@ class ListUserJobsHandler(IPythonHandler):
 					jobs = [parse_job(job) for job in resp['jobs']] 					# parse inputs from string to dict
 					jobs = sorted(jobs, key=lambda j: j['timestamp'],reverse=True) 	# sort list of jobs by timestamp (most recent)
 
-
 					result += '<div id="jobs-div">'
-					result += '<table id="job-cache-display" style="height:40%;font-size:11px;" overflow="auto">'
+					result += '<div id = "job-table" style="overflow:auto; height:45%; width: 330px">'
+					result += '<table id="job-cache-display" style="font-size:11px;">'
 					result += '<col width=33%>'
 					result += '<col width=33%>'
 					result += '<col width=33%>'
@@ -1007,10 +1113,16 @@ class ListUserJobsHandler(IPythonHandler):
 					result += '</tbody>'
 					result += '</table>'
 					result += '</div>'
-					print(result)
+					result += '</div>'
+					logging.debug(result)
+					
+					# convert jobs list to dict, keyed by id
+					job_ids = [e['job_id'] for e in jobs]
+					jobs_dict = {job_ids[i]:jobs[i] for i in range(0,len(job_ids))}
+					logging.debug(jobs_dict)
 
 					# print("success!")
-					self.finish({"status_code": r.status_code, "result": result, "table":result,"jobs": jobs, "displays": details})
+					self.finish({"status_code": r.status_code, "result": jobs, "table":result,"jobs": jobs_dict, "displays": details})
 				except:
 					self.finish({"status_code": r.status_code, "result": r.text, "table":result,"jobs": jobs, "displays": details})
 			# if no job id provided
