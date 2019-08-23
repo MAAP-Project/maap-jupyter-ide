@@ -55,7 +55,7 @@ export class JobCache extends Panel {
       request('get', getUrl.href).then((res: RequestResult) => {
         if(res.ok){
           let json_response:any = res.json();
-          console.log(json_response['status_code']);
+          // console.log(json_response['status_code']);
           INotification.success("Get user jobs success.");
           // console.log(json_response['result']);
           // console.log(json_response['displays']);
@@ -65,7 +65,10 @@ export class JobCache extends Panel {
             me.jobs = json_response['jobs'];
             // later get user to pick the job
             me.displays = json_response['displays'];
-            if (me.job_id == '') {
+
+            // catch case if user has no jobs
+            let num_jobs = Object.keys(me.jobs).length;
+            if (num_jobs > 0 && me.job_id == '') {
               me.job_id = json_response['result'][0]['job_id'];
             }
 
@@ -110,6 +113,22 @@ export class JobCache extends Panel {
       div.appendChild(textarea);
       me.node.appendChild(div);
     }
+    
+    // --------------------
+    // results button
+    // --------------------
+    if (document.getElementById('job-refresh-button') == null) {
+      let div = (<HTMLDivElement>document.getElementById('jobs-div'));
+      let refreshBtn = document.createElement('button');
+      refreshBtn.id = 'job-refresh-button';
+      refreshBtn.className = 'jupyter-button';
+      refreshBtn.innerHTML = 'Refresh Job List';
+      refreshBtn.addEventListener('click', function() {me.updateDisplay()}, false);
+      let br = document.createElement('br');
+      div.appendChild(br);
+      div.appendChild(refreshBtn);
+    }
+
 
     // set display in 2nd callback after making table rows clickable
     let setDisplays = function (me:JobCache){
@@ -118,6 +137,7 @@ export class JobCache extends Panel {
       if (document.getElementById('jobs-div') != null) {
         // 1-time add line break and section header for job info
         let div2 = (<HTMLDivElement>document.getElementById('jobs-div'));
+
         if (document.getElementById('job-info-head') == null) {
           // line break
           var line = document.createElement('hr');
@@ -135,9 +155,14 @@ export class JobCache extends Panel {
         // job info
         // --------------------
         // set description from response
+        let disp = '';
+        if (me.job_id != ''){
+          disp = me.displays[me.job_id];
+        }
+
         if (document.getElementById('job-detail-display') != null) {
-          console.log(me.job_id);
-          (<HTMLTextAreaElement>document.getElementById('job-detail-display')).innerHTML = me.displays[me.job_id];
+          // console.log(me.job_id);
+          (<HTMLTextAreaElement>document.getElementById('job-detail-display')).innerHTML = disp;
         } else {
           // create textarea if it doesn't already exist
           // detailed info on one job
@@ -145,23 +170,11 @@ export class JobCache extends Panel {
           display.id = 'job-detail-display';
           (<HTMLTextAreaElement>display).readOnly = true;
           (<HTMLTextAreaElement>display).cols = 30;
-          (<HTMLTextAreaElement>display).innerHTML = me.displays[me.job_id];
+          (<HTMLTextAreaElement>display).innerHTML = disp;
           display.setAttribute('style', 'margin: 0px; height:20%; width: 98%; border: none; resize: none');
           display.className = 'jp-JSONEditor-host';
           div2.appendChild(display);
         }
-  
-        // --------------------
-        // results button
-        // --------------------
-        // if (document.getElementById('job-result-button') == null) {
-        //   let resultBtn = document.createElement('button');
-        //   resultBtn.id = 'job-result-button';
-        //   resultBtn.className = 'jupyter-button';
-        //   resultBtn.innerHTML = 'Get Job Results';
-        //   resultBtn.addEventListener('click', function() {me.getJobResult(me)}, false);
-        //   div2.appendChild(resultBtn);
-        // }
       }
     }
 
@@ -196,14 +209,14 @@ export class JobCache extends Panel {
   getJobResult(me:JobCache) {
     var resultUrl = new URL(PageConfig.getBaseUrl() + 'hysds/getResult');
     // console.log(me.jobs[me.job_id]);
-    if (me.jobs[me.job_id]['status'] == 'job-completed') {
+    if (me.job_id != '' && me.jobs[me.job_id]['status'] == 'job-completed') {
       resultUrl.searchParams.append('job_id',me.job_id);
       console.log(resultUrl.href);
 
       request('get', resultUrl.href).then((res: RequestResult) => {
         if(res.ok){
           let json_response:any = res.json();
-          console.log(json_response['status_code']);
+          // console.log(json_response['status_code']);
           INotification.success("Get user job result success.");
 
           if (json_response['status_code'] == 200){
@@ -248,7 +261,7 @@ export class JobCache extends Panel {
       // --------------------
       // job result
       // --------------------
-      console.log('setting results');
+      // console.log('setting results');
       if (document.getElementById('job-result-display') != null) {
         (<HTMLTextAreaElement>document.getElementById('job-result-display')).innerHTML = me.results;
       } else {
