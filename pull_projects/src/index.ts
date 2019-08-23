@@ -19,7 +19,7 @@ export class ProjectsPull extends Widget {
     // Get gitlab token from keycloak
     getUserInfo(function(profile: any) {
         console.log(profile);
-        let gitlab_token = profile.get('gitlab_token', '');
+        let gitlab_token = profile.get('gitlab_access_token', '');
 
         // Make request to pull all projects
         request('get', PageConfig.getBaseUrl() + "pull_projects/getAllProjects", {"gitlab_token": gitlab_token}).then((res: RequestResult) => {
