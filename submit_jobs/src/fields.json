@@ -9,6 +9,7 @@
 	"getStatus": ["job_id"],
 	"getResult": ["job_id"],
 	"dismiss": ["job_id"],
+	"delete": ["job_id"],
 	"defaultValues": ["code_path"],
 	"listUserJobs": ["username"]
 }

@@ -4,7 +4,10 @@ from requests import get
 from notebook.base.handlers import IPythonHandler
 import subprocess
 import json
+import logging
 
+logger = logging.getLogger()
+logger.setLevel(logging.DEBUG)
 
 class InjectKeyHandler(IPythonHandler):
     def get(self):
@@ -147,3 +150,66 @@ class InstallHandler(IPythonHandler):
         )
 
         self.finish(r.status_code)
+
+class MountBucketHandler(IPythonHandler):
+    def get(self):
+        message = ''
+        user_workspace = ''
+        user_bucket_dir = ''
+        try:
+            username = self.get_argument('username','')
+            logging.debug('username is '+username)
+
+            user_workspace = '/projects/{}'.format(username)
+            logging.debug('user_workspace {}'.format(user_workspace))
+            user_bucket_dir = 'maap-mount-dev:/{}'.format(username)
+            logging.debug('user_bucket_dir {}'.format(user_bucket_dir))
+
+            if not os.path.exists(user_workspace):
+                os.mkdir(user_workspace)
+
+            logging.debug('user_workspace created')
+
+            if not os.path.exists('/tmp/cache'):
+                os.mkdir('/tmp/cache')
+
+            logging.debug('cache created')
+
+            # check if already mounted
+            check_status = subprocess.call('df -h | grep s3fs | grep {}'.format(user_workspace),shell=True)
+            logging.debug('check mounted is '+str(check_status))
+
+            #if status == 0, user workspace already mounted
+            if check_status == 0:
+                message = 'user workspace already mounted'
+                self.finish({'status_code':200,'message':message, 'user_workspace':user_workspace, 'user_bucket_dir':user_bucket_dir})
+
+            # if status !- 0, user workspace not already mounted
+            else:
+                # create tmp directory for caching
+                chtmp_output = subprocess.check_output('chmod 777 /tmp/cache', shell=True).decode('utf-8')
+                message = chtmp_output
+                logging.debug('chmod tmp {}'.format(chtmp_output))
+
+                # mount whole bucket first
+                mount_output = subprocess.check_output('s3fs -o use_cache=/tmp/cache maap-mount-dev /projects/{}'.format(username), shell=True).decode('utf-8')
+                message = mount_output
+                logging.debug('mount log {}'.format(mount_output))
+
+                # touch & rm file to register folder to filesystem
+                touch_output = subprocess.check_output('touch {path}/{user}/testfile && rm {path}/{user}/testfile'.format(path=user_workspace,user=username), shell=True).decode('utf-8')
+                message = touch_output
+                logging.debug('touch output {}'.format(touch_output))
+
+                # unmount bucket and mount user's subfolder
+                umount_output = subprocess.check_output('umount {}'.format(user_workspace), shell=True).decode('utf-8')
+                message = umount_output
+                logging.debug('umount output {}'.format(umount_output))
+
+                mountdir_output = subprocess.check_output('s3fs -o use_cache=/tmp/cache {} {}'.format(user_bucket_dir,user_workspace), shell=True).decode('utf-8')
+                message = mountdir_output
+                logging.debug('mountdir output {}'.format(mountdir_output))
+
+                self.finish({"status_code":200, "message":message, "user_workspace":user_workspace,"user_bucket_dir":user_bucket_dir})
+        except:
+            self.finish({"status_code":500, "message":message, "user_workspace":user_workspace,"user_bucket_dir":user_bucket_dir})
