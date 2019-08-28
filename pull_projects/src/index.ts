@@ -9,7 +9,7 @@ import { getUserInfo } from "./getKeycloak";
 
 export class ProjectsPull extends Widget {
 
-  pull_result: string;
+  // pull_result: string;
   
   constructor() {
     let body = document.createElement('div');
@@ -26,8 +26,8 @@ export class ProjectsPull extends Widget {
           if(res.ok){
             let json_response:any = res.json();
             let message = json_response['status'];
-            this.pull_result = message;
-            INotification.success(this.pull_result);
+            let pull_result = message;
+            INotification.success(pull_result);
             let contents = document.createTextNode(message);
             body.appendChild(contents);
           }
@@ -37,10 +37,10 @@ export class ProjectsPull extends Widget {
     super({ node: body });
   }
 
-  get_pull_result_message() {
-    console.log("pull request message is: " + this.pull_result);
-    return this.pull_result;
-  }
+  // get_pull_result_message() {
+  //   console.log("pull request message is: " + this.pull_result);
+  //   return this.pull_result;
+  // }
 }
 
 export class ProjectsList extends Widget {
