@@ -30,3 +30,15 @@ the clone button's dropdown. You will use this to add your project to you Che wo
 
 ## Adding a project to your workspace
 
+Projects can be added to a workspace during or after workspace creation. If a project is
+added after a workspace exists, the workspace must be restarted when the projects are added.
+After restart, your projects will automatically appear in your workspace.
+
+![Add project on workspace creation](./images/add_to_new.png) ![Add project to existing workspace](./images/add_to_existing.png)
+
+## Updating your project from inside your workspace
+
+Using the left side panel in the jupyter interface, you can push changes to your gitlab project.
+
+If you are more comfortable using the command line to interact with git, you do not need to use
+the side panel.
