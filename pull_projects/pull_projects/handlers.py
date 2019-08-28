@@ -167,8 +167,8 @@ class GetAllProjectsHandler(IPythonHandler):
                             if gitlab_token == '':
                                 self.finish({"status": "project import failed. no gitlab token"})
 
-                            repo_path_on_gitlab = location.split(":")[-1]
-                            location = "https://oauth2:" + gitlab_token + "@repo.nasa.maap.xyz/" + repo_path_on_gitlab
+                            repo_path_on_gitlab = location.split(GITLAB_REPO)[-1]
+                            location = "https://oauth2:" + gitlab_token + "@" + GITLAB_REPO + repo_path_on_gitlab
 
                         Repo.clone_from(location,dl_loc)
                 elif src_type == 'zip':
