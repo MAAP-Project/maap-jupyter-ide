@@ -9,7 +9,6 @@ import { getUserInfo } from "./getKeycloak";
 
 export class ProjectsPull extends Widget {
 
-  // pull_result: string;
   
   constructor() {
     let body = document.createElement('div');
@@ -26,8 +25,14 @@ export class ProjectsPull extends Widget {
           if(res.ok){
             let json_response:any = res.json();
             let message = json_response['status'];
-            let pull_result = message;
-            INotification.success(pull_result);
+
+            if (message == "project import failed") {
+              INotification.error(message);
+            }
+            else {
+              INotification.success(message);
+            }
+
             let contents = document.createTextNode(message);
             body.appendChild(contents);
           }
@@ -37,10 +42,6 @@ export class ProjectsPull extends Widget {
     super({ node: body });
   }
 
-  // get_pull_result_message() {
-  //   console.log("pull request message is: " + this.pull_result);
-  //   return this.pull_result;
-  // }
 }
 
 export class ProjectsList extends Widget {
@@ -52,12 +53,7 @@ export class ProjectsList extends Widget {
     request('get', PageConfig.getBaseUrl() + "pull_projects/list").then((res: RequestResult) => {
       if(res.ok){
         let json_response:any = res.json();
-        // let status_code:any = json_response['status_code'];
         let message = json_response['result'];
-        // if (status_code != 200){
-        //  message = toString(status_code)+" failed"
-        // }
-        // let message = json_response['']
         let contents = document.createTextNode(message);
         body.appendChild(contents);
       }
