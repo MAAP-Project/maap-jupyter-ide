@@ -2,8 +2,8 @@
 
 ## Finding data
 
-To find data, open the Earthdata Search client using the `Data Search` tab on the toolbar.
-Instructions for using the Earthdata Search client can be found [here]().
+To find data, open the Earthdata Search client using the `Data Search` tab on the toolbar. When the window
+opens as a tab in jupyter, take the tour for instructions on how to use the platform to search for data.
 
 ![Open EDSC](./images/open_edsc.png)
 
