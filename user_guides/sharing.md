@@ -14,13 +14,13 @@ share with.
 
 ![User's organizations](./images/my_orgs.png)
 
-#### All users have their own personal org they can customize
+#### All users have their own personal organization they can customize
 
 Users all also have their own personal organization. Each user is the admin of their
 own organization so they can easily curate groups and individuals that they share their
 work with often. 
 
-To add a user to your personal organization, add them as a member. Now you can share
+To add a user to your personal organization, use the `Add Member` button. Now you can share
 any workspace in your personal organization with them!
 
 ![Adding a user to a personal organization](./images/add_user_to_my_org.png)
@@ -44,8 +44,8 @@ For example - if I wanted to create a group frequent collaborators of mine.
 #### Creating workspaces in an organization's namespace
 
 All workspaces are created under the namespace of an organization.
-**NOTE:** Once a workspace is created under an organization it cannot be moved to a 
-different organization.
+**NOTE: Once a workspace is created under an organization it cannot be moved to a 
+different organization.**
 
 To specify which organization you want a workspace to be a part of, specify using the
 dropdown on workspace creation.
@@ -64,4 +64,7 @@ For more documentation help on using organizations, check out Che's
 [guide](https://www.eclipse.org/che/docs/che-6/organizations.html). It is not specific
 to MAAP's implementation, but most of the info will still apply!
 
+## Sharing Data
+
+*TODO:*  Add info here about shared s3 directories once those are implemented
 

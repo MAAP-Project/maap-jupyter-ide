@@ -13,10 +13,10 @@ you to your projects.
 
 Click on `Create a project`. Name your project and select it's visibility level:
 - Projects will default to `private`, meaning only you can see it, and if you want to allow another
-user to contribute, you will have to explicitly add them in the gitlab interface. **NOTE:**
+user to contribute, you will have to explicitly add them in the gitlab interface. **NOTE:
 Adding a user to a workspace that has a project in it does not automatically give them access
 to your gitlab project, you must also add them to the private project if you want to
-allow them to make changes.
+allow them to make changes.**
 - Projects set to `internal` can be seen by any authenticated MAAP user.
 - Projects set to `public` can be seen by anyone, regardless of whether they are a MAAP
 user or not.
