@@ -1,11 +1,12 @@
-import { ICommandPalette, showDialog, Dialog } from '@jupyterlab/apputils';
-import { PageConfig } from '@jupyterlab/coreutils'
+import { ICommandPalette, showDialog, Dialog, Clipboard } from '@jupyterlab/apputils';
+import { PageConfig, URLExt } from '@jupyterlab/coreutils'
 import { JupyterFrontEnd, JupyterFrontEndPlugin, ILayoutRestorer } from '@jupyterlab/application';
 import { IDocumentManager } from '@jupyterlab/docmanager';
 import { IFileBrowserFactory } from '@jupyterlab/filebrowser';
 import { ILauncher } from '@jupyterlab/launcher';
 import { IMainMenu } from '@jupyterlab/mainmenu';
 import { Widget } from '@phosphor/widgets';
+import { toArray } from '@phosphor/algorithm';
 import { request, RequestResult } from './request';
 import { INotification } from "jupyterlab_toastify";
 
@@ -433,4 +434,5 @@ export function popup(b:Widget,title:string): void {
 
 export default [extension,extensionUser,extensionMount,extensionSignedS3Url, shareUrl];
 export {activate as _activate};
+
 
