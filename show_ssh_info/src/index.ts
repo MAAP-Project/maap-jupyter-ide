@@ -1,11 +1,12 @@
-import { ICommandPalette, showDialog, Dialog } from '@jupyterlab/apputils';
-import { PageConfig } from '@jupyterlab/coreutils'
+import { ICommandPalette, showDialog, Dialog, Clipboard } from '@jupyterlab/apputils';
+import { PageConfig, URLExt } from '@jupyterlab/coreutils'
 import { JupyterFrontEnd, JupyterFrontEndPlugin, ILayoutRestorer } from '@jupyterlab/application';
 import { IDocumentManager } from '@jupyterlab/docmanager';
 import { IFileBrowserFactory } from '@jupyterlab/filebrowser';
 import { ILauncher } from '@jupyterlab/launcher';
 import { IMainMenu } from '@jupyterlab/mainmenu';
 import { Widget } from '@phosphor/widgets';
+import { toArray } from '@phosphor/algorithm';
 import { request, RequestResult } from './request';
 import { INotification } from "jupyterlab_toastify";
 
@@ -95,6 +96,13 @@ const extensionSignedS3Url: JupyterFrontEndPlugin<void> = {
     palette.addItem({command:open_command, category: 'User'})
   }
 }
+
+const shareUrl: JupyterFrontEndPlugin<void> = {
+  activate: activateShareUrl,
+  id: 'share-s3-url',
+  requires: [IFileBrowserFactory],
+  autoStart: true
+};
 
 export
 class SshWidget extends Widget {
@@ -345,6 +353,43 @@ function getPresignedUrl(bucket:string,key:string): Promise<string> {
   });
 }
 
+function activateShareUrl(
+  app: JupyterFrontEnd,
+  palette: ICommandPalette,
+  factory: IFileBrowserFactory
+): void {
+  const { commands } = app;
+  const { tracker } = factory;
+
+  const open_command = 'sshinfo:s3url';  
+
+  commands.addCommand(open_command, {
+    execute: () => {
+      const widget = tracker.currentWidget;
+      if (!widget) {
+        return;
+      }
+      const path = encodeURI(widget.selectedItems().next().path);
+      console.log('path is '+path);
+      Clipboard.copyToSystem(URLExt.join(PageConfig.getTreeUrl(), path));
+    },
+    isVisible: () =>
+      tracker.currentWidget &&
+      toArray(tracker.currentWidget.selectedItems()).length === 1,
+    iconClass: 'jp-MaterialIcon jp-LinkIcon',
+    label: 'Copy Shareable S3 Link'
+  });
+  palette.addItem({command:open_command, category: 'User'})
+
+  // matches all filebrowser items
+  const selectorItem = '.jp-DirListing-item[data-isdir]';
+  app.contextMenu.addItem({
+    command: open_command,
+    selector: selectorItem,
+    rank: 11
+  });
+}
+
 function activate(app: JupyterFrontEnd,
                   docManager: IDocumentManager,
                   palette: ICommandPalette,
@@ -382,6 +427,7 @@ export function popup(b:Widget,title:string): void {
 }
 
 
-export default [extension,extensionUser,extensionMount,extensionSignedS3Url];
+export default [extension,extensionUser,extensionMount,extensionSignedS3Url, shareUrl];
 export {activate as _activate};
+
 
