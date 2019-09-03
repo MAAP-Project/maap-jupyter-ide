@@ -43,7 +43,7 @@ RUN cd /pull_projects && jupyter labextension link .
 # jlab show ssh extension
 RUN pip install boto3
 COPY show_ssh_info /show_ssh_info
-RUN cd /show_ssh_info && npm run build
+RUN cd /show_ssh_info && npm install &&  npm run build
 RUN cd /show_ssh_info && jupyter labextension link .
 RUN cd /show_ssh_info && pip install -e .
 RUN cd /show_ssh_info && jupyter serverextension enable --py show_ssh_info --sys-prefix
