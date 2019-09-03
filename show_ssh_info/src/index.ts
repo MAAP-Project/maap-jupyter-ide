@@ -96,6 +96,13 @@ const extensionSignedS3Url: JupyterFrontEndPlugin<void> = {
   }
 }
 
+const shareUrl: JupyterFrontEndPlugin<void> = {
+  activate: activateShareUrl,
+  id: 'share-s3-url',
+  requires: [IFileBrowserFactory],
+  autoStart: true
+};
+
 export
 class SshWidget extends Widget {
   constructor() {
@@ -345,16 +352,58 @@ function getPresignedUrl(bucket:string,key:string): Promise<string> {
   });
 }
 
-function activate(app: JupyterFrontEnd,
-                  docManager: IDocumentManager,
-                  palette: ICommandPalette,
-                  restorer: ILayoutRestorer,
-                  mainMenu: IMainMenu,
-                  browser: IFileBrowserFactory,
-                  launcher: ILauncher | null) {
+function activateShareUrl(
+  app: JupyterFrontEnd,
+  palette: ICommandPalette,
+  factory: IFileBrowserFactory,
+): void {
+  console.log('activating share url');
+  const { commands } = app;
+  console.log('got commands');
+  const { tracker } = factory;
+  console.log('got tracker');
 
+  // matches all filebrowser items
+  const selectorItem = '.jp-DirListing-item[data-isdir]';
+  const open_command = 'sshinfo:s3url';  
+
+  commands.addCommand(open_command, {
+    execute: () => {
+      const widget = tracker.currentWidget;
+      if (!widget) {
+        return;
+      }
+      const item = widget.selectedItems().next();
+      if (!item) {
+        return;
+      }
+
+      let path = item.path;
+      console.log(path);
+      // get url
+    },
+    isVisible: () =>
+      tracker.currentWidget &&
+      tracker.currentWidget.selectedItems().next !== undefined,
+    iconClass: 'jp-MaterialIcon jp-FileIcon',
+    label: 'Copy Shareable S3 Link'
+  });
+
+  app.contextMenu.addItem({
+    command: open_command,
+    selector: selectorItem,
+    rank: 11
+  });
+
+  if (palette) {
+    palette.addItem({command:open_command, category: 'User'});
+  }
+}
+
+function activate(
+  app: JupyterFrontEnd,
+  palette: ICommandPalette) {
   new InjectSSH();
-
   // let widget: SshWidget;
   // Add an application command
   const open_command = 'sshinfo:open';
@@ -382,6 +431,6 @@ export function popup(b:Widget,title:string): void {
 }
 
 
-export default [extension,extensionUser,extensionMount,extensionSignedS3Url];
+export default [extension,extensionUser,extensionMount,extensionSignedS3Url, shareUrl];
 export {activate as _activate};
 
