@@ -3,6 +3,8 @@ import requests
 from requests import get
 from notebook.base.handlers import IPythonHandler
 import subprocess
+import boto3
+from botocore.exceptions import ClientError
 import json
 import logging
 
@@ -158,11 +160,13 @@ class MountBucketHandler(IPythonHandler):
         user_bucket_dir = ''
         try:
             username = self.get_argument('username','')
+            bucket = self.get_argument('bucket','')
             logging.debug('username is '+username)
+            logging.debug('bucket is '+bucket)
 
             user_workspace = '/projects/{}'.format(username)
             logging.debug('user_workspace {}'.format(user_workspace))
-            user_bucket_dir = 'maap-mount-dev:/{}'.format(username)
+            user_bucket_dir = '{}:/{}'.format(bucket,username)
             logging.debug('user_bucket_dir {}'.format(user_bucket_dir))
 
             if not os.path.exists(user_workspace):
@@ -192,7 +196,7 @@ class MountBucketHandler(IPythonHandler):
                 logging.debug('chmod tmp {}'.format(chtmp_output))
 
                 # mount whole bucket first
-                mount_output = subprocess.check_output('s3fs -o use_cache=/tmp/cache maap-mount-dev /projects/{}'.format(username), shell=True).decode('utf-8')
+                mount_output = subprocess.check_output('s3fs -o use_cache=/tmp/cache {} /projects/{}'.format(bucket,username), shell=True).decode('utf-8')
                 message = mount_output
                 logging.debug('mount log {}'.format(mount_output))
 
@@ -217,3 +221,32 @@ class MountBucketHandler(IPythonHandler):
                 self.finish({"status_code":200, "message":message, "user_workspace":user_workspace,"user_bucket_dir":user_bucket_dir})
         except:
             self.finish({"status_code":500, "message":message, "user_workspace":user_workspace,"user_bucket_dir":user_bucket_dir})
+
+class Presigneds3UrlHandler(IPythonHandler):
+    def get(self):
+        bucket = self.get_argument('bucket','')
+        key = self.get_argument('key','')
+        logging.debug('bucket is '+bucket)
+        logging.debug('key is '+key)
+
+        expiration = '300' # in seconds
+        keys = subprocess.check_output('cat ~/.passwd-s3fs',shell=True).decode('utf-8').strip().split(':')
+        logging.debug(keys)
+
+        s3_client = boto3.client('s3',
+            aws_access_key_id=keys[0],
+            aws_secret_access_key=keys[1]
+        )
+        try:
+            resp = s3_client.generate_presigned_url(
+                'get_object',
+                Params={'Bucket': bucket,'Key': key},
+                ExpiresIn=expiration
+            )
+            logging.debug('link is '+resp)
+        except ClientError as e:
+            logging.error(e)
+            self.finish({"status_code":500, "message":e, "url":""})
+
+        self.finish({"status_code":200, "message": "success", "url":resp})
+
