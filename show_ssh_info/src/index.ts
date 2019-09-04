@@ -1,10 +1,10 @@
 import { ICommandPalette, showDialog, Dialog } from '@jupyterlab/apputils';
 import { PageConfig } from '@jupyterlab/coreutils'
-import { JupyterFrontEnd, JupyterFrontEndPlugin, ILayoutRestorer } from '@jupyterlab/application';
-import { IDocumentManager } from '@jupyterlab/docmanager';
+import { JupyterFrontEnd, JupyterFrontEndPlugin } from '@jupyterlab/application';
+// import { IDocumentManager } from '@jupyterlab/docmanager';
 import { IFileBrowserFactory } from '@jupyterlab/filebrowser';
 import { ILauncher } from '@jupyterlab/launcher';
-import { IMainMenu } from '@jupyterlab/mainmenu';
+// import { IMainMenu } from '@jupyterlab/mainmenu';
 import { Widget } from '@phosphor/widgets';
 import { request, RequestResult } from './request';
 import { INotification } from "jupyterlab_toastify";
@@ -18,7 +18,7 @@ var bucket_name = 'maap-mount-dev';
 const extension: JupyterFrontEndPlugin<void> = {
   id: 'display_ssh_info',
   autoStart: true,
-  requires: [IDocumentManager, ICommandPalette, ILayoutRestorer, IMainMenu, IFileBrowserFactory],
+  requires: [ICommandPalette],
   optional: [ILauncher],
   activate: activate
 };
@@ -99,7 +99,7 @@ const extensionSignedS3Url: JupyterFrontEndPlugin<void> = {
 const shareUrl: JupyterFrontEndPlugin<void> = {
   activate: activateShareUrl,
   id: 'share-s3-url',
-  requires: [IFileBrowserFactory],
+  requires: [ICommandPalette, IFileBrowserFactory],
   autoStart: true
 };
 
