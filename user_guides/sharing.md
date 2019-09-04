@@ -82,5 +82,5 @@ Users can create a shareable link for any files in their folder that is hosted o
 ![enter s3 url filepath](./images/s3url-filepath.png)
 ![s3 url link](./images/s3url-link.png)
 
-*TODO:*  Generate s3 url from FileBrowser when implemented, inline magic?
+*TODO:*  Generate s3 url from FileBrowser when implemented, inline magic for s3 url?
 
