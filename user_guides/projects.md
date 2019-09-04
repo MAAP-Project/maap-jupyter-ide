@@ -13,10 +13,10 @@ you to your projects.
 
 Click on `Create a project`. Name your project and select it's visibility level:
 - Projects will default to `private`, meaning only you can see it, and if you want to allow another
-user to contribute, you will have to explicitly add them in the gitlab interface. **NOTE:**
+user to contribute, you will have to explicitly add them in the gitlab interface. **NOTE:
 Adding a user to a workspace that has a project in it does not automatically give them access
 to your gitlab project, you must also add them to the private project if you want to
-allow them to make changes.
+allow them to make changes.**
 - Projects set to `internal` can be seen by any authenticated MAAP user.
 - Projects set to `public` can be seen by anyone, regardless of whether they are a MAAP
 user or not.
@@ -30,3 +30,30 @@ the clone button's dropdown. You will use this to add your project to you Che wo
 
 ## Adding a project to your workspace
 
+Projects can be added to a workspace during or after workspace creation. If a project is
+added after a workspace exists, the workspace must be restarted when the projects are added.
+After restart, your projects will automatically appear in your workspace.
+
+![Add project on workspace creation](./images/add_to_new.png) 
+![Add project to existing workspace](./images/add_to_existing.png)
+
+## Updating your project from inside your workspace
+
+Using the left side panel in the jupyter interface, you can push changes to your gitlab project.
+
+If you are more comfortable using the command line to interact with git, you do not need to use
+the side panel.
+
+When you are ready to update your project with your changes, navigate to the git panel.
+Add the files you want to change to the list of list of staged changes. Then write a 
+commit message, and click the check. Now you need to push your changes by selecting the
+push changes button on the toolbar.
+
+![Stage/Add changed file](./images/git_changed_file_highlight.png)
+![Stage and commit](./images/stage_and_commit_highlighted.png)
+![Push changes](./images/push_changes_highlighted.png)
+
+If you want to check your commit history, look at branches, and confirm your
+updates have been pushed, you can see this on the history tab.
+
+![Check git history](./images/check_history.png)
