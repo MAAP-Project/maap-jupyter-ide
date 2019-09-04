@@ -231,7 +231,6 @@ class Presigneds3UrlHandler(IPythonHandler):
 
         expiration = '300' # in seconds
         keys = subprocess.check_output('cat ~/.passwd-s3fs',shell=True).decode('utf-8').strip().split(':')
-        logging.debug(keys)
 
         s3_client = boto3.client('s3',
             aws_access_key_id=keys[0],
