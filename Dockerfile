@@ -1,6 +1,6 @@
 FROM localhost:32000/vanilla
 
-RUN conda install -c conda-forge jupyterlab=1.0.2
+RUN conda install -c conda-forge jupyterlab=1.1.1
 RUN conda install -c conda-forge nodejs
 RUN conda install -c conda-forge gitpython
 
@@ -41,6 +41,7 @@ RUN cd /pull_projects && npm run build
 RUN cd /pull_projects && jupyter labextension link .
 
 # jlab show ssh extension
+RUN pip install boto3
 COPY show_ssh_info /show_ssh_info
 RUN cd /show_ssh_info && npm run build
 RUN cd /show_ssh_info && jupyter labextension link .
@@ -94,9 +95,6 @@ RUN cd / && git clone https://github.com/s3fs-fuse/s3fs-fuse
 RUN cd /s3fs-fuse/ && ./autogen.sh && ./configure --prefix=/usr --with-openssl && make && make install
 COPY .passwd-s3fs /root/.passwd-s3fs
 RUN chmod 400 /root/.passwd-s3fs
-#RUN mkdir /tmp/cache && chmod 777 /tmp/cache
-#RUN mkdir /projects/s3-bucket
-#RUN s3fs -o use_cache=/tmp/cache maap-mount-dev /projects/s3-bucket
 
 EXPOSE 3100
 

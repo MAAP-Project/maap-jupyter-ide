@@ -11,8 +11,9 @@ import { INotification } from "jupyterlab_toastify";
 
 // import getKeycloak = require("./getKeycloak");
 import { getUserInfo } from "./getKeycloak";
-
 import '../style/index.css';
+
+var bucket_name = 'maap-mount-dev';
 
 const extension: JupyterFrontEndPlugin<void> = {
   id: 'display_ssh_info',
@@ -37,7 +38,7 @@ const extensionUser: JupyterFrontEndPlugin<void> = {
       }
     });
 
-    palette.addItem({command:open_command,category:'User Info'});
+    palette.addItem({command:open_command,category:'User'});
     console.log('display user info ext activated');
 
     // add as button
@@ -69,12 +70,31 @@ const extensionMount: JupyterFrontEndPlugin<void> = {
         mountUserFolder();
       }
     })
-    palette.addItem({command:open_command,category:'User Workspace Mount'});
+    palette.addItem({command:open_command,category:'User'});
     console.log('Mount ext activated');
     mountUserFolder();
   }
 }
 
+const extensionSignedS3Url: JupyterFrontEndPlugin<void> = {
+  id: 'presigned-s3-url',
+  autoStart: true,
+  requires: [ICommandPalette],
+  optional: [],
+  activate: (app: JupyterFrontEnd, palette: ICommandPalette) => {
+    const open_command = 'sshinfo:s3url';
+
+    app.commands.addCommand(open_command, {
+      label: 'Get Presigned S3 Url',
+      isEnabled: () => true,
+      execute: args => {
+        // use something to ask user for filepath
+        popup(new FilenameWidget(),'Get Presigned S3 URL');
+      }
+    });
+    palette.addItem({command:open_command, category: 'User'})
+  }
+}
 
 export
 class SshWidget extends Widget {
@@ -159,6 +179,36 @@ class UserInfoWidget extends Widget {
     let org_node = document.createTextNode('Organization: '+org);
     body.appendChild(org_node);
     super({node: body});
+  }
+}
+
+class FilenameWidget extends Widget {
+  field: string;
+  constructor() {
+    super();
+    this.field = 'filename';
+    let fieldLabel = document.createElement("Label");
+    fieldLabel.innerHTML = this.field;
+    this.node.appendChild(fieldLabel);
+
+    let fieldInput = document.createElement('input');
+    fieldInput.id = (this.field + '-input');
+    this.node.appendChild(fieldInput);
+
+    let x = document.createElement("BR");
+    this.node.appendChild(x)
+  }
+
+  getValue() {
+    var key = (<HTMLInputElement>document.getElementById(this.field+'-input')).value;
+    getPresignedUrl(bucket_name,key).then((url) => {
+      showDialog({
+        title: 'Presigned Url',
+        body: url,
+        focusNodeSelector: 'input',
+        buttons: [Dialog.okButton({label: 'Ok'})]
+      });
+    });
   }
 }
 
@@ -250,10 +300,8 @@ function mountUserFolder() : void {
     let username = profile['cas:username']
     var getUrl = new URL(PageConfig.getBaseUrl() + 'show_ssh_info/mountBucket');
     getUrl.searchParams.append('username',username);
-    console.log('requesting mount API');
+    getUrl.searchParams.append('bucket',bucket_name);
     request('get', getUrl.href).then((res: RequestResult) => {
-      console.log('made request. result is:');
-      console.log(res);
       if (res.ok) {
         let data:any = JSON.parse(res.data);
         if (data.status_code == 200) {
@@ -270,6 +318,32 @@ function mountUserFolder() : void {
   });
 }
 
+export
+function getPresignedUrl(bucket:string,key:string): Promise<string> {
+  return new Promise<string>(async (resolve, reject) => {
+    let presignedUrl = '';
+
+    var getUrl = new URL(PageConfig.getBaseUrl() + 'show_ssh_info/getSigneds3Url');
+    getUrl.searchParams.append('bucket',bucket);
+    getUrl.searchParams.append('key',key);
+    request('get', getUrl.href).then((res: RequestResult) => {
+      if (res.ok) {
+        let data:any = JSON.parse(res.data);
+        console.log(data)
+        if (data.status_code == 200) {
+          presignedUrl = data.url;
+          resolve(presignedUrl);
+        } else {
+          INotification.error('Failed to get presigned s3 url');
+          resolve(presignedUrl);
+        }
+      } else {
+        INotification.error('Failed to get presigned s3 url');
+        resolve(presignedUrl);
+      }
+    });
+  });
+}
 
 function activate(app: JupyterFrontEnd,
                   docManager: IDocumentManager,
@@ -298,7 +372,16 @@ function activate(app: JupyterFrontEnd,
   console.log('JupyterLab ssh is activated!');
 };
 
+export function popup(b:Widget,title:string): void {
+  showDialog({
+    title: title,
+    body: b,
+    focusNodeSelector: 'input',
+    buttons: [Dialog.okButton({ label: 'Ok' }), Dialog.cancelButton({ label : 'Cancel'})]
+  });
+}
 
-export default [extension,extensionUser,extensionMount];
+
+export default [extension,extensionUser,extensionMount,extensionSignedS3Url];
 export {activate as _activate};
 

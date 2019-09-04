@@ -6,12 +6,22 @@ A user can execute a job with any algorithm that has been published to the MAAP 
 
 Users will be shown the same list in a dropdown menu when trying to execute a job.
 
+![List Algorithms - Command Palette](./images/list1.png)
+
+![List Algorithms - List](./images/list2.png)
+
 ## Describe an Algorithm
 
 A user can request more information about available algorithms.  Click on `Command Palette` -> `DPS` -> `Describe Algorithm`.
 
 A popup window will appear, asking the user to select an available algorithm.  
 A second popup window will follow, listing the algorithm's registered name, version, identifier, any required inputs, and expected outputs.
+
+![Describe Algorithm - Command Palette](./images/describe1.png)
+
+![Describe Algorithm - Select Algorithm](./images/describe2.png)
+
+![Describe Algorithm](./images/describe3.png)
 
 ## Register an Algorithm
 
@@ -23,6 +33,9 @@ Enter the command to run the script in `run_cmd` (e.g. `python3 plot.py`) and re
 
 NOTE: After registering a new algorithm, a corresponding docker image must build successfully in GitLab before the algorithm is available for job submission.
 
+## Delete an Algorithm
+
+Go to `Command Palette` -> `DPS` -> `Delete Algorithm`.  The user is show a dropdown menu with available containerized algorithms to remove.
 
 ---
-If at any point the user does not get the expected output or behavior, it is possible that user's profile has expired and will need to refresh the page.
+If at any point the user does not get the expected output or behavior, it is possible that user's session cookie has expired and will need to refresh the page.
