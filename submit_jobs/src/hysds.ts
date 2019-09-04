@@ -340,6 +340,7 @@ export class HySDSWidget extends Widget {
         break;
       case 'deleteAlgorithm':
         this.popup_title = "Delete Algorithm";
+        this.get_inputs = true;
         console.log('deleteAlgorithm');
         break;
       case 'getCapabilities':
@@ -408,7 +409,7 @@ export class HySDSWidget extends Widget {
 
     // TODO enforce input types
     // Construct labels and inputs for fields
-    if (! this.get_inputs && this.req != 'describeProcess') {
+    if (! this.get_inputs && this.req != 'describeProcess' && this.req != 'deleteAlgorithm') {
       for (var field of this.fields) {
         
         // textarea for inputs field in register
@@ -598,7 +599,7 @@ export class HySDSWidget extends Widget {
       var urllst: Array<URL> = []
       var getUrl = new URL(PageConfig.getBaseUrl() + 'hysds/'+this.req); // REMINDER: hack this url until fixed
 
-      // filling out old fields, currently for algo info (id, version) in execute & describe
+      // filling out old fields, currently for algo info (id, version) in execute & describe & delete
       if (this.get_inputs) {
         for (let key in this.old_fields) {
           var fieldText = this.old_fields[key].toLowerCase();
@@ -678,7 +679,7 @@ export class HySDSWidget extends Widget {
         }
 
       // Get Notebook information to pass to Register Handler
-      } else if (me.req == 'describeProcess' || me.req == 'executeInputs') {
+      } else if (me.req == 'describeProcess' || me.req == 'executeInputs' || me.req == 'deleteAlgorithm') {
         console.log(getUrl.href);
         urllst.push(getUrl);
         resolve(urllst);
@@ -872,4 +873,5 @@ export function popupResult(b:any,popup_title:string): void {
 export function isEmpty(obj) {
   return Object.keys(obj).length === 0;
 }
+
 
