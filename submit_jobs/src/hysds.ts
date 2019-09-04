@@ -786,7 +786,9 @@ class WidgetResult extends Widget {
 
   // update panel text on resolution of result popup
   getValue() {
-    this.parentWidget.updateJobCache();
+    if (this.parentWidget.req == 'execute') {
+      this.parentWidget.updateJobCache();
+    }
   }
 }
 
@@ -844,7 +846,7 @@ function showDialog<T>(
   return;
 }
 
-export function popup(b:HySDSWidget): void {
+export function popup(b:any): void {
   if ( !(notImplemented.includes(b.req) )){ 
     showDialog({
       title: b.popup_title,

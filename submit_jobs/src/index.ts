@@ -174,7 +174,7 @@ function activateDeleteAlgorithm(app: JupyterFrontEnd,
     label: 'Delete Algorithm',
     isEnabled: () => true,
     execute: args => {
-      popup(new HySDSWidget('deleteAlgorithm',deleteAlgorithmFields,username,jobsPanel,{}));
+      popup(new ProjectSelector('deleteAlgorithm',deleteAlgorithmFields,username,jobsPanel));
     }
   });
   palette.addItem({command: open_command, category: 'DPS'});
