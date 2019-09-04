@@ -1,12 +1,11 @@
-import { ICommandPalette, showDialog, Dialog, Clipboard } from '@jupyterlab/apputils';
-import { PageConfig, URLExt } from '@jupyterlab/coreutils'
+import { ICommandPalette, showDialog, Dialog } from '@jupyterlab/apputils';
+import { PageConfig } from '@jupyterlab/coreutils'
 import { JupyterFrontEnd, JupyterFrontEndPlugin, ILayoutRestorer } from '@jupyterlab/application';
 import { IDocumentManager } from '@jupyterlab/docmanager';
 import { IFileBrowserFactory } from '@jupyterlab/filebrowser';
 import { ILauncher } from '@jupyterlab/launcher';
 import { IMainMenu } from '@jupyterlab/mainmenu';
 import { Widget } from '@phosphor/widgets';
-import { toArray } from '@phosphor/algorithm';
 import { request, RequestResult } from './request';
 import { INotification } from "jupyterlab_toastify";
 
@@ -210,9 +209,23 @@ class FilenameWidget extends Widget {
   getValue() {
     var key = (<HTMLInputElement>document.getElementById(this.field+'-input')).value;
     getPresignedUrl(bucket_name,key).then((url) => {
+      let display = '<a href='+url+' target="_blank" style="border-bottom: 1px solid #0000ff; color: #0000ff;">'+url+'</a>';
+
+      let body = document.createElement('div');
+      body.style.display = 'flex';
+      body.style.flexDirection = 'column';
+
+      var textarea = document.createElement("div");
+      textarea.id = 'result-text';
+      textarea.style.display = 'flex';
+      textarea.style.flexDirection = 'column';
+      textarea.innerHTML = "<pre>"+display+"</pre>";
+
+      body.appendChild(textarea);
+
       showDialog({
         title: 'Presigned Url',
-        body: url,
+        body: new Widget({node:body}),
         focusNodeSelector: 'input',
         buttons: [Dialog.okButton({label: 'Ok'})]
       });
@@ -434,5 +447,3 @@ export function popup(b:Widget,title:string): void {
 
 export default [extension,extensionUser,extensionMount,extensionSignedS3Url, shareUrl];
 export {activate as _activate};
-
-
