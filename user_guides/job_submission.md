@@ -2,13 +2,15 @@
 
 ## List Previous Jobs
 
-The `Jobs` pane will need to be manually (re)loaded.  This can be done by going to the `Command Palette` -> `DPS` -> `Refresh Job List`.  Once this happens, the `Submitted Jobs` pane will display a scrollable, up-to-date table of the user's job history with Job Id, Job Status, and Algorithm, starting from the most recently submitted job.  Click on the row containing the job of interest for more information about inputs and results.
+The `Jobs` pane will need to be manually (re)loaded.  This can be done by going to the `Command Palette` -> `DPS` -> `Refresh Job List`.  Once this happens, the `Submitted Jobs` pane will display a scrollable, up-to-date table of the user's job history with Job Id, Job Status, and Algorithm, sorted by the most recently submitted job.  
 
-Command Palette Option:
 ![List Jobs - Command Palette](./images/refresh_jobs.png)
+![Jobs Panel](./images/jobs_panel.png)
 
-Jobs Panel, Select Completed Job, Select Failed Job:
-![Jobs Panel](./images/jobs_panel.png) ![Jobs Panel - Completed Job Results](./images/jobs_panel_results.png) ![Jobs Panel - Failed Job](./images/jobs_panel_failed_job.png)
+Click on the row containing the job of interest for more information about inputs and results.
+
+![Jobs Panel - Completed Job Results](./images/jobs_panel_results.png) 
+![Jobs Panel - Failed Job](./images/jobs_panel_failed_job.png)
 
 ## Execute a Job
 
@@ -53,11 +55,11 @@ Alternatively, if the job was submitted under a different user, and the Job ID i
 
 ## Delete Job
 
-Deleting a job means removing any record of a job that has already been attempted and failed or completed.  To delete a job, go to `Command Palette` -> `DPS` -> `Delete DPS Job`.  A popup will appear, prompting the user to enter the job's id hash.
+Deleting a job means removing any record of a job that has already been attempted and failed or completed.  To delete a job, go to `Command Palette` -> `DPS` -> `Delete DPS Job`.  A popup will appear, prompting the user to enter the job id.
 
 ## Dismiss Job
 
-Dismissing a job is to stop a job that is currently running already.  To dismiss a job, go to `Command Palette` -> `DPS` -> `Dismiss DPS Job`.  A popup will appear, prompting the user to enter the job's id hash.
+Dismissing a job is to stop a job that is currently running already.  To dismiss a job, go to `Command Palette` -> `DPS` -> `Dismiss DPS Job`.  A popup will appear, prompting the user to enter the job id.
 
 
 ---
