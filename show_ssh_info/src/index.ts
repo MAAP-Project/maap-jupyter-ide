@@ -1,10 +1,10 @@
 import { ICommandPalette, showDialog, Dialog } from '@jupyterlab/apputils';
 import { PageConfig } from '@jupyterlab/coreutils'
-import { JupyterFrontEnd, JupyterFrontEndPlugin } from '@jupyterlab/application';
-// import { IDocumentManager } from '@jupyterlab/docmanager';
+import { JupyterFrontEnd, JupyterFrontEndPlugin, ILayoutRestorer } from '@jupyterlab/application';
+import { IDocumentManager } from '@jupyterlab/docmanager';
 import { IFileBrowserFactory } from '@jupyterlab/filebrowser';
 import { ILauncher } from '@jupyterlab/launcher';
-// import { IMainMenu } from '@jupyterlab/mainmenu';
+import { IMainMenu } from '@jupyterlab/mainmenu';
 import { Widget } from '@phosphor/widgets';
 import { request, RequestResult } from './request';
 import { INotification } from "jupyterlab_toastify";
@@ -18,7 +18,7 @@ var bucket_name = 'maap-mount-dev';
 const extension: JupyterFrontEndPlugin<void> = {
   id: 'display_ssh_info',
   autoStart: true,
-  requires: [ICommandPalette],
+  requires: [IDocumentManager, ICommandPalette, ILayoutRestorer, IMainMenu, IFileBrowserFactory],
   optional: [ILauncher],
   activate: activate
 };
@@ -76,12 +76,25 @@ const extensionMount: JupyterFrontEndPlugin<void> = {
   }
 }
 
-const extensionPreSigneds3Url: JupyterFrontEndPlugin<void> = {
-  activate: activateGetPresignedUrl,
-  id: 'share-s3-url',
-  requires: [ICommandPalette, IFileBrowserFactory],
-  autoStart: true
-};
+const extensionSignedS3Url: JupyterFrontEndPlugin<void> = {
+  id: 'presigned-s3-url',
+  autoStart: true,
+  requires: [ICommandPalette],
+  optional: [],
+  activate: (app: JupyterFrontEnd, palette: ICommandPalette) => {
+    const open_command = 'sshinfo:s3url';
+
+    app.commands.addCommand(open_command, {
+      label: 'Get Presigned S3 Url',
+      isEnabled: () => true,
+      execute: args => {
+        // use something to ask user for filepath
+        popup(new FilenameWidget(),'Get Presigned S3 URL');
+      }
+    });
+    palette.addItem({command:open_command, category: 'User'})
+  }
+}
 
 export
 class SshWidget extends Widget {
@@ -168,6 +181,37 @@ class UserInfoWidget extends Widget {
     super({node: body});
   }
 }
+
+class FilenameWidget extends Widget {
+  field: string;
+  constructor() {
+    super();
+    this.field = 'filename';
+    let fieldLabel = document.createElement("Label");
+    fieldLabel.innerHTML = this.field;
+    this.node.appendChild(fieldLabel);
+
+    let fieldInput = document.createElement('input');
+    fieldInput.id = (this.field + '-input');
+    this.node.appendChild(fieldInput);
+
+    let x = document.createElement("BR");
+    this.node.appendChild(x)
+  }
+
+  getValue() {
+    var key = (<HTMLInputElement>document.getElementById(this.field+'-input')).value;
+    getPresignedUrl(bucket_name,key).then((url) => {
+      showDialog({
+        title: 'Presigned Url',
+        body: url,
+        focusNodeSelector: 'input',
+        buttons: [Dialog.okButton({label: 'Ok'})]
+      });
+    });
+  }
+}
+
 
 export
 function checkSSH(): void {
@@ -301,75 +345,16 @@ function getPresignedUrl(bucket:string,key:string): Promise<string> {
   });
 }
 
-function activateGetPresignedUrl(
-  app: JupyterFrontEnd,
-  palette: ICommandPalette,
-  factory: IFileBrowserFactory,
-): void {
-  const { commands } = app;
-  const { tracker } = factory;
+function activate(app: JupyterFrontEnd,
+                  docManager: IDocumentManager,
+                  palette: ICommandPalette,
+                  restorer: ILayoutRestorer,
+                  mainMenu: IMainMenu,
+                  browser: IFileBrowserFactory,
+                  launcher: ILauncher | null) {
 
-  // matches all filebrowser items
-  const selectorItem = '.jp-DirListing-item[data-isdir]';
-  const open_command = 'sshinfo:s3url';
-
-  commands.addCommand(open_command, {
-    execute: () => {
-      const widget = tracker.currentWidget;
-      if (!widget) {
-        return;
-      }
-      const item = widget.selectedItems().next();
-      if (!item) {
-        return;
-      }
-
-      let path = item.path;
-      getPresignedUrl(bucket_name,path).then((url) => {
-        let display = '<a href='+url+' target="_blank" style="border-bottom: 1px solid #0000ff; color: #0000ff;">'+url+'</a>';
-
-        let body = document.createElement('div');
-        body.style.display = 'flex';
-        body.style.flexDirection = 'column';
-
-        var textarea = document.createElement("div");
-        textarea.id = 'result-text';
-        textarea.style.display = 'flex';
-        textarea.style.flexDirection = 'column';
-        textarea.innerHTML = "<pre>"+display+"</pre>";
-
-        body.appendChild(textarea);
-
-        showDialog({
-          title: 'Presigned Url',
-          body: new Widget({node:body}),
-          focusNodeSelector: 'input',
-          buttons: [Dialog.okButton({label: 'Ok'})]
-        });
-      });
-    },
-    isVisible: () =>
-      tracker.currentWidget &&
-      tracker.currentWidget.selectedItems().next !== undefined,
-    iconClass: 'jp-MaterialIcon jp-LinkIcon',
-    label: 'Get Presigned S3 Url'
-  });
-
-  app.contextMenu.addItem({
-    command: open_command,
-    selector: selectorItem,
-    rank: 11
-  });
-
-  if (palette) {
-    palette.addItem({command:open_command, category: 'User'});
-  }
-}
-
-function activate(
-  app: JupyterFrontEnd,
-  palette: ICommandPalette) {
   new InjectSSH();
+
   // let widget: SshWidget;
   // Add an application command
   const open_command = 'sshinfo:open';
@@ -397,5 +382,6 @@ export function popup(b:Widget,title:string): void {
 }
 
 
-export default [extension,extensionUser,extensionMount,extensionPreSigneds3Url];
+export default [extension,extensionUser,extensionMount,extensionSignedS3Url];
 export {activate as _activate};
+
