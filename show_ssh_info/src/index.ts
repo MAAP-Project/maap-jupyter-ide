@@ -76,28 +76,8 @@ const extensionMount: JupyterFrontEndPlugin<void> = {
   }
 }
 
-const extensionSignedS3Url: JupyterFrontEndPlugin<void> = {
-  id: 'presigned-s3-url',
-  autoStart: true,
-  requires: [ICommandPalette],
-  optional: [],
-  activate: (app: JupyterFrontEnd, palette: ICommandPalette) => {
-    const open_command = 'sshinfo:s3url';
-
-    app.commands.addCommand(open_command, {
-      label: 'Get Presigned S3 Url',
-      isEnabled: () => true,
-      execute: args => {
-        // use something to ask user for filepath
-        popup(new FilenameWidget(),'Get Presigned S3 URL');
-      }
-    });
-    palette.addItem({command:open_command, category: 'User'})
-  }
-}
-
-const shareUrl: JupyterFrontEndPlugin<void> = {
-  activate: activateShareUrl,
+const extensionPreSigneds3Url: JupyterFrontEndPlugin<void> = {
+  activate: activateGetPresignedUrl,
   id: 'share-s3-url',
   requires: [ICommandPalette, IFileBrowserFactory],
   autoStart: true
@@ -188,51 +168,6 @@ class UserInfoWidget extends Widget {
     super({node: body});
   }
 }
-
-class FilenameWidget extends Widget {
-  field: string;
-  constructor() {
-    super();
-    this.field = 'filename';
-    let fieldLabel = document.createElement("Label");
-    fieldLabel.innerHTML = this.field;
-    this.node.appendChild(fieldLabel);
-
-    let fieldInput = document.createElement('input');
-    fieldInput.id = (this.field + '-input');
-    this.node.appendChild(fieldInput);
-
-    let x = document.createElement("BR");
-    this.node.appendChild(x)
-  }
-
-  getValue() {
-    var key = (<HTMLInputElement>document.getElementById(this.field+'-input')).value;
-    getPresignedUrl(bucket_name,key).then((url) => {
-      let display = '<a href='+url+' target="_blank" style="border-bottom: 1px solid #0000ff; color: #0000ff;">'+url+'</a>';
-
-      let body = document.createElement('div');
-      body.style.display = 'flex';
-      body.style.flexDirection = 'column';
-
-      var textarea = document.createElement("div");
-      textarea.id = 'result-text';
-      textarea.style.display = 'flex';
-      textarea.style.flexDirection = 'column';
-      textarea.innerHTML = "<pre>"+display+"</pre>";
-
-      body.appendChild(textarea);
-
-      showDialog({
-        title: 'Presigned Url',
-        body: new Widget({node:body}),
-        focusNodeSelector: 'input',
-        buttons: [Dialog.okButton({label: 'Ok'})]
-      });
-    });
-  }
-}
-
 
 export
 function checkSSH(): void {
@@ -366,20 +301,17 @@ function getPresignedUrl(bucket:string,key:string): Promise<string> {
   });
 }
 
-function activateShareUrl(
+function activateGetPresignedUrl(
   app: JupyterFrontEnd,
   palette: ICommandPalette,
   factory: IFileBrowserFactory,
 ): void {
-  console.log('activating share url');
   const { commands } = app;
-  console.log('got commands');
   const { tracker } = factory;
-  console.log('got tracker');
 
   // matches all filebrowser items
   const selectorItem = '.jp-DirListing-item[data-isdir]';
-  const open_command = 'sshinfo:s3url';  
+  const open_command = 'sshinfo:s3url';
 
   commands.addCommand(open_command, {
     execute: () => {
@@ -393,14 +325,34 @@ function activateShareUrl(
       }
 
       let path = item.path;
-      console.log(path);
-      // get url
+      getPresignedUrl(bucket_name,path).then((url) => {
+        let display = '<a href='+url+' target="_blank" style="border-bottom: 1px solid #0000ff; color: #0000ff;">'+url+'</a>';
+
+        let body = document.createElement('div');
+        body.style.display = 'flex';
+        body.style.flexDirection = 'column';
+
+        var textarea = document.createElement("div");
+        textarea.id = 'result-text';
+        textarea.style.display = 'flex';
+        textarea.style.flexDirection = 'column';
+        textarea.innerHTML = "<pre>"+display+"</pre>";
+
+        body.appendChild(textarea);
+
+        showDialog({
+          title: 'Presigned Url',
+          body: new Widget({node:body}),
+          focusNodeSelector: 'input',
+          buttons: [Dialog.okButton({label: 'Ok'})]
+        });
+      });
     },
     isVisible: () =>
       tracker.currentWidget &&
       tracker.currentWidget.selectedItems().next !== undefined,
-    iconClass: 'jp-MaterialIcon jp-FileIcon',
-    label: 'Copy Shareable S3 Link'
+    iconClass: 'jp-MaterialIcon jp-LinkIcon',
+    label: 'Get Presigned S3 Url'
   });
 
   app.contextMenu.addItem({
@@ -445,5 +397,5 @@ export function popup(b:Widget,title:string): void {
 }
 
 
-export default [extension,extensionUser,extensionMount,extensionSignedS3Url, shareUrl];
+export default [extension,extensionUser,extensionMount,extensionPreSigneds3Url];
 export {activate as _activate};
