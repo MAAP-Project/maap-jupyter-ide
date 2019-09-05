@@ -7,7 +7,7 @@ import { Widget } from '@phosphor/widgets';
 import { request, RequestResult } from './request';
 import { INotification } from "jupyterlab_toastify";
 
-import { getUserInfo, getKeycloakObj } from "./getKeycloak";
+import { getUserInfo, updateKeycloakToken } from "./getKeycloak";
 import '../style/index.css';
 
 var bucket_name = 'maap-mount-dev';
@@ -92,8 +92,8 @@ const extensionRefreshToken: JupyterFrontEndPlugin<void> = {
   optional: [],
   activate: () => {
 
-    let keycloak = getKeycloakObj;
-    setInterval(() => keycloak.updateToken(300), 299);
+    // Refresh just under every 5 min, make token last for 5 min
+    setInterval(() => updateKeycloakToken(300), 299000);
   }
 };
 
@@ -138,7 +138,7 @@ class InjectSSH {
   constructor() {
 
     getUserInfo(function(profile: any) {
-        console.log(profile);
+        // console.log(profile);
 
         if (profile['public_ssh_keys'] === undefined) {
             INotification.error("Injecting user's SSH key failed - SSH Key undefined.");
