@@ -1092,7 +1092,7 @@ class ListUserJobsHandler(IPythonHandler):
 					jobs = [parse_job(job) for job in resp['jobs']] 					# parse inputs from string to dict
 					jobs = sorted(jobs, key=lambda j: j['timestamp'],reverse=True) 	# sort list of jobs by timestamp (most recent)
 
-					result += '<div id="jobs-div">'
+					result += '<div id="jobs-div" style="height:100%">'
 					result += '<div id = "job-table" style="overflow:auto; height:45%; width: 330px">'
 					result += '<table id="job-cache-display" style="font-size:11px;">'
 					result += '<col width=33%>'
@@ -1139,3 +1139,4 @@ class ListUserJobsHandler(IPythonHandler):
 				self.finish({"status_code": r.status_code, "result": r.reason})
 		except:
 			self.finish({"status_code": 400, "result": "Bad Request"})
+

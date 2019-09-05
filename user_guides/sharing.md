@@ -66,5 +66,21 @@ to MAAP's implementation, but most of the info will still apply!
 
 ## Sharing Data
 
-*TODO:*  Add info here about shared s3 directories once those are implemented
+Users who have access to a workspace have access to all the files contained in that workspace.
+
+#### All users have their own personal s3-bucket folder mounted in the FileBrowser home
+
+In `/projects`, each user has a personal s3-hosted folder with the same name as their CAS username.  Files in this folder are automatically uploaded to s3 and will accessbile from any workspace a user signs into.
+
+![s3-hosted folder](./images/s3folder.png)
+
+### Generating a shareable link to s3-hosted files
+
+Users can create a shareable link for any files in their folder that is hosted on s3. To do this, go to `Command Palette` -> `User` -> `Get Presigned S3 URL` and enter the relative path to the file you want to share.  The link will expire after 5 minutes.
+
+![palette get s3 url](./images/palette-s3url.png)
+![enter s3 url filepath](./images/s3url-filepath.png)
+![s3 url link](./images/s3url-link.png)
+
+*TODO:*  Generate s3 url from FileBrowser when implemented, inline magic for s3 url?
 
