@@ -93,7 +93,7 @@ const extensionRefreshToken: JupyterFrontEndPlugin<void> = {
   activate: () => {
 
     let keycloak = getKeycloakObj;
-    setInterval(() => keycloak.updateToken(200), 200);
+    setInterval(() => keycloak.updateToken(300), 299);
   }
 };
 
