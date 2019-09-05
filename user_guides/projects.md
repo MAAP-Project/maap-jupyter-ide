@@ -3,8 +3,8 @@
 ## Creating a project
 
 The first step in getting started with projects in MAAP is going to MAAP's
-gitlab and creating a new project. When you create a MAAP account, an account is
-automatically configured for you on MAAP's (gitlab instance)[https://repo.nasa.maap.xyz/].
+GitLab and creating a new project. When you create a MAAP account, an account is
+automatically configured for you on MAAP's (GitLab instance)[https://repo.nasa.maap.xyz/].
 
 To sign in, click on `Sign in with CAS`, then use your URS or ESA login. This will direct
 you to your projects.
@@ -39,10 +39,12 @@ After restart, your projects will automatically appear in your workspace.
 
 ## Updating your project from inside your workspace
 
+All projects imported from GitLab can be found in `/projects`.
+
 Using the left side panel in the jupyter interface, you can push changes to your gitlab project.
 
 If you are more comfortable using the command line to interact with git, you do not need to use
-the side panel.
+the side panel. It will work the same way in the terminal, once you navigate to the project's filepath.
 
 When you are ready to update your project with your changes, navigate to the git panel.
 Add the files you want to change to the list of list of staged changes. Then write a 
