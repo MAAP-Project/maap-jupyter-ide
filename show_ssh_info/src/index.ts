@@ -7,7 +7,7 @@ import { Widget } from '@phosphor/widgets';
 import { request, RequestResult } from './request';
 import { INotification } from "jupyterlab_toastify";
 
-import { getUserInfo } from "./getKeycloak";
+import { getUserInfo, updateKeycloakToken } from "./getKeycloak";
 import '../style/index.css';
 
 var bucket_name = 'maap-mount-dev';
@@ -80,6 +80,24 @@ const extensionPreSigneds3Url: JupyterFrontEndPlugin<void> = {
   autoStart: true
 };
 
+//
+// This plugin refreshes the users keycloak token on set time interval
+// to extend the time a user can functionally use a workspace before
+// having to manually refresh the page
+//
+const extensionRefreshToken: JupyterFrontEndPlugin<void> = {
+  id: 'refresh_token',
+  autoStart: true,
+  requires: [],
+  optional: [],
+  activate: () => {
+
+    // Refresh just under every 5 min, make token last for 5 min
+    setInterval(() => updateKeycloakToken(300), 299000);
+  }
+};
+
+
 export
 class SshWidget extends Widget {
   constructor() {
@@ -120,7 +138,7 @@ class InjectSSH {
   constructor() {
 
     getUserInfo(function(profile: any) {
-        console.log(profile);
+        // console.log(profile);
 
         if (profile['public_ssh_keys'] === undefined) {
             INotification.error("Injecting user's SSH key failed - SSH Key undefined.");
@@ -400,5 +418,5 @@ export function popup(b:Widget,title:string): void {
 }
 
 
-export default [extension,extensionUser,extensionMount,extensionPreSigneds3Url];
-export {activate as _activate};
+export default [extension,extensionUser,extensionMount,extensionPreSigneds3Url, extensionRefreshToken];
+// export {activate as _activate};
