@@ -39,10 +39,8 @@ Here are the features allowed/not allowed on all of the workspace administration
 | -----------   | ----------- |
 | Overview      | Do not bother with the `Export` buttons - these are not relevant.|
 | Projects      | When adding projects, only add projects with the `Git` tab. Do not use any of the other project tabs.|
-| Machines      | Do not add a machine! Do not play with any of the actions! The only thing you can do here is change
-                  the RAM. |
-| Installers    | The `Exec` and `SSH` installers must be turned on here in order to get SSH access to your machine. 
-                  All other installers are not relevant and should not be turned on. |
+| Machines      | Do not add a machine! Do not play with any of the actions! The only thing you can do here is change the RAM. |
+| Installers    | The `Exec` and `SSH` installers must be turned on here in order to get SSH access to your machine. All other installers are not relevant and should not be turned on. |
 | Servers       | Do not touch! |
 | Env Variables | This is allowed! |
 | Volumes       | Do not touch! |
