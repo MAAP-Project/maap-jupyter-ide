@@ -229,14 +229,31 @@ class Presigneds3UrlHandler(IPythonHandler):
         logging.debug('bucket is '+bucket)
         logging.debug('key is '+key)
 
-        expiration = '300' # in seconds
+        # expiration = '300' # 5 min in seconds
+        expiration = '43200' # 12 hrs in seconds
+        logging.debug('expiration is {} seconds'+expiration)
         keys = subprocess.check_output('cat ~/.passwd-s3fs',shell=True).decode('utf-8').strip().split(':')
-        logging.debug(keys)
 
         s3_client = boto3.client('s3',
             aws_access_key_id=keys[0],
             aws_secret_access_key=keys[1]
         )
+        # check if provided key exists
+        try:
+            s3 = boto3.resource('s3',
+            aws_access_key_id=keys[0],
+            aws_secret_access_key=keys[1]
+        )
+            s3.Object(bucket,key).load()
+            logging.debug('key {} exists in bucket {}'.format(key,bucket))
+        except ClientError as e:
+            if e.response['Error']['Code'] == "404":
+                logging.debug('s3 object {} does not exist in bucket {}'.format(key,bucket))
+                self.finish({"status_code":404, "message":"404 s3 object {} does not exist in bucket {}".format(key,bucket), "url":""})
+            else:
+                logging.error(e)
+                self.finish(json.dumps({"status_code":500, "message":e, "url":""}))
+
         try:
             resp = s3_client.generate_presigned_url(
                 'get_object',
@@ -246,7 +263,6 @@ class Presigneds3UrlHandler(IPythonHandler):
             logging.debug('link is '+resp)
         except ClientError as e:
             logging.error(e)
-            self.finish({"status_code":500, "message":e, "url":""})
+            self.finish(json.dumps({"status_code":500, "message":e, "url":""}))
 
         self.finish({"status_code":200, "message": "success", "url":resp})
-
