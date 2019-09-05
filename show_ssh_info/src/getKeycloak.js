@@ -16,3 +16,7 @@ export var getUserInfo = function(callback) {
 export var getToken = function() {
     return window.parent._keycloak.idToken;
 };
+
+export var getKeycloakObj = function() {
+    return window.parent._keycloak;
+};

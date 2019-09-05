@@ -7,7 +7,7 @@ import { Widget } from '@phosphor/widgets';
 import { request, RequestResult } from './request';
 import { INotification } from "jupyterlab_toastify";
 
-import { getUserInfo } from "./getKeycloak";
+import { getUserInfo, getKeycloakObj } from "./getKeycloak";
 import '../style/index.css';
 
 var bucket_name = 'maap-mount-dev';
@@ -79,6 +79,24 @@ const extensionPreSigneds3Url: JupyterFrontEndPlugin<void> = {
   requires: [ICommandPalette, IFileBrowserFactory],
   autoStart: true
 };
+
+//
+// This plugin refreshes the users keycloak token on set time interval
+// to extend the time a user can functionally use a workspace before
+// having to manually refresh the page
+//
+const extensionRefreshToken: JupyterFrontEndPlugin<void> = {
+  id: 'refresh_token',
+  autoStart: true,
+  requires: [],
+  optional: [],
+  activate: () => {
+
+    let keycloak = getKeycloakObj;
+    setInterval(() => keycloak.updateToken(200), 200);
+  }
+};
+
 
 export
 class SshWidget extends Widget {
@@ -400,5 +418,5 @@ export function popup(b:Widget,title:string): void {
 }
 
 
-export default [extension,extensionUser,extensionMount,extensionPreSigneds3Url];
-export {activate as _activate};
+export default [extension,extensionUser,extensionMount,extensionPreSigneds3Url, extensionRefreshToken];
+// export {activate as _activate};
