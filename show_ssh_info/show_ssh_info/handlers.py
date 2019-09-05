@@ -266,4 +266,3 @@ class Presigneds3UrlHandler(IPythonHandler):
             self.finish(json.dumps({"status_code":500, "message":e, "url":""}))
 
         self.finish({"status_code":200, "message": "success", "url":resp})
-
