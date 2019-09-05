@@ -1,15 +1,12 @@
 import { ICommandPalette, showDialog, Dialog } from '@jupyterlab/apputils';
 import { PageConfig } from '@jupyterlab/coreutils'
 import { JupyterFrontEnd, JupyterFrontEndPlugin } from '@jupyterlab/application';
-// import { IDocumentManager } from '@jupyterlab/docmanager';
 import { IFileBrowserFactory } from '@jupyterlab/filebrowser';
 import { ILauncher } from '@jupyterlab/launcher';
-// import { IMainMenu } from '@jupyterlab/mainmenu';
 import { Widget } from '@phosphor/widgets';
 import { request, RequestResult } from './request';
 import { INotification } from "jupyterlab_toastify";
 
-// import getKeycloak = require("./getKeycloak");
 import { getUserInfo } from "./getKeycloak";
 import '../style/index.css';
 
@@ -289,6 +286,8 @@ function getPresignedUrl(bucket:string,key:string): Promise<string> {
         if (data.status_code == 200) {
           presignedUrl = data.url;
           resolve(presignedUrl);
+        } else if (data.status_code == 404) {
+          resolve(data.message);
         } else {
           INotification.error('Failed to get presigned s3 url');
           resolve(presignedUrl);
@@ -326,7 +325,10 @@ function activateGetPresignedUrl(
 
       let path = item.path;
       getPresignedUrl(bucket_name,path).then((url) => {
-        let display = '<a href='+url+' target="_blank" style="border-bottom: 1px solid #0000ff; color: #0000ff;">'+url+'</a>';
+        let display = url;
+        if (url.substring(0,5) == 'https'){
+          display = '<a href='+url+' target="_blank" style="border-bottom: 1px solid #0000ff; color: #0000ff;">'+url+'</a>';
+        }
 
         let body = document.createElement('div');
         body.style.display = 'flex';
@@ -361,9 +363,10 @@ function activateGetPresignedUrl(
     rank: 11
   });
 
-  if (palette) {
-    palette.addItem({command:open_command, category: 'User'});
-  }
+  // not adding to palette, since nothing to provide path
+  // if (palette) {
+  //   palette.addItem({command:open_command, category: 'User'});
+  // }
 }
 
 function activate(
