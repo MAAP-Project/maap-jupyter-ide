@@ -7,7 +7,7 @@ import { Widget } from '@phosphor/widgets';
 import { request, RequestResult } from './request';
 import { INotification } from "jupyterlab_toastify";
 
-import { getUserInfo, updateKeycloakToken } from "./getKeycloak";
+import { getUserInfo, updateKeycloakToken, getToken } from "./getKeycloak";
 import '../style/index.css';
 
 var bucket_name = 'maap-mount-dev';
@@ -68,16 +68,15 @@ const extensionMount: JupyterFrontEndPlugin<void> = {
       }
     })
     palette.addItem({command:open_command,category:'User'});
-    console.log('Mount ext activated');
-    mountUserFolder();
+    mountUserFolder(); // automatically mount user folder on load
   }
 }
 
 const extensionPreSigneds3Url: JupyterFrontEndPlugin<void> = {
-  activate: activateGetPresignedUrl,
   id: 'share-s3-url',
   requires: [ICommandPalette, IFileBrowserFactory],
-  autoStart: true
+  autoStart: true,
+  activate: activateGetPresignedUrl
 };
 
 //
@@ -97,6 +96,23 @@ const extensionRefreshToken: JupyterFrontEndPlugin<void> = {
   }
 };
 
+const extensionMountOrgBuckets: JupyterFrontEndPlugin<void> = {
+  id: 'mount-che-org-buckets',
+  requires: [ICommandPalette],
+  autoStart: true,
+  activate: (app: JupyterFrontEnd, palette: ICommandPalette) => {
+    const open_command = 'sshinfo:orgs';
+    app.commands.addCommand(open_command, {
+      label: 'Che Org Workspace Mount',
+      isEnabled: () => true,
+      execute: args => {
+        mountOrgFolders();
+      }
+    });
+    palette.addItem({command:open_command,category:'User'});
+    mountOrgFolders();
+  }
+}
 
 export
 class SshWidget extends Widget {
@@ -238,7 +254,6 @@ export
 function checkUserInfo(): void {
   getUserInfo(function(profile: any) {
     // console.log(profile);
-
     if (profile['cas:username'] === undefined) {
         INotification.error("Get user profile failed.");
         return;
@@ -254,9 +269,7 @@ function checkUserInfo(): void {
       focusNodeSelector: 'input',
       buttons: [Dialog.okButton({label: 'Ok'})]
     });
-
   });
-
 }
 
 export
@@ -286,6 +299,28 @@ function mountUserFolder() : void {
         INotification.error('Failed to mount user workspace to s3');
       }
     });
+  });
+}
+
+export
+function mountOrgFolders() : void {
+  // do something
+  let token = getToken();
+  var getUrl = new URL(PageConfig.getBaseUrl() + 'show_ssh_info/getOrgs');
+  getUrl.searchParams.append('bucket',bucket_name);
+  getUrl.searchParams.append('token',token);
+  request('get', getUrl.href).then((res: RequestResult) => {
+    if (res.ok) {
+      let data:any = JSON.parse(res.data);
+      if (data.status_code == 200) {
+        console.log(data);
+        INotification.success('Successfully mounted organization and sub-organization folders')
+      } else {
+        INotification.error('Failed to get user\'s Che orgs');
+      }
+    } else {
+      INotification.error('Failed to get user\'s Che orgs');
+    }
   });
 }
 
@@ -418,5 +453,5 @@ export function popup(b:Widget,title:string): void {
 }
 
 
-export default [extension,extensionUser,extensionMount,extensionPreSigneds3Url, extensionRefreshToken];
+export default [extension, extensionUser, extensionMount, extensionPreSigneds3Url, extensionRefreshToken, extensionMountOrgBuckets];
 // export {activate as _activate};
