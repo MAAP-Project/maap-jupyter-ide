@@ -79,7 +79,6 @@ class GetHandler(IPythonHandler):
         self.finish({'ip': ip, 'port': port})
         return
 
-
 class CheckInstallersHandler(IPythonHandler):
     """
     Check if SSH and exec Che Installers are enabled. If they are not, a user would not be able to ssh in becuase there
@@ -113,7 +112,6 @@ class CheckInstallersHandler(IPythonHandler):
             self.finish({'status': True})
         else:
             self.finish({'status': False})
-
 
 class InstallHandler(IPythonHandler):
     """
@@ -159,21 +157,25 @@ class MountBucketHandler(IPythonHandler):
         user_workspace = ''
         user_bucket_dir = ''
         try:
+            # get bucket name and username
             username = self.get_argument('username','')
             bucket = self.get_argument('bucket','')
             logging.debug('username is '+username)
             logging.debug('bucket is '+bucket)
 
+            # local mount points
             user_workspace = '/projects/{}'.format(username)
             logging.debug('user_workspace {}'.format(user_workspace))
             user_bucket_dir = '{}:/{}'.format(bucket,username)
             logging.debug('user_bucket_dir {}'.format(user_bucket_dir))
 
+            # create local mount points if they don't exist
             if not os.path.exists(user_workspace):
                 os.mkdir(user_workspace)
 
             logging.debug('user_workspace created')
 
+            # cache
             if not os.path.exists('/tmp/cache'):
                 os.mkdir('/tmp/cache')
 
@@ -222,8 +224,106 @@ class MountBucketHandler(IPythonHandler):
         except:
             self.finish({"status_code":500, "message":message, "user_workspace":user_workspace,"user_bucket_dir":user_bucket_dir})
 
+class MountOrgBucketsHandler(IPythonHandler):
+    def get(self):
+        # Send request to Che API for list of user's orgs
+        # ts pass keycloak token from window
+        token = self.get_argument('token','')
+        bucket = self.get_argument('bucket','')
+        url = 'https://che-k8s.maap.xyz/api/organization'
+        headers = {
+            'Accept':'application/json',
+            'Authorization':'Bearer {token}'.format(token=token)
+        }
+        try:
+            # send request
+            resp = requests.get(
+                url, 
+                headers=headers, 
+                verify=False
+            )
+            logging.debug(resp)
+            org_lst = [e['qualifiedName'] for e in eval(resp.text)]
+            top_orgs = list(filter(lambda x: '/' not in x, org_lst))
+            sub_orgs = list(filter(lambda x: '/' in x, org_lst))
+
+            org_workspaces = []
+            org_bucket_dirs = []
+
+            try:
+                # create 
+                for org in top_orgs:
+                    # local mount points
+                    org_workspace = '/projects/{}'.format(org)
+                    logging.debug('org_workspace {}'.format(org_workspace))
+                    org_bucket_dir = '{}:/{}'.format(bucket,org)
+                    logging.debug('org_bucket_dir {}'.format(org_bucket_dir))
+
+                    # create local mount points if they don't exist
+                    if not os.path.exists(org_workspace):
+                        os.mkdir(org_workspace)
+
+                    logging.debug('{} org workspace created'.format(org))
+
+                    # check if already mounted
+                    check_status = subprocess.call('df -h | grep s3fs | grep {}'.format(org_workspace),shell=True)
+                    logging.debug('check mounted is '+str(check_status))
+
+                    if check_status == 0:
+                        message = 'org workspace already mounted'
+                        # skip if org folder already mounted
+
+                    else:
+                        # mount whole bucket first
+                        mount_output = subprocess.check_output('s3fs {} /projects/{}'.format(bucket,org), shell=True).decode('utf-8')
+                        message = mount_output
+                        logging.debug('mount log {}'.format(mount_output))
+
+                        # create org's folder within s3 bucket if it doesn't already exist
+                        if not os.path.exists('{}/{}'.format(org_workspace,org)):
+                            os.mkdir('{}/{}'.format(org_workspace,org))
+
+                        # touch & rm file to register folder to filesystem
+                        touch_output = subprocess.check_output('touch {path}/{org}/testfile && rm {path}/{org}/testfile'.format(path=org_workspace,org=org), shell=True).decode('utf-8')
+                        message = touch_output
+                        logging.debug('touch output {}'.format(touch_output))
+
+                        # unmount bucket and mount org's subfolder
+                        umount_output = subprocess.check_output('umount {}'.format(org_workspace), shell=True).decode('utf-8')
+                        message = umount_output
+                        logging.debug('umount output {}'.format(umount_output))
+
+                        mountdir_output = subprocess.check_output('s3fs {} {}'.format(org_bucket_dir,org_workspace), shell=True).decode('utf-8')
+                        message = mountdir_output
+                        logging.debug('mountdir output {}'.format(mountdir_output))
+
+                    org_workspaces.append(org_workspace)
+                    org_bucket_dirs.append(org_bucket_dir)
+
+                # once top-level orgs mounted, sub-orgs don't need another mount point, just a subdirectory
+                for org in sub_orgs:
+                    # local mount points
+                    org_workspace = '/projects/{}'.format(org)
+                    logging.debug('org_workspace {}'.format(org_workspace))
+                    org_bucket_dir = '{}:/{}'.format(bucket,org)
+                    logging.debug('org_bucket_dir {}'.format(org_bucket_dir))
+
+                    # create sub-org folders if they don't exist
+                    if not os.path.exists(org_workspace):
+                        os.mkdir(org_workspace)
+
+                    org_workspaces.append(org_workspace)
+                    org_bucket_dirs.append(org_bucket_dir)
+
+                self.finish({"status_code":200, "message":message, "org_workspaces":org_workspaces,"org_bucket_dirs":org_bucket_dirs})
+            except:
+                self.finish({"status_code":500, "message":message, "org_workspaces":org_workspaces,"org_bucket_dirs":org_bucket_dirs})
+        except:
+            self.finish({"status_code":resp.status_code, "message":"error requesting Che organizations", "org_workspaces":[],"org_bucket_dirs":[]})
+
 class Presigneds3UrlHandler(IPythonHandler):
     def get(self):
+        # get arguments
         bucket = self.get_argument('bucket','')
         key = self.get_argument('key','')
         logging.debug('bucket is '+bucket)
@@ -234,18 +334,15 @@ class Presigneds3UrlHandler(IPythonHandler):
         logging.debug('expiration is {} seconds'+expiration)
         keys = subprocess.check_output('cat ~/.passwd-s3fs',shell=True).decode('utf-8').strip().split(':')
 
-        s3_client = boto3.client('s3',
-            aws_access_key_id=keys[0],
-            aws_secret_access_key=keys[1]
-        )
         # check if provided key exists
         try:
             s3 = boto3.resource('s3',
-            aws_access_key_id=keys[0],
-            aws_secret_access_key=keys[1]
-        )
+                aws_access_key_id=keys[0],
+                aws_secret_access_key=keys[1]
+            )
             s3.Object(bucket,key).load()
             logging.debug('key {} exists in bucket {}'.format(key,bucket))
+        # return with error if provided key doesn't exist
         except ClientError as e:
             if e.response['Error']['Code'] == "404":
                 logging.debug('s3 object {} does not exist in bucket {}'.format(key,bucket))
@@ -254,7 +351,13 @@ class Presigneds3UrlHandler(IPythonHandler):
                 logging.error(e)
                 self.finish(json.dumps({"status_code":500, "message":e, "url":""}))
 
+        # continue if provided key exists
+        # create s3 client for creating url
         try:
+            s3_client = boto3.client('s3',
+                aws_access_key_id=keys[0],
+                aws_secret_access_key=keys[1]
+            )
             resp = s3_client.generate_presigned_url(
                 'get_object',
                 Params={'Bucket': bucket,'Key': key},
