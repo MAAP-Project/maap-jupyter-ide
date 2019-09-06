@@ -1,5 +1,5 @@
 import { Widget, Panel } from '@phosphor/widgets';
-import { Dialog } from '@jupyterlab/apputils';
+import { Dialog, showDialog } from '@jupyterlab/apputils';
 import { PageConfig } from '@jupyterlab/coreutils'
 import { INotification } from "jupyterlab_toastify";
 import { getUserInfo } from "./getKeycloak";
@@ -173,6 +173,45 @@ export class JobCache extends Panel {
           display.setAttribute('style', 'margin: 0px; height:20%; width: 98%; border: none; resize: none');
           display.className = 'jp-JSONEditor-host';
           div2.appendChild(display);
+
+          // create button to delete job 
+          if (document.getElementById('job-delete-button') == null){
+            var deleteBtn = document.createElement("button");
+            deleteBtn.id = 'job-delete-button';
+            deleteBtn.className = 'jupyter-button';
+            deleteBtn.innerHTML = 'Delete Job';
+            // change to get job_id and delete via widget or send request & create own popup
+            deleteBtn.addEventListener('click', function () {
+              var getUrl = new URL(PageConfig.getBaseUrl() + 'hysds/delete');
+              getUrl.searchParams.append('job_id', me.job_id);
+              console.log(getUrl.href);
+              request('get',getUrl.href).then((res: RequestResult) => {
+                if (res.ok) {
+                  let json_response:any = res.json();
+                  let result = json_response['result'];
+
+                  let body = document.createElement('div');
+                  body.style.display = 'flex';
+                  body.style.flexDirection = 'column';
+
+                  let textarea = document.createElement("div");
+                  textarea.id = 'result-text';
+                  textarea.style.display = 'flex';
+                  textarea.style.flexDirection = 'column';
+                  textarea.innerHTML = "<pre>"+result+"</pre>";
+
+                  body.appendChild(textarea);
+                  showDialog({
+                    title: 'Delete Job',
+                    body: new Widget({node:body}),
+                    focusNodeSelector: 'input',
+                    buttons: [Dialog.okButton({label: 'Ok'})]
+                  });
+                }
+              });
+            }, false);
+            div2.appendChild(deleteBtn);
+          }
         }
   
         // --------------------
@@ -302,8 +341,8 @@ export class JobCache extends Panel {
 // -----------------------
 // HySDS stuff
 // -----------------------
-const nonXML: string[] = ['deleteAlgorithm','listAlgorithms','registerAuto','getResult','executeInputs','getStatus','execute','describeProcess','getCapabilities','register'];
-const notImplemented: string[] = ['dismiss','delete'];
+const nonXML: string[] = ['deleteAlgorithm','listAlgorithms','registerAuto','getResult','executeInputs','getStatus','execute','describeProcess','getCapabilities','register', 'delete'];
+const notImplemented: string[] = ['dismiss'];
 export class HySDSWidget extends Widget {
 
   // TODO: protect instance vars
@@ -838,7 +877,7 @@ class DialogEnter<T> extends Dialog<T> {
   }
 }
 
-function showDialog<T>(
+function showDialogEnter<T>(
   options: Partial<Dialog.IOptions<T>> = {}
 ): void {
   let dialog = new DialogEnter(options);
@@ -849,7 +888,7 @@ function showDialog<T>(
 
 export function popup(b:any): void {
   if ( !(notImplemented.includes(b.req) )){ 
-    showDialog({
+    showDialogEnter({
       title: b.popup_title,
       body: b,
       focusNodeSelector: 'input',
@@ -862,7 +901,7 @@ export function popup(b:any): void {
 }
 
 export function popupResult(b:any,popup_title:string): void {
-  showDialog({
+  showDialogEnter({
     title: popup_title,
     body: b,
     focusNodeSelector: 'input',
