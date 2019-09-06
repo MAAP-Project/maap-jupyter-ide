@@ -747,7 +747,7 @@ class DeleteHandler(IPythonHandler):
 		# print(req_xml)
 
 		try:
-			r = requests.get(
+			r = requests.delete(
 				url,
 				headers=headers
 			)
