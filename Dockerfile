@@ -50,7 +50,7 @@ RUN cd /show_ssh_info && jupyter serverextension enable --py show_ssh_info --sys
 
 # jlab earthdata search extension
 ENV MAAP_CONF='/maap-py/'
-RUN git clone --single-branch --branch stable-dev https://github.com/MAAP-Project/maap-py.git && cd maap-py && python setup.py install
+RUN git clone --single-branch --branch master https://github.com/MAAP-Project/maap-py.git && cd maap-py && python setup.py install
 #RUN pip install git+https://github.com/MAAP-Project/maap-py@stable-dev#egg=maapPy
 COPY edsc_extension /edsc_extension
 RUN cd /edsc_extension && npm run build
