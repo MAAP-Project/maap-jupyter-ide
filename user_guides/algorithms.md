@@ -1,4 +1,4 @@
-# Algorithm Registration
+# Algorithms
 
 ## List Algorithms
 
