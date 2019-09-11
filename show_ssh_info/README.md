@@ -1,11 +1,18 @@
 # show_ssh_info
 
-This extension displays ssh info for a user to get onto the kubernetes cluster container for 
-their workspace. It also injects the users SSH key into their workspace from their auth 
+This extension has become a general user mamagement extension. It's capabilities:
+
+- Displays ssh info for a user to get onto the kubernetes cluster container for 
+their workspace. 
+- Injects the users SSH key into their workspace from their auth 
 profile (keycloak). This injection happens automatically when any user opens up the workspace, so no additional
 step is needed to allow a user to ssh into the container.
+- Mount user and org s3 buckets
+- Provide user sharable signed s3 link 
+- Update keycloak token at set time interval so users don't get blocked from using token enabled features
+after a few minutes
 
-This extension is dependent upon being run inside the Eclipse Che environment.
+This extension is dependent upon being run inside the Eclipse Che environment and having the keycloak user profile info.
 
 
 ## Development

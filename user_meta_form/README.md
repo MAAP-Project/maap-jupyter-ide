@@ -1,6 +1,9 @@
 # user_meta_form
 
 
+This extension adds a command to the command palette to open a [form]('https://questionnaire.maap-project.org/') 
+in a separate browser window. This form allows users to fill out metadata info about their algorithm.
+
 ## Requirements
 
 * JupyterLab >= 0.30.0 
