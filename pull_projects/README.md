@@ -2,6 +2,12 @@
 
 Since _Che_ doesn't automatically import projects from the workspace setup into the JupyterLab containers, this extension accomplishes that.
 
+
+Features: 
+- Clone user's gitlab project's into their workspace (uses gitlab token from keycloak to clone private repos)
+
+
+
 There are 3 API endpoints for handling projects listed under _Che_ with the JupyterLab workspace.
 
 1. ListAllProjects
