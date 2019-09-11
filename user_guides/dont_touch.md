@@ -16,9 +16,9 @@ What's relevant: Workspaces, Organizations.
 What's not: Stacks, Factories, Administration.
 
 ---
-### Workspace Administration
+## Workspace Administration
 
-#### Adding a workspace
+### Adding a workspace
 ##### What to do
 Configure the name, organization, RAM, and projects.
 
@@ -29,7 +29,7 @@ When adding projects, only add projects with the `Git` tab. Do not use any of th
 
 ![Add_project_options](./images/add_proj_options.png)
 
-#### Managing a workspace
+## Managing a workspace
 
 ![Workspace admin tabs](./images/workspace_admin.png)
 
@@ -50,10 +50,3 @@ Here are the features allowed/not allowed on all of the workspace administration
 | Plugins       | Do not touch! |
 | Share         | Do this! All of the features should be implemented here. |
 
-
-
----
-### Organizations
-#### What to do
-
-#### What NOT to do
