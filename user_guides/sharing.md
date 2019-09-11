@@ -78,9 +78,7 @@ In `/projects`, each user has a personal s3-hosted folder with the same name as 
 
 Users can create a shareable link for any files in their folder that is hosted on s3. To do this, go to `Command Palette` -> `User` -> `Get Presigned S3 URL` and enter the relative path to the file you want to share.  The link will expire after 5 minutes.
 
-![palette get s3 url](./images/palette-s3url.png)
-![enter s3 url filepath](./images/s3url-filepath.png)
-![s3 url link](./images/s3url-link.png)
+![s3-link-gif](./images/presignedurl.gif)
 
 *TODO:*  Generate s3 url from FileBrowser when implemented, inline magic for s3 url?
 
