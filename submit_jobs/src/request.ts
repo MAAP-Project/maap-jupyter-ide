@@ -15,8 +15,9 @@ export const DEFAULT_REQUEST_OPTIONS = {
   headers: {
     Accept: 'application/json, text/javascript, text/plain',
   },
-  // default max duration for a request
-  timeout: 20000,
+  // default max duration for a request in ms
+  // currently set to 120s = 2min
+  timeout: 120000,
 };
 
 export interface RequestResult {
