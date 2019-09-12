@@ -6,7 +6,7 @@ import logging
 from IPython.display import display, HTML
 
 logger = logging.getLogger()
-logger.setLevel(logging.DEBUG)
+# logger.setLevel(logging.DEBUG)
 
 @magics_class
 class HysdsMagic(Magics):
