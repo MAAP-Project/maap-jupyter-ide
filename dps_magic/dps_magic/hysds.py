@@ -46,6 +46,7 @@ class HysdsMagic(Magics):
         lstt.append(['%result','get the results for a completed job'])
         lstt.append(['%delete_algorithm','remove a registered algorithm from MAS'])
         lstt.append(['%delete_job','remove a completed job from DPS'])
+        lstt.append(['%dismiss','stop a running job on DPS'])
         lstt.append(['%s3_url','get a presigned s3 url for an object'])
         lstt.append(['%help','print this help info'])
         table = self.to_html_table(lstt)
@@ -272,12 +273,35 @@ class HysdsMagic(Magics):
         logging.debug(line)
 
         if line.strip() in ['','h','help']:
-            del_help = 'Delete Job Help<br><br>Delete a finished (completed or failed) job stored in DPS.  You need to know your Job ID.'
+            del_help = 'Delete Job Help<br><br>Delete a finished (completed or failed) job or queued job stored in DPS.  You need to know your Job ID.'
             sample_str = 'Example Delete Call:<br>    %delete_job ef6fde9e-0975-4556-b8a7-ee52e91d8e61'
             self.html(del_help, sample_str)
             return
 
         endpoint = '/hysds/delete'
+        call = '?job_id={}'.format(line.strip())
+
+        logging.debug("call is")
+        logging.debug(call)
+        
+        url = self.lk + endpoint + call
+        r = requests.get(url)
+        resp = json.loads(r.text)
+        self.html(resp['result'])
+        return
+
+    @line_magic
+    def dismiss(self, line):
+        logging.debug('line call is')
+        logging.debug(line)
+
+        if line.strip() in ['','h','help']:
+            del_help = 'Dismiss Job Help<br><br>Dismiss a running (started, NOT queued) job on DPS.  You need to know your Job ID.'
+            sample_str = 'Example Dismiss Call:<br>    %dismiss_job ef6fde9e-0975-4556-b8a7-ee52e91d8e61'
+            self.html(del_help, sample_str)
+            return
+
+        endpoint = '/hysds/dismiss'
         call = '?job_id={}'.format(line.strip())
 
         logging.debug("call is")
