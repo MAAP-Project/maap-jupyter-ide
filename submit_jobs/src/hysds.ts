@@ -195,7 +195,7 @@ export class JobCache extends Panel {
                   body.style.flexDirection = 'column';
 
                   let textarea = document.createElement("div");
-                  textarea.id = 'result-text';
+                  textarea.id = 'delete-button-text';
                   textarea.style.display = 'flex';
                   textarea.style.flexDirection = 'column';
                   textarea.innerHTML = "<pre>"+result+"</pre>";
@@ -211,6 +211,45 @@ export class JobCache extends Panel {
               });
             }, false);
             div2.appendChild(deleteBtn);
+          }
+
+          // create button to dismiss job
+          if (document.getElementById('job-dismiss-button') == null){
+            var dismissBtn = document.createElement("button");
+            dismissBtn.id = 'job-dismiss-button';
+            dismissBtn.className = 'jupyter-button';
+            dismissBtn.innerHTML = 'Dismiss Job';
+            // change to get job_id and dismiss via widget or send request & create own popup
+            dismissBtn.addEventListener('click', function () {
+              var getUrl = new URL(PageConfig.getBaseUrl() + 'hysds/dismiss');
+              getUrl.searchParams.append('job_id', me.job_id);
+              console.log(getUrl.href);
+              request('get',getUrl.href).then((res: RequestResult) => {
+                if (res.ok) {
+                  let json_response:any = res.json();
+                  let result = json_response['result'];
+
+                  let body = document.createElement('div');
+                  body.style.display = 'flex';
+                  body.style.flexDirection = 'column';
+
+                  let textarea = document.createElement("div");
+                  textarea.id = 'dismiss-button-text';
+                  textarea.style.display = 'flex';
+                  textarea.style.flexDirection = 'column';
+                  textarea.innerHTML = "<pre>"+result+"</pre>";
+
+                  body.appendChild(textarea);
+                  showDialog({
+                    title: 'Dismiss Job',
+                    body: new Widget({node:body}),
+                    focusNodeSelector: 'input',
+                    buttons: [Dialog.okButton({label: 'Ok'})]
+                  });
+                }
+              });
+            }, false);
+            div2.appendChild(dismissBtn);
           }
         }
   
@@ -341,8 +380,8 @@ export class JobCache extends Panel {
 // -----------------------
 // HySDS stuff
 // -----------------------
-const nonXML: string[] = ['deleteAlgorithm','listAlgorithms','registerAuto','getResult','executeInputs','getStatus','execute','describeProcess','getCapabilities','register', 'delete'];
-const notImplemented: string[] = ['dismiss'];
+const nonXML: string[] = ['deleteAlgorithm','listAlgorithms','registerAuto','getResult','executeInputs','getStatus','execute','describeProcess','getCapabilities','register', 'delete','dismiss'];
+const notImplemented: string[] = [];
 export class HySDSWidget extends Widget {
 
   // TODO: protect instance vars
