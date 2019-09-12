@@ -603,6 +603,7 @@ class GetResultHandler(IPythonHandler):
 						self.finish({"status_code": 404, "result": result})
 					else:
 						job_id = rt[0].text
+						logging.debug('job_id is {}'.format(job_id))
 						# print(job_id)
 
 						result = '<table id="job-result-display" style="border-style: none; font-size: 11px">'
@@ -612,6 +613,7 @@ class GetResultHandler(IPythonHandler):
 
 						# get product name
 						product_name = rt[1].attrib['id']
+						logging.debug('product name is {}'.format(product_name))
 						result += '<tr><td>ProductName: </td><td style="text-align:left">{}</td></tr>'.format(product_name)
 
 						# format urls for table
@@ -619,8 +621,12 @@ class GetResultHandler(IPythonHandler):
 						p = getProds(prods) #(Output,['url1','url2'])
 
 						url_lst = p[1]
+						
+						## make the last link clickable
+						lnk = url_lst[-1]
 						url_lst[-1] = '<a href="{}" target="_blank" style="border-bottom: 1px solid #0000ff; color: #0000ff;">{}</a>'.format(lnk,lnk)
-						urls_str = ('<br>	').join(url_lst)
+						
+						urls_str = ('<br>	•&nbsp;').join(url_lst)
 						result += '<tr><td>{}: </td><td style="text-align:left">{}</td></tr>'.format('Locations',urls_str)
 						
 						result += '</tbody>'
@@ -1090,8 +1096,8 @@ class ListUserJobsHandler(IPythonHandler):
 					jobs = [parse_job(job) for job in resp['jobs']] 					# parse inputs from string to dict
 					jobs = sorted(jobs, key=lambda j: j['timestamp'],reverse=True) 	# sort list of jobs by timestamp (most recent)
 
-					result += '<div id="jobs-div" style="height:100%">'
-					result += '<div id = "job-table" style="overflow:auto; height:45%; width: 330px">'
+					result += '<div id="jobs-div" style="height:100%; width:340px">'
+					result += '<div id = "job-table" style="overflow:auto; height:45%; width: 335px">'
 					result += '<table id="job-cache-display" style="font-size:11px;">'
 					result += '<col width=33%>'
 					result += '<col width=33%>'
