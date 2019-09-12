@@ -16,77 +16,77 @@ export class JobCache extends Panel {
   results: string;
   jobs: {[k:string]:string};
   job_id: string;
-  // username: string;
+  username: string;
 
-  // constructor(uname:string) {
   constructor() {
     super();
+
+    // set username on start
+    // callback should finish before users manage to do anything
+    // now profile timing out shouldn't be a problem
+    let me = this;
+    getUserInfo(function(profile: any) {
+      if (profile['cas:username'] === undefined) {
+        INotification.error("Get username failed.");
+        me.username = 'anonymous';
+      } else {
+        me.username = profile['cas:username'];
+        INotification.success("Got username.");
+      }
+    });
+
     this.table = '';
     this.results = '';
     this.displays = {};
     this.jobs = {};
     this.job_id = '';
-    // this.username = uname;
-    // console.log('setting username to '+this.username);
     this.addClass(CONTENT_CLASS);
   }
 
   updateDisplay(): void {
-    // call list jobs endpoint using wksp username
     var x = document.createElement("BR");
     this.node.appendChild(x);
+
+    // call list jobs endpoint using username
     var getUrl = new URL(PageConfig.getBaseUrl() + 'hysds/listJobs');
-    let me = this;
-    getUserInfo(function(profile: any) {
-      // start get username callback
-      var username:string;
-      if (profile['cas:username'] === undefined) {
-        INotification.error("Get username failed.");
-        username = 'anonymous';
-      return;
-      } else {
-        username = profile['cas:username'];
-      }
-      getUrl.searchParams.append('username',username);
-      console.log(getUrl.href);
-      // --------------------
-      // get jobs list request
-      // --------------------
-      request('get', getUrl.href).then((res: RequestResult) => {
-        if(res.ok){
-          let json_response:any = res.json();
-          // console.log(json_response['status_code']);
-          INotification.success("Get user jobs success.");
-          // console.log(json_response['result']);
-          // console.log(json_response['displays']);
+    getUrl.searchParams.append('username',this.username);
+    console.log(getUrl.href);
+    // --------------------
+    // get jobs list request
+    // --------------------
+    request('get', getUrl.href).then((res: RequestResult) => {
+      if(res.ok){
+        let json_response:any = res.json();
+        // console.log(json_response['status_code']);
+        INotification.success("Get user jobs success.");
+        // console.log(json_response['result']);
+        // console.log(json_response['displays']);
 
-          if (json_response['status_code'] == 200){
-            me.table = json_response['table'];
-            me.jobs = json_response['jobs'];
-            // later get user to pick the job
-            me.displays = json_response['displays'];
+        if (json_response['status_code'] == 200){
+          this.table = json_response['table'];
+          this.jobs = json_response['jobs'];
+          // later get user to pick the job
+          this.displays = json_response['displays'];
 
-            // catch case if user has no jobs
-            let num_jobs = Object.keys(me.jobs).length;
-            if (num_jobs > 0 && me.job_id == '') {
+          // catch case if user has no jobs
+          let num_jobs = Object.keys(this.jobs).length;
+          if (num_jobs > 0 && this.job_id == '') {
 
-              me.job_id = json_response['result'][0]['job_id'];
-            }
-
-          } else {
-            console.log('unable to get user job list');
-            INotification.error("Get user jobs failed.");
+            this.job_id = json_response['result'][0]['job_id'];
           }
+
         } else {
           console.log('unable to get user job list');
           INotification.error("Get user jobs failed.");
         }
-      });
-
-      console.log('got table, setting panel display');
-      me.getJobInfo();
-    // end get username callback
+      } else {
+        console.log('unable to get user job list');
+        INotification.error("Get user jobs failed.");
+      }
     });
+
+    console.log('got table, setting panel display');
+    this.getJobInfo();
   }
 
   // front-end side of display jobs table and job info
@@ -405,13 +405,26 @@ export class HySDSWidget extends Widget {
     body.style.flexDirection = 'column';
     super({node: body});
 
+    // set username on start
+    // callback should finish before users manage to do anything
+    // now profile timing out shouldn't be a problem
+    let me = this;
+    getUserInfo(function(profile: any) {
+      if (profile['cas:username'] === undefined) {
+        INotification.error("Get username failed.");
+        me.username = 'anonymous';
+      } else {
+        me.username = profile['cas:username'];
+        INotification.success("Got username.");
+      }
+    });
+
     // Default text
     this.req = req;
     this.response_text = "";
     this.old_fields = {};
     this.fields = method_fields;
     this.get_inputs = false;
-    this.username = uname;
     this.jobs_panel = panel;
     this.ins_dict = {};
 
@@ -472,12 +485,6 @@ export class HySDSWidget extends Widget {
     this.updateSearchResults = this.updateSearchResults.bind(this);
     this.setOldFields = this.setOldFields.bind(this);
     this.buildRequestUrl = this.buildRequestUrl.bind(this);
-
-    // if (this.popup_title == "registerAuto") {
-    //   var msg = document.createElement("Label");
-    //   msg.innerHTML = "Your Docker container must have cloned the repository in the following path: /app";
-    //   this.node.appendChild(msg);
-    // }
 
     // skip 1st popup if nothing to fill out
     if (this.fields.length == 0) {
@@ -654,21 +661,9 @@ export class HySDSWidget extends Widget {
         }
       }
       getUrl.searchParams.append("inputs",new_input_list);
-      // add username
-      let me = this;
-      getUserInfo(function(profile: any) {
-        var username:string;
-        if (profile['cas:username'] === undefined) {
-          INotification.error("Get username failed.");
-          username = 'anonymous';
-        return;
-        } else {
-          username = profile['cas:username'];
-        }
-        me.old_fields['username'] = username;
-        console.log('added username '+fieldValue);
-        getUrl.searchParams.append('username',username);
-      });
+      getUrl.searchParams.append('username',this.username);
+      console.log('added username '+fieldValue);
+      // console.log(getUrl.href);
     }
     return getUrl;
   }
@@ -725,39 +720,20 @@ export class HySDSWidget extends Widget {
           console.log(rangeFieldValue);
           // var len = last - start + 1;
           for (var i = start; i <= last; i++) {
-            var multiUrl = this.buildCopyUrl(rangeField,String(i));
-            multiUrl.searchParams.append("username",this.username);
+            let multiUrl = this.buildCopyUrl(rangeField,String(i));
             console.log(multiUrl.href);
             urllst.push(multiUrl);
-            // });
           }
           resolve(urllst);
 
         // just 1 job
         } else {
           // add username
-          let me = this;
-          getUserInfo(function(profile: any) {
-            var username:string;
-            if (profile['cas:username'] === undefined) {
-              INotification.error("Get username failed.");
-              username = 'anonymous';
-            return;
-            } else {
-              username = profile['cas:username'];
-            }
-            me.old_fields['username'] = username;
-            getUrl.searchParams.append('username',username);
-            console.log('added username');
-            console.log(getUrl.href);
-            urllst.push(getUrl);
-            resolve(urllst);
-          });
-          // getUrl.searchParams.append('username',this.username);
-          // console.log('added username');
-          // console.log(getUrl.href);
-          // urllst.push(getUrl);
-          // resolve(urllst);
+          getUrl.searchParams.append('username',this.username);
+          console.log('added username');
+          console.log(getUrl.href);
+          urllst.push(getUrl);
+          resolve(urllst);
         }
 
       // Get Notebook information to pass to Register Handler
@@ -770,7 +746,6 @@ export class HySDSWidget extends Widget {
 
       // for all other requests
       } else {
-        // console.log(this.req+'!!!!');
         for (var field of this.fields) {
           if (field == "inputs") {
             var fieldText = (<HTMLTextAreaElement>document.getElementById(field.toLowerCase()+'-input')).value;
