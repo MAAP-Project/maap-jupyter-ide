@@ -45,9 +45,9 @@ def getParams(node):
 # helper to parse out products of result
 def getProds(node):
 	tag = node.tag[node.tag.index('}')+1:]
-	if tag in ['ProductName','Location']:
+	if tag in ['JobID']:
 		return (tag,node.text)
-	elif tag == 'Locations':
+	elif tag == 'Output':
 		return (tag,[loc.text for loc in node])
 	else:
 		return (tag,[getProds(e) for e in node])
@@ -605,26 +605,24 @@ class GetResultHandler(IPythonHandler):
 						job_id = rt[0].text
 						# print(job_id)
 
-						prods = rt[1][0]
-						p = getProds(prods)
-
 						result = '<table id="job-result-display" style="border-style: none; font-size: 11px">'
 						result += '<thead><tr><th colspan="2" style="text-align:left"> Job Results</th></tr></thead>'
 						result += '<tbody>'
 						result += '<tr><td>JobID: </td><td style="text-align:left">{}</td></tr>'.format(job_id)
 
-						for product in p[1]:
-							for attrib in product[1]:
-								if attrib[0] == 'Locations' and type(attrib[1] == type([])):
-									lst = attrib[1]
-									lnk = lst[-1]
-									lst[-1] = '<a href="{}" target="_blank" style="border-bottom: 1px solid #0000ff; color: #0000ff;">{}</a>'.format(lnk,lnk)
-									prop = ('<br>	').join(lst)
-									result += '<tr><td>{}: </td><td style="text-align:left">{}</td></tr>'.format(attrib[0],prop)
-								else:
-									result += '<tr><td>{}: </td><td style="text-align:left">{}</td></tr>'.format(attrib[0],attrib[1])
-							# result += '\n'
+						# get product name
+						product_name = rt[1].attrib['id']
+						result += '<tr><td>ProductName: </td><td style="text-align:left">{}</td></tr>'.format(product_name)
 
+						# format urls for table
+						prods = rt[1]
+						p = getProds(prods) #(Output,['url1','url2'])
+
+						url_lst = p[1]
+						url_lst[-1] = '<a href="{}" target="_blank" style="border-bottom: 1px solid #0000ff; color: #0000ff;">{}</a>'.format(lnk,lnk)
+						urls_str = ('<br>	').join(url_lst)
+						result += '<tr><td>{}: </td><td style="text-align:left">{}</td></tr>'.format('Locations',urls_str)
+						
 						result += '</tbody>'
 						result += '</table>'
 						logging.debug(result)
