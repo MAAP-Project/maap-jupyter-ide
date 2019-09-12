@@ -2,7 +2,7 @@
 
 ## List Previous Jobs
 
-The `Jobs` pane will need to be manually (re)loaded.  This can be done by going to the `Command Palette` -> `DPS` -> `Refresh Job List`.  Once this happens, the `Submitted Jobs` pane will display a scrollable, up-to-date table of the user's job history with Job Id, Job Status, and Algorithm, sorted by the most recently submitted job.  
+The `Jobs` pane will need to be manually (re)loaded.  This can be done by going to the `Command Palette` -> `DPS` -> `Refresh Job List`.  Once this happens, the `Submitted Jobs` pane will display a scrollable, up-to-date table of the user's job history with Job Id, Job Status, and Algorithm, sorted by the most recently submitted job.  From here, users can go directly to the s3-hosted results of a completed job or delete the currently viewed job.
 
 ![List Jobs - Command Palette](./images/refresh_jobs.png)
 ![Jobs Panel](./images/jobs_panel.png)
@@ -43,9 +43,9 @@ Alternatively, if the job was submitted under a different user, and the Job ID i
 
 ## Check Job Results
 
-The easiest way to check a job's status is to find and click on it on the `Submitted Jobs` pane.  
+The easiest way to check a job's status is to find and click on it on the `Jobs` pane.  
 
-Alternatively, if the job was submitted under a different user, and the Job ID is known, the user can check the job status by going to `Command Palette` -> `DPS` -> `Get DPS Job Result`.
+Alternatively, if the job was submitted under a different user, and the Job ID is known, the user can check the job status by going to `Command Palette` -> `DPS` -> `Get DPS Job Result`.  A series of dialogs similar to `Get Status` will popup.
 
 ![Job Results - Command Palette](./images/results1.png)
 
@@ -55,7 +55,10 @@ Alternatively, if the job was submitted under a different user, and the Job ID i
 
 ## Delete Job
 
-Deleting a job means removing any record of a job that has already been attempted and failed or completed.  To delete a job, go to `Command Palette` -> `DPS` -> `Delete DPS Job`.  A popup will appear, prompting the user to enter the job id.
+The easiest way to delete a job is to view it on the `Jobs` pane and click the `Delete Job` button.
+
+Deleting a job means removing any record of a job that has already been attempted and failed or completed.  To delete a job, go to `Command Palette` -> `DPS` -> `Delete DPS Job`.  Similar to `Get Status` and `Get Results`, a popup will appear, prompting the user to enter the job id.
+
 
 ## Dismiss Job
 
