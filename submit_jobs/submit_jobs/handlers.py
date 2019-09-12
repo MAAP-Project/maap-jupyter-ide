@@ -703,6 +703,19 @@ class DismissHandler(IPythonHandler):
 					result += '\t{}: {}\n'.format(f,params[f])
 				result += '\n'
 				self.finish({"status_code": 404, "result": result})
+			elif 'Exception' in r.text:
+				# parse exception code and message from xml response
+				rt = ET.fromstring(r.text)
+				exception_code = rt[0].attrib['exceptionCode']
+				exception_text = rt[0][0].text
+
+				result = 'Exception: {}\nMessage: {}\n'.format(exception_code, exception_text)
+				result += '\nThe provided parameters were:\n'
+
+				for f in fields:
+					result += '\t{}: {}\n'.format(f,params[f])
+				result += '\n'
+				self.finish({"status_code": 404, "result": result})
 			# if dismissal successful
 			elif r.status_code == 200:
 				try:
