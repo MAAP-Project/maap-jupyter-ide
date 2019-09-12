@@ -170,7 +170,7 @@ export class JobCache extends Panel {
           (<HTMLTextAreaElement>display).readOnly = true;
           (<HTMLTextAreaElement>display).cols = 30;
           (<HTMLTextAreaElement>display).innerHTML = disp;
-          display.setAttribute('style', 'margin: 0px; height:20%; width: 98%; border: none; resize: none');
+          display.setAttribute('style', 'margin: 0px; height:19%; width: 98%; border: none; resize: none');
           display.className = 'jp-JSONEditor-host';
           div2.appendChild(display);
 
@@ -249,6 +249,10 @@ export class JobCache extends Panel {
                 }
               });
             }, false);
+
+            let body2 = document.createElement('span');
+            body2.innerHTML = "     ";
+            div2.appendChild(body2);
             div2.appendChild(dismissBtn);
           }
         }
@@ -865,7 +869,7 @@ class WidgetResult extends Widget {
 
   // update panel text on resolution of result popup
   getValue() {
-    if (this.parentWidget.req == 'execute') {
+    if (this.parentWidget.req == 'execute' || this.parentWidget.req == 'delete' || this.parentWidget.req == 'dismiss') {
       this.parentWidget.updateJobCache();
     }
   }
@@ -951,5 +955,4 @@ export function popupResult(b:any,popup_title:string): void {
 export function isEmpty(obj) {
   return Object.keys(obj).length === 0;
 }
-
 
