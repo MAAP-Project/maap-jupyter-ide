@@ -87,5 +87,5 @@ The link will expire after 12 hours.
 
 ![s3-link-gif](./images/presignedurl.gif)
 
-See ![Notebook Magics](./noteboo_magics.md) for how to get the presigned s3 url from an inline notebook command.
+See ![Notebook Magics](./notebook_magics.md) for how to get the presigned s3 url from an inline notebook command.
 
