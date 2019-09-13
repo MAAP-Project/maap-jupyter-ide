@@ -8,6 +8,7 @@ You can run a command by entering `%` followed by a command and its arguments in
 ## Available Magics
 You can list the available magics by running `%help`<br>
 Output:<br>
+
 | Magic Command	| Description |
 | ------------- | ----------- |
 | %capabilities | get information about MAAP API services |
