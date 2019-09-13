@@ -87,6 +87,7 @@ d = {'algo_id':'george_demo_ubuntu','version':'master'}
 ```
 <br>
 Output:
+
 ```
 Algorithm: george_demo_ubuntu
 Version: master
@@ -133,6 +134,7 @@ d = {'pass_number':'6','username':'eyam','algo_id':'plot_algo','version':'master
 ```
 <br>
 Output:
+
 ```
 JobID is cd36b6ff-5477-4cbf-80b8-772a77a44c58
 ```
@@ -208,7 +210,7 @@ Example Delete Call:
 ```
 <br><br>
 Cell:<br>
-`%delete_job 5bcac3c8-9958-4c54-bb73-99d5eba09879`
+`%delete_job 5bcac3c8-9958-4c54-bb73-99d5eba09879`<br>
 Output:<br>
 ```
 JobID is 5bcac3c8-9958-4c54-bb73-99d5eba09879
