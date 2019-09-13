@@ -2,7 +2,7 @@
 
 ## List Previous Jobs
 
-The `Jobs` pane will need to be manually (re)loaded.  This can be done by going to the `Command Palette` -> `DPS` -> `Refresh Job List`.  Once this happens, the `Submitted Jobs` pane will display a scrollable, up-to-date table of the user's job history with Job Id, Job Status, and Algorithm, sorted by the most recently submitted job.  From here, users can go directly to the s3-hosted results of a completed job or delete the currently viewed job.
+The `Jobs` pane will need to be manually (re)loaded.  This can be done by going to the `Command Palette` -> `DPS` -> `Refresh Job List`.  Once this happens, the `Jobs` pane will display a scrollable, up-to-date table of the user's job history with Job Id, Job Status, and Algorithm, sorted by the most recently submitted job.  From here, users can go directly to the s3-hosted results of a completed job or delete the currently viewed job.
 
 ![List Jobs - Command Palette](./images/refresh_jobs.png)
 ![Jobs Panel](./images/jobs_panel.png)
@@ -61,6 +61,7 @@ Deleting a job means removing any record of a job that has already been attempte
 
 
 ## Dismiss Job
+The easiest way to delete a job is to view it on the `Jobs` pane and click the `Delete Job` button.
 
 Dismissing a job is to stop a job that is currently running already.  To dismiss a job, go to `Command Palette` -> `DPS` -> `Dismiss DPS Job`.  A popup will appear, prompting the user to enter the job id.
 

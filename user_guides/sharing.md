@@ -87,5 +87,5 @@ The link will expire after 12 hours.
 
 ![s3-link-gif](./images/presignedurl.gif)
 
-*TODO:*  Generate s3 url from FileBrowser when implemented, inline magic for s3 url?
+See ![Notebook Magics](./noteboo_magics.md) for how to get the presigned s3 url from an inline notebook command.
 
