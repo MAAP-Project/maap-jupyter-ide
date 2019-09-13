@@ -27,16 +27,6 @@ Pass the argument "help" to a command for more specific instructions on how to u
 Output:<br>
 ![execute_help_menu](./images/execute_help.png)
 
-Cell: `%s3_url`<br>
-Output:
-```
-Presigned S3 Url Help
-
-Get a presigned s3 url for an object.  You need to know the path of the file relative to the bucket or your /projects directory.
-Example s3_url call:
-    %s3_url eyam/file-on-bucket
-```
-
 ### List
 Cell:<br>
 `%list`<br>
