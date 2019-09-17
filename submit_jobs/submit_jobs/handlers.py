@@ -131,12 +131,12 @@ class RegisterAlgorithmHandler(IPythonHandler):
 		# proj_path = '/'.join(proj_path.split('/')[:-1])
 		# os.chdir(proj_path)
 		# git_url = subprocess.check_output("git remote get-url origin", shell=True).decode('utf-8').strip()
-		logging.debug('repo url is {}'.format(repo_url))
-		# params['repo_url'] = git_url
+		logging.debug('repo url is {}'.format(params['repo_url']))
+		# params['[repo_url]'] = git_url
 
 		# TODO: need way to build registry url instead of hardcoded
 		# user doesn't need to know how to make this parameter
-		image_name = repo_url.split('https://')[1].split('.git')[0] # slice off `https://` prefix and `.git` suffix
+		image_name = 'registry.nasa.maap'+(params['repo_url'].split('.git')[0]).split('repo.nasa.maap')[1] # slice off `https://` prefix and `.git` suffix
 		image_tag = 'master'
 		params['docker_url'] = '{}:{}'.format(image_name,image_tag)
 		# params['docker_url'] = os.environ['DOCKERIMAGE_PATH']
