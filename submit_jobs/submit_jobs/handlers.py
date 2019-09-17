@@ -22,17 +22,8 @@ sys.path.append(WORKDIR)
 #BASE_URL = "http://localhost:5000/api"
 BASE_URL = "https://api.maap.xyz/api"
 
-def dig(node):
-	# print("dig!")
-	if len(node) > 1:
-		return {node.tag[node.tag.index('}')+1:]:[dig(e) for e in node]}
-	elif len(node) == 1:
-		return {node.tag[node.tag.index('}')+1:]:dig(node[0])}
-	else:
-		# return {node.tag[node.tag.index('}')+1:]:node.text.split(' ')}
-		return {node.tag[node.tag.index('}')+1:]:node.text}
 
-# helper to parse out algorithm parameters for execute
+# helper to parse out algorithm parameters for execute, describe
 def getParams(node):
 	tag = node.tag[node.tag.index('}')+1:]
 	if tag in ['Title','Identifier']:
@@ -112,11 +103,6 @@ class RegisterAlgorithmHandler(IPythonHandler):
 		logging.debug(fields)
 
 		params = {}
-		# TODO: need way to build registry url instead of hardcoded
-		# user doesn't need to know how to make this parameter
-		params['docker_url'] = os.environ['DOCKERIMAGE_PATH']
-		# params['docker_url'] = 'registry.nasa.maap.xyz/root/dps_plot:master'
-		# params['docker_url'] = 'registry.nasa.maap.xyz/maap-devs/base-images/plant'
 		# params['environment'] = 'ubuntu'
 		for f in fields:
 			try:
@@ -145,8 +131,17 @@ class RegisterAlgorithmHandler(IPythonHandler):
 		# proj_path = '/'.join(proj_path.split('/')[:-1])
 		# os.chdir(proj_path)
 		# git_url = subprocess.check_output("git remote get-url origin", shell=True).decode('utf-8').strip()
-		# logging.debug(git_url)
+		logging.debug('repo url is {}'.format(repo_url))
 		# params['repo_url'] = git_url
+
+		# TODO: need way to build registry url instead of hardcoded
+		# user doesn't need to know how to make this parameter
+		image_name = repo_url.split('https://')[1].split('.git')[0] # slice off `https://` prefix and `.git` suffix
+		image_tag = 'master'
+		params['docker_url'] = '{}:{}'.format(image_name,image_tag)
+		# params['docker_url'] = os.environ['DOCKERIMAGE_PATH']
+		# params['docker_url'] = 'registry.nasa.maap.xyz/root/dps_plot:master'
+		# params['docker_url'] = 'registry.nasa.maap.xyz/maap-devs/base-images/plant'
 
 		# ==================================
 		# Part 2: Check if User Has Committed
