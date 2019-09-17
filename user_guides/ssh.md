@@ -8,3 +8,8 @@ to your profile, you will not be able to SSH in and must use the jupyter interfa
 
 ![Search for SSH](./images/search_ssh.png)
 ![Display SSH info](./images/ssh_info.png)
+
+---
+In the workspace administration section of che, you will see and SSH tab, nothing you do here will affect your workspace,
+keys generated here are not valid.
+##### For more info on things you should not do, see [here](./dont_touch.md)

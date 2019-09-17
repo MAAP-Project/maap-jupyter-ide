@@ -6,7 +6,7 @@ import logging
 from IPython.display import display, HTML
 
 logger = logging.getLogger()
-logger.setLevel(logging.DEBUG)
+# logger.setLevel(logging.DEBUG)
 
 @magics_class
 class HysdsMagic(Magics):
@@ -19,6 +19,7 @@ class HysdsMagic(Magics):
         # self.JUPYTER_SERVER_URL = CHE_BASE_URL+PREVIEW_URL
         self.lk = CHE_BASE_URL+PREVIEW_URL
         # self.lk = 'http://localhost:8888'
+        self.bucket = 'maap-mount-dev'
 
     def html(self,txt1,txt2=None):
         if txt2 == None:
@@ -43,7 +44,10 @@ class HysdsMagic(Magics):
         lstt.append(['%execute', 'submit a job to DPS using an algorithm registered in MAS'])
         lstt.append(['%status','check the status of a submitted job'])
         lstt.append(['%result','get the results for a completed job'])
-        lstt.append(['%delete','remove a registered algorithm from MAS'])
+        lstt.append(['%delete_algorithm','remove a registered algorithm from MAS'])
+        lstt.append(['%delete_job','remove a completed job from DPS'])
+        lstt.append(['%dismiss','stop a running job on DPS'])
+        lstt.append(['%s3_url','get a presigned s3 url for an object'])
         lstt.append(['%help','print this help info'])
         table = self.to_html_table(lstt)
         extra_text = 'For more information, call the command of interest with parameter "help"<br>Example:<br>&nbsp&nbsp&nbsp&nbsp%describe help'
@@ -226,14 +230,14 @@ class HysdsMagic(Magics):
         return
     
     @line_magic
-    def delete(self, line):
+    def delete_algorithm(self, line):
         logging.debug('line call is')
         logging.debug(line)
 
         if line.strip() in ['','h','help']:
-            del_help = 'Delete Algorithm Help<br><br>Check the inputs required for an algorithm stored in MAS.  You need to know your algorithm name and version.'
+            del_help = 'Delete Algorithm Help<br><br>Remove an algorithm stored in MAS.  You need to know your algorithm name and version.'
             sample_str = '    %delete plot_algo:master'
-            sample_dict = "    d = {'algo_id':'plot_algo','version':'master'} <br>    %delete $d"
+            sample_dict = "    d = {'algo_id':'plot_algo','version':'master'} <br>    %delete_algorithm $d"
             self.html(del_help, '<br>Example Delete Call:<br>{}<br>Example Dictionary Call: <br>{}'.format(sample_str,sample_dict))
             return
 
@@ -261,4 +265,73 @@ class HysdsMagic(Magics):
                 self.html(url,'Error Status '+r.status_code)
         else:
             print('unable to parse')
+        return
+
+    @line_magic
+    def delete_job(self, line):
+        logging.debug('line call is')
+        logging.debug(line)
+
+        if line.strip() in ['','h','help']:
+            del_help = 'Delete Job Help<br><br>Delete a finished (completed or failed) job or queued job stored in DPS.  You need to know your Job ID.'
+            sample_str = 'Example Delete Call:<br>    %delete_job ef6fde9e-0975-4556-b8a7-ee52e91d8e61'
+            self.html(del_help, sample_str)
+            return
+
+        endpoint = '/hysds/delete'
+        call = '?job_id={}'.format(line.strip())
+
+        logging.debug("call is")
+        logging.debug(call)
+        
+        url = self.lk + endpoint + call
+        r = requests.get(url)
+        resp = json.loads(r.text)
+        self.html(resp['result'])
+        return
+
+    @line_magic
+    def dismiss(self, line):
+        logging.debug('line call is')
+        logging.debug(line)
+
+        if line.strip() in ['','h','help']:
+            del_help = 'Dismiss Job Help<br><br>Dismiss a running (started, NOT queued) job on DPS.  You need to know your Job ID.'
+            sample_str = 'Example Dismiss Call:<br>    %dismiss_job ef6fde9e-0975-4556-b8a7-ee52e91d8e61'
+            self.html(del_help, sample_str)
+            return
+
+        endpoint = '/hysds/dismiss'
+        call = '?job_id={}'.format(line.strip())
+
+        logging.debug("call is")
+        logging.debug(call)
+        
+        url = self.lk + endpoint + call
+        r = requests.get(url)
+        resp = json.loads(r.text)
+        self.html(resp['result'])
+        return
+
+    @line_magic
+    def s3_url(self, line):
+        logging.debug('line call is')
+        logging.debug(line)
+
+        if line.strip() in ['','h','help']:
+            s3url_help = 'Presigned S3 Url Help<br><br>Get a presigned s3 url for an object.  You need to know the path of the file relative to the bucket or your /projects directory.'
+            sample_str = 'Example s3_url call:<br>    %s3_url eyam/file-on-bucket'
+            self.html(s3url_help, sample_str)
+            return
+
+        endpoint = '/show_ssh_info/getSigneds3Url'
+        call = '?bucket={}&key={}'.format(self.bucket,line.strip())
+
+        logging.debug("call is")
+        logging.debug(call)
+
+        url = self.lk + endpoint + call
+        r = requests.get(url)
+        resp = json.loads(r.text)
+        self.html(resp['url'])
         return

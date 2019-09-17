@@ -22,17 +22,8 @@ sys.path.append(WORKDIR)
 #BASE_URL = "http://localhost:5000/api"
 BASE_URL = "https://api.maap.xyz/api"
 
-def dig(node):
-	# print("dig!")
-	if len(node) > 1:
-		return {node.tag[node.tag.index('}')+1:]:[dig(e) for e in node]}
-	elif len(node) == 1:
-		return {node.tag[node.tag.index('}')+1:]:dig(node[0])}
-	else:
-		# return {node.tag[node.tag.index('}')+1:]:node.text.split(' ')}
-		return {node.tag[node.tag.index('}')+1:]:node.text}
 
-# helper to parse out algorithm parameters for execute
+# helper to parse out algorithm parameters for execute, describe
 def getParams(node):
 	tag = node.tag[node.tag.index('}')+1:]
 	if tag in ['Title','Identifier']:
@@ -45,9 +36,9 @@ def getParams(node):
 # helper to parse out products of result
 def getProds(node):
 	tag = node.tag[node.tag.index('}')+1:]
-	if tag in ['ProductName','Location']:
+	if tag in ['JobID']:
 		return (tag,node.text)
-	elif tag == 'Locations':
+	elif tag == 'Output':
 		return (tag,[loc.text for loc in node])
 	else:
 		return (tag,[getProds(e) for e in node])
@@ -112,11 +103,6 @@ class RegisterAlgorithmHandler(IPythonHandler):
 		logging.debug(fields)
 
 		params = {}
-		# TODO: need way to build registry url instead of hardcoded
-		# user doesn't need to know how to make this parameter
-		params['docker_url'] = os.environ['DOCKERIMAGE_PATH']
-		# params['docker_url'] = 'registry.nasa.maap.xyz/root/dps_plot:master'
-		# params['docker_url'] = 'registry.nasa.maap.xyz/maap-devs/base-images/plant'
 		# params['environment'] = 'ubuntu'
 		for f in fields:
 			try:
@@ -145,8 +131,17 @@ class RegisterAlgorithmHandler(IPythonHandler):
 		# proj_path = '/'.join(proj_path.split('/')[:-1])
 		# os.chdir(proj_path)
 		# git_url = subprocess.check_output("git remote get-url origin", shell=True).decode('utf-8').strip()
-		# logging.debug(git_url)
-		# params['repo_url'] = git_url
+		logging.debug('repo url is {}'.format(params['repo_url']))
+		# params['[repo_url]'] = git_url
+
+		# TODO: need way to build registry url instead of hardcoded
+		# user doesn't need to know how to make this parameter
+		image_name = 'registry.nasa.maap'+(params['repo_url'].split('.git')[0]).split('repo.nasa.maap')[1] # slice off `https://` prefix and `.git` suffix
+		image_tag = 'master'
+		params['docker_url'] = '{}:{}'.format(image_name,image_tag)
+		# params['docker_url'] = os.environ['DOCKERIMAGE_PATH']
+		# params['docker_url'] = 'registry.nasa.maap.xyz/root/dps_plot:master'
+		# params['docker_url'] = 'registry.nasa.maap.xyz/maap-devs/base-images/plant'
 
 		# ==================================
 		# Part 2: Check if User Has Committed
@@ -603,28 +598,32 @@ class GetResultHandler(IPythonHandler):
 						self.finish({"status_code": 404, "result": result})
 					else:
 						job_id = rt[0].text
+						logging.debug('job_id is {}'.format(job_id))
 						# print(job_id)
-
-						prods = rt[1][0]
-						p = getProds(prods)
 
 						result = '<table id="job-result-display" style="border-style: none; font-size: 11px">'
 						result += '<thead><tr><th colspan="2" style="text-align:left"> Job Results</th></tr></thead>'
 						result += '<tbody>'
 						result += '<tr><td>JobID: </td><td style="text-align:left">{}</td></tr>'.format(job_id)
 
-						for product in p[1]:
-							for attrib in product[1]:
-								if attrib[0] == 'Locations' and type(attrib[1] == type([])):
-									lst = attrib[1]
-									lnk = lst[-1]
-									lst[-1] = '<a href="{}" target="_blank" style="border-bottom: 1px solid #0000ff; color: #0000ff;">{}</a>'.format(lnk,lnk)
-									prop = ('<br>	').join(lst)
-									result += '<tr><td>{}: </td><td style="text-align:left">{}</td></tr>'.format(attrib[0],prop)
-								else:
-									result += '<tr><td>{}: </td><td style="text-align:left">{}</td></tr>'.format(attrib[0],attrib[1])
-							# result += '\n'
+						# get product name
+						product_name = rt[1].attrib['id']
+						logging.debug('product name is {}'.format(product_name))
+						result += '<tr><td>ProductName: </td><td style="text-align:left">{}</td></tr>'.format(product_name)
 
+						# format urls for table
+						prods = rt[1]
+						p = getProds(prods) #(Output,['url1','url2'])
+
+						url_lst = p[1]
+						
+						## make the last link clickable
+						lnk = url_lst[-1]
+						url_lst[-1] = '<a href="{}" target="_blank" style="border-bottom: 1px solid #0000ff; color: #0000ff;">{}</a>'.format(lnk,lnk)
+						
+						urls_str = ('<br>	•&nbsp;').join(url_lst)
+						result += '<tr><td>{}: </td><td style="text-align:left">{}</td></tr>'.format('Locations',urls_str)
+						
 						result += '</tbody>'
 						result += '</table>'
 						logging.debug(result)
@@ -680,7 +679,7 @@ class DismissHandler(IPythonHandler):
 		# print(req_xml)
 
 		try:
-			r = requests.get(
+			r = requests.delete(
 				url,
 				headers=headers
 			)
@@ -695,6 +694,19 @@ class DismissHandler(IPythonHandler):
 			if params['job_id'] == '':
 				result = 'Exception: {}\nMessage: {}\n(Did you provide a valid JobID?)\n'.format(rt[0].attrib['exceptionCode'], rt[0][0].text)
 				result += '\nThe provided parameters were:\n'
+				for f in fields:
+					result += '\t{}: {}\n'.format(f,params[f])
+				result += '\n'
+				self.finish({"status_code": 404, "result": result})
+			elif 'Exception' in r.text:
+				# parse exception code and message from xml response
+				rt = ET.fromstring(r.text)
+				exception_code = rt[0].attrib['exceptionCode']
+				exception_text = rt[0][0].text
+
+				result = 'Exception: {}\nMessage: {}\n'.format(exception_code, exception_text)
+				result += '\nThe provided parameters were:\n'
+
 				for f in fields:
 					result += '\t{}: {}\n'.format(f,params[f])
 				result += '\n'
@@ -1092,8 +1104,8 @@ class ListUserJobsHandler(IPythonHandler):
 					jobs = [parse_job(job) for job in resp['jobs']] 					# parse inputs from string to dict
 					jobs = sorted(jobs, key=lambda j: j['timestamp'],reverse=True) 	# sort list of jobs by timestamp (most recent)
 
-					result += '<div id="jobs-div" style="height:100%">'
-					result += '<div id = "job-table" style="overflow:auto; height:45%; width: 330px">'
+					result += '<div id="jobs-div" style="height:100%; width:340px">'
+					result += '<div id = "job-table" style="overflow:auto; height:45%; width: 335px">'
 					result += '<table id="job-cache-display" style="font-size:11px;">'
 					result += '<col width=33%>'
 					result += '<col width=33%>'

@@ -26,7 +26,7 @@ export class ProjectsPull extends Widget {
             let json_response:any = res.json();
             let message = json_response['status'];
 
-            if (message == "project import failed") {
+            if (message.includes("project import failed")) {
               INotification.error(message);
             }
             else {
