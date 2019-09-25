@@ -67,9 +67,14 @@ on all user accounts. If you are testing something, you can create your own imag
 ##### Che Stack Raw Configuration
 ```
 {
-  "description": "JupyterLab Extension",
   "scope": "general",
+  "description": "Use this one. Stable jupyter. No extra packages",
   "creator": "b07e3a58-ed50-4a6e-be17-fcf49ff8b242",
+  "tags": [
+    "MAAP",
+    "JUPYTER",
+    "STABLE"
+  ],
   "workspaceConfig": {
     "defaultEnv": "default",
     "environments": {
@@ -77,7 +82,7 @@ on all user accounts. If you are testing something, you can create your own imag
         "recipe": {
           "contentType": "text/x-yaml",
           "type": "kubernetes",
-          "content": "kind: List\nitems:\n - \n  apiVersion: v1\n  kind: Pod\n  metadata:\n   name: ws\n   labels:\n    name: ws\n  spec:\n   containers:\n    - \n     name: jupyter\n     image: 'localhost:32000/che-jupyter-lab-ide:latest'\n     resources:\n      limits:\n       memory: 1024Mi\n     securityContext:\n       privileged: true\n - \n  apiVersion: v1\n  kind: Service\n  metadata:\n   name: ws\n  spec:\n   type: NodePort\n   ports:\n    - \n     port: 22\n   selector:\n    name: ws\n    "
+          "content": "kind: List\nitems:\n - \n  apiVersion: v1\n  kind: Pod\n  metadata:\n   name: ws\n   labels:\n    name: ws\n  spec:\n   containers:\n    - \n     name: jupyter\n     image: 'localhost:32000/stable-ide:latest'\n     resources:\n      limits:\n       memory: 1024Mi\n     securityContext:\n       privileged: true\n - \n  apiVersion: v1\n  kind: Service\n  metadata:\n   name: ws\n  spec:\n   type: NodePort\n   ports:\n    - \n     port: 22\n   selector:\n    name: ws\n     \n    "
         },
         "machines": {
           "ws/jupyter": {
@@ -110,16 +115,15 @@ on all user accounts. If you are testing something, you can create your own imag
         }
       }
     },
-    "commands": [],
     "projects": [],
+    "commands": [],
     "name": "default",
     "attributes": {},
     "links": []
   },
   "components": [],
-  "tags": [],
-  "name": "JupyterLab Extensions",
-  "id": "stackjfbf5pwojopvx4e7"
+  "name": "maap-jupyter-ide",
+  "id": "stacktdo2q0ixhv7cge00"
 }
 ```
 
