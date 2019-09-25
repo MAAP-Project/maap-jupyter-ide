@@ -1,0 +1,59 @@
+{
+  "scope": "general",
+  "description": "Use this one. Stable jupyter. No extra packages",
+  "creator": "b07e3a58-ed50-4a6e-be17-fcf49ff8b242",
+  "tags": [
+    "MAAP",
+    "JUPYTER",
+    "STABLE"
+  ],
+  "workspaceConfig": {
+    "defaultEnv": "default",
+    "environments": {
+      "default": {
+        "recipe": {
+          "contentType": "text/x-yaml",
+          "type": "kubernetes",
+          "content": "kind: List\nitems:\n - \n  apiVersion: v1\n  kind: Pod\n  metadata:\n   name: ws\n   labels:\n    name: ws\n  spec:\n   containers:\n    - \n     name: jupyter\n     image: 'localhost:32000/stable-ide:latest'\n     resources:\n      limits:\n       memory: 1024Mi\n     securityContext:\n       privileged: true\n - \n  apiVersion: v1\n  kind: Service\n  metadata:\n   name: ws\n  spec:\n   type: NodePort\n   ports:\n    - \n     port: 22\n   selector:\n    name: ws\n     \n    "
+        },
+        "machines": {
+          "ws/jupyter": {
+            "env": {
+              "MACHINE_NAME": "WS_JUPYTER"
+            },
+            "servers": {
+              "jupyter": {
+                "path": "/",
+                "attributes": {
+                  "cookiesAuthEnabled": "true",
+                  "type": "ide",
+                  "secure": "true"
+                },
+                "protocol": "http",
+                "port": "3100"
+              }
+            },
+            "installers": [
+              "org.eclipse.che.exec",
+              "org.eclipse.che.ssh"
+            ],
+            "volumes": {
+              "projects": {
+                "path": "/projects"
+              }
+            },
+            "attributes": {}
+          }
+        }
+      }
+    },
+    "projects": [],
+    "commands": [],
+    "name": "default",
+    "attributes": {},
+    "links": []
+  },
+  "components": [],
+  "name": "maap-jupyter-ide",
+  "id": "stacktdo2q0ixhv7cge00"
+}
