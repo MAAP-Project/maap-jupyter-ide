@@ -29,7 +29,7 @@ class IFrameWidget extends Widget {
     let iframe = document.createElement('iframe');
     iframe.id = "iframeid";
 
-    // set proxy to ESDS
+    // set proxy to EDSC
     request('get', path).then((res: RequestResult) => {
       if (res.ok){
         console.log('site accesible: proceeding');
@@ -74,8 +74,7 @@ class ParamsPopupWidget extends Widget {
 //
 // Popup widget to display any string message
 //
-export
-class FlexiblePopupWidget extends Widget {
+export class FlexiblePopupWidget extends Widget {
   constructor(text:string) {
     let body = document.createElement('div');
     body.style.display = 'flex';
@@ -89,8 +88,7 @@ class FlexiblePopupWidget extends Widget {
 //
 // Widget with popup to set search results limit
 //
-export
-class LimitPopupWidget extends Widget {
+export class LimitPopupWidget extends Widget {
   constructor() {
       let body = document.createElement('div');
       body.style.display = 'flex';
