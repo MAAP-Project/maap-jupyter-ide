@@ -1,30 +1,10 @@
-import {
-  JupyterFrontEnd, JupyterFrontEndPlugin
-} from '@jupyterlab/application';
-
-import {
-  IDisposable, DisposableDelegate
-} from '@phosphor/disposable';
-
-
-import {
-  ToolbarButton
-} from '@jupyterlab/apputils';
-
-import {
-  DocumentRegistry
-} from '@jupyterlab/docregistry';
-
-import {
-  NotebookActions, NotebookPanel, INotebookModel
-} from '@jupyterlab/notebook';
-
-import {
-    ElementExt
-} from '@phosphor/domutils';
-
+import { JupyterFrontEnd, JupyterFrontEndPlugin } from '@jupyterlab/application';
+import { IDisposable, DisposableDelegate } from '@phosphor/disposable';
+import { ToolbarButton } from '@jupyterlab/apputils';
+import { DocumentRegistry } from '@jupyterlab/docregistry';
+import { NotebookActions, NotebookPanel, INotebookModel } from '@jupyterlab/notebook';
+import { ElementExt } from '@phosphor/domutils';
 import { INotification } from "jupyterlab_toastify";
-
 import '../style/index.css';
 
 const DEFAULT_CODE = 'from maap.maap import MAAP\n' +
