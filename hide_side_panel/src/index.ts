@@ -1,14 +1,13 @@
-import {
-  JupyterFrontEnd, JupyterFrontEndPlugin
-} from '@jupyterlab/application';
+import { JupyterFrontEnd, JupyterFrontEndPlugin } from '@jupyterlab/application';
 import { ICommandPalette } from '@jupyterlab/apputils';
+
 import '../style/index.css';
 import cheControls = require("./cheControls");
 
 
 function activate(app: JupyterFrontEnd, palette: ICommandPalette) {
 
-   // HIDE
+  // HIDE
   const hide_command = 'hide_side_panel:hide';
   app.commands.addCommand(hide_command, {
     label: 'Hide Che Side Panel',
@@ -17,10 +16,9 @@ function activate(app: JupyterFrontEnd, palette: ICommandPalette) {
       cheControls.hideNavbar()
     }
   });
-
   palette.addItem({command: hide_command, category: 'Che'});
 
-   // SHOW
+  // SHOW
   const show_command = 'hide_side_panel:show';
   app.commands.addCommand(show_command, {
     label: 'Show Che Side Panel',
@@ -29,12 +27,10 @@ function activate(app: JupyterFrontEnd, palette: ICommandPalette) {
       cheControls.showNavbar()
     }
   });
-
   palette.addItem({command: show_command, category: 'Che'});
 
   console.log('JupyterLab extension hide_side_panel is activated!');
 };
-
 
 
 
