@@ -4,7 +4,7 @@ import { PageConfig } from '@jupyterlab/coreutils'
 import { INotification } from "jupyterlab_toastify";
 import { getUserInfo } from "./getKeycloak";
 import { request, RequestResult } from './request';
-import * from "./dialogs";
+import {  } from "./dialogs";
 
 const CONTENT_CLASS = 'jp-Inspector-content';
 // primitive text panel for storing submitted job information

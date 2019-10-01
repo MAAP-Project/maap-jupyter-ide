@@ -1,6 +1,8 @@
-import { Dialog, showDialog } from '@jupyterlab/apputils';
+import { Dialog } from '@jupyterlab/apputils';
 
-class DialogEnter<T> extends Dialog<T> {
+const notImplemented: string[] = [];
+
+export class DialogEnter<T> extends Dialog<T> {
   /**
    * Create a dialog panel instance.
    *
@@ -45,7 +47,7 @@ class DialogEnter<T> extends Dialog<T> {
   }
 }
 
-function showDialogEnter<T>(
+export function showDialogEnter<T>(
   options: Partial<Dialog.IOptions<T>> = {}
 ): void {
   let dialog = new DialogEnter(options);
