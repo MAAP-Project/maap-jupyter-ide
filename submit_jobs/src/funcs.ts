@@ -1,8 +1,10 @@
-import { JupyterFrontEnd, JupyterFrontEndPlugin } from '@jupyterlab/application';
+import { JupyterFrontEnd } from '@jupyterlab/application';
 import { ICommandPalette } from '@jupyterlab/apputils';
 import { ILauncher } from '@jupyterlab/launcher';
-import { JobCache, HySDSWidget, popup, popupResult } from './widgets';
 import { ProjectSelector } from './register';
+import { HySDSWidget } from './widgets';
+import { JobCache } from './panel';
+import { popup, popupResult } from "./dialogs";
 import * as data from './fields.json';
 
 const registerFields = data.register;
@@ -23,7 +25,7 @@ var username:string;
 const jobsPanel = new JobCache();
 // ------------------------------------------------------------
 
-function activateRegister(app: JupyterFrontEnd, 
+export function activateRegister(app: JupyterFrontEnd, 
                         palette: ICommandPalette, 
                         restorer: ILauncher | null): void{
   const open_command = 'hysds: register';
@@ -38,7 +40,7 @@ function activateRegister(app: JupyterFrontEnd,
   palette.addItem({command: open_command, category: 'DPS'});
   console.log('HySDS Register Algorithm is activated!');
 }
-function activateGetCapabilities(app: JupyterFrontEnd, 
+export function activateGetCapabilities(app: JupyterFrontEnd, 
                         palette: ICommandPalette, 
                         restorer: ILauncher | null): void{
   const open_command = 'hysds: get-capabilities';
@@ -54,7 +56,7 @@ function activateGetCapabilities(app: JupyterFrontEnd,
   palette.addItem({command: open_command, category: 'DPS'});
   console.log('HySDS Get Capabilities is activated!');
 }
-function activateGetStatus(app: JupyterFrontEnd, 
+export function activateGetStatus(app: JupyterFrontEnd, 
                         palette: ICommandPalette, 
                         restorer: ILauncher | null): void{  
   const open_command = 'hysds: get-status';
@@ -69,7 +71,7 @@ function activateGetStatus(app: JupyterFrontEnd,
   palette.addItem({command: open_command, category: 'DPS'});
   console.log('HySDS Get Job Status is activated!');
 }
-function activateGetResult(app: JupyterFrontEnd, 
+export function activateGetResult(app: JupyterFrontEnd, 
                         palette: ICommandPalette, 
                         restorer: ILauncher | null): void{
   const open_command = 'hysds: get-result';
@@ -84,7 +86,7 @@ function activateGetResult(app: JupyterFrontEnd,
   palette.addItem({command: open_command, category: 'DPS'});
   console.log('HySDS Get Job Result is activated!');
 }
-function activateExecute(app: JupyterFrontEnd, 
+export function activateExecute(app: JupyterFrontEnd, 
                         palette: ICommandPalette, 
                         restorer: ILauncher | null): void{
   const open_command = 'hysds: execute-job';
@@ -100,7 +102,7 @@ function activateExecute(app: JupyterFrontEnd,
  
   console.log('HySDS Execute Job is activated!');
 }
-function activateDismiss(app: JupyterFrontEnd, 
+export function activateDismiss(app: JupyterFrontEnd, 
                         palette: ICommandPalette, 
                         restorer: ILauncher | null): void{
   const open_command = 'hysds: dismiss-job';
@@ -115,7 +117,7 @@ function activateDismiss(app: JupyterFrontEnd,
   palette.addItem({command: open_command, category: 'DPS'});
   console.log('HySDS Dismiss Job is activated!');
 }
-function activateDelete(app: JupyterFrontEnd, 
+export function activateDelete(app: JupyterFrontEnd, 
                         palette: ICommandPalette, 
                         restorer: ILauncher | null): void{
   const open_command = 'hysds: delete-job';
@@ -130,7 +132,7 @@ function activateDelete(app: JupyterFrontEnd,
   palette.addItem({command: open_command, category: 'DPS'});
   console.log('HySDS Delete Job is activated!');
 }
-function activateDescribe(app: JupyterFrontEnd, 
+export function activateDescribe(app: JupyterFrontEnd, 
                         palette: ICommandPalette, 
                         restorer: ILauncher | null): void{
   const open_command = 'hysds: describe-job';
@@ -145,7 +147,7 @@ function activateDescribe(app: JupyterFrontEnd,
   palette.addItem({command: open_command, category: 'DPS'});
   console.log('HySDS Describe Job is activated!');
 }
-function activateList(app: JupyterFrontEnd, 
+export function activateList(app: JupyterFrontEnd, 
                         palette: ICommandPalette, 
                         restorer: ILauncher | null): void{
   const open_command = 'hysds: list-algorithms';
@@ -161,7 +163,7 @@ function activateList(app: JupyterFrontEnd,
   palette.addItem({command: open_command, category: 'DPS'});
   console.log('HySDS Describe Job is activated!');
 }
-function activateDeleteAlgorithm(app: JupyterFrontEnd, 
+export function activateDeleteAlgorithm(app: JupyterFrontEnd, 
                         palette: ICommandPalette, 
                         restorer: ILauncher | null): void{
   const open_command = 'hysds: delete-algorithm';
@@ -177,7 +179,7 @@ function activateDeleteAlgorithm(app: JupyterFrontEnd,
   console.log('HySDS Describe Job is activated!');
 }
 
-function activateJobCache(app: JupyterFrontEnd, palette: ICommandPalette): void{
+export function activateJobCache(app: JupyterFrontEnd, palette: ICommandPalette): void{
   var infoPanel = jobsPanel;
   infoPanel.id = 'job-cache-display';
   infoPanel.title.label = 'Jobs';

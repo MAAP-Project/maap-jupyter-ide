@@ -1,10 +1,10 @@
 import { Widget } from '@phosphor/widgets';
-import { Dialog, showDialog } from '@jupyterlab/apputils';
 import { PageConfig } from '@jupyterlab/coreutils'
 import { INotification } from "jupyterlab_toastify";
 import { getUserInfo } from "./getKeycloak";
 import { request, RequestResult } from './request';
-import * from "./dialogs";
+import { JobCache } from './panel';
+import { popup, popupResult } from "./dialogs";
 // import * as $ from "jquery";
 // import { format } from "xml-formatter";
 

@@ -1,7 +1,9 @@
 import { Widget } from '@phosphor/widgets';
 import { PageConfig } from '@jupyterlab/coreutils'
 import { request, RequestResult } from './request';
-import { JobCache, HySDSWidget, popup, popupResult } from './hysds';
+import { HySDSWidget } from './widgets';
+import { JobCache } from './panel';
+import { popup, popupResult } from "./dialogs";
 
 // popup helper for register to select project
 export class ProjectSelector extends Widget {
