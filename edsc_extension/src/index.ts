@@ -2,7 +2,7 @@
 
 /** jupyterlab imports **/
 import { JupyterFrontEnd, JupyterFrontEndPlugin, ILayoutRestorer } from '@jupyterlab/application';
-import { ICommandPalette, Dialog, showDialog, WidgetTracker } from '@jupyterlab/apputils';
+import { ICommandPalette, WidgetTracker } from '@jupyterlab/apputils';
 import { PageConfig } from '@jupyterlab/coreutils'
 import { IDocumentManager } from '@jupyterlab/docmanager';
 import { IMainMenu } from '@jupyterlab/mainmenu';
@@ -19,9 +19,16 @@ import * as $ from "jquery";
 
 /** internal imports **/
 import '../style/index.css';
-import { IFrameWidget, ParamsPopupWidget, LimitPopupWidget} from './widgets';
+import { IFrameWidget } from './widgets';
+import { setResultsLimit, displaySearchParams } from './popups'
 import globals = require("./globals");
 
+
+///////////////////////////////////////////////////////////////
+//
+// Earthdata Search Client extension
+//
+///////////////////////////////////////////////////////////////
 
 const extension: JupyterFrontEndPlugin<WidgetTracker<IFrameWidget>> = {
   id: 'edsc_extension',
@@ -29,65 +36,6 @@ const extension: JupyterFrontEndPlugin<WidgetTracker<IFrameWidget>> = {
   requires: [IDocumentManager, ICommandPalette, ILayoutRestorer, IMainMenu, INotebookTracker],
   activate: activate
 };
-
-
-
-function setResultsLimit() {
-    console.log("old limit is: ", globals.limit)
-    showDialog({
-        title: 'Set Results Limit:',
-        body: new LimitPopupWidget(),
-        focusNodeSelector: 'input',
-        buttons: [Dialog.okButton({ label: 'Ok' })]
-    });
-}
-
-function displaySearchParams() {
-  showDialog({
-        title: 'Current Search Parameters:',
-        body: new ParamsPopupWidget(),
-        focusNodeSelector: 'input',
-        buttons: [Dialog.okButton({ label: 'Ok' })]
-    });
-}
-
-
-function copySearchResults() {
-  // Construct url to hit backend
-  var getUrl = new URL(PageConfig.getBaseUrl() + 'edsc/getGranules');
-  getUrl.searchParams.append("json_obj", JSON.stringify(globals.params));
-  getUrl.searchParams.append("limit", globals.limit);
-
-
-  // Make call to back end
-  var xhr = new XMLHttpRequest();
-
-  let url_response:any = [];
-
-  xhr.onload = function() {
-      let response:any = $.parseJSON(xhr.response);
-      let response_text:any = response.granule_urls;
-      if (response_text == "" ) { response_text = "No results found."; }
-      console.log(response_text);
-      //Clipboard.copyToSystem(response_text);
-      url_response = response_text;
-      return url_response;
-  };
-
-  xhr.open("GET", getUrl.href, true);
-  xhr.send(null);
-
-}
-
-//
-// External facing function for DPS to get the s3 urls of a specified search
-//
-export function getUrls() {
-  return copySearchResults();
-}
-
-
-
 
 
 function activate(app: JupyterFrontEnd,
@@ -323,7 +271,6 @@ function activate(app: JupyterFrontEnd,
   // Track and restore the widget state
   restorer.restore(instanceTracker, {
     command: open_command,
-    // args: () => JSONExt.emptyObject,
     name: () => namespace
   });
 
