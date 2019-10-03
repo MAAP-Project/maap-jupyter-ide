@@ -23,6 +23,7 @@ import { IFrameWidget } from './widgets';
 import { setResultsLimit, displaySearchParams } from './popups'
 import globals = require("./globals");
 
+const SEARCH_CLIENT_URL = "https://ade.maap-project.org:3052/search";
 
 ///////////////////////////////////////////////////////////////
 //
@@ -193,7 +194,7 @@ function activate(app: JupyterFrontEnd,
 
       // Only allow user to have one EDSC window
       if (widget == undefined) {
-          widget = new IFrameWidget('https://che-k8s.maap.xyz:3052/search');
+          widget = new IFrameWidget(SEARCH_CLIENT_URL);
           app.shell.add(widget, 'main');
           app.shell.activateById(widget.id);
       } else {

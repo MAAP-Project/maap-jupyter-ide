@@ -1,4 +1,4 @@
-FROM localhost:32000/vanilla
+FROM localhost:32000/vanilla:1.0
 
 RUN conda install -c conda-forge jupyterlab=1.1.1
 RUN conda install -c conda-forge nodejs
@@ -67,7 +67,7 @@ RUN cd /submit_jobs && jupyter serverextension enable --py submit_jobs --sys-pre
 
 # dps job magics
 COPY dps_magic /dps_magic
-RUN cd /dps_magic && pip install -e .
+RUN cd /dps_magic && pip install .
 RUN cd /dps_magic && jupyter nbextension install --symlink --py dps_magic --sys-prefix
 RUN cd /dps_magic && jupyter nbextension enable --py dps_magic --sys-prefix
 
