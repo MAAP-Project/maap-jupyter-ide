@@ -33,10 +33,10 @@ def load_jupyter_server_extension(nb_server_app):
 
     # ws_url = os.environ['PREVIEW_URL']
     # ws_ind = ws_url.find('/server')
-    # che_url = 'https://che-k8s.maap.xyz'+ws_url[ws_ind:]
+    # che_url = 'https://ade.maap-project.org'+ws_url[ws_ind:]
     # che_url = ws_url[ws_ind:]
     #http://0.0.0.0:3100/serverlx80f9ci-ws-jupyter/server-3100/
-    #https://che-k8s.maap.xyz/serverlx80f9ci-ws-jupyter/server-3100/
+    #https://ade.maap-project.org/serverlx80f9ci-ws-jupyter/server-3100/
 
     web_app.add_handlers(host_pattern, [(url_path_join(base_url, 'pull_projects/list'), ListProjectsHandler)])
     web_app.add_handlers(host_pattern, [(url_path_join(base_url, 'pull_projects/listFiles'), ListFilesHandler)])
