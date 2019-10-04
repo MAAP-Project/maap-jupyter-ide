@@ -11,15 +11,15 @@ from git import Repo
 import shutil
 import urllib
 
-GITLAB_REPO = "repo.nasa.maap.xyz"
+GITLAB_REPO = "mas.maap-project.org"
 
 # Set selected ADE Docker Image 
 class ListProjectsHandler(IPythonHandler):
     def get(self):
-        # 'https://che-k8s.maap.xyz/api/workspace/workspacetn41o4yl4a7kxclz'
+        # 'https://ade.maap-project.org/api/workspace/workspacetn41o4yl4a7kxclz'
         workspace_id = os.environ['CHE_WORKSPACE_ID']
         che_machine_token = os.environ['CHE_MACHINE_TOKEN']
-        url = 'https://che-k8s.maap.xyz/api/workspace/{workspace_id}'.format(workspace_id=workspace_id)
+        url = 'https://ade.maap-project.org/api/workspace/{workspace_id}'.format(workspace_id=workspace_id)
         # --------------------------------------------------
         # TODO: FIGURE OUT AUTH KEY & verify
         # --------------------------------------------------
@@ -51,10 +51,10 @@ class ListProjectsHandler(IPythonHandler):
 
 class ListFilesHandler(IPythonHandler):
     def get(self):
-        # 'https://che-k8s.maap.xyz/api/workspace/workspacetn41o4yl4a7kxclz'
+        # 'https://ade.maap-project.org/api/workspace/workspacetn41o4yl4a7kxclz'
         workspace_id = os.environ['CHE_WORKSPACE_ID']
         che_machine_token = os.environ['CHE_MACHINE_TOKEN']
-        url = 'https://che-k8s.maap.xyz/api/workspace/{workspace_id}'.format(workspace_id=workspace_id)
+        url = 'https://ade.maap-project.org/api/workspace/{workspace_id}'.format(workspace_id=workspace_id)
         # --------------------------------------------------
         # TODO: FIGURE OUT AUTH KEY & verify
         # --------------------------------------------------
@@ -128,7 +128,7 @@ class GetAllProjectsHandler(IPythonHandler):
         # --------------------------------------------------
         workspace_id = os.environ['CHE_WORKSPACE_ID']
         che_machine_token = os.environ['CHE_MACHINE_TOKEN']
-        url = 'https://che-k8s.maap.xyz/api/workspace/{workspace_id}'.format(workspace_id=workspace_id)
+        url = 'https://ade.maap-project.org/api/workspace/{workspace_id}'.format(workspace_id=workspace_id)
         # --------------------------------------------------
         # TODO: FIGURE OUT AUTH KEY & verify
         # --------------------------------------------------

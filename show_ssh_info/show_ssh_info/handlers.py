@@ -91,7 +91,7 @@ class CheckInstallersHandler(IPythonHandler):
         # self.finish({'status': True})
 
         che_machine_token = os.environ['CHE_MACHINE_TOKEN']
-        url = 'https://che-k8s.maap.xyz/api/workspace/' + os.environ.get('CHE_WORKSPACE_ID')
+        url = 'https://ade.maap-project.org/api/workspace/' + os.environ.get('CHE_WORKSPACE_ID')
         # --------------------------------------------------
         # TODO: FIGURE OUT AUTH KEY & verify
         # --------------------------------------------------
@@ -121,7 +121,7 @@ class InstallHandler(IPythonHandler):
     def get(self):
 
         che_machine_token = os.environ['CHE_MACHINE_TOKEN']
-        url = 'https://che-k8s.maap.xyz/api/workspace/' + os.environ.get('CHE_WORKSPACE_ID')
+        url = 'https://ade.maap-project.org/api/workspace/' + os.environ.get('CHE_WORKSPACE_ID')
         # --------------------------------------------------
         # TODO: FIGURE OUT AUTH KEY & verify
         # --------------------------------------------------
@@ -141,7 +141,7 @@ class InstallHandler(IPythonHandler):
         # Update workspace config with new installers
         workspace_config['config']['environments']["default"]["machines"]["ws/jupyter"]['installers'] = installers
 
-        put_url = 'https://che-k8s.maap.xyz/api/workspace/' + os.environ.get('CHE_WORKSPACE_ID')
+        put_url = 'https://ade.maap-project.org/api/workspace/' + os.environ.get('CHE_WORKSPACE_ID')
 
         r = requests.put(
             url,
@@ -230,7 +230,7 @@ class MountOrgBucketsHandler(IPythonHandler):
         # ts pass keycloak token from window
         token = self.get_argument('token','')
         bucket = self.get_argument('bucket','')
-        url = 'https://che-k8s.maap.xyz/api/organization'
+        url = 'https://ade.maap-project.org/api/organization'
         headers = {
             'Accept':'application/json',
             'Authorization':'Bearer {token}'.format(token=token)

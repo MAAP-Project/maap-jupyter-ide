@@ -31,7 +31,8 @@
   },
   "dependencies": {
     "@jupyterlab/application": "^1.0.1",
-    "@jupyterlab/apputils": "^1.0.1"
+    "@jupyterlab/apputils": "^1.0.1",
+    "typescript": "^3.5.3"
   },
   "devDependencies": {
     "rimraf": "^2.6.1",
