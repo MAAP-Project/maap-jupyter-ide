@@ -136,6 +136,10 @@ class RegisterAlgorithmHandler(IPythonHandler):
 
 		# TODO: need way to build registry url instead of hardcoded
 		# user doesn't need to know how to make this parameter
+		if (not ('repo.nasa.maap') in params['repo_url']) or (not ('mas.maap-project') in params[repo_url]):
+			self.finish({"status_code": 412, "result": "Error: Your git repo is not from a supported host (repo.nasa.maap.xyz or mas.maap-project.org)"})
+			return
+
 		image_name = 'registry.nasa.maap'+(params['repo_url'].split('.git')[0]).split('repo.nasa.maap')[1] # slice off `https://` prefix and `.git` suffix
 		image_tag = 'master'
 		params['docker_url'] = '{}:{}'.format(image_name,image_tag)
@@ -1151,4 +1155,5 @@ class ListUserJobsHandler(IPythonHandler):
 				self.finish({"status_code": r.status_code, "result": r.reason})
 		except:
 			self.finish({"status_code": 400, "result": "Bad Request"})
+
 
