@@ -1,7 +1,8 @@
 import { JupyterFrontEndPlugin } from '@jupyterlab/application';
 import { ICommandPalette } from '@jupyterlab/apputils';
+import { IFileBrowserFactory } from "@jupyterlab/filebrowser";
 import { ILauncher } from '@jupyterlab/launcher';
-import { activateGetCapabilities, activateDescribe, activateList, activateRegister, activateDeleteAlgorithm, activateExecute, activateGetStatus, activateGetResult, activateDismiss, activateDelete, activateJobCache } from './funcs';
+import { activateGetCapabilities, activateDescribe, activateList, activateRegister, activateRegisterAlgorithm, activateDeleteAlgorithm, activateExecute, activateGetStatus, activateGetResult, activateDismiss, activateDelete, activateJobCache } from './funcs';
 
 const extensionCapabilities: JupyterFrontEndPlugin<void> = {
   id: 'dps-capabilities',
@@ -28,15 +29,22 @@ const extensionList: JupyterFrontEndPlugin<void> = {
 };
 
 const extensionRegister: JupyterFrontEndPlugin<void> = {
-  id: 'dps-register',
+  id: 'mas-register',
   autoStart: true,
   requires: [ICommandPalette],
   optional: [ILauncher],
   activate: activateRegister
 };
 
+const extensionRegisterAlgorithm: JupyterFrontEndPlugin<void> = {
+  id: 'mas-register2',
+  requires: [ICommandPalette, IFileBrowserFactory],
+  autoStart: true,
+  activate: activateRegisterAlgorithm
+};
+
 const extensionDeleteAlgorithm: JupyterFrontEndPlugin<void> = {
-  id: 'dps-algo-delete',
+  id: 'mas-algo-delete',
   autoStart: true,
   requires: [ICommandPalette],
   optional: [ILauncher],
@@ -90,4 +98,4 @@ const cacheExtension: JupyterFrontEndPlugin<void> = {
   activate: activateJobCache
 };
 
-export default [extensionDeleteAlgorithm,extensionRegister,extensionCapabilities,extensionStatus,extensionResult,extensionExecute,extensionDismiss,extensionDelete,extensionDescribe,extensionList, cacheExtension];
+export default [extensionDeleteAlgorithm,extensionRegister,extensionRegisterAlgorithm,extensionCapabilities,extensionStatus,extensionResult,extensionExecute,extensionDismiss,extensionDelete,extensionDescribe,extensionList, cacheExtension];

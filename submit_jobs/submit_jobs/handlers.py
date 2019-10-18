@@ -1062,20 +1062,22 @@ class DefaultValuesHandler(IPythonHandler):
 		# vals['run_command'] = 'wrapper-script-here'
 		# vals['inputs'] = [{'name':'parameter-name','download':False},{'name':'file-to-copy-in','download':True}]
 
-		# read in config template and populate with default values
-		config = ''
-		config_template = WORKDIR+"/submit_jobs/register.yaml"
-		with open(config_template,'r') as infile:
+		config_path = proj_path+"/algorithm_config.yaml"
+		prev_config = os.path.exists(config_path)
+		if not prev_config:
+			# read in config template and populate with default values
 			config = ''
-		config.format(**vals)
+			config_template = WORKDIR+"/submit_jobs/register.yaml"
+			with open(config_template,'r') as infile:
+				config = ''
+			config.format(**vals)
 
-		# output config yaml
-		config_path = WORKDIR+"/submit_jobs/algorithm_config.yaml"
-		with open(config_path,'w') as outfile:
-			f.write(config)
+			# output config yaml
+			with open(config_path,'w') as outfile:
+				f.write(config)
 
 		# outputs: algo_name, version, environment, repository_url, dockerfile_path
-		self.finish({"status_code": 200, "default_values":vals, "config":config_path})
+		self.finish({"status_code": 200, "default_values":vals, "config_path":config_path, "previous_config":prev_config})
 
 class ListUserJobsHandler(IPythonHandler):
 	# inputs: username
