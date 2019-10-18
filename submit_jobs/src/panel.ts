@@ -375,7 +375,7 @@ export class JobCache extends Panel {
     }
   }
 
-  addJob(): void {
+  update(): void {
     this.updateDisplay();
   }
 }

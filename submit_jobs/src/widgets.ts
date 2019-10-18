@@ -12,6 +12,7 @@ import { popup, popupResult } from "./dialogs";
 // HySDS stuff
 // -----------------------
 const nonXML: string[] = ['deleteAlgorithm','listAlgorithms','registerAuto','getResult','executeInputs','getStatus','execute','describeProcess','getCapabilities','register', 'delete','dismiss'];
+const autoUpdate: string[] = ['execute','delete','dismiss'];
 const notImplemented: string[] = [];
 export class HySDSWidget extends Widget {
 
@@ -65,10 +66,10 @@ export class HySDSWidget extends Widget {
         this.get_inputs = true;
         console.log('deleteAlgorithm');
         break;
-      case 'getCapabilities':
-        this.popup_title = "Get List of Capabilities";
-        console.log('getCapabilities');
-        break;
+      // case 'getCapabilities':
+      //   this.popup_title = "Get List of Capabilities";
+      //   console.log('getCapabilities');
+      //   break;
       case 'getStatus':
         this.popup_title = "Get Job Status";
         console.log('getStatus');
@@ -100,10 +101,10 @@ export class HySDSWidget extends Widget {
         this.get_inputs = true;
         console.log('describeProcess');
         break;
-      case 'listAlgorithms':
-        this.popup_title = "List Algorithms";
-        console.log('listAlgorithms');
-        break;
+      // case 'listAlgorithms':
+      //   this.popup_title = "List Algorithms";
+      //   console.log('listAlgorithms');
+      //   break;
     }
     // console.log(this.fields);
 
@@ -223,7 +224,7 @@ export class HySDSWidget extends Widget {
 
   // TODO: add jobs to response text
   updateJobCache(){
-    this.jobs_panel.addJob();
+    this.jobs_panel.update();
   }
 
   updateSearchResults(): void {
@@ -259,7 +260,7 @@ export class HySDSWidget extends Widget {
       }
 
       body.appendChild(textarea);
-      popupResult(new WidgetResult(body,this),"Results");
+      popupResult(new WidgetResult(body,this.jobs_panel,autoUpdate.includes(this.req)),"Results" );
     }
   }
 
@@ -460,19 +461,102 @@ export class HySDSWidget extends Widget {
   }
 }
 
-class WidgetResult extends Widget {
-  // pass HySDSWidget which contains info panel
-  public parentWidget: HySDSWidget;
+export class RegisterWidget extends HySDSWidget {
 
-  constructor(b: any,parent:HySDSWidget) {
+  // TODO: protect instance vars
+  // public readonly req: string;
+  // public readonly popup_title: string;
+
+  constructor(req:string, method_fields:string[],uname:string,panel:JobCache,defaultValues:{[k:string]:string}) {
+    super(req, method_fields,uname,panel,defaultValues);
+
+    // bind method definitions of "this" to refer to class instance
+    this.getValue = this.getValue.bind(this);
+    this.updateSearchResults = this.updateSearchResults.bind(this);
+    this.setOldFields = this.setOldFields.bind(this);
+    this.buildRequestUrl = this.buildRequestUrl.bind(this);
+  }
+
+  buildRequestUrl() {
+    // var me:RegisterWidget = this;
+    return new Promise<Array<URL>>((resolve, reject) => {
+      // var skip = false;
+      // create API call to server extension
+      var urllst: Array<URL> = []
+      var getUrl = new URL(PageConfig.getBaseUrl() + 'hysds/'+this.req);
+
+      // default values not exposed to user set here,  along with algo name and version
+      for (let key in this.old_fields) {
+        if (! (key in this.fields)) {
+          var fieldText = this.old_fields[key].toLowerCase();
+          getUrl.searchParams.append(key.toLowerCase(), fieldText);
+        }
+      }
+      console.log('old fields done');
+      console.log(getUrl.href);
+
+      // add user-defined fields
+      for (var field of this.fields) {
+        let fieldText = (<HTMLInputElement>document.getElementById(field.toLowerCase()+'-input')).value;
+        // if (fieldText != "") { getUrl.searchParams.append(field.toLowerCase(), fieldText); }
+        console.log(field+' input is '+fieldText);
+        getUrl.searchParams.append(field.toLowerCase(), fieldText);
+        console.log(getUrl.href);
+      }
+
+      console.log(getUrl.href);
+      console.log('done setting url');
+      urllst.push(getUrl);
+      resolve(urllst);
+    });
+  }
+}
+
+export class WidgetResult extends Widget {
+  // pass HySDSWidget which contains info panel
+  cache: JobCache;
+  updateCache: boolean;
+
+  constructor(b: any, cache: JobCache, updateCache: boolean) {
     super({node: b});
-    this.parentWidget = parent;
+    this.cache = cache;
+    this.updateCache = updateCache;
   }
 
   // update panel text on resolution of result popup
   getValue() {
-    if (this.parentWidget.req == 'execute' || this.parentWidget.req == 'delete' || this.parentWidget.req == 'dismiss') {
-      this.parentWidget.updateJobCache();
+    if (this.updateCache) {
+      this.cache.update();
     }
+    // if (this.parentWidget.req == 'execute' || this.parentWidget.req == 'delete' || this.parentWidget.req == 'dismiss') {
+    //   this.parentWidget.updateJobCache();
+    // }
   }
+}
+
+// here because import dependencies of JobCache(panel.ts),popupResult(dialog.ts), WidgetResult(widget.ts)
+export function popupResultText(result:string,cache:JobCache,update:boolean,title:string,isXML?:boolean) {
+  let body = document.createElement('div');
+  body.style.display = 'flex';
+  body.style.flexDirection = 'column';
+
+  var textarea = document.createElement("div");
+  textarea.id = 'result-text';
+  textarea.style.display = 'flex';
+  textarea.style.flexDirection = 'column';
+  var format = require('xml-formatter');
+
+  if ( isXML == undefined || (! isXML) ){ 
+    textarea.innerHTML = "<pre>" + result + "</pre>";
+    // console.log(textarea);
+  } else {
+    var xml = "<root><content><p>"+result+"</p></content></root>";
+    var options = {indentation: '  ', stripComments: true, collapseContent: false};
+    var formattedXML = format(xml,options); 
+    textarea.innerHTML = formattedXML;
+    // console.log(formattedXML);
+  }
+
+  body.appendChild(textarea);
+  popupResult(new WidgetResult(body,cache,update),title);
 }

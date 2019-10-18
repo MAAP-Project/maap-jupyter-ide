@@ -1,16 +1,19 @@
 import { JupyterFrontEnd } from '@jupyterlab/application';
 import { ICommandPalette } from '@jupyterlab/apputils';
+import { PageConfig } from '@jupyterlab/coreutils'
 import { ILauncher } from '@jupyterlab/launcher';
-import { ProjectSelector } from './register';
-import { HySDSWidget } from './widgets';
+import { IFileBrowserFactory } from "@jupyterlab/filebrowser";
+import { request, RequestResult } from './request';
+import { ProjectSelector } from './selector';
+import { HySDSWidget, popupResultText } from './widgets';
 import { JobCache } from './panel';
 import { popup, popupResult } from "./dialogs";
 import * as data from './fields.json';
 
 const registerFields = data.register;
 const deleteAlgorithmFields = data.deleteAlgorithm;
-const getCapabilitiesFields = data.getCapabilities;
-const listAlgorithmsFields = data.listAlgorithms;
+// const getCapabilitiesFields = data.getCapabilities;
+// const listAlgorithmsFields = data.listAlgorithms;
 const executeInputsFields = data.executeInputs;
 const getStatusFields = data.getStatus;
 const getResultFields = data.getResult;
@@ -37,9 +40,55 @@ export function activateRegister(app: JupyterFrontEnd,
       popupResult(new ProjectSelector('register',registerFields,username,jobsPanel),"Select a Project");
     }
   });
-  palette.addItem({command: open_command, category: 'DPS'});
+  palette.addItem({command: open_command, category: 'DPS/MAS'});
   console.log('HySDS Register Algorithm is activated!');
 }
+
+export function activateRegisterAlgorithm(
+  app: JupyterFrontEnd,
+  palette: ICommandPalette,
+  factory: IFileBrowserFactory,
+): void {
+  const { commands } = app;
+  const { tracker } = factory;
+
+  // matches all filebrowser items
+  const selectorItem = '.jp-DirListing-item[data-isdir]';
+  const open_command = 'hysds: register2';
+
+  commands.addCommand(open_command, {
+    execute: () => {
+      const widget = tracker.currentWidget;
+      if (!widget) {
+        return;
+      }
+      const item = widget.selectedItems().next();
+      if (!item) {
+        return;
+      }
+
+      let path = item.path;
+      console.log(path);
+      // TODO
+      // send request to defaultvalueshandler
+      // popup read-only default values
+      // ok -> call registeralgorithmhandler
+      // cancel -> edit template at algorithm_config.yaml (config_path)
+    },
+    isVisible: () =>
+      tracker.currentWidget &&
+      tracker.currentWidget.selectedItems().next !== undefined,
+    iconClass: 'jp-MaterialIcon jp-LinkIcon',
+    label: 'Register as MAS Algorithm'
+  });
+
+  app.contextMenu.addItem({
+    command: open_command,
+    selector: selectorItem,
+    rank: 10
+  });
+}
+
 export function activateGetCapabilities(app: JupyterFrontEnd, 
                         palette: ICommandPalette, 
                         restorer: ILauncher | null): void{
@@ -49,11 +98,12 @@ export function activateGetCapabilities(app: JupyterFrontEnd,
     label: 'Get Capabilities',
     isEnabled: () => true,
     execute: args => {
-      var w = new HySDSWidget('getCapabilities',getCapabilitiesFields,username,jobsPanel,{});
-      w.getValue();
+      // var w = new HySDSWidget('getCapabilities',getCapabilitiesFields,username,jobsPanel,{});
+      // w.getValue();
+      noInputRequest('getCapabilities','Capabilities');
     }
   });
-  palette.addItem({command: open_command, category: 'DPS'});
+  palette.addItem({command: open_command, category: 'DPS/MAS'});
   console.log('HySDS Get Capabilities is activated!');
 }
 export function activateGetStatus(app: JupyterFrontEnd, 
@@ -68,7 +118,7 @@ export function activateGetStatus(app: JupyterFrontEnd,
       popup(new HySDSWidget('getStatus',getStatusFields,username,jobsPanel,{}));
     }
   });
-  palette.addItem({command: open_command, category: 'DPS'});
+  palette.addItem({command: open_command, category: 'DPS/MAS'});
   console.log('HySDS Get Job Status is activated!');
 }
 export function activateGetResult(app: JupyterFrontEnd, 
@@ -83,7 +133,7 @@ export function activateGetResult(app: JupyterFrontEnd,
       popup(new HySDSWidget('getResult',getResultFields,username,jobsPanel,{}));
     }
   });
-  palette.addItem({command: open_command, category: 'DPS'});
+  palette.addItem({command: open_command, category: 'DPS/MAS'});
   console.log('HySDS Get Job Result is activated!');
 }
 export function activateExecute(app: JupyterFrontEnd, 
@@ -98,7 +148,7 @@ export function activateExecute(app: JupyterFrontEnd,
       popupResult(new ProjectSelector('executeInputs',executeInputsFields,username,jobsPanel),"Select an Algorithm");
     }
   });
-  palette.addItem({command: open_command, category: 'DPS'});
+  palette.addItem({command: open_command, category: 'DPS/MAS'});
  
   console.log('HySDS Execute Job is activated!');
 }
@@ -114,7 +164,7 @@ export function activateDismiss(app: JupyterFrontEnd,
       popup(new HySDSWidget('dismiss',dismissFields,username,jobsPanel,{}));
     }
   });
-  palette.addItem({command: open_command, category: 'DPS'});
+  palette.addItem({command: open_command, category: 'DPS/MAS'});
   console.log('HySDS Dismiss Job is activated!');
 }
 export function activateDelete(app: JupyterFrontEnd, 
@@ -129,7 +179,7 @@ export function activateDelete(app: JupyterFrontEnd,
       popup(new HySDSWidget('delete',deleteFields,username,jobsPanel,{}));
     }
   });
-  palette.addItem({command: open_command, category: 'DPS'});
+  palette.addItem({command: open_command, category: 'DPS/MAS'});
   console.log('HySDS Delete Job is activated!');
 }
 export function activateDescribe(app: JupyterFrontEnd, 
@@ -144,7 +194,7 @@ export function activateDescribe(app: JupyterFrontEnd,
       popupResult(new ProjectSelector('describeProcess',describeProcessFields,username,jobsPanel),"Select an Algorithm");
     }
   });
-  palette.addItem({command: open_command, category: 'DPS'});
+  palette.addItem({command: open_command, category: 'DPS/MAS'});
   console.log('HySDS Describe Job is activated!');
 }
 export function activateList(app: JupyterFrontEnd, 
@@ -156,11 +206,12 @@ export function activateList(app: JupyterFrontEnd,
     label: 'List Algorithms',
     isEnabled: () => true,
     execute: args => {
-      var w = new HySDSWidget('listAlgorithms',listAlgorithmsFields,username,jobsPanel,{});
-      w.getValue();
+      // var w = new HySDSWidget('listAlgorithms',listAlgorithmsFields,username,jobsPanel,{});
+      // w.getValue();
+      noInputRequest('listAlgorithms', 'List Algorithms');
     }
   });
-  palette.addItem({command: open_command, category: 'DPS'});
+  palette.addItem({command: open_command, category: 'DPS/MAS'});
   console.log('HySDS Describe Job is activated!');
 }
 export function activateDeleteAlgorithm(app: JupyterFrontEnd, 
@@ -175,7 +226,7 @@ export function activateDeleteAlgorithm(app: JupyterFrontEnd,
       popup(new ProjectSelector('deleteAlgorithm',deleteAlgorithmFields,username,jobsPanel));
     }
   });
-  palette.addItem({command: open_command, category: 'DPS'});
+  palette.addItem({command: open_command, category: 'DPS/MAS'});
   console.log('HySDS Describe Job is activated!');
 }
 
@@ -196,7 +247,59 @@ export function activateJobCache(app: JupyterFrontEnd, palette: ICommandPalette)
       jobsPanel.updateDisplay();
     }
   });
-  palette.addItem({command: open_command, category: 'DPS'});
+  palette.addItem({command: open_command, category: 'DPS/MAS'});
   jobsPanel.updateDisplay();
   console.log('HySDS JobList is activated!');
 }
+
+export function getAlgorithms() {
+  return new Promise<{[k:string]:Array<string>}>((resolve, reject) => {
+    var algoSet: { [key: string]: Array<string>} = {}
+
+    // get list of projects to give dropdown menu
+    var settingsAPIUrl = new URL(PageConfig.getBaseUrl() + 'hysds/listAlgorithms');
+    console.log(settingsAPIUrl.href);
+    request('get',settingsAPIUrl.href).then((res: RequestResult) => {
+      if (res.ok) {
+        var json_response:any = res.json();
+        var algos = json_response['algo_set'];
+        // console.log(json_response);
+        // console.log(algos);
+        algoSet = algos;
+        resolve(algoSet);
+      }
+    });
+  });
+}
+
+export function getDefaultValues(code_path) {
+  return new Promise<{[k:string]:string}>((resolve, reject) => {
+    var defaultValues:{[k:string]:string}  = {}
+
+    // get list of projects to give dropdown menu
+    var valuesUrl = new URL(PageConfig.getBaseUrl() + 'hysds/defaultValues');
+    valuesUrl.searchParams.append('code_path', code_path);
+    console.log(valuesUrl.href);
+    request('get',valuesUrl.href).then((res: RequestResult) => {
+      if (res.ok) {
+        var json_response:any = res.json();
+        var values = json_response['default_values'];
+        defaultValues = values;
+      resolve(defaultValues);
+      } else {
+        resolve({});
+      }
+    });
+  });
+}
+
+function noInputRequest(endpt:string,title:string) {
+  var requestUrl = new URL(PageConfig.getBaseUrl() + 'hysds/' + endpt);
+  request('get',requestUrl.href).then((res: RequestResult) => {
+    if (res.ok) {
+      var json_response:any = res.json();
+      popupResultText(json_response['result'],jobsPanel,false,title);
+    }
+  });
+}
+
