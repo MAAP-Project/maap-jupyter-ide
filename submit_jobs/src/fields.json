@@ -1,5 +1,5 @@
 {
-	"register": ["algo_name","algo_desc","environment","run_cmd","inputs"],
+	"register": ["algo_name","version","description","repository_url","run_command","inputs"],
 	"deleteAlgorithm": ["algo_id","version"],
 	"getCapabilities": [],
 	"listAlgorithms": [],
