@@ -1,8 +1,8 @@
 import { Widget } from '@phosphor/widgets';
 import { PageConfig } from '@jupyterlab/coreutils'
 import { request, RequestResult } from './request';
-import { HySDSWidget, RegisterWidget } from './widgets';
-import { getAlgorithms, getDefaultValues } from './funcs';
+import { InputWidget, RegisterWidget } from './widgets';
+import { getAlgorithms, getDefaultValues, inputRequest } from './funcs';
 import { JobCache } from './panel';
 import { popup, popupResult } from "./dialogs";
 
@@ -129,12 +129,23 @@ export class ProjectSelector extends Widget {
       popupResult("No Option Selected","Select Failed");
     } else if (this.type == 'describeProcess' || this.type == 'executeInputs' || this.type == 'deleteAlgorithm') {
       let lst = opt.split(':');
-      let selection = {};
-      selection['algo_id'] = lst[0];
-      selection['version'] = lst[1];
-      let w = new HySDSWidget(this.type,[],this.username,this.jobsPanel,{});
-      w.setOldFields(selection);
-      w.getValue();
+      let algo_id = lst[0];
+      let version = lst[1];
+
+      let fn = function(resp:{[k:string]:string}) {return;}
+      if (this.type == 'executeInputs'){
+        let me = this;
+        fn = function(resp:{[k:string]:(string|string[]|{[k:string]:string})}) {
+          var new_fields = resp['ins'] as string[];
+          var predefined_fields = resp['old'] as {[k:string]:string};
+          var exec = new InputWidget('execute',new_fields,me.username,me.jobsPanel,{});
+          exec.setOldFields(predefined_fields);
+          popup(exec);
+        }
+      }
+
+      inputRequest(this.type,algo_id,{'algo_id':algo_id,'version':version},fn);
+
     } else if (this.type == 'register') {
       getDefaultValues(opt).then((defaultValues) => {
         console.log(defaultValues);

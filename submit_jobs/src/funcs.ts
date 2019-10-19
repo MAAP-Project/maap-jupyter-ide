@@ -5,15 +5,13 @@ import { ILauncher } from '@jupyterlab/launcher';
 import { IFileBrowserFactory } from "@jupyterlab/filebrowser";
 import { request, RequestResult } from './request';
 import { ProjectSelector } from './selector';
-import { HySDSWidget, popupResultText } from './widgets';
+import { InputWidget, popupResultText } from './widgets';
 import { JobCache } from './panel';
 import { popup, popupResult } from "./dialogs";
 import * as data from './fields.json';
 
 const registerFields = data.register;
 const deleteAlgorithmFields = data.deleteAlgorithm;
-// const getCapabilitiesFields = data.getCapabilities;
-// const listAlgorithmsFields = data.listAlgorithms;
 const executeInputsFields = data.executeInputs;
 const getStatusFields = data.getStatus;
 const getResultFields = data.getResult;
@@ -98,7 +96,7 @@ export function activateGetCapabilities(app: JupyterFrontEnd,
     label: 'Get Capabilities',
     isEnabled: () => true,
     execute: args => {
-      // var w = new HySDSWidget('getCapabilities',getCapabilitiesFields,username,jobsPanel,{});
+      // var w = new InputWidget('getCapabilities',getCapabilitiesFields,username,jobsPanel,{});
       // w.getValue();
       noInputRequest('getCapabilities','Capabilities');
     }
@@ -115,7 +113,7 @@ export function activateGetStatus(app: JupyterFrontEnd,
     label: 'Get DPS Job Status',
     isEnabled: () => true,
     execute: args => {
-      popup(new HySDSWidget('getStatus',getStatusFields,username,jobsPanel,{}));
+      popup(new InputWidget('getStatus',getStatusFields,username,jobsPanel,{}));
     }
   });
   palette.addItem({command: open_command, category: 'DPS/MAS'});
@@ -130,7 +128,7 @@ export function activateGetResult(app: JupyterFrontEnd,
     label: 'Get DPS Job Result',
     isEnabled: () => true,
     execute: args => {
-      popup(new HySDSWidget('getResult',getResultFields,username,jobsPanel,{}));
+      popup(new InputWidget('getResult',getResultFields,username,jobsPanel,{}));
     }
   });
   palette.addItem({command: open_command, category: 'DPS/MAS'});
@@ -161,7 +159,7 @@ export function activateDismiss(app: JupyterFrontEnd,
     label: 'Dismiss DPS Job',
     isEnabled: () => true,
     execute: args => {
-      popup(new HySDSWidget('dismiss',dismissFields,username,jobsPanel,{}));
+      popup(new InputWidget('dismiss',dismissFields,username,jobsPanel,{}));
     }
   });
   palette.addItem({command: open_command, category: 'DPS/MAS'});
@@ -176,7 +174,7 @@ export function activateDelete(app: JupyterFrontEnd,
     label: 'Delete DPS Job',
     isEnabled: () => true,
     execute: args => {
-      popup(new HySDSWidget('delete',deleteFields,username,jobsPanel,{}));
+      popup(new InputWidget('delete',deleteFields,username,jobsPanel,{}));
     }
   });
   palette.addItem({command: open_command, category: 'DPS/MAS'});
@@ -206,7 +204,7 @@ export function activateList(app: JupyterFrontEnd,
     label: 'List Algorithms',
     isEnabled: () => true,
     execute: args => {
-      // var w = new HySDSWidget('listAlgorithms',listAlgorithmsFields,username,jobsPanel,{});
+      // var w = new InputWidget('listAlgorithms',listAlgorithmsFields,username,jobsPanel,{});
       // w.getValue();
       noInputRequest('listAlgorithms', 'List Algorithms');
     }
@@ -293,13 +291,27 @@ export function getDefaultValues(code_path) {
   });
 }
 
-function noInputRequest(endpt:string,title:string) {
+export function inputRequest(endpt:string,title:string,inputs:{[k:string]:string},fn?:any) {
   var requestUrl = new URL(PageConfig.getBaseUrl() + 'hysds/' + endpt);
+  // add params
+  for (let key in inputs) {
+    var fieldValue = inputs[key].toLowerCase();
+    requestUrl.searchParams.append(key.toLowerCase(), fieldValue);
+  }
+
+  // send request
   request('get',requestUrl.href).then((res: RequestResult) => {
     if (res.ok) {
       var json_response:any = res.json();
-      popupResultText(json_response['result'],jobsPanel,false,title);
+      if (fn == undefined) {
+        popupResultText(json_response['result'],jobsPanel,false,title);
+      } else {
+        fn(json_response);
+      }
     }
-  });
+  }); 
 }
 
+function noInputRequest(endpt:string,title:string) {
+  inputRequest(endpt,title,{});
+}
