@@ -59,7 +59,7 @@ export function showDialogEnter<T>(
 export function popup(b:any): void {
   if ( !(notImplemented.includes(b.req) )){ 
     showDialogEnter({
-      title: b.popup_title,
+      title: b.popupTitle,
       body: b,
       focusNodeSelector: 'input',
       buttons: [Dialog.okButton({ label: 'Ok' }), Dialog.cancelButton({ label : 'Cancel'})]
@@ -70,9 +70,9 @@ export function popup(b:any): void {
   }
 }
 
-export function popupResult(b:any,popup_title:string): void {
+export function popupResult(b:any,popupTitle:string): void {
   showDialogEnter({
-    title: popup_title,
+    title: popupTitle,
     body: b,
     focusNodeSelector: 'input',
     buttons: [Dialog.okButton({ label: 'Ok' })]

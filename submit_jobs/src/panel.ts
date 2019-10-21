@@ -10,12 +10,12 @@ const CONTENT_CLASS = 'jp-Inspector-content';
 // primitive text panel for storing submitted job information
 export class JobCache extends Panel {
   public opt:string;
-  table: string;
-  displays: {[k:string]:string};
-  results: string;
-  jobs: {[k:string]:string};
-  job_id: string;
-  username: string;
+  _table: string;
+  _displays: {[k:string]:string};
+  _results: string;
+  _jobs: {[k:string]:string};
+  _job_id: string;
+  _username: string;
 
   constructor() {
     super();
@@ -27,28 +27,29 @@ export class JobCache extends Panel {
     getUserInfo(function(profile: any) {
       if (profile['cas:username'] === undefined) {
         INotification.error("Get username failed.");
-        me.username = 'anonymous';
+        me._username = 'anonymous';
       } else {
-        me.username = profile['cas:username'];
+        me._username = profile['cas:username'];
         INotification.success("Got username.");
+        me.update();
       }
     });
 
-    this.table = '';
-    this.results = '';
-    this.displays = {};
-    this.jobs = {};
-    this.job_id = '';
+    this._table = '';
+    this._results = '';
+    this._displays = {};
+    this._jobs = {};
+    this._job_id = '';
     this.addClass(CONTENT_CLASS);
   }
 
-  updateDisplay(): void {
+  _updateDisplay(): void {
     var x = document.createElement("BR");
     this.node.appendChild(x);
 
     // call list jobs endpoint using username
     var getUrl = new URL(PageConfig.getBaseUrl() + 'hysds/listJobs');
-    getUrl.searchParams.append('username',this.username);
+    getUrl.searchParams.append('username',this._username);
     console.log(getUrl.href);
     // --------------------
     // get jobs list request
@@ -62,16 +63,16 @@ export class JobCache extends Panel {
         // console.log(json_response['displays']);
 
         if (json_response['status_code'] == 200){
-          this.table = json_response['table'];
-          this.jobs = json_response['jobs'];
+          this._table = json_response['table'];
+          this._jobs = json_response['jobs'];
           // later get user to pick the job
-          this.displays = json_response['displays'];
+          this._displays = json_response['displays'];
 
           // catch case if user has no jobs
-          let num_jobs = Object.keys(this.jobs).length;
-          if (num_jobs > 0 && this.job_id == '') {
+          let num_jobs = Object.keys(this._jobs).length;
+          if (num_jobs > 0 && this._job_id == '') {
 
-            this.job_id = json_response['result'][0]['job_id'];
+            this._job_id = json_response['result'][0]['job_id'];
           }
 
         } else {
@@ -85,18 +86,18 @@ export class JobCache extends Panel {
     });
 
     console.log('got table, setting panel display');
-    this.getJobInfo();
+    this._getJobInfo();
   }
 
   // front-end side of display jobs table and job info
-  getJobInfo() {
+  _getJobInfo() {
     // --------------------
     // job table
     // --------------------
     // set table, from response
     let me = this;
     if (document.getElementById('job-cache-display') != null) {
-      (<HTMLTextAreaElement>document.getElementById('job-cache-display')).innerHTML = me.table;
+      (<HTMLTextAreaElement>document.getElementById('job-cache-display')).innerHTML = me._table;
     } else {
       // create div for table if table doesn't already exist
       var div = document.createElement('div');
@@ -108,7 +109,7 @@ export class JobCache extends Panel {
       // jobs table
       var textarea = document.createElement("table");
       textarea.id = 'job-cache-display';
-      textarea.innerHTML = me.table;
+      textarea.innerHTML = me._table;
       textarea.className = 'jp-JSONEditor-host';
       div.appendChild(textarea);
       me.node.appendChild(div);
@@ -119,14 +120,16 @@ export class JobCache extends Panel {
     // --------------------
     if (document.getElementById('job-refresh-button') == null) {
       let div = (<HTMLDivElement>document.getElementById('jobs-div'));
-      let refreshBtn = document.createElement('button');
-      refreshBtn.id = 'job-refresh-button';
-      refreshBtn.className = 'jupyter-button';
-      refreshBtn.innerHTML = 'Refresh Job List';
-      refreshBtn.addEventListener('click', function() {me.updateDisplay()}, false);
-      let br = document.createElement('br');
-      div.appendChild(br);
-      div.appendChild(refreshBtn);
+      if (div != null) {
+        let refreshBtn = document.createElement('button');
+        refreshBtn.id = 'job-refresh-button';
+        refreshBtn.className = 'jupyter-button';
+        refreshBtn.innerHTML = 'Refresh Job List';
+        refreshBtn.addEventListener('click', function() {me._updateDisplay()}, false);
+        let br = document.createElement('br');
+        div.appendChild(br);
+        div.appendChild(refreshBtn);
+      }
     }
 
     // set display in 2nd callback after making table rows clickable
@@ -154,12 +157,12 @@ export class JobCache extends Panel {
         // --------------------
         // set description from response
         let disp = '';
-        if (me.job_id != ''){
-          disp = me.displays[me.job_id];
+        if (me._job_id != ''){
+          disp = me._displays[me._job_id];
         }
 
         if (document.getElementById('job-detail-display') != null) {
-          // console.log(me.job_id);
+          // console.log(me._job_id);
           (<HTMLTextAreaElement>document.getElementById('job-detail-display')).innerHTML = disp;
         } else {
           // create textarea if it doesn't already exist
@@ -182,7 +185,7 @@ export class JobCache extends Panel {
             // change to get job_id and delete via widget or send request & create own popup
             deleteBtn.addEventListener('click', function () {
               var getUrl = new URL(PageConfig.getBaseUrl() + 'hysds/delete');
-              getUrl.searchParams.append('job_id', me.job_id);
+              getUrl.searchParams.append('job_id', me._job_id);
               console.log(getUrl.href);
               request('get',getUrl.href).then((res: RequestResult) => {
                 if (res.ok) {
@@ -221,7 +224,7 @@ export class JobCache extends Panel {
             // change to get job_id and dismiss via widget or send request & create own popup
             dismissBtn.addEventListener('click', function () {
               var getUrl = new URL(PageConfig.getBaseUrl() + 'hysds/dismiss');
-              getUrl.searchParams.append('job_id', me.job_id);
+              getUrl.searchParams.append('job_id', me._job_id);
               console.log(getUrl.href);
               request('get',getUrl.href).then((res: RequestResult) => {
                 if (res.ok) {
@@ -257,7 +260,7 @@ export class JobCache extends Panel {
         }
   
         // --------------------
-        // results button
+        // _results button
         // --------------------
         // if (document.getElementById('job-result-button') == null) {
         //   let resultBtn = document.createElement('button');
@@ -271,38 +274,40 @@ export class JobCache extends Panel {
     }
 
     // make clickable table rows after setting job table
-    this.onRowClick('job-cache-display', function(row){
+    this._onRowClick('job-cache-display', function(row){
       let job_id = row.getElementsByTagName('td')[0].innerHTML;
       // document.getElementById('click-response').innerHTML = job_id;
-      me.job_id = job_id;
+      me._job_id = job_id;
     }, setDisplays);
 
   }
 
   // clickable table rows helper function
-  onRowClick(tableId, setJobId, setDisplays) {
+  _onRowClick(tableId, setJobId, setDisplays) {
     let me = this;
-    let table = document.getElementById(tableId),
-      rows = table.getElementsByTagName('tr'),
-      i;
-    for (i = 1; i < rows.length; i++) {
-      rows[i].onclick = function(row) {
-        return function() {
-          setJobId(row);
-          setDisplays(me);
-          me.getJobResult(me);
+    if (document.getElementById(tableId) != undefined) {
+      let table = document.getElementById(tableId),
+          rows = table.getElementsByTagName('tr'),
+          i;
+        for (i = 1; i < rows.length; i++) {
+          rows[i].onclick = function(row) {
+            return function() {
+              setJobId(row);
+              setDisplays(me);
+              me.getJobResult(me);
+            }
+          }(rows[i]);
         }
-      }(rows[i]);
-    }
-    this.results = '';
+      }
+    this._results = '';
   }
 
   // get job result for display
   getJobResult(me:JobCache) {
     var resultUrl = new URL(PageConfig.getBaseUrl() + 'hysds/getResult');
-    // console.log(me.jobs[me.job_id]);
-    if (me.job_id != '' && me.jobs[me.job_id]['status'] == 'job-completed') {
-      resultUrl.searchParams.append('job_id',me.job_id);
+    // console.log(me.jobs[me._job_id]);
+    if (me._job_id != '' && me._jobs[me._job_id]['status'] == 'job-completed') {
+      resultUrl.searchParams.append('job_id',me._job_id);
       console.log(resultUrl.href);
 
       request('get', resultUrl.href).then((res: RequestResult) => {
@@ -312,7 +317,7 @@ export class JobCache extends Panel {
           INotification.success("Get user job result success.");
 
           if (json_response['status_code'] == 200){
-            me.results = json_response['result'];
+            me._results = json_response['result'];
 
           } else {
             console.log('unable to get user job list');
@@ -322,18 +327,18 @@ export class JobCache extends Panel {
           console.log('unable to get user job list');
           INotification.error("Get user job result failed.");
         }
-        this.selectedJobResult(me);
+        this._selectedJobResult(me);
       });
     } else {
-      me.results = '<p>Job '+me.job_id+' <br>not complete</p>';
-      this.selectedJobResult(me);
+      me._results = '<p>Job '+me._job_id+' <br>not complete</p>';
+      this._selectedJobResult(me);
     }
   }
 
   // front-end side of display job result table
-  selectedJobResult(me:JobCache) {
-    // let jobResult = this.results[this.job_id];
-    // console.log(me.results);
+  _selectedJobResult(me:JobCache) {
+    // let jobResult = this._results[this._job_id];
+    // console.log(me._results);
     if (document.getElementById('jobs-div') != null) {
       // 1-time add line break and section header for job result
       let div2 = (<HTMLDivElement>document.getElementById('jobs-div'));
@@ -355,7 +360,7 @@ export class JobCache extends Panel {
       // --------------------
       // console.log('setting results');
       if (document.getElementById('job-result-display') != null) {
-        (<HTMLTextAreaElement>document.getElementById('job-result-display')).innerHTML = me.results;
+        (<HTMLTextAreaElement>document.getElementById('job-result-display')).innerHTML = me._results;
       } else {
         // create div for table if table doesn't already exist
         var div = document.createElement('div');
@@ -366,7 +371,7 @@ export class JobCache extends Panel {
 
         var display = document.createElement("table");
         display.id = 'job-result-display';
-        display.innerHTML = me.results;
+        display.innerHTML = me._results;
         display.setAttribute('class','jp-JSONEditor-host');
         display.setAttribute('style','border-style:none; font-size:11px');
         div.appendChild(display);
@@ -376,6 +381,6 @@ export class JobCache extends Panel {
   }
 
   update(): void {
-    this.updateDisplay();
+    this._updateDisplay();
   }
 }

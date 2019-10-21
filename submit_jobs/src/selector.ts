@@ -8,32 +8,24 @@ import { popup, popupResult } from "./dialogs";
 
 // popup helper for register to select project
 export class ProjectSelector extends Widget {
-  public readonly fields: string[];
-  username:string;
-  jobsPanel: JobCache;
-  public selection:string;
   type: string;
-  dropdown:HTMLSelectElement;
-  popup_title: string;
+  _fields: string[];
+  _username:string;
+  _jobsPanel: JobCache;
+  public selection:string;
+  _dropdown:HTMLSelectElement;
 
   constructor(type,fields,uname,jobs_panel) {
     super();
-    this.fields = fields;
-    this.username = uname;
-    this.jobsPanel = jobs_panel;
+    this._fields = fields;
+    this._username = uname;
+    this._jobsPanel = jobs_panel;
     this.selection = '';
     this.type = type;
-    this.popup_title = "";
 
-    if (['describeProcess','executeInputs','deleteAlgorithm'].includes(this.type)) {
-      this.popup_title = "Select Algorithm";
-    } else {
-      this.popup_title = "Select Project";
-    }
-
-    this.dropdown = <HTMLSelectElement>document.createElement("SELECT");
-    this.dropdown.id = "project-dropdown";
-    this.dropdown.setAttribute("style", "font-size:20px;");
+    this._dropdown = <HTMLSelectElement>document.createElement("SELECT");
+    this._dropdown.id = "project-dropdown";
+    this._dropdown.setAttribute("style", "font-size:20px;");
 
     if (type == 'register') {
       this.getProjects().then((projectList) => {
@@ -59,9 +51,9 @@ export class ProjectSelector extends Widget {
           txt = file+' (' + lang +')';
           opt.setAttribute("label",txt);
           opt.appendChild(document.createTextNode(txt));
-          this.dropdown.appendChild(opt);
+          this._dropdown.appendChild(opt);
         }
-        this.node.appendChild(this.dropdown);
+        this.node.appendChild(this._dropdown);
       });
     } else if (type == 'describeProcess' || type == 'executeInputs' || type == 'deleteAlgorithm') {
       let me = this;
@@ -79,10 +71,10 @@ export class ProjectSelector extends Widget {
             opt.setAttribute("id",txt);
             opt.setAttribute("label",txt);
             opt.appendChild(document.createTextNode(txt));
-            this.dropdown.appendChild(opt);
+            this._dropdown.appendChild(opt);
           }
         }
-        this.node.appendChild(this.dropdown)
+        this.node.appendChild(this._dropdown)
       });
     }
   }
@@ -115,8 +107,8 @@ export class ProjectSelector extends Widget {
 
   // overrides resolution of popup dialog
   getValue() {
-    // var ind = this.dropdown.selectedIndex;
-    let opt:string = this.dropdown.value;
+    // var ind = this._dropdown.selectedIndex;
+    let opt:string = this._dropdown.value;
     let ind = opt.indexOf('(');
     if (ind > -1) {
       opt = opt.substr(0,ind).trim();
@@ -127,30 +119,36 @@ export class ProjectSelector extends Widget {
     if (opt == null || opt == '') {
       console.log('no option selected');
       popupResult("No Option Selected","Select Failed");
+
+    // these calls all require just params algo_id, version
     } else if (this.type == 'describeProcess' || this.type == 'executeInputs' || this.type == 'deleteAlgorithm') {
       let lst = opt.split(':');
       let algo_id = lst[0];
       let version = lst[1];
 
-      let fn = function(resp:{[k:string]:string}) {return;}
       if (this.type == 'executeInputs'){
         let me = this;
-        fn = function(resp:{[k:string]:(string|string[]|{[k:string]:string})}) {
+        // define function callback to be run after evaluation of selection
+        let fn = function(resp:{[k:string]:(string|string[]|{[k:string]:string})}) {
           var new_fields = resp['ins'] as string[];
           var predefined_fields = resp['old'] as {[k:string]:string};
-          var exec = new InputWidget('execute',new_fields,me.username,me.jobsPanel,{});
+          var exec = new InputWidget('execute',new_fields,me._username,me._jobsPanel,{});
           exec.setOldFields(predefined_fields);
+          exec.popupTitle = algo_id+':'+version;
           popup(exec);
         }
-      }
+        inputRequest(this.type,algo_id,{'algo_id':algo_id,'version':version},fn);
 
-      inputRequest(this.type,algo_id,{'algo_id':algo_id,'version':version},fn);
+        // no additional user action required after selection
+      } else {
+        inputRequest(this.type,algo_id,{'algo_id':algo_id,'version':version});
+      }
 
     } else if (this.type == 'register') {
       getDefaultValues(opt).then((defaultValues) => {
         console.log(defaultValues);
         console.log('create register');
-        let w = new RegisterWidget('register',this.fields,this.username,this.jobsPanel,defaultValues);
+        let w = new RegisterWidget('register',this._fields,this._username,this._jobsPanel,defaultValues);
         w.setOldFields(defaultValues);
         console.log(w);
         popup(w);

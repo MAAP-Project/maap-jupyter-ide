@@ -242,11 +242,11 @@ export function activateJobCache(app: JupyterFrontEnd, palette: ICommandPalette)
     label: 'Refresh Job List',
     isEnabled: () => true,
     execute: args => {
-      jobsPanel.updateDisplay();
+      jobsPanel.update();
     }
   });
   palette.addItem({command: open_command, category: 'DPS/MAS'});
-  jobsPanel.updateDisplay();
+  // jobsPanel.updateDisplay();
   console.log('HySDS JobList is activated!');
 }
 
@@ -303,9 +303,13 @@ export function inputRequest(endpt:string,title:string,inputs:{[k:string]:string
   request('get',requestUrl.href).then((res: RequestResult) => {
     if (res.ok) {
       var json_response:any = res.json();
+      // console.log(json_response['result']);
+      // console.log(fn);
       if (fn == undefined) {
+        console.log('fn undefined');
         popupResultText(json_response['result'],jobsPanel,false,title);
       } else {
+        console.log('fn defined');
         fn(json_response);
       }
     }
