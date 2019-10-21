@@ -624,7 +624,7 @@ class GetResultHandler(IPythonHandler):
 						lnk = url_lst[-1]
 						url_lst[-1] = '<a href="{}" target="_blank" style="border-bottom: 1px solid #0000ff; color: #0000ff;">{}</a>'.format(lnk,lnk)
 						
-						urls_str = ('<br>	•&nbsp;').join(url_lst)
+						urls_str = '•&nbsp'+('<br>	•&nbsp;').join(url_lst)
 						result += '<tr><td>{}: </td><td style="text-align:left">{}</td></tr>'.format('Locations',urls_str)
 						
 						result += '</tbody>'
@@ -1079,11 +1079,11 @@ class DefaultValuesHandler(IPythonHandler):
 		# outputs: algo_name, version, environment, repository_url, dockerfile_path
 		self.finish({"status_code": 200, "default_values":vals, "config_path":config_path, "previous_config":prev_config})
 
-class ListUserJobsHandler(IPythonHandler):
+class ListJobsHandler(IPythonHandler):
 	# inputs: username
 	# outputs: job list, containing job_id, status, algo_id, and inputs
 	def get(self):
-		fields = getFields('listUserJobs')
+		fields = getFields('listJobs')
 
 		params = {}
 		for f in fields:
@@ -1173,5 +1173,3 @@ class ListUserJobsHandler(IPythonHandler):
 				self.finish({"status_code": r.status_code, "result": r.reason})
 		except:
 			self.finish({"status_code": 400, "result": "Bad Request"})
-
-
