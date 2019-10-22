@@ -9,17 +9,18 @@ import { popupResult } from "./dialogs";
 // import { format } from "xml-formatter";
 
 // -----------------------
-// HySDS stuff
+// HySDS endpoints that require user inputs
 // -----------------------
 const nonXML: string[] = ['deleteAlgorithm','listAlgorithms','registerAuto','getResult','executeInputs','getStatus','execute','describeProcess','getCapabilities','register', 'delete','dismiss'];
 const autoUpdate: string[] = ['execute','delete','dismiss'];
 const notImplemented: string[] = [];
+
 export class InputWidget extends Widget {
 
   // TODO: protect instance vars
   public readonly req: string;
   public popupTitle: string;
-  public predefinedFields: {[k:string]:string}; // store predefined fields (default values)
+  public predefinedFields: Object; // store predefined fields (default values)
   public readonly fields: string[];       // user inputs to fill out
   public username: string;                // for execute & listing jobs in case of timeout
   _responseText: string;
@@ -27,7 +28,7 @@ export class InputWidget extends Widget {
   _jobsPanel: JobCache;                   // for execute
   _ins_dict: {[k:string]:string};          // for execute
 
-  constructor(req:string, method_fields:string[],uname:string, panel:JobCache, defaultValues:{[k:string]:string}) {
+  constructor(req:string, method_fields:string[],uname:string, panel:JobCache, defaultValues:Object,skipInputs?:boolean) {
     let body = document.createElement('div');
     body.style.display = 'flex';
     body.style.flexDirection = 'column';
@@ -100,80 +101,44 @@ export class InputWidget extends Widget {
     var x = document.createElement("BR");
     this.node.appendChild(x)
 
-    // TODO enforce input types
-    // Construct labels and inputs for fields
-    if (! this._getInputs && this.req != 'describeProcess' && this.req != 'deleteAlgorithm') {
+    if (skipInputs == undefined || skipInputs == false) {
+      // TODO enforce input types
+      // Construct labels and inputs for fields
       for (var field of this.fields) {
-        
-        // textarea for inputs field in register
-        if (field == "inputs") {
+        var fieldName = field[0];
+        if (fieldName != 'inputs') {
           var fieldLabel = document.createElement("Label");
-          fieldLabel.innerHTML = field;
+          fieldLabel.innerHTML = fieldName;
           this.node.appendChild(fieldLabel);
-
-          var fieldInputs = document.createElement('textarea');
-          fieldInputs.id = (field.toLowerCase() + '-input');
-          (<HTMLTextAreaElement>fieldInputs).cols = 40;
-          (<HTMLTextAreaElement>fieldInputs).rows = 6;
-          this.node.appendChild(fieldInputs);
-        
-          // BREAK
-          var x = document.createElement("BR");
-          this.node.appendChild(x)
-
-        // for all other fields
-        } else {
-          var fieldLabel = document.createElement("Label");
-          fieldLabel.innerHTML = field;
-          this.node.appendChild(fieldLabel);
-
+  
+          fieldName = fieldName.toLowerCase();
           var fieldInput = document.createElement('input');
-          fieldInput.id = (field.toLowerCase() + '-input');
-          // set default values
+          fieldInput.id = (fieldName + '-input');
+          fieldInput.classList.add(fieldName);
           if (field in defaultValues) {
-            fieldInput.value = defaultValues[field];
+            fieldInput.value = defaultValues[field] as string;
           }
           this.node.appendChild(fieldInput);
         
-          // BREAK
-          var x = document.createElement("BR");
-          this.node.appendChild(x)
+          // // newline
+          // var br = document.createElement("BR");
+          // this.node.appendChild(br);
+  
+          // // add button
+          // var fieldAdd = document.createElement('button');
+          // fieldAdd.innerHTML = 'Add Run Input';
+          // fieldAdd.id = (fieldName + '-add');
+          // fieldAdd.name = fieldName;
+          // fieldAdd.addEventListener('click', (e:Event) => this._insertField(e), false);
+          // this.node.appendChild(fieldAdd);
+  
+          // newline
+          var br = document.createElement("BR");
+          this.node.appendChild(br);
         }
       }
-
-    // user fill out inputs for execute 2nd popup
-    } else {
-      // console.log("new");
-      for (var field of this.fields) {
-        var fieldName = field[0];
-        var fieldLabel = document.createElement("Label");
-        fieldLabel.innerHTML = fieldName;
-        this.node.appendChild(fieldLabel);
-
-        fieldName = fieldName.toLowerCase();
-        var fieldInput = document.createElement('input');
-        fieldInput.id = (fieldName + '-input');
-        fieldInput.classList.add(fieldName);
-        this.node.appendChild(fieldInput);
-      
-        // // newline
-        // var br = document.createElement("BR");
-        // this.node.appendChild(br);
-
-        // // add button
-        // var fieldAdd = document.createElement('button');
-        // fieldAdd.innerHTML = 'Add Run Input';
-        // fieldAdd.id = (fieldName + '-add');
-        // fieldAdd.name = fieldName;
-        // fieldAdd.addEventListener('click', (e:Event) => this._insertField(e), false);
-        // this.node.appendChild(fieldAdd);
-
-        // newline
-        var br = document.createElement("BR");
-        this.node.appendChild(br);
-      }
+      // console.log('done constructing');
     }
-    // console.log('done constructing');
   }
 
   // _insertField(fieldName:string) {
@@ -192,22 +157,18 @@ export class InputWidget extends Widget {
     return;
   }
 
-  setOldFields(old:{[k:string]:string}): void {
+  setOldFields(old:Object): void {
     console.log('setting fields');
     this.predefinedFields = old;
     // TODO enforce input types
   }
 
-  // TODO: add jobs to response text
   updateJobCache(){
     this._jobsPanel.update();
   }
 
   updateSearchResults(): void {
-    // var me = this;
     // document.getElementById('search-text').innerHTML = this._responseText;
-    // console.log(this._responseText);
-
     if (document.getElementById('result-text') != null){
       // console.log('using textarea');
       (<HTMLDivElement>document.getElementById('result-text')).innerHTML = "<pre>" + this._responseText + "</pre>";
@@ -224,7 +185,7 @@ export class InputWidget extends Widget {
     if (this._getInputs) {
       // filling out algo info (id, version)
       for (let key in this.predefinedFields) {
-        var fieldText = this.predefinedFields[key].toLowerCase();
+        var fieldText = (this.predefinedFields[key] as string).toLowerCase();
         getUrl.searchParams.append(key.toLowerCase(), fieldText);
       }
       // filling out algo inputs
@@ -260,7 +221,7 @@ export class InputWidget extends Widget {
       // filling out old fields, currently for algo info (id, version) in execute & describe & delete
       if (this._getInputs) {
         for (let key in this.predefinedFields) {
-          var fieldText = this.predefinedFields[key].toLowerCase();
+          var fieldText = (this.predefinedFields[key] as string).toLowerCase();
           getUrl.searchParams.append(key.toLowerCase(), fieldText);
         }
       }
@@ -317,11 +278,6 @@ export class InputWidget extends Widget {
           resolve(urllst);
         }
 
-      // Get Notebook information to pass to Register Handler
-      // } else if (me.req == 'describeProcess' || me.req == 'executeInputs' || me.req == 'deleteAlgorithm') {
-      //   console.log(getUrl.href);
-      //   urllst.push(getUrl);
-      //   resolve(urllst);
       } else if (me.req == 'register') {
         resolve(urllst);
 
@@ -353,7 +309,7 @@ export class InputWidget extends Widget {
       console.log(getUrl.href);
       var me:InputWidget = this;
       // Send Job as Request
-      // if set result text to response
+      // set result text to response
       if ( !(notImplemented.includes(me.req) )){
         request('get', getUrl.href).then((res: RequestResult) => {
           if(res.ok){
@@ -385,14 +341,74 @@ export class InputWidget extends Widget {
 
 export class RegisterWidget extends InputWidget {
 
-  constructor(req:string, method_fields:string[],uname:string,panel:JobCache,defaultValues:{[k:string]:string}) {
-    super(req, method_fields,uname,panel,defaultValues);
+  constructor(method_fields:string[],uname:string,panel:JobCache,defaultValues:Object,subtext?:string) {
+    super('register', method_fields,uname,panel,defaultValues,true);
 
     // bind method definitions of "this" to refer to class instance
     this.getValue = this.getValue.bind(this);
     this.updateSearchResults = this.updateSearchResults.bind(this);
     this.setOldFields = this.setOldFields.bind(this);
     this._buildRequestUrl = this._buildRequestUrl.bind(this);
+
+    if (subtext != undefined) {
+      let subtxt = document.createElement('div');
+      subtxt.id = 'register-subtext';
+      subtxt.style.display = 'flex';
+      subtxt.style.flexDirection = 'column';
+      subtxt.innerHTML = subtext;
+      this.node.appendChild(subtxt);
+    }
+
+    for (var field of this.fields) {
+      // textarea for inputs field in register
+      if (field == "inputs") {
+        var fieldLabel = document.createElement("Label");
+        fieldLabel.innerHTML = field;
+        this.node.appendChild(fieldLabel);
+
+        var fieldInputs = document.createElement('textarea');
+        fieldInputs.id = (field.toLowerCase() + '-input');
+        (<HTMLTextAreaElement>fieldInputs).cols = 40;
+        (<HTMLTextAreaElement>fieldInputs).rows = 6;
+
+        // show input names and dl
+        console.log('default values');
+        console.log(defaultValues);
+        let ins = ''
+        for (var itm of (defaultValues['inputs'] as Array<{[k:string]:string}>)) {
+          ins = ins+itm['name'];
+          if (itm['download']) {
+            ins = ins+' (download)';
+          } else {
+            ins = ins+' (no download)';
+          }
+          ins = ins+'\n';
+        }
+        fieldInputs.value = ins;
+        this.node.appendChild(fieldInputs);
+      
+        // BREAK
+        var x = document.createElement("BR");
+        this.node.appendChild(x)
+      } else {
+        var fieldLabel = document.createElement("Label");
+        fieldLabel.innerHTML = field;
+        this.node.appendChild(fieldLabel);
+
+        var fieldInput = document.createElement('input');
+        fieldInput.id = (field.toLowerCase() + '-input');
+        // set default values
+        if (field in defaultValues) {
+          fieldInput.value = defaultValues[field] as string;
+        }
+        fieldInput.readOnly = true;
+        this.node.appendChild(fieldInput);
+      
+        // BREAK
+        var x = document.createElement("BR");
+        this.node.appendChild(x)
+      }
+    }
   }
 
   _buildRequestUrl() {
@@ -405,7 +421,7 @@ export class RegisterWidget extends InputWidget {
       // default values not exposed to user set here,  along with algo name and version
       for (let key in this.predefinedFields) {
         if (! (key in this.fields)) {
-          var fieldText = this.predefinedFields[key].toLowerCase();
+          var fieldText = (this.predefinedFields[key] as string).toLowerCase();
           getUrl.searchParams.append(key.toLowerCase(), fieldText);
         }
       }
@@ -427,6 +443,7 @@ export class RegisterWidget extends InputWidget {
       resolve(urllst);
     });
   }
+
 }
 
 export class WidgetResult extends Widget {

@@ -88,8 +88,10 @@ export class ProjectSelector extends Widget {
       var settingsAPIUrl = new URL(PageConfig.getBaseUrl() + 'pull_projects/listFiles');
       console.log(settingsAPIUrl.href);
       request('get',settingsAPIUrl.href).then((res: RequestResult) => {
+        console.log(res);
         if (res.ok) {
           var json_response:any = res.json();
+          console.log(json_response);
           var projects = json_response['project_files'];
           // console.log(servers);
           // console.log(servers.length);
@@ -148,7 +150,7 @@ export class ProjectSelector extends Widget {
       getDefaultValues(opt).then((defaultValues) => {
         console.log(defaultValues);
         console.log('create register');
-        let w = new RegisterWidget('register',this._fields,this._username,this._jobsPanel,defaultValues);
+        let w = new RegisterWidget(this._fields,this._username,this._jobsPanel,defaultValues);
         w.setOldFields(defaultValues);
         console.log(w);
         popup(w);
@@ -157,5 +159,6 @@ export class ProjectSelector extends Widget {
     return;
   }
 }
+
 
 

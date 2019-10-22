@@ -5,7 +5,7 @@ import { ILauncher } from '@jupyterlab/launcher';
 import { IFileBrowserFactory } from "@jupyterlab/filebrowser";
 import { request, RequestResult } from './request';
 import { ProjectSelector } from './selector';
-import { InputWidget, popupResultText } from './widgets';
+import { InputWidget, RegisterWidget, popupResultText } from './widgets';
 import { JobCache } from './panel';
 import { popup, popupResult } from "./dialogs";
 import * as data from './fields.json';
@@ -69,6 +69,23 @@ export function activateRegisterAlgorithm(
       console.log(path);
       // TODO
       // send request to defaultvalueshandler
+      let fn = function(resp:Object) {
+        let configPath = resp['config_path'] as string;
+        let defaultValues = resp['default_values'] as Object;
+        let prevConfig = resp['previous_config'] as boolean;
+
+        let subtext = 'Auto-generated algorithm configuration:';
+        if (prevConfig) {
+          subtext = 'Current algorithm configuration:';
+        }
+        subtext = subtext + '\nTo modify the configuration, click "Cancel" and modify the values in '+configPath;
+
+        let w = new RegisterWidget(registerFields,username,jobsPanel,defaultValues);
+        w.setOldFields(defaultValues);
+        popup(w);
+      };
+      inputRequest('defaultValues','Register Algorithm',{'code_path':path},fn);
+
       // popup read-only default values
       // ok -> call registeralgorithmhandler
       // cancel -> edit template at algorithm_config.yaml (config_path)
@@ -291,6 +308,7 @@ export function getDefaultValues(code_path) {
   });
 }
 
+// HySDS endpoints that require inputs
 export function inputRequest(endpt:string,title:string,inputs:{[k:string]:string},fn?:any) {
   var requestUrl = new URL(PageConfig.getBaseUrl() + 'hysds/' + endpt);
   // add params
@@ -298,6 +316,7 @@ export function inputRequest(endpt:string,title:string,inputs:{[k:string]:string
     var fieldValue = inputs[key].toLowerCase();
     requestUrl.searchParams.append(key.toLowerCase(), fieldValue);
   }
+  console.log(requestUrl.href);
 
   // send request
   request('get',requestUrl.href).then((res: RequestResult) => {
@@ -316,6 +335,7 @@ export function inputRequest(endpt:string,title:string,inputs:{[k:string]:string
   }); 
 }
 
+// HySDS endpoints that don't require any inputs
 function noInputRequest(endpt:string,title:string) {
   inputRequest(endpt,title,{});
 }

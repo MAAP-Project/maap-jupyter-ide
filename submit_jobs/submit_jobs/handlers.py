@@ -1048,7 +1048,7 @@ class DefaultValuesHandler(IPythonHandler):
 		vals['repository_url'] = repo_url
 		# vals['environment'] = os.environ['ENVIRONMENT']
 		vals['environment'] = "ubuntu"
-		vals['docker_url'] = os.environ['DOCKERFILE_PATH']
+		vals['docker_url'] = os.environ['DOCKERIMAGE_PATH']
 		# vals['docker_url'] = 'registry.nasa.maap.xyz/root/dps_plot:master'
 		# image_name = 'registry.nasa.maap'+(params['repo_url'].split('.git')[0]).split('repo.nasa.maap')[1] # slice off `https://` prefix and `.git` suffix
 		# image_tag = 'master'
@@ -1069,12 +1069,15 @@ class DefaultValuesHandler(IPythonHandler):
 			config = ''
 			config_template = WORKDIR+"/submit_jobs/register.yaml"
 			with open(config_template,'r') as infile:
-				config = ''
-			config.format(**vals)
+				config = infile.read()
+				config = config.format(**vals)
 
 			# output config yaml
 			with open(config_path,'w') as outfile:
-				f.write(config)
+				outfile.write(config)
+
+		with open(config_path,'r') as stream:
+			vals['inputs'] = yaml.load(stream)['inputs']
 
 		# outputs: algo_name, version, environment, repository_url, dockerfile_path
 		self.finish({"status_code": 200, "default_values":vals, "config_path":config_path, "previous_config":prev_config})
