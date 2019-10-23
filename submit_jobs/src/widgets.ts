@@ -28,7 +28,7 @@ export class InputWidget extends Widget {
   _jobsPanel: JobCache;                   // for execute
   _ins_dict: {[k:string]:string};          // for execute
 
-  constructor(req:string, method_fields:string[],uname:string, panel:JobCache, defaultValues:Object,skipInputs?:boolean) {
+  constructor(req:string, methodFields:string[],uname:string, panel:JobCache, defaultValues:Object,skipInputs?:boolean) {
     let body = document.createElement('div');
     body.style.display = 'flex';
     body.style.flexDirection = 'column';
@@ -50,8 +50,8 @@ export class InputWidget extends Widget {
 
     // Default text
     this.req = req;
-    this.predefinedFields = {};
-    this.fields = method_fields;
+    this.predefinedFields = defaultValues;
+    this.fields = methodFields;
     this._responseText = "";
     this._getInputs = false;
     this._jobsPanel = panel;
@@ -89,7 +89,7 @@ export class InputWidget extends Widget {
     // bind method definitions of "this" to refer to class instance
     this.getValue = this.getValue.bind(this);
     this.updateSearchResults = this.updateSearchResults.bind(this);
-    this.setOldFields = this.setOldFields.bind(this);
+    this.setPredefinedFields = this.setPredefinedFields.bind(this);
     this._buildRequestUrl = this._buildRequestUrl.bind(this);
 
     // skip 1st popup if nothing to fill out
@@ -157,7 +157,7 @@ export class InputWidget extends Widget {
     return;
   }
 
-  setOldFields(old:Object): void {
+  setPredefinedFields(old:Object): void {
     console.log('setting fields');
     this.predefinedFields = old;
     // TODO enforce input types
@@ -340,23 +340,28 @@ export class InputWidget extends Widget {
 }
 
 export class RegisterWidget extends InputWidget {
+  configPath: string;
+  // nbPath: string;
 
-  constructor(method_fields:string[],uname:string,panel:JobCache,defaultValues:Object,subtext?:string) {
-    super('register', method_fields,uname,panel,defaultValues,true);
+  constructor(methodFields:string[],uname:string,panel:JobCache,defaultValues:Object,subtext?:string,configPath?:string) {
+    super('register', methodFields,uname,panel,defaultValues,true);
+    this.configPath = configPath;
+
 
     // bind method definitions of "this" to refer to class instance
     this.getValue = this.getValue.bind(this);
     this.updateSearchResults = this.updateSearchResults.bind(this);
-    this.setOldFields = this.setOldFields.bind(this);
+    this.setPredefinedFields = this.setPredefinedFields.bind(this);
     this._buildRequestUrl = this._buildRequestUrl.bind(this);
 
     if (subtext != undefined) {
-      let subtxt = document.createElement('div');
+      let subtxt = document.createElement('p');
       subtxt.id = 'register-subtext';
       subtxt.style.display = 'flex';
       subtxt.style.flexDirection = 'column';
       subtxt.innerHTML = subtext;
       this.node.appendChild(subtxt);
+      this.node.appendChild(document.createElement("BR"));
     }
 
     for (var field of this.fields) {
@@ -372,8 +377,6 @@ export class RegisterWidget extends InputWidget {
         (<HTMLTextAreaElement>fieldInputs).rows = 6;
 
         // show input names and dl
-        console.log('default values');
-        console.log(defaultValues);
         let ins = ''
         for (var itm of (defaultValues['inputs'] as Array<{[k:string]:string}>)) {
           ins = ins+itm['name'];
@@ -387,9 +390,6 @@ export class RegisterWidget extends InputWidget {
         fieldInputs.value = ins;
         this.node.appendChild(fieldInputs);
       
-        // BREAK
-        var x = document.createElement("BR");
-        this.node.appendChild(x)
       } else {
         var fieldLabel = document.createElement("Label");
         fieldLabel.innerHTML = field;
@@ -403,12 +403,20 @@ export class RegisterWidget extends InputWidget {
         }
         fieldInput.readOnly = true;
         this.node.appendChild(fieldInput);
-      
-        // BREAK
-        var x = document.createElement("BR");
-        this.node.appendChild(x)
       }
     }
+
+    // BREAK
+    var x = document.createElement("BR");
+    this.node.appendChild(x)
+
+    // footer text - edit config at path
+    let editFooter = document.createElement('p');
+    editFooter.id = 'configpath-subtext';
+    editFooter.style.display = 'flex';
+    editFooter.style.flexDirection = 'column';
+    editFooter.innerHTML = 'To modify the configuration, click "Cancel" and modify the values in '+configPath;
+    this.node.appendChild(editFooter);
   }
 
   _buildRequestUrl() {
@@ -418,24 +426,30 @@ export class RegisterWidget extends InputWidget {
       var urllst: Array<URL> = []
       var getUrl = new URL(PageConfig.getBaseUrl() + 'hysds/'+this.req);
 
-      // default values not exposed to user set here,  along with algo name and version
-      for (let key in this.predefinedFields) {
-        if (! (key in this.fields)) {
-          var fieldText = (this.predefinedFields[key] as string).toLowerCase();
-          getUrl.searchParams.append(key.toLowerCase(), fieldText);
-        }
-      }
-      console.log('old fields done');
-      console.log(getUrl.href);
+      // console.log(this.predefinedFields);
+      // // default values not exposed to user set here,  along with algo name and version
+      // for (let key in this.predefinedFields) {
+      //   console.log(key);
+      //   console.log(this.predefinedFields[key]);
+      //   if (! (key in Object.keys(this.fields))) {
+      //     var fieldText = JSON.stringify(this.predefinedFields[key]);
+      //     getUrl.searchParams.append(key.toLowerCase(), fieldText);
+      //   }
+      // }
+      // console.log('old fields done');
+      // console.log(getUrl.href);
 
-      // add user-defined fields
-      for (var field of this.fields) {
-        let fieldText = (<HTMLInputElement>document.getElementById(field.toLowerCase()+'-input')).value;
-        // if (fieldText != "") { getUrl.searchParams.append(field.toLowerCase(), fieldText); }
-        console.log(field+' input is '+fieldText);
-        getUrl.searchParams.append(field.toLowerCase(), fieldText);
-        console.log(getUrl.href);
-      }
+      // // add user-defined fields
+      // for (var field of this.fields) {
+      //   console.log(field);
+      //   let fieldText = (<HTMLInputElement>document.getElementById(field.toLowerCase()+'-input')).value;
+      //   // if (fieldText != "") { getUrl.searchParams.append(field.toLowerCase(), fieldText); }
+      //   console.log(field+' input is '+fieldText);
+      //   getUrl.searchParams.append(field.toLowerCase(), fieldText);
+      //   console.log(getUrl.href);
+      // }
+      getUrl.searchParams.append('config_path',this.configPath);
+      // getUrl.searchParams.append('nb_path',this.nbPath);
 
       console.log(getUrl.href);
       console.log('done setting url');

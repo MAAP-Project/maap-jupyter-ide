@@ -78,10 +78,9 @@ export function activateRegisterAlgorithm(
         if (prevConfig) {
           subtext = 'Current algorithm configuration:';
         }
-        subtext = subtext + '\nTo modify the configuration, click "Cancel" and modify the values in '+configPath;
 
-        let w = new RegisterWidget(registerFields,username,jobsPanel,defaultValues);
-        w.setOldFields(defaultValues);
+        let w = new RegisterWidget(registerFields,username,jobsPanel,defaultValues,subtext,configPath);
+        w.setPredefinedFields(defaultValues);
         popup(w);
       };
       inputRequest('defaultValues','Register Algorithm',{'code_path':path},fn);

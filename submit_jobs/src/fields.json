@@ -11,5 +11,5 @@
 	"dismiss": ["job_id"],
 	"delete": ["job_id"],
 	"defaultValues": ["code_path"],
-	"listUserJobs": ["username"]
+	"listJobs": ["username"]
 }

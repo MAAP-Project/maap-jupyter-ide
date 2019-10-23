@@ -135,7 +135,7 @@ export class ProjectSelector extends Widget {
           var new_fields = resp['ins'] as string[];
           var predefined_fields = resp['old'] as {[k:string]:string};
           var exec = new InputWidget('execute',new_fields,me._username,me._jobsPanel,{});
-          exec.setOldFields(predefined_fields);
+          exec.setPredefinedFields(predefined_fields);
           exec.popupTitle = algo_id+':'+version;
           popup(exec);
         }
@@ -151,7 +151,7 @@ export class ProjectSelector extends Widget {
         console.log(defaultValues);
         console.log('create register');
         let w = new RegisterWidget(this._fields,this._username,this._jobsPanel,defaultValues);
-        w.setOldFields(defaultValues);
+        w.setPredefinedFields(defaultValues);
         console.log(w);
         popup(w);
       });
@@ -159,6 +159,3 @@ export class ProjectSelector extends Widget {
     return;
   }
 }
-
-
-

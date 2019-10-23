@@ -8,7 +8,7 @@ docker_url: {docker_url}
 # explain what this algorithm does
 description: 
 # path to the wrapper script for running the algorithm
-run_command: run_plot.sh
+run_command: {run_cmd}
 inputs:
 # remove below this line if no inputs
 # rename and set algorithm input names accordingly

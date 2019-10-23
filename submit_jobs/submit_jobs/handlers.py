@@ -99,7 +99,7 @@ class RegisterAlgorithmHandler(IPythonHandler):
 		# Part 1: Parse Required Arguments
 		# ==================================
 		# logging.debug('workdir is '+WORKDIR)
-		fields = ['nb_path','config_path']
+		fields = ['config_path']
 		params = {}
 		for f in fields:
 			try:
@@ -134,21 +134,23 @@ class RegisterAlgorithmHandler(IPythonHandler):
 			config['inputs']= {}
 
 		# replace spaces in algorithm name
-		params['algo_name'] = params['algo_name'].replace(' ', '_')
+		config['algo_name'] = config['algo_name'].replace(' ', '_')
 
-		logging.debug('repo url is {}'.format(params['repository_url']))
+		logging.debug('repo url is {}'.format(config['repository_url']))
 
 		# check if repo is hosted on a MAAP GitLab instance
-		if (not ('repo.nasa.maap') in params['repository_url']) or (not ('mas.maap-project') in params['repository_url']):
+		if (not ('repo.nasa.maap') in config['repository_url']) and (not ('mas.maap-project') in config['repository_url']):
 			self.finish({"status_code": 412, "result": "Error: Your git repo is not from a supported host (repo.nasa.maap.xyz or mas.maap-project.org)"})
 			return
 
 		# ==================================
 		# Part 2: Check if User Has Committed
 		# ==================================
-		if params['nb_name'] != '':
+		if params['config_path'] != '':
 			# navigate to project directory
-			proj_path = ('/').join(['/projects']+params['nb_name'].split('/')[:-1])
+			# proj_path = ('/').join(['/projects']+params['config_path'].split('/')[:-1])
+			proj_path = ('/').join(params['config_path'].split('/')[:-1])
+			# proj_path = params['config_path']
 			os.chdir(proj_path)
 
 			# get git status
@@ -1049,6 +1051,7 @@ class DefaultValuesHandler(IPythonHandler):
 		# vals['environment'] = os.environ['ENVIRONMENT']
 		vals['environment'] = "ubuntu"
 		vals['docker_url'] = os.environ['DOCKERIMAGE_PATH']
+		vals['run_cmd'] = params['code_path']
 		# vals['docker_url'] = 'registry.nasa.maap.xyz/root/dps_plot:master'
 		# image_name = 'registry.nasa.maap'+(params['repo_url'].split('.git')[0]).split('repo.nasa.maap')[1] # slice off `https://` prefix and `.git` suffix
 		# image_tag = 'master'
@@ -1076,11 +1079,18 @@ class DefaultValuesHandler(IPythonHandler):
 			with open(config_path,'w') as outfile:
 				outfile.write(config)
 
+		logger.debug('vals before reading')
+		logger.debug(vals)
+
+		settings = {}
+		# repopulate vals with current config settings
 		with open(config_path,'r') as stream:
-			vals['inputs'] = yaml.load(stream)['inputs']
+			settings = yaml.load(stream)
+		
+		logger.debug(settings)
 
 		# outputs: algo_name, version, environment, repository_url, dockerfile_path
-		self.finish({"status_code": 200, "default_values":vals, "config_path":config_path, "previous_config":prev_config})
+		self.finish({"status_code": 200, "default_values":settings, "config_path":config_path, "previous_config":prev_config})
 
 class ListJobsHandler(IPythonHandler):
 	# inputs: username
