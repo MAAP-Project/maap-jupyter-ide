@@ -46,16 +46,18 @@ def getProds(node):
 
 # helper to parse out user-defined inputs when registering algorithm
 def parseInputs(popped):
-	a = popped.strip()
-	a = a.replace('\n',';')
-	inputs = [e.split(',') for e in a.split(';')]							# split lines into inputs
-	inputs = [[e.strip().replace(' ','_') for e in e1] for e1 in inputs]	# strip whitespace & replace <space> with _
-	inputs = [e+['false'] if len(e) == 1 else e for e in inputs]			# set false if dl not set
-	inputs = [[e[0],'true'] if e[1].lower() in ['true','download','dl'] else [e[0],'false'] for e in inputs] 	# replace anything not dl=true to false
-	inputs = {e[0]:e[1] for e in inputs}									# convert to dictionary & overwrite duplicate input names
-	# print(a)
-	# print(inputs)
-	return inputs
+	# a = popped.strip()
+	# a = a.replace('\n',';')
+	# inputs = [e.split(',') for e in a.split(';')]							# split lines into inputs
+	# inputs = [[e.strip().replace(' ','_') for e in e1] for e1 in inputs]	# strip whitespace & replace <space> with _
+	# inputs = [e+['false'] if len(e) == 1 else e for e in inputs]			# set false if dl not set
+	# inputs = [[e[0],'true'] if e[1].lower() in ['true','download','dl'] else [e[0],'false'] for e in inputs] 	# replace anything not dl=true to false
+	# inputs = {e[0]:e[1] for e in inputs}									# convert to dictionary & overwrite duplicate input names
+	# # print(a)
+	# # print(inputs)
+	# return inputs
+	p1 = [{e['name']:str(e['download']).lower()} for e in popped] 			# parse {"name":"varname","download":boolean} to {"varname":boolean}, convert boolean to lower
+	return {k: v for d in p1 for k, v in d.items()}							# flatten list of dicts to just 1 dict
 
 # helper to print accepted user-defined inputs when registering algorithm
 def printInputs(resp,inputs):
@@ -155,6 +157,7 @@ class RegisterAlgorithmHandler(IPythonHandler):
 
 			# get git status
 			git_status_out = subprocess.check_output("git status --branch --porcelain", shell=True).decode("utf-8")
+			logger.debug(git_status_out)
 
 			# is there a git repo?
 			if 'not a git repository' in git_status_out:
@@ -170,8 +173,8 @@ class RegisterAlgorithmHandler(IPythonHandler):
 				self.finish({"status_code": 412, "result": "Error: Notebook(s) and/or script(s) have not been committed\n{}".format('\n'.join(unsaved))})
 				return
 
-			git_pushed = ('[ahead' in git_status_out[0].strip())
-			if not git_pushed:
+			git_unpushed = ('[ahead' in git_status_out[0].strip())
+			if git_unpushed:
 				self.finish({"status_code": 412, "result": "Error: Recent commits have not been pushed"})
 				return
 
