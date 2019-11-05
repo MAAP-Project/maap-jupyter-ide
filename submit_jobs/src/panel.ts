@@ -117,16 +117,18 @@ export class JobCache extends Panel {
     // --------------------
     // refresh button
     // --------------------
-    if (document.getElementById('job-refresh-button') == null) {
-      let div = (<HTMLDivElement>document.getElementById('jobs-div'));
-      let refreshBtn = document.createElement('button');
-      refreshBtn.id = 'job-refresh-button';
-      refreshBtn.className = 'jupyter-button';
-      refreshBtn.innerHTML = 'Refresh Job List';
-      refreshBtn.addEventListener('click', function() {me.updateDisplay()}, false);
-      let br = document.createElement('br');
-      div.appendChild(br);
-      div.appendChild(refreshBtn);
+    if (document.getElementById('jobs-div') != null) {
+      if (document.getElementById('job-refresh-button') == null) {
+        let div = (<HTMLDivElement>document.getElementById('jobs-div'));
+        let refreshBtn = document.createElement('button');
+        refreshBtn.id = 'job-refresh-button';
+        refreshBtn.className = 'jupyter-button';
+        refreshBtn.innerHTML = 'Refresh Job List';
+        refreshBtn.addEventListener('click', function() {me.updateDisplay()}, false);
+        let br = document.createElement('br');
+        div.appendChild(br);
+        div.appendChild(refreshBtn);
+      }
     }
 
     // set display in 2nd callback after making table rows clickable
@@ -270,12 +272,14 @@ export class JobCache extends Panel {
       }
     }
 
-    // make clickable table rows after setting job table
-    this.onRowClick('job-cache-display', function(row){
-      let job_id = row.getElementsByTagName('td')[0].innerHTML;
-      // document.getElementById('click-response').innerHTML = job_id;
-      me.job_id = job_id;
-    }, setDisplays);
+    if (document.getElementById('job-cache-display') != null) {
+      // make clickable table rows after setting job table
+      this.onRowClick('job-cache-display', function(row){
+        let job_id = row.getElementsByTagName('td')[0].innerHTML;
+        // document.getElementById('click-response').innerHTML = job_id;
+        me.job_id = job_id;
+      }, setDisplays);
+    }
 
   }
 
