@@ -13,14 +13,14 @@ perl -pi -e "s|webapp.settings\['base_url'\]|'/'|g" $NOTEBOOKLIBPATH/terminal/__
 perl -pi -e "s|web_app.settings\['base_url'\]|'/'|g" $JUPYTERLABLIBPATH/extension.py
 perl -pi -e "s|web_app.settings\['base_url'\]|'/'|g" $JUPYTERLABSERVERLIBPATH/handlers.py
 perl -pi -e "s|pattern = url_path_join\(settings\['base_url'\], handler\[0\]\)|pattern = url_path_join('/', handler[0])|g" $NOTEBOOKLIBPATH/notebookapp.py
-perl -pi -e "s|web_app.settings\['base_url'\]|'/'|g" /pull_projects/pull_projects/__init__.py
-perl -pi -e "s|web_app.settings\['base_url'\]|'/'|g" /show_ssh_info/show_ssh_info/__init__.py
-perl -pi -e "s|web_app.settings\['base_url'\]|'/'|g" /edsc_extension/edsc_extension/__init__.py
+perl -pi -e "s|web_app.settings\['base_url'\]|'/'|g" /maap-jupyter-ide/pull_projects/pull_projects/__init__.py
+perl -pi -e "s|web_app.settings\['base_url'\]|'/'|g" /maap-jupyter-ide/show_ssh_info/show_ssh_info/__init__.py
+perl -pi -e "s|web_app.settings\['base_url'\]|'/'|g" /maap-jupyter-ide/edsc_extension/edsc_extension/__init__.py
 #perl -pi -e "s|web_app.settings\['base_url'\]|'/'|g" /jupyterlab_iframe/jupyterlab_iframe/__init__.py
 #perl -pi -e "s|web_app.settings\['base_url'\]|'/'|g" /inject_ssh/inject_ssh/__init__.py
-perl -pi -e "s|web_app.settings\[\"base_url\"\]|'/'|g" /jupyterlab-git/jupyterlab_git/handlers.py
-perl -pi -e "s|web_app.settings\['base_url'\]|'/'|g" /submit_jobs/submit_jobs/__init__.py
-perl -pi -e "s|web_app.settings\['base_url'\]|'/'|g" /ipycmc/ipycmc/nbextension/__init__.py
+perl -pi -e "s|web_app.settings\[\"base_url\"\]|'/'|g" /maap-jupyter-ide/jupyterlab-git/jupyterlab_git/handlers.py
+perl -pi -e "s|web_app.settings\['base_url'\]|'/'|g" /maap-jupyter-ide/submit_jobs/submit_jobs/__init__.py
+perl -pi -e "s|web_app.settings\['base_url'\]|'/'|g" /maap-jupyter-ide/ipycmc/ipycmc/nbextension/__init__.py
 
 # Dump all env variables into file so they exist still though SSH
 env | grep _ >> /etc/environment
