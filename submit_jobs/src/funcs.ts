@@ -56,6 +56,8 @@ export function activateRegisterAlgorithm(
 
   commands.addCommand(open_command, {
     execute: () => {
+
+      // get filebrowser item
       const widget = tracker.currentWidget;
       if (!widget) {
         return;
@@ -67,9 +69,9 @@ export function activateRegisterAlgorithm(
 
       let path = item.path;
       console.log(path);
-      // TODO
+      
       // send request to defaultvalueshandler
-      let fn = function(resp:Object) {
+      let getValuesFn = function(resp:Object) {
         let configPath = resp['config_path'] as string;
         let defaultValues = resp['default_values'] as Object;
         let prevConfig = resp['previous_config'] as boolean;
@@ -79,11 +81,23 @@ export function activateRegisterAlgorithm(
           subtext = 'Current algorithm configuration:';
         }
 
-        let w = new RegisterWidget(registerFields,username,jobsPanel,defaultValues,subtext,configPath);
-        w.setPredefinedFields(defaultValues);
-        popup(w);
+        // regsiter function to be called
+        let registerfn = function() {
+          let w = new RegisterWidget(registerFields,username,jobsPanel,defaultValues,subtext,configPath);
+          w.setPredefinedFields(defaultValues);
+          popup(w);
+        }
+
+        // check if algorithm already exists
+        let algoExists = algorithmExists(defaultValues['algo_name'],defaultValues['version']);
+        if (algoExists != undefined && algoExists) {
+          popupResultText('WARNING Algorithm name and version already exists.  \n If you continue, the previously registered algorithm will be LOST',jobsPanel,false,'Overwrite Algorithm?',registerfn);
+          // ask user if they want to continue
+        } else {
+          registerfn()
+        }
       };
-      inputRequest('defaultValues','Register Algorithm',{'code_path':path},fn);
+      inputRequest('defaultValues','Register Algorithm',{'code_path':path},getValuesFn);
 
       // popup read-only default values
       // ok -> call registeralgorithmhandler
@@ -337,4 +351,23 @@ export function inputRequest(endpt:string,title:string,inputs:{[k:string]:string
 // HySDS endpoints that don't require any inputs
 function noInputRequest(endpt:string,title:string) {
   inputRequest(endpt,title,{});
+}
+
+function algorithmExists(name:string, ver:string) {
+  var requestUrl = new URL(PageConfig.getBaseUrl() + 'hysds/' + 'describeProcess');
+  // add params
+  requestUrl.searchParams.append('algo_name', name);
+  requestUrl.searchParams.append('version', ver);
+  console.log(requestUrl.href);
+
+  // send request
+  return request('get',requestUrl.href).then((res: RequestResult) => {
+    if (res.ok) {
+      var json_response:any = res.json();
+      console.log(json_response);
+      return true;
+    } else {
+      return false;
+    }
+  }); 
 }

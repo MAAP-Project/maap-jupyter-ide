@@ -464,11 +464,13 @@ export class WidgetResult extends Widget {
   // pass InputWidget which contains info panel
   cache: JobCache;
   updateCache: boolean;
+  okfn: any;
 
-  constructor(b: any, cache: JobCache, updateCache: boolean) {
+  constructor(b: any, cache: JobCache, updateCache: boolean,fn?:undefined) {
     super({node: b});
     this.cache = cache;
     this.updateCache = updateCache;
+    this.okfn = fn;
   }
 
   // update panel text on resolution of result popup
@@ -479,11 +481,14 @@ export class WidgetResult extends Widget {
     // if (this.parentWidget.req == 'execute' || this.parentWidget.req == 'delete' || this.parentWidget.req == 'dismiss') {
     //   this.parentWidget.updateJobCache();
     // }
+    if (this.okfn != undefined) {
+      this.okfn();
+    }
   }
 }
 
 // here because import dependencies of JobCache(panel.ts),popupResult(dialog.ts), WidgetResult(widget.ts)
-export function popupResultText(result:string,cache:JobCache,update:boolean,title:string,isXML?:boolean) {
+export function popupResultText(result:string,cache:JobCache,update:boolean,title:string,fn?:any,isXML?:boolean) {
   let body = document.createElement('div');
   body.style.display = 'flex';
   body.style.flexDirection = 'column';
@@ -507,5 +512,5 @@ export function popupResultText(result:string,cache:JobCache,update:boolean,titl
   }
   body.appendChild(textarea);
   // console.log(body);
-  popupResult(new WidgetResult(body,cache,update),title);
+  popupResult(new WidgetResult(body,cache,update,fn),title);
 }
