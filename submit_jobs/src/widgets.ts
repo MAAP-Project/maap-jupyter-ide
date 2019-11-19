@@ -4,7 +4,7 @@ import { INotification } from "jupyterlab_toastify";
 import { getUserInfo } from "./getKeycloak";
 import { request, RequestResult } from './request';
 import { JobCache } from './panel';
-import { popupResult } from "./dialogs";
+import { popupResult, popupTitle } from "./dialogs";
 // import * as $ from "jquery";
 // import { format } from "xml-formatter";
 
@@ -475,12 +475,13 @@ export class WidgetResult extends Widget {
 
   // update panel text on resolution of result popup
   getValue() {
-    if (this.updateCache) {
+    if (this.updateCache && this.cache != undefined) {
       this.cache.update();
     }
     // if (this.parentWidget.req == 'execute' || this.parentWidget.req == 'delete' || this.parentWidget.req == 'dismiss') {
     //   this.parentWidget.updateJobCache();
     // }
+    console.log('checking popup resolution fn');
     if (this.okfn != undefined) {
       this.okfn();
     }
@@ -513,4 +514,26 @@ export function popupResultText(result:string,cache:JobCache,update:boolean,titl
   body.appendChild(textarea);
   // console.log(body);
   popupResult(new WidgetResult(body,cache,update,fn),title);
+}
+
+// here because import dependencies of JobCache(panel.ts),popupResult(dialog.ts), WidgetResult(widget.ts)
+export function popupText(result:string,title:string,fn?:any) {
+  let body = document.createElement('div');
+  body.style.display = 'flex';
+  body.style.flexDirection = 'column';
+
+  var textarea = document.createElement("div");
+  textarea.id = 'result-text';
+  textarea.style.display = 'flex';
+  textarea.style.flexDirection = 'column';
+
+  // console.log(result);
+  textarea.innerHTML = "<pre>" + result + "</pre>";
+  body.appendChild(textarea);
+  // console.log(body);
+  if (fn == undefined) {
+    popupTitle(new Widget({node:body}),title);
+  } else {
+    popupTitle(new WidgetResult(body,undefined,false,fn),title);
+  }
 }

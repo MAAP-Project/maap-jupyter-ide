@@ -102,9 +102,10 @@ npm install jquery
 npm install @jupyterlab/application
 npm install @jupyterlab/launcher
 npm install @jupyterlab/filebrowser
-npm install @phosphor/widgets
+npm install @jupyterlab/mainmenu
 npm install @jupyterlab/apputils
 npm install @jupyterlab/coreutils
+npm install @phosphor/widgets
 npm install @types/node --save
 npm install @types/jquery --save
 npm install jupyterlab_toastify

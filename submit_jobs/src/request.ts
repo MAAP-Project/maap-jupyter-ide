@@ -17,7 +17,7 @@ export const DEFAULT_REQUEST_OPTIONS = {
   },
   // default max duration for a request in ms
   // currently set to 120s = 2min
-  timeout: 120000,
+  timeout: 60000,
 };
 
 export interface RequestResult {

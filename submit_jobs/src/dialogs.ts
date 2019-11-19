@@ -58,16 +58,20 @@ export function showDialogEnter<T>(
 
 export function popup(b:any): void {
   if ( !(notImplemented.includes(b.req) )){ 
-    showDialogEnter({
-      title: b.popupTitle,
-      body: b,
-      focusNodeSelector: 'input',
-      buttons: [Dialog.okButton({ label: 'Ok' }), Dialog.cancelButton({ label : 'Cancel'})]
-    });
+    popupTitle(b,b.popupTitle);
   } else {
     console.log("not implemented yet");
     popupResult("Not Implemented yet","Not Implemented yet")
   }
+}
+
+export function popupTitle(b:any,popupTitle:string): void {
+  showDialogEnter({
+    title: popupTitle,
+    body: b,
+    focusNodeSelector: 'input',
+    buttons: [Dialog.okButton({ label: 'Ok' }), Dialog.cancelButton({ label : 'Cancel'})]
+  });
 }
 
 export function popupResult(b:any,popupTitle:string): void {

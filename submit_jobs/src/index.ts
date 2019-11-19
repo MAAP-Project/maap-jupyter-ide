@@ -2,6 +2,7 @@ import { JupyterFrontEndPlugin } from '@jupyterlab/application';
 import { ICommandPalette } from '@jupyterlab/apputils';
 import { IFileBrowserFactory } from "@jupyterlab/filebrowser";
 import { ILauncher } from '@jupyterlab/launcher';
+import { IMainMenu } from '@jupyterlab/mainmenu';
 import { activateGetCapabilities, activateDescribe, activateList, activateRegister, activateRegisterAlgorithm, activateDeleteAlgorithm, activateExecute, activateGetStatus, activateGetResult, activateDismiss, activateDelete, activateJobCache } from './funcs';
 
 const extensionCapabilities: JupyterFrontEndPlugin<void> = {
@@ -94,7 +95,7 @@ const extensionDelete: JupyterFrontEndPlugin<void> = {
 const cacheExtension: JupyterFrontEndPlugin<void> = {
   id: 'job-cache-panel',
   autoStart:true,
-  requires: [ICommandPalette],
+  requires: [ICommandPalette,IMainMenu],
   activate: activateJobCache
 };
 
