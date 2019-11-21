@@ -88,6 +88,15 @@ export function activateRegisterAlgorithm(
         let defaultValues = resp['default_values'] as Object;
         let prevConfig = resp['previous_config'] as boolean;
 
+        if (defaultValues['inputs'] == undefined) {
+          defaultValues['inputs'] = [];
+        }
+        if (defaultValues['description'] == undefined) {
+          defaultValues['description'] = '';
+        }
+
+        console.log(defaultValues);
+
         let subtext = 'Auto-generated algorithm configuration:';
         if (prevConfig) {
           subtext = 'Current algorithm configuration:';
@@ -106,7 +115,7 @@ export function activateRegisterAlgorithm(
         // check if algorithm already exists
         // ok -> call registeralgorithmhandler
         // cancel -> edit template at algorithm_config.yaml (config_path)
-        algorithmExists(defaultValues['algo_name'],defaultValues['version']).then((algoExists) => {
+        algorithmExists(defaultValues['algo_name'],defaultValues['version'],defaultValues['environment']).then((algoExists) => {
           console.log('algo Exists');
           console.log(algoExists);
           if (algoExists != undefined && algoExists) {
@@ -284,13 +293,13 @@ function activateMenuOptions(app: JupyterFrontEnd, mainMenu: IMainMenu) {
   let dpsMenu = new Menu({ commands });
   dpsMenu.title.label = 'DPS/MAS Operations';
   [
+    jobCache_update_command,
     capabilities_command,
     listAlgorithm_command,
     registerAlgorithm2_command,
     registerAlgorithm_command,
     describeAlgorithm_command,
     executeJob_command,
-    jobCache_update_command,
     statusJob_command,
     resultJob_command,
     dismissJob_comand,
@@ -377,10 +386,10 @@ function noInputRequest(endpt:string,title:string) {
   inputRequest(endpt,title,{});
 }
 
-function algorithmExists(name:string, ver:string) {
+function algorithmExists(name:string, ver:string, env:string) {
   var requestUrl = new URL(PageConfig.getBaseUrl() + 'hysds/' + 'describeProcess');
   // add params
-  requestUrl.searchParams.append('algo_name', name);
+  requestUrl.searchParams.append('algo_name', name+'_'+env);
   requestUrl.searchParams.append('version', ver);
   console.log(requestUrl.href);
 

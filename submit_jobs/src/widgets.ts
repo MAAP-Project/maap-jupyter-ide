@@ -105,7 +105,12 @@ export class InputWidget extends Widget {
       // TODO enforce input types
       // Construct labels and inputs for fields
       for (var field of this.fields) {
-        var fieldName = field[0];
+        var fieldName;
+        if (typeof(field) == "string"){
+          fieldName = field;
+        } else {
+          fieldName = field[0];
+        }
         if (fieldName != 'inputs') {
           var fieldLabel = document.createElement("Label");
           fieldLabel.innerHTML = fieldName;
@@ -388,6 +393,7 @@ export class RegisterWidget extends InputWidget {
           ins = ins+'\n';
         }
         fieldInputs.value = ins;
+        fieldInputs.readOnly = true;
         this.node.appendChild(fieldInputs);
       
       } else {
@@ -483,7 +489,14 @@ export class WidgetResult extends Widget {
     // }
     console.log('checking popup resolution fn');
     if (this.okfn != undefined) {
-      this.okfn();
+      console.log(this.okfn);
+      try{
+        this.okfn();
+      }
+      catch (_e) {
+        let e:Error = _e;
+        console.log(e);
+      }
     }
   }
 }
