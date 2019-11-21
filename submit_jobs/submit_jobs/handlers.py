@@ -21,6 +21,7 @@ WORKDIR = FILEPATH+'/..'
 sys.path.append(WORKDIR)
 # USE https when pointing to actual MAAP API server
 #BASE_URL = "http://localhost:5000/api"
+# BASE_URL = "https://api.maap.xyz/api"
 BASE_URL = "https://api.maap-project.org/api"
 
 
@@ -95,6 +96,7 @@ def detailed_display(job):
 		result +='	{}: {}\n'.format(i['name'],i['value'])
 	return result
 
+# currently allows repos from both repo.nasa.maap and mas.maap-project
 class RegisterAlgorithmHandler(IPythonHandler):
 	def get(self,**params):
 		# ==================================
@@ -190,7 +192,7 @@ class RegisterAlgorithmHandler(IPythonHandler):
 
 		# build inputs json		
 		popped = config.pop('inputs')
-		inputs = parseInputs(popped)
+		inputs = parseInputs(popped) if popped != None else {}
 
 		ins = ''
 		for name in inputs.keys():
@@ -655,7 +657,12 @@ class GetResultHandler(IPythonHandler):
 				self.finish({"status_code": 404, "result": result})
 
 			else:
-				self.finish({"status_code": r.status_code, "result": r.reason})
+				try:
+					rt = ET.fromstring(r.text)
+					result = rt[0][0].text
+					self.finish({"status_code": r.status_code, "result": result})
+				except:
+					self.finish({"status_code": r.status_code, "result": r.reason})
 		except:
 			self.finish({"status_code": 400, "result": "Bad Request"})
 
@@ -1055,18 +1062,6 @@ class DefaultValuesHandler(IPythonHandler):
 		vals['environment'] = "ubuntu"
 		vals['docker_url'] = os.environ['DOCKERIMAGE_PATH']
 		vals['run_cmd'] = params['code_path']
-		# vals['docker_url'] = 'registry.nasa.maap.xyz/root/dps_plot:master'
-		# image_name = 'registry.nasa.maap'+(params['repo_url'].split('.git')[0]).split('repo.nasa.maap')[1] # slice off `https://` prefix and `.git` suffix
-		# image_tag = 'master'
-		# params['docker_url'] = '{}:{}'.format(image_name,image_tag)
-		# params['docker_url'] = os.environ['DOCKERIMAGE_PATH']
-		# params['docker_url'] = 'registry.nasa.maap.xyz/root/dps_plot:master'
-		# params['docker_url'] = 'registry.nasa.maap.xyz/maap-devs/base-images/plant'
-
-		# user-populated fields
-		# vals['description'] = 'explain-what-this-algorithm-does'
-		# vals['run_command'] = 'wrapper-script-here'
-		# vals['inputs'] = [{'name':'parameter-name','download':False},{'name':'file-to-copy-in','download':True}]
 
 		config_path = proj_path+"/algorithm_config.yaml"
 		prev_config = os.path.exists(config_path)
@@ -1140,6 +1135,8 @@ class ListJobsHandler(IPythonHandler):
 					# parse out JobID from response
 					resp = json.loads(r.text)
 					jobs = [parse_job(job) for job in resp['jobs']] 					# parse inputs from string to dict
+					# logger.debug('parsing jobs list')
+					# logger.debug(jobs)
 					jobs = sorted(jobs, key=lambda j: j['timestamp'],reverse=True) 	# sort list of jobs by timestamp (most recent)
 
 					result += '<div id="jobs-div" style="height:100%; width:340px">'
