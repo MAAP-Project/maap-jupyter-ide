@@ -3,7 +3,7 @@ import { PageConfig } from '@jupyterlab/coreutils'
 import { request, RequestResult } from './request';
 import { InputWidget, RegisterWidget } from './widgets';
 import { getAlgorithms, getDefaultValues, inputRequest } from './funcs';
-import { JobCache } from './panel';
+import { JobPanel } from './panel';
 import { popup, popupResult } from "./dialogs";
 
 // popup helper for register to select project
@@ -11,7 +11,7 @@ export class ProjectSelector extends Widget {
   type: string;
   _fields: string[];
   _username:string;
-  _jobsPanel: JobCache;
+  _jobsPanel: JobPanel;
   public selection:string;
   _dropdown:HTMLSelectElement;
 
@@ -132,6 +132,7 @@ export class ProjectSelector extends Widget {
         let me = this;
         // define function callback to be run after evaluation of selection
         let fn = function(resp:{[k:string]:(string|string[]|{[k:string]:string})}) {
+          console.log('resp');
           var new_fields = resp['ins'] as string[];
           var predefined_fields = resp['old'] as {[k:string]:string};
           var exec = new InputWidget('execute',new_fields,me._username,me._jobsPanel,{});

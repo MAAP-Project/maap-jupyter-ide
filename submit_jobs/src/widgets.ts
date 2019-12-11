@@ -3,7 +3,7 @@ import { PageConfig } from '@jupyterlab/coreutils'
 import { INotification } from "jupyterlab_toastify";
 import { getUserInfo } from "./getKeycloak";
 import { request, RequestResult } from './request';
-import { JobCache } from './panel';
+import { JobPanel } from './panel';
 import { popupResult, popupTitle } from "./dialogs";
 // import * as $ from "jquery";
 // import { format } from "xml-formatter";
@@ -25,10 +25,10 @@ export class InputWidget extends Widget {
   public username: string;                // for execute & listing jobs in case of timeout
   _responseText: string;
   _getInputs: boolean;                    // for getting predefinedFields
-  _jobsPanel: JobCache;                   // for execute
+  _jobsPanel: JobPanel;                   // for execute
   _ins_dict: {[k:string]:string};          // for execute
 
-  constructor(req:string, methodFields:string[],uname:string, panel:JobCache, defaultValues:Object,skipInputs?:boolean) {
+  constructor(req:string, methodFields:string[],uname:string, panel:JobPanel, defaultValues:Object,skipInputs?:boolean) {
     let body = document.createElement('div');
     body.style.display = 'flex';
     body.style.flexDirection = 'column';
@@ -93,7 +93,16 @@ export class InputWidget extends Widget {
     this._buildRequestUrl = this._buildRequestUrl.bind(this);
 
     // skip 1st popup if nothing to fill out
-    if (this.fields.length == 0) {
+    if ( typeof this.fields === "undefined" || this.fields.length == 0) {
+      let body = document.createElement('div');
+      body.style.display = 'flex';
+      body.style.flexDirection = 'column';
+
+      var label = document.createElement("Label");
+      label.innerHTML = "No inputs required";
+      this.node.appendChild(label);
+      body.appendChild(label);
+      this.node.appendChild(body);
       return;
     }
 
@@ -168,7 +177,7 @@ export class InputWidget extends Widget {
     // TODO enforce input types
   }
 
-  updateJobCache(){
+  updateJobPanel(){
     this._jobsPanel.update();
   }
 
@@ -225,7 +234,9 @@ export class InputWidget extends Widget {
 
       // filling out old fields, currently for algo info (id, version) in execute & describe & delete
       if (this._getInputs) {
+        console.log('get predefined fields');
         for (let key in this.predefinedFields) {
+          console.log(key);
           var fieldText = (this.predefinedFields[key] as string).toLowerCase();
           getUrl.searchParams.append(key.toLowerCase(), fieldText);
         }
@@ -239,41 +250,50 @@ export class InputWidget extends Widget {
         var rangeField = "";
         var rangeFieldValue:string[] = [];
 
-        for (var e of this.fields) {
-          var field = e[0].toLowerCase();
-          new_input_list = new_input_list.concat(field,',');
-          // console.log(field);
-          var fieldText = (<HTMLInputElement>document.getElementById(field.toLowerCase()+'-input')).value;
-          // console.log(fieldText);
+        if ( typeof this.fields != "undefined" && this.fields.length >= 0) {
+          for (var e of this.fields) {
+            var field = e[0].toLowerCase();
+            new_input_list = new_input_list.concat(field,',');
+            // console.log(field);
+            var fieldText = (<HTMLInputElement>document.getElementById(field.toLowerCase()+'-input')).value;
+            // console.log(fieldText);
 
-          // check for range in inputs
-          // currently only support INTEGER range in SINGLE input field
-          // expected format "range:1:10"
-          if (fieldText.includes("range:")) {
-            range = true;
-            rangeField = field;
-            rangeFieldValue = fieldText.split("range:")[1].split(":");
+            // check for range in inputs
+            // currently only support INTEGER range in SINGLE input field
+            // expected format "range:1:10"
+            if (fieldText.includes("range:")) {
+              range = true;
+              rangeField = field;
+              rangeFieldValue = fieldText.split("range:")[1].split(":");
+            }
+            this._ins_dict[field] = fieldText;
+            getUrl.searchParams.append(field.toLowerCase(), fieldText);
           }
-          this._ins_dict[field] = fieldText;
-          getUrl.searchParams.append(field.toLowerCase(), fieldText);
-        }
-        console.log(new_input_list);
-        getUrl.searchParams.append("inputs",new_input_list);
+          console.log(new_input_list);
+          getUrl.searchParams.append("inputs",new_input_list);
+          
+          // if multiple runs over one input
+          if (range) {
+            var start = Number(rangeFieldValue[0]);
+            var last = Number(rangeFieldValue[1]);
+            console.log(rangeFieldValue);
+            // var len = last - start + 1;
+            for (var i = start; i <= last; i++) {
+              let multiUrl = this.buildCopyUrl(rangeField,String(i));
+              console.log(multiUrl.href);
+              urllst.push(multiUrl);
+            }
+            resolve(urllst);
 
-        // if multiple runs over one input
-        if (range) {
-          var start = Number(rangeFieldValue[0]);
-          var last = Number(rangeFieldValue[1]);
-          console.log(rangeFieldValue);
-          // var len = last - start + 1;
-          for (var i = start; i <= last; i++) {
-            let multiUrl = this.buildCopyUrl(rangeField,String(i));
-            console.log(multiUrl.href);
-            urllst.push(multiUrl);
+          // just 1 job
+          } else {
+            // add username
+            getUrl.searchParams.append('username',this.username);
+            console.log('added username');
+            console.log(getUrl.href);
+            urllst.push(getUrl);
+            resolve(urllst);
           }
-          resolve(urllst);
-
-        // just 1 job
         } else {
           // add username
           getUrl.searchParams.append('username',this.username);
@@ -282,6 +302,7 @@ export class InputWidget extends Widget {
           urllst.push(getUrl);
           resolve(urllst);
         }
+
 
       } else if (me.req == 'register') {
         resolve(urllst);
@@ -348,7 +369,7 @@ export class RegisterWidget extends InputWidget {
   configPath: string;
   // nbPath: string;
 
-  constructor(methodFields:string[],uname:string,panel:JobCache,defaultValues:Object,subtext?:string,configPath?:string) {
+  constructor(methodFields:string[],uname:string,panel:JobPanel,defaultValues:Object,subtext?:string,configPath?:string) {
     super('register', methodFields,uname,panel,defaultValues,true);
     this.configPath = configPath;
 
@@ -468,11 +489,11 @@ export class RegisterWidget extends InputWidget {
 
 export class WidgetResult extends Widget {
   // pass InputWidget which contains info panel
-  cache: JobCache;
+  cache: JobPanel;
   updateCache: boolean;
   okfn: any;
 
-  constructor(b: any, cache: JobCache, updateCache: boolean,fn?:undefined) {
+  constructor(b: any, cache: JobPanel, updateCache: boolean,fn?:undefined) {
     super({node: b});
     this.cache = cache;
     this.updateCache = updateCache;
@@ -485,7 +506,7 @@ export class WidgetResult extends Widget {
       this.cache.update();
     }
     // if (this.parentWidget.req == 'execute' || this.parentWidget.req == 'delete' || this.parentWidget.req == 'dismiss') {
-    //   this.parentWidget.updateJobCache();
+    //   this.parentWidget.updateJobPanel();
     // }
     console.log('checking popup resolution fn');
     if (this.okfn != undefined) {
@@ -501,8 +522,8 @@ export class WidgetResult extends Widget {
   }
 }
 
-// here because import dependencies of JobCache(panel.ts),popupResult(dialog.ts), WidgetResult(widget.ts)
-export function popupResultText(result:string,cache:JobCache,update:boolean,title:string,fn?:any,isXML?:boolean) {
+// here because import dependencies of JobPanel(panel.ts),popupResult(dialog.ts), WidgetResult(widget.ts)
+export function popupResultText(result:string,cache:JobPanel,update:boolean,title:string,fn?:any,isXML?:boolean) {
   let body = document.createElement('div');
   body.style.display = 'flex';
   body.style.flexDirection = 'column';
@@ -529,7 +550,7 @@ export function popupResultText(result:string,cache:JobCache,update:boolean,titl
   popupResult(new WidgetResult(body,cache,update,fn),title);
 }
 
-// here because import dependencies of JobCache(panel.ts),popupResult(dialog.ts), WidgetResult(widget.ts)
+// here because import dependencies of JobPanel(panel.ts),popupResult(dialog.ts), WidgetResult(widget.ts)
 export function popupText(result:string,title:string,fn?:any) {
   let body = document.createElement('div');
   body.style.display = 'flex';

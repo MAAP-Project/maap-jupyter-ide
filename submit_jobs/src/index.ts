@@ -3,7 +3,7 @@ import { ICommandPalette } from '@jupyterlab/apputils';
 import { IFileBrowserFactory } from "@jupyterlab/filebrowser";
 import { ILauncher } from '@jupyterlab/launcher';
 import { IMainMenu } from '@jupyterlab/mainmenu';
-import { activateGetCapabilities, activateDescribe, activateList, activateRegister, activateRegisterAlgorithm, activateDeleteAlgorithm, activateExecute, activateGetStatus, activateGetResult, activateDismiss, activateDelete, activateJobCache } from './funcs';
+import { activateGetCapabilities, activateDescribe, activateList, activateRegister, activateRegisterAlgorithm, activateDeleteAlgorithm, activateExecute, activateGetStatus, activateGetResult, activateDismiss, activateDelete, activateJobPanel, activateJobWidget } from './funcs'
 
 const extensionCapabilities: JupyterFrontEndPlugin<void> = {
   id: 'dps-capabilities',
@@ -96,7 +96,14 @@ const cacheExtension: JupyterFrontEndPlugin<void> = {
   id: 'job-cache-panel',
   autoStart:true,
   requires: [ICommandPalette,IMainMenu],
-  activate: activateJobCache
+  activate: activateJobPanel
 };
 
-export default [extensionDeleteAlgorithm,extensionRegister,extensionRegisterAlgorithm,extensionCapabilities,extensionStatus,extensionResult,extensionExecute,extensionDismiss,extensionDelete,extensionDescribe,extensionList, cacheExtension];
+const bigJobsPanel: JupyterFrontEndPlugin<void> = {
+  id: 'jobs-widget',
+  autoStart: false,
+  requires: [ICommandPalette, IMainMenu],
+  activate: activateJobWidget
+};
+
+export default [extensionDeleteAlgorithm,extensionRegister,extensionRegisterAlgorithm,extensionCapabilities,extensionStatus,extensionResult,extensionExecute,extensionDismiss,extensionDelete,extensionDescribe,extensionList, cacheExtension, bigJobsPanel];

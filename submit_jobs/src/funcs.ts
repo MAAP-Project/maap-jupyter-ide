@@ -1,5 +1,5 @@
-import { JupyterFrontEnd } from '@jupyterlab/application';
-import { ICommandPalette } from '@jupyterlab/apputils';
+import { ILayoutRestorer, JupyterFrontEnd } from '@jupyterlab/application';
+import { ICommandPalette, MainAreaWidget, WidgetTracker } from '@jupyterlab/apputils';
 import { PageConfig } from '@jupyterlab/coreutils'
 import { ILauncher } from '@jupyterlab/launcher';
 import { IFileBrowserFactory } from "@jupyterlab/filebrowser";
@@ -8,7 +8,7 @@ import { Menu } from '@phosphor/widgets';
 import { request, RequestResult } from './request';
 import { ProjectSelector } from './selector';
 import { InputWidget, RegisterWidget, popupResultText, popupText } from './widgets';
-import { JobCache } from './panel';
+import { JobTable, JobPanel, JobWidget } from './panel';
 import { popup, popupResult } from "./dialogs";
 import * as data from './fields.json';
 
@@ -24,8 +24,11 @@ const describeProcessFields = data.describeProcess;
 // I really don't like these hacks
 // ------------------------------------------------------------
 var username:string;
-// reference to jobsPanel passed through each submit_job widget
-const jobsPanel = new JobCache();
+// reference to jobsTable passed through each submit_job widget
+const jobsTable = new JobTable();
+const jobsPanel = new JobPanel(jobsTable);
+let content = new JobWidget(jobsTable);
+const jobsWidget = new MainAreaWidget({content});
 // ------------------------------------------------------------
 const registerAlgorithm2_command = 'hysds: register';
 const registerAlgorithm_command = 'hysds: register2';
@@ -39,6 +42,7 @@ const describeAlgorithm_command = 'hysds: describe-job';
 const listAlgorithm_command = 'hysds: list-algorithms';
 const deleteAlgorithm_command = 'hysds: delete-algorithm';
 const jobCache_update_command = 'jobs: list';
+const jobWidget_command = 'jobs: main-widget';
 
 export function activateRegister(app: JupyterFrontEnd, 
                         palette: ICommandPalette, 
@@ -47,7 +51,7 @@ export function activateRegister(app: JupyterFrontEnd,
     label: 'Register Algorithm',
     isEnabled: () => true,
     execute: args => {
-      popupResult(new ProjectSelector('register',registerFields,username,jobsPanel),"Select a Project");
+      popupResult(new ProjectSelector('register',registerFields,username,jobsTable),"Select a Project");
     }
   });
   palette.addItem({command: registerAlgorithm2_command, category: 'DPS/MAS'});
@@ -149,7 +153,7 @@ export function activateGetCapabilities(app: JupyterFrontEnd,
     label: 'Get Capabilities',
     isEnabled: () => true,
     execute: args => {
-      // var w = new InputWidget('getCapabilities',getCapabilitiesFields,username,jobsPanel,{});
+      // var w = new InputWidget('getCapabilities',getCapabilitiesFields,username,jobsTable,{});
       // w.getValue();
       noInputRequest('getCapabilities','Capabilities');
     }
@@ -265,7 +269,7 @@ export function activateDeleteAlgorithm(app: JupyterFrontEnd,
   console.log('HySDS Describe Job is activated!');
 }
 
-export function activateJobCache(app: JupyterFrontEnd, palette: ICommandPalette, mainMenu: IMainMenu): void{
+export function activateJobPanel(app: JupyterFrontEnd, palette: ICommandPalette, mainMenu: IMainMenu): void{
   var infoPanel = jobsPanel;
   infoPanel.id = 'job-cache-display';
   infoPanel.title.label = 'Jobs';
@@ -278,14 +282,59 @@ export function activateJobCache(app: JupyterFrontEnd, palette: ICommandPalette,
     label: 'Refresh Job List',
     isEnabled: () => true,
     execute: args => {
-      jobsPanel.update();
+      infoPanel.update();
     }
   });
   palette.addItem({command: jobCache_update_command, category: 'DPS/MAS'});
-  // jobsPanel.updateDisplay();
+  // jobsTable.updateDisplay();
   console.log('HySDS JobList is activated!');
 
   activateMenuOptions(app,mainMenu);
+}
+
+export function activateJobWidget(app: JupyterFrontEnd, palette: ICommandPalette, restorer: ILayoutRestorer) {
+  console.log('JupyterLab extension jupyterlab_apod is activated!');
+
+  // Declare a widget variable
+  let widget: MainAreaWidget<JobWidget>;
+
+  // Add an application command
+  app.commands.addCommand(jobWidget_command, {
+    label: 'Jobs Main Widget',
+    execute: () => {
+      if (!widget) {
+        // Create a new widget if one does not exist
+        widget = jobsWidget
+        widget.id = 'jobs-main-widget';
+        widget.title.label = 'Jobs Main Widget';
+        widget.title.closable = true;
+      }
+      if (!tracker.has(widget)) {
+        // Track the state of the widget for later restoration
+        tracker.add(widget);
+      }
+      if (!widget.isAttached) {
+        // Attach the widget to the main work area if it's not there
+        app.shell.add(widget, 'main');
+      }
+      widget.content.update();
+
+      // Activate the widget
+      app.shell.activateById(widget.id);
+    }
+  });
+
+  // Add the command to the palette.
+  palette.addItem({command: jobWidget_command, category: 'Tutorial' });
+
+  // Track and restore the widget state
+  let tracker = new WidgetTracker<MainAreaWidget<JobWidget>>({
+    namespace: 'jobs'
+  });
+  restorer.restore(tracker, {
+    command: jobWidget_command,
+    name: () => 'jobs'
+  });
 }
 
 function activateMenuOptions(app: JupyterFrontEnd, mainMenu: IMainMenu) {

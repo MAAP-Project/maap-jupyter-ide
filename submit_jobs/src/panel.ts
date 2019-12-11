@@ -8,7 +8,33 @@ import {  } from "./dialogs";
 
 const CONTENT_CLASS = 'jp-Inspector-content';
 // primitive text panel for storing submitted job information
-export class JobCache extends Panel {
+export class JobPanel extends Panel{
+  job_cache: JobTable;
+  constructor(jobCache: JobTable) {
+    super();
+    this.job_cache = jobCache;
+  }
+
+  update() {
+    this.job_cache.update();
+  }
+}
+
+export class JobWidget extends Widget {
+  job_cache: JobTable;
+
+  constructor(jobCache: JobTable) {
+    super();
+    this.job_cache = jobCache;
+  }
+
+  /* Handle update requests for the widget. */
+  async onUpdateRequest(): Promise<void> {
+    this.job_cache.update();
+  }
+}
+
+export class JobTable extends Widget {
   public opt:string;
   _table: string;
   _displays: {[k:string]:string};
@@ -133,7 +159,7 @@ export class JobCache extends Panel {
     }
 
     // set display in 2nd callback after making table rows clickable
-    let setDisplays = function (me:JobCache){
+    let setDisplays = function (me:JobTable){
       // create div for job info section
       // parent for everything, created in table response
       if (document.getElementById('jobs-div') != null) {
@@ -303,7 +329,7 @@ export class JobCache extends Panel {
   }
 
   // get job result for display
-  getJobResult(me:JobCache) {
+  getJobResult(me:JobTable) {
     var resultUrl = new URL(PageConfig.getBaseUrl() + 'hysds/getResult');
     // console.log(me.jobs[me._job_id]);
     if (me._job_id != '' && me._jobs[me._job_id]['status'] == 'job-completed') {
@@ -336,7 +362,7 @@ export class JobCache extends Panel {
   }
 
   // front-end side of display job result table
-  _selectedJobResult(me:JobCache) {
+  _selectedJobResult(me:JobTable) {
     // let jobResult = this._results[this._job_id];
     // console.log(me._results);
     if (document.getElementById('jobs-div') != null) {
