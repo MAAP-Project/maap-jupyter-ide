@@ -1,11 +1,11 @@
 {{ 
-	"script_command" : "{run_cmd}",
+	"script_command" : "{run_command}",
 	"algorithm_name" : "{algo_name}",
 	"code_version": "{version}",
-	"algorithm_description" : "{algo_desc}",
+	"algorithm_description" : "{description}",
 	"environment_name": "{environment}",
 	"docker_container_url": "{docker_url}",
-	"repo_url" : "{repo_url}",
+	"repo_url" : "{repository_url}",
 	"algorithm_params" : [
 		{algo_inputs}
 		{{
