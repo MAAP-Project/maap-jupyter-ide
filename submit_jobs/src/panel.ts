@@ -6,6 +6,7 @@ import { getUserInfo } from "./getKeycloak";
 import { request, RequestResult } from './request';
 import {  } from "./dialogs";
 
+const WIDGET_CLASS = 'p-Widget';
 const CONTENT_CLASS = 'jp-Inspector-content';
 // primitive text panel for storing submitted job information
 export class JobPanel extends Panel{
@@ -13,6 +14,8 @@ export class JobPanel extends Panel{
   constructor(jobCache: JobTable) {
     super();
     this.job_cache = jobCache;
+    this.addClass(CONTENT_CLASS);
+    this.addClass(WIDGET_CLASS);
   }
 
   update() {
@@ -26,6 +29,9 @@ export class JobWidget extends Widget {
   constructor(jobCache: JobTable) {
     super();
     this.job_cache = jobCache;
+    console.log(typeof this.job_cache);
+    console.log(typeof this.job_cache.getTable());
+    // this.node.appendChild(this.job_cache.getTable());
   }
 
   /* Handle update requests for the widget. */
@@ -42,6 +48,7 @@ export class JobTable extends Widget {
   _jobs: {[k:string]:string};
   _job_id: string;
   _username: string;
+  _html_table: HTMLDivElement;
 
   constructor() {
     super();
@@ -306,6 +313,8 @@ export class JobTable extends Widget {
       me._job_id = job_id;
     }, setDisplays);
 
+    this._html_table = (<HTMLDivElement>document.getElementById('job-cache-display'));
+
   }
 
   // clickable table rows helper function
@@ -408,5 +417,9 @@ export class JobTable extends Widget {
 
   update(): void {
     this._updateDisplay();
+  }
+
+  getTable(): HTMLDivElement {
+    return this._html_table;
   }
 }

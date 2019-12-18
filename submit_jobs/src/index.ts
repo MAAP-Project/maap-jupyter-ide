@@ -101,7 +101,7 @@ const cacheExtension: JupyterFrontEndPlugin<void> = {
 
 const bigJobsPanel: JupyterFrontEndPlugin<void> = {
   id: 'jobs-widget',
-  autoStart: false,
+  autoStart: true,
   requires: [ICommandPalette, IMainMenu],
   activate: activateJobWidget
 };
