@@ -298,6 +298,7 @@ export function activateJobWidget(app: JupyterFrontEnd, palette: ICommandPalette
   console.log('JupyterLab extension jupyterlab_apod is activated!');
 
   // Declare a widget variable
+  // let widget: MainAreaWidget<JobWidget>;
   let widget: MainAreaWidget<JobWidget>;
 
   // Add an application command
@@ -306,7 +307,9 @@ export function activateJobWidget(app: JupyterFrontEnd, palette: ICommandPalette
     execute: () => {
       if (!widget) {
         // Create a new widget if one does not exist
-        widget = jobsWidget
+        // const content = jobsWidget;
+        // widget = new MainAreaWidget({content});
+        widget = jobsWidget;
         widget.id = 'jobs-main-widget';
         widget.title.label = 'Jobs Main Widget';
         widget.title.closable = true;
@@ -327,7 +330,7 @@ export function activateJobWidget(app: JupyterFrontEnd, palette: ICommandPalette
   });
 
   // Add the command to the palette.
-  palette.addItem({command: jobWidget_command, category: 'Tutorial' });
+  palette.addItem({command: jobWidget_command, category: '!Tutorial' });
 
   // Track and restore the widget state
   // let tracker = new WidgetTracker<MainAreaWidget<JobWidget>>({
@@ -362,7 +365,9 @@ function activateMenuOptions(app: JupyterFrontEnd, mainMenu: IMainMenu) {
   mainMenu.addMenu(dpsMenu, { rank: 101 });
 }
 
-//***************** End Activate *********************//
+// ============================================================================================ //
+// ************************************* End Activate ***************************************** //
+// ============================================================================================ //
 
 export function getAlgorithms() {
   return new Promise<{[k:string]:Array<string>}>((resolve, reject) => {

@@ -29,13 +29,17 @@ export class JobWidget extends Widget {
   constructor(jobCache: JobTable) {
     super();
     this.job_cache = jobCache;
+    this.addClass(CONTENT_CLASS);
+    this.addClass(WIDGET_CLASS);
+
+    console.log('CHECKING JOB CACHE TYPES');
     console.log(typeof this.job_cache);
     console.log(typeof this.job_cache.getTable());
-    // this.node.appendChild(this.job_cache.getTable());
+    this.node.appendChild(this.job_cache.getTable());
   }
 
   /* Handle update requests for the widget. */
-  async onUpdateRequest(): Promise<void> {
+  update() {
     this.job_cache.update();
   }
 }
@@ -73,6 +77,7 @@ export class JobTable extends Widget {
     this._displays = {};
     this._jobs = {};
     this._job_id = '';
+    this._html_table = document.createElement('div');
     this.addClass(CONTENT_CLASS);
   }
 
