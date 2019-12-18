@@ -8,6 +8,7 @@ import {  } from "./dialogs";
 
 const WIDGET_CLASS = 'p-Widget';
 const CONTENT_CLASS = 'jp-Inspector-content';
+const widget_table_name = 'widget-job-cache-display';
 // primitive text panel for storing submitted job information
 export class JobPanel extends Panel{
   job_cache: JobTable;
@@ -41,8 +42,9 @@ export class JobWidget extends Widget {
   /* Handle update requests for the widget. */
   update() {
     this.job_cache.update();
-    if (document.getElementById('job-cache-display') != null) {
-      (<HTMLTextAreaElement>document.getElementById('widget-job-cache-display')).innerHTML = this.job_cache.getTable();
+    console.log(this.job_cache.getTable());
+    if (document.getElementById(widget_table_name) != null) {
+      (<HTMLTextAreaElement>document.getElementById(widget_table_name)).innerHTML = this.job_cache.getTable();
     } else {
       // create div for table if table doesn't already exist
       var div = document.createElement('div');
@@ -53,7 +55,7 @@ export class JobWidget extends Widget {
 
       // jobs table
       var textarea = document.createElement("table");
-      textarea.id = 'widget-job-cache-display';
+      textarea.id = widget_table_name;
       textarea.className = 'jp-JSONEditor-host';
       textarea.innerHTML = this.job_cache.getTable();
       div.appendChild(textarea);
