@@ -1,5 +1,6 @@
 import { ILayoutRestorer, JupyterFrontEnd } from '@jupyterlab/application';
-import { ICommandPalette, MainAreaWidget, WidgetTracker } from '@jupyterlab/apputils';
+// import { ICommandPalette, MainAreaWidget, WidgetTracker } from '@jupyterlab/apputils';
+import { ICommandPalette, MainAreaWidget } from '@jupyterlab/apputils';
 import { PageConfig } from '@jupyterlab/coreutils'
 import { ILauncher } from '@jupyterlab/launcher';
 import { IFileBrowserFactory } from "@jupyterlab/filebrowser";
@@ -26,6 +27,7 @@ const describeProcessFields = data.describeProcess;
 var username:string;
 // reference to jobsTable passed through each submit_job widget
 const jobsTable = new JobTable();
+jobsTable.update();
 const jobsPanel = new JobPanel(jobsTable);
 let content = new JobWidget(jobsTable);
 const jobsWidget = new MainAreaWidget({content});
@@ -309,10 +311,10 @@ export function activateJobWidget(app: JupyterFrontEnd, palette: ICommandPalette
         widget.title.label = 'Jobs Main Widget';
         widget.title.closable = true;
       }
-      if (!tracker.has(widget)) {
-        // Track the state of the widget for later restoration
-        tracker.add(widget);
-      }
+      // if (!tracker.has(widget)) {
+      //   // Track the state of the widget for later restoration
+      //   tracker.add(widget);
+      // }
       if (!widget.isAttached) {
         // Attach the widget to the main work area if it's not there
         app.shell.add(widget, 'main');
@@ -328,13 +330,13 @@ export function activateJobWidget(app: JupyterFrontEnd, palette: ICommandPalette
   palette.addItem({command: jobWidget_command, category: 'Tutorial' });
 
   // Track and restore the widget state
-  let tracker = new WidgetTracker<MainAreaWidget<JobWidget>>({
-    namespace: 'jobs'
-  });
-  restorer.restore(tracker, {
-    command: jobWidget_command,
-    name: () => 'jobs'
-  });
+  // let tracker = new WidgetTracker<MainAreaWidget<JobWidget>>({
+  //   namespace: 'jobs'
+  // });
+  // restorer.restore(tracker, {
+  //   command: jobWidget_command,
+  //   name: () => 'jobs'
+  // });
 }
 
 function activateMenuOptions(app: JupyterFrontEnd, mainMenu: IMainMenu) {
