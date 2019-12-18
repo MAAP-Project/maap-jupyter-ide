@@ -32,15 +32,33 @@ export class JobWidget extends Widget {
     this.addClass(CONTENT_CLASS);
     this.addClass(WIDGET_CLASS);
 
-    console.log('CHECKING JOB CACHE TYPES');
-    console.log(typeof this.job_cache);
-    console.log(typeof this.job_cache.getTable());
-    this.node.appendChild(this.job_cache.getTable());
+    // console.log('CHECKING JOB CACHE TYPES');
+    // console.log(typeof this.job_cache);
+    // console.log(typeof this.job_cache.getTable());
+    // this.node.appendChild(this.job_cache.getTable());
   }
 
   /* Handle update requests for the widget. */
   update() {
     this.job_cache.update();
+    if (document.getElementById('job-cache-display') != null) {
+      (<HTMLTextAreaElement>document.getElementById('widget-job-cache-display')).innerHTML = this.job_cache.getTable();
+    } else {
+      // create div for table if table doesn't already exist
+      var div = document.createElement('div');
+      div.setAttribute('id', 'widget-job-table');
+      div.setAttribute('resize','none');
+      div.setAttribute('class','jp-JSONEditor-host');
+      div.setAttribute('style','border-style:none;');
+
+      // jobs table
+      var textarea = document.createElement("table");
+      textarea.id = 'widget-job-cache-display';
+      textarea.className = 'jp-JSONEditor-host';
+      textarea.innerHTML = this.job_cache.getTable();
+      div.appendChild(textarea);
+      this.node.appendChild(div);
+    }
   }
 }
 
@@ -52,7 +70,7 @@ export class JobTable extends Widget {
   _jobs: {[k:string]:string};
   _job_id: string;
   _username: string;
-  _html_table: HTMLDivElement;
+  // _html_table: HTMLDivElement;
 
   constructor() {
     super();
@@ -77,7 +95,7 @@ export class JobTable extends Widget {
     this._displays = {};
     this._jobs = {};
     this._job_id = '';
-    this._html_table = document.createElement('div');
+    // this._html_table = document.createElement('div');
     this.addClass(CONTENT_CLASS);
   }
 
@@ -318,7 +336,7 @@ export class JobTable extends Widget {
       me._job_id = job_id;
     }, setDisplays);
 
-    this._html_table = (<HTMLDivElement>document.getElementById('job-cache-display'));
+    // this._html_table = (<HTMLDivElement>document.getElementById('job-cache-display'));
 
   }
 
@@ -424,7 +442,7 @@ export class JobTable extends Widget {
     this._updateDisplay();
   }
 
-  getTable(): HTMLDivElement {
-    return this._html_table;
+  getTable(): string {
+    return this._table;
   }
 }
