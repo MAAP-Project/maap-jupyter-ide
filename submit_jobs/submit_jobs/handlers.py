@@ -873,14 +873,15 @@ class DescribeProcessHandler(IPythonHandler):
 						if tag == 'Input':
 							result += '{}\n'.format(tag)
 							for (tag1,txt1) in txt:
-								result += '\t{tag1}:\t{txt1}\n'.format(tag1=tag1,txt1=txt1)
+								if tag1 != 'Identifier':
+									result += '\t{tag1}:\t{txt1}\n'.format(tag1=tag1,txt1=txt1)
 							result += '\n'
 
 						elif tag == 'Title':
 							txt = txt.split(';')
 							for itm in txt:
 								result += '{}\n'.format(itm.strip())
-						else:
+						elif tag != 'Identifier':
 							result += '{tag}:\t{txt}\n'.format(tag=tag,txt=txt)
 
 				# if no algorithm passed, list all algorithms
