@@ -32,16 +32,13 @@ export class JobWidget extends Widget {
     this.job_cache = jobCache;
     this.addClass(CONTENT_CLASS);
     this.addClass(WIDGET_CLASS);
-
-    // console.log('CHECKING JOB CACHE TYPES');
-    // console.log(typeof this.job_cache);
-    // console.log(typeof this.job_cache.getTable());
-    // this.node.appendChild(this.job_cache.getTable());
   }
 
   /* Handle update requests for the widget. */
   update() {
     this.job_cache.update();
+    this._populateRunJobs();
+
     console.log(this.job_cache.getTable());
     if (document.getElementById(widget_table_name) != null) {
       (<HTMLTextAreaElement>document.getElementById(widget_table_name)).innerHTML = this.job_cache.getTable();
@@ -61,6 +58,153 @@ export class JobWidget extends Widget {
       div.appendChild(textarea);
       this.node.appendChild(div);
     }
+    this.job_cache.setRowClick(widget_table_name);
+  }
+
+  _populateRunJobs() {
+    let runDiv = document.createElement('div');
+    runDiv.id = 'run';
+    runDiv.class = 'tabcontent';
+
+    let runTable = document.createElement('table');
+    runTable.id = 'algorithmrun';
+    runTable.class = 'colPadding';
+    let rbody = <HTMLTableElement> runTable.createTBody();
+    let rrow = <HTMLTableRowElement> runTable.insertRow();
+    
+    let listCell = rrow.insertCell();
+    listCell.id = "algolist";
+    listCell.setAttribute('valign','top;');
+
+    let executeCell = rrow.insertCell();
+    executeCell.id = "execute";
+    executeCell.setAttribute('valign','top;');
+
+    let overviewCell = rrow.insertCell();
+    overviewCell.id = "overview";
+    overviewCell.setAttribute('valign','top;');
+
+    this._populateListCol(listCell);
+    this._populateExecuteCol(executeCell);
+    this._populateOverviewCol(overviewCell);
+  }
+
+  _populateListCol(listCell: HTMLCellElement) {
+    let list_title = document.createElement('h3');
+    list_title.innerText = "Algorithm List";
+    listCell.appendChild(list_title);
+
+    let algolistdiv = document.createElement('div');
+    algolistdiv.id = 'algorithmlist'
+    listCell.appendChild(algolistdiv);
+
+    let algos = Array<string>();
+    algos.push('dps_plot:master');
+    algos.push('hello-world_ubuntu:master');
+    let algolist = document.createElement('table');
+    let ahead = <HTMLTableElement> algolist.createTHead();
+    let abody = <HTMLTableElement> algolist.createTBody();
+    let ahrow = <HTMLTableRowElement> algolist.tHead.insertRow(0);
+    let acell = ahrow.insertCell(0);
+    acell.innerHTML = "<i>Algorithms</i>";
+
+    for (var a of algos) {
+      let arow = <HTMLTableRowElement> algolist.insertRow();
+      acell = arow.insertCell();
+      acell.innerHTML = a;
+    }
+    algolistdiv.appendChild(algolist);
+  }
+
+  _populateExecuteCol(executeCell: HTMLCellElement) {
+    // dummy params list to pull from algo
+    let params = Array<string>();
+    params.push('pass_number');
+    params.push('username');
+
+    let execute_title = document.createElement('h3');
+    execute_title.innerText = "Execute Job";
+    executeCell.appendChild(execute_title);
+    let execute_subtitle = document.createElement('h4');
+    execute_subtitle.innerText = "Inputs";
+    executeCell.appendChild(execute_subtitle);
+
+    let paramdiv = document.createElement('div');
+    paramdiv.id = 'algorithmparams'
+    executeCell.appendChild(paramdiv);
+
+    // inputs TABLE
+    let t = document.createElement('table');
+    let thead = <HTMLTableElement> t.createTHead();
+    let tbody = <HTMLTableElement> t.createTBody();
+    let hrow = <HTMLTableRowElement> t.tHead.insertRow(0);
+    let cell = hrow.insertCell(0);
+    cell.innerHTML = "Parameter";
+    cell = hrow.insertCell(1);
+    cell.innerHTML = "Value";
+
+    // POPULATE ROWS WITH PARAMS
+    for (var i of params){
+      //console.log(i);
+      let inp = document.createElement('input');
+      inp.id = (i+'-input');
+      inp.classList.add(i);
+      
+      let trow = <HTMLTableRowElement> t.insertRow();
+      cell = trow.insertCell();
+      cell.innerHTML = i+':';
+      cell = trow.insertCell();
+      cell.appendChild(inp);
+    }
+
+    // ATTACH TABLE
+    paramdiv.appendChild(t);
+    //console.log(paramdiv);
+
+    // SUBMIT BUTTON
+    let submitBtn = document.createElement('button');
+    submitBtn.id = 'job-execute-button';
+    submitBtn.className = 'execute-button';
+    submitBtn.innerHTML = 'Execute Job';
+    submitBtn.addEventListener('click', function() {
+      for (var i of params) {
+        console.log(i);
+        let name = i+'-input';
+        let val = (<HTMLInputElement>document.getElementById(i+'-input')).value;
+        let p = document.createElement('p');
+        p.innerText = val;
+        paramdiv.appendChild(p);
+      }
+      }, false);
+    let br = document.createElement('br');
+    paramdiv.appendChild(br);
+    paramdiv.appendChild(submitBtn);
+  }
+
+  _populateOverviewCol(overviewCell: HTMLCellElement) {
+    // dummy algo description to pull from algo
+    let describe = `Algorithm: dps_plot
+    Version: master
+    Input
+      Title:  pass_number
+      DataType: string
+
+    Input
+      Title:  timestamp
+      DataType: string
+
+    Input
+      Title:  username
+      DataType: string
+
+    Output: []`
+
+    let overview_title = document.createElement('h3');
+    overview_title.innerText = "Algorithm Overview";
+    overviewCell.appendChild(overview_title);
+    let pre = document.createElement('pre');
+    pre.innerText = describe;
+    overviewCell.appendChild(pre);
   }
 }
 
@@ -72,7 +216,6 @@ export class JobTable extends Widget {
   _jobs: {[k:string]:string};
   _job_id: string;
   _username: string;
-  // _html_table: HTMLDivElement;
 
   constructor() {
     super();
@@ -97,7 +240,6 @@ export class JobTable extends Widget {
     this._displays = {};
     this._jobs = {};
     this._job_id = '';
-    // this._html_table = document.createElement('div');
     this.addClass(CONTENT_CLASS);
   }
 
@@ -191,6 +333,7 @@ export class JobTable extends Widget {
     }
 
     // set display in 2nd callback after making table rows clickable
+    // update/populate jobs table, add delete & dismiss buttons
     let setDisplays = function (me:JobTable){
       // create div for job info section
       // parent for everything, created in table response
@@ -316,30 +459,21 @@ export class JobTable extends Widget {
             div2.appendChild(dismissBtn);
           }
         }
-  
-        // --------------------
-        // _results button
-        // --------------------
-        // if (document.getElementById('job-result-button') == null) {
-        //   let resultBtn = document.createElement('button');
-        //   resultBtn.id = 'job-result-button';
-        //   resultBtn.className = 'jupyter-button';
-        //   resultBtn.innerHTML = 'Get Job Results';
-        //   resultBtn.addEventListener('click', function() {me.getJobResult(me)}, false);
-        //   div2.appendChild(resultBtn);
-        // }
       }
     }
+    // end setDisplays def
 
     // make clickable table rows after setting job table
-    this._onRowClick('job-cache-display', function(row){
+    this.setRowClick('job-cache-display', setDisplays);
+  }
+
+  // set clickable rows
+  setRowClick(div_name, setDisplays) {
+    this._onRowClick(div_name, function(row){
       let job_id = row.getElementsByTagName('td')[0].innerHTML;
       // document.getElementById('click-response').innerHTML = job_id;
       me._job_id = job_id;
     }, setDisplays);
-
-    // this._html_table = (<HTMLDivElement>document.getElementById('job-cache-display'));
-
   }
 
   // clickable table rows helper function
