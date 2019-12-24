@@ -32,12 +32,35 @@ export class JobWidget extends Widget {
     this.job_cache = jobCache;
     this.addClass(CONTENT_CLASS);
     this.addClass(WIDGET_CLASS);
+
+    let job_widget = document.createElement('div');
+    job_widget.id = 'job-widget';
+
+    let tabs = document.createElement('div');
+    tabs.id = 'tab';
+
+    let runTab = document.createElement('button');
+    runTab.setAttribute('id','defaultOpen');
+    runTab.setAttribute('class','tablinks');
+    runTab.innerHTML = 'Run Jobs';
+
+    let infoTab = document.createElement('button');
+    infoTab.setAttribute('class',tablinks);
+    infoTab.innerHTML = 'Job Info';
+
+    tabs.appendChild(runTab);
+    tabs.appendChild(infoTab);
+    job_widget.appendChild(tabs);
+
+    this._populateRunJobs(job_widget);
+    this._populateJobInfo(job_widget);
+
+    this.node.appendChild(job_widget);
   }
 
   /* Handle update requests for the widget. */
   update() {
     this.job_cache.update();
-    this._populateRunJobs();
 
     console.log(this.job_cache.getTable());
     if (document.getElementById(widget_table_name) != null) {
@@ -61,7 +84,7 @@ export class JobWidget extends Widget {
     // this.job_cache.setRowClick(widget_table_name,);
   }
 
-  _populateRunJobs() {
+  _populateRunJobs(job_widget:HTMLDivElement) {
     let runDiv = document.createElement('div');
     runDiv.setAttribute('id','run');
     runDiv.setAttribute('class','tabcontent');
@@ -73,22 +96,22 @@ export class JobWidget extends Widget {
     
     let listCell = rrow.insertCell();
     listCell.setAttribute('id','algolist');
-    listCell.setAttribute('valign','top;');
+    listCell.setAttribute('valign','top');
 
     let executeCell = rrow.insertCell();
     executeCell.setAttribute('id','execute');
-    executeCell.setAttribute('valign','top;');
+    executeCell.setAttribute('valign','top');
 
     let overviewCell = rrow.insertCell();
     overviewCell.setAttribute('id','overview');
-    overviewCell.setAttribute('valign','top;');
+    overviewCell.setAttribute('valign','top');
 
     this._populateListCol(listCell);
     this._populateExecuteCol(executeCell);
     this._populateOverviewCol(overviewCell);
 
     runDiv.appendChild(runTable);
-    this.node.appendChild(runDiv);
+    job_widget.appendChild(runDiv);
   }
 
   _populateListCol(listCell: HTMLTableCellElement) {
@@ -207,6 +230,12 @@ export class JobWidget extends Widget {
     let pre = document.createElement('pre');
     pre.innerText = describe;
     overviewCell.appendChild(pre);
+  }
+
+  _populateJobInfo() {
+    let infoDiv = document.createElement('div');
+    infoDiv.setAttribute('id','info');
+    infoDiv.setAttribute('class','tabcontent');
   }
 }
 
