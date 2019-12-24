@@ -58,30 +58,29 @@ export class JobWidget extends Widget {
       div.appendChild(textarea);
       this.node.appendChild(div);
     }
-    this.job_cache.setRowClick(widget_table_name);
+    // this.job_cache.setRowClick(widget_table_name,);
   }
 
   _populateRunJobs() {
     let runDiv = document.createElement('div');
-    runDiv.id = 'run';
-    runDiv.class = 'tabcontent';
+    runDiv.setAttribute('id','run');
+    runDiv.setAttribute('class','tabcontent');
 
     let runTable = document.createElement('table');
-    runTable.id = 'algorithmrun';
-    runTable.class = 'colPadding';
-    let rbody = <HTMLTableElement> runTable.createTBody();
+    runTable.setAttribute('id','algorithmrun');
+    runTable.setAttribute('class','colPadding');
     let rrow = <HTMLTableRowElement> runTable.insertRow();
     
     let listCell = rrow.insertCell();
-    listCell.id = "algolist";
+    listCell.setAttribute('id','algolist');
     listCell.setAttribute('valign','top;');
 
     let executeCell = rrow.insertCell();
-    executeCell.id = "execute";
+    executeCell.setAttribute('id','execute');
     executeCell.setAttribute('valign','top;');
 
     let overviewCell = rrow.insertCell();
-    overviewCell.id = "overview";
+    overviewCell.setAttribute('id','overview');
     overviewCell.setAttribute('valign','top;');
 
     this._populateListCol(listCell);
@@ -89,7 +88,7 @@ export class JobWidget extends Widget {
     this._populateOverviewCol(overviewCell);
   }
 
-  _populateListCol(listCell: HTMLCellElement) {
+  _populateListCol(listCell: HTMLTableCellElement) {
     let list_title = document.createElement('h3');
     list_title.innerText = "Algorithm List";
     listCell.appendChild(list_title);
@@ -102,8 +101,8 @@ export class JobWidget extends Widget {
     algos.push('dps_plot:master');
     algos.push('hello-world_ubuntu:master');
     let algolist = document.createElement('table');
-    let ahead = <HTMLTableElement> algolist.createTHead();
-    let abody = <HTMLTableElement> algolist.createTBody();
+    <HTMLTableSectionElement> algolist.createTHead();
+    <HTMLTableSectionElement> algolist.createTBody();
     let ahrow = <HTMLTableRowElement> algolist.tHead.insertRow(0);
     let acell = ahrow.insertCell(0);
     acell.innerHTML = "<i>Algorithms</i>";
@@ -116,7 +115,7 @@ export class JobWidget extends Widget {
     algolistdiv.appendChild(algolist);
   }
 
-  _populateExecuteCol(executeCell: HTMLCellElement) {
+  _populateExecuteCol(executeCell: HTMLTableCellElement) {
     // dummy params list to pull from algo
     let params = Array<string>();
     params.push('pass_number');
@@ -135,8 +134,8 @@ export class JobWidget extends Widget {
 
     // inputs TABLE
     let t = document.createElement('table');
-    let thead = <HTMLTableElement> t.createTHead();
-    let tbody = <HTMLTableElement> t.createTBody();
+    <HTMLTableSectionElement> t.createTHead();
+    <HTMLTableSectionElement> t.createTBody();
     let hrow = <HTMLTableRowElement> t.tHead.insertRow(0);
     let cell = hrow.insertCell(0);
     cell.innerHTML = "Parameter";
@@ -170,7 +169,7 @@ export class JobWidget extends Widget {
       for (var i of params) {
         console.log(i);
         let name = i+'-input';
-        let val = (<HTMLInputElement>document.getElementById(i+'-input')).value;
+        let val = (<HTMLInputElement>document.getElementById(name)).value;
         let p = document.createElement('p');
         p.innerText = val;
         paramdiv.appendChild(p);
@@ -181,7 +180,7 @@ export class JobWidget extends Widget {
     paramdiv.appendChild(submitBtn);
   }
 
-  _populateOverviewCol(overviewCell: HTMLCellElement) {
+  _populateOverviewCol(overviewCell: HTMLTableCellElement) {
     // dummy algo description to pull from algo
     let describe = `Algorithm: dps_plot
     Version: master
@@ -469,6 +468,7 @@ export class JobTable extends Widget {
 
   // set clickable rows
   setRowClick(div_name, setDisplays) {
+    let me = this;
     this._onRowClick(div_name, function(row){
       let job_id = row.getElementsByTagName('td')[0].innerHTML;
       // document.getElementById('click-response').innerHTML = job_id;
