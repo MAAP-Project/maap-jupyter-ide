@@ -306,9 +306,7 @@ export function activateJobWidget(app: JupyterFrontEnd, palette: ICommandPalette
     label: 'Jobs Main Widget',
     execute: () => {
       if (!widget) {
-        // Create a new widget if one does not exist
-        // const content = jobsWidget;
-        // widget = new MainAreaWidget({content});
+        console.log('setting widget attr');
         widget = jobsWidget;
         widget.id = 'jobs-main-widget';
         widget.title.label = 'Jobs Main Widget';
@@ -319,6 +317,7 @@ export function activateJobWidget(app: JupyterFrontEnd, palette: ICommandPalette
       //   tracker.add(widget);
       // }
       if (!widget.isAttached) {
+        console.log('attaching widget');
         // Attach the widget to the main work area if it's not there
         app.shell.add(widget, 'main');
       }
