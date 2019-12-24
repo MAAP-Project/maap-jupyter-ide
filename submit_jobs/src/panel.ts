@@ -86,6 +86,9 @@ export class JobWidget extends Widget {
     this._populateListCol(listCell);
     this._populateExecuteCol(executeCell);
     this._populateOverviewCol(overviewCell);
+
+    runDiv.appendChild(runTable);
+    this.node.appendChild(runDiv);
   }
 
   _populateListCol(listCell: HTMLTableCellElement) {
