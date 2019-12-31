@@ -45,7 +45,7 @@ export class JobWidget extends Widget {
     runTab.innerHTML = 'Run Jobs';
 
     let infoTab = document.createElement('button');
-    infoTab.setAttribute('class',tablinks);
+    infoTab.setAttribute('class','tablinks');
     infoTab.innerHTML = 'Job Info';
 
     tabs.appendChild(runTab);
@@ -84,7 +84,7 @@ export class JobWidget extends Widget {
     // this.job_cache.setRowClick(widget_table_name,);
   }
 
-  _populateRunJobs(job_widget:HTMLDivElement) {
+  _populateRunJobs(job_widget: HTMLDivElement) {
     let runDiv = document.createElement('div');
     runDiv.setAttribute('id','run');
     runDiv.setAttribute('class','tabcontent');
@@ -232,10 +232,12 @@ export class JobWidget extends Widget {
     overviewCell.appendChild(pre);
   }
 
-  _populateJobInfo() {
+  _populateJobInfo(job_widget: HTMLDivElement) {
     let infoDiv = document.createElement('div');
     infoDiv.setAttribute('id','info');
     infoDiv.setAttribute('class','tabcontent');
+
+    job_widget.appendChild(infoDiv);
   }
 }
 
