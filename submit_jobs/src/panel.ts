@@ -6,7 +6,7 @@ import { getUserInfo } from "./getKeycloak";
 import { request, RequestResult } from './request';
 // import {  } from "./dialogs";
 
-// const css = require('../style/index.css');
+import '../style/index.css';
 const WIDGET_CLASS = 'p-Widget';
 const CONTENT_CLASS = 'jp-Inspector-content';
 const widget_table_name = 'widget-job-cache-display';
