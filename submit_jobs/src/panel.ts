@@ -39,6 +39,7 @@ export class JobWidget extends Widget {
 
     let tabs = document.createElement('div');
     tabs.id = 'tab';
+    tabs.addClass('tab');
 
     let runTab = document.createElement('button');
     runTab.setAttribute('id','defaultOpen');
