@@ -33,7 +33,7 @@
 }
 
 /* Style tab links */
-.tablink {
+.jp-tablink {
   background-color: #555;
   color: white;
   float: left;
@@ -46,7 +46,7 @@
 }
 
 /* Style the tab content */
-.tabcontent {
+.jp-tabcontent {
   display: none;
   padding: 6px 12px;
   border: 1px solid #ccc;

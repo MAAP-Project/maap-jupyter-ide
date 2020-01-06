@@ -6,7 +6,7 @@ import { getUserInfo } from "./getKeycloak";
 import { request, RequestResult } from './request';
 // import {  } from "./dialogs";
 
-const css = require('../style/index.css');
+// const css = require('../style/index.css');
 const WIDGET_CLASS = 'p-Widget';
 const CONTENT_CLASS = 'jp-Inspector-content';
 const widget_table_name = 'widget-job-cache-display';
@@ -42,13 +42,11 @@ export class JobWidget extends Widget {
 
     let runTab = document.createElement('button');
     runTab.setAttribute('id','defaultOpen');
-    // runTab.setAttribute('class','tablink');
-    runTab.setAttribute('class',css.tablink);
+    runTab.setAttribute('class','jp-tablink');
     runTab.innerHTML = 'Run Jobs';
 
     let infoTab = document.createElement('button');
-    // infoTab.setAttribute('class','tablink');
-    infoTab.setAttribute('class',css.tablink);
+    infoTab.setAttribute('class','jp-tablink');
     infoTab.innerHTML = 'Job Info';
 
     tabs.appendChild(runTab);
@@ -90,8 +88,7 @@ export class JobWidget extends Widget {
   _populateRunJobs(job_widget: HTMLDivElement) {
     let runDiv = document.createElement('div');
     runDiv.setAttribute('id','run');
-    // runDiv.setAttribute('class','tabcontent');
-    runDiv.setAttribute('class',css.tabcontent);
+    runDiv.setAttribute('class','jp-tabcontent');
 
     let runTable = document.createElement('table');
     runTable.setAttribute('id','algorithmrun');
@@ -239,7 +236,7 @@ export class JobWidget extends Widget {
   _populateJobInfo(job_widget: HTMLDivElement) {
     let infoDiv = document.createElement('div');
     infoDiv.setAttribute('id','info');
-    infoDiv.setAttribute('class','tabcontent');
+    infoDiv.setAttribute('class','jp-tabcontent');
 
     job_widget.appendChild(infoDiv);
   }
