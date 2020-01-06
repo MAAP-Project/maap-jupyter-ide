@@ -4,8 +4,9 @@ import { PageConfig } from '@jupyterlab/coreutils'
 import { INotification } from "jupyterlab_toastify";
 import { getUserInfo } from "./getKeycloak";
 import { request, RequestResult } from './request';
-import {  } from "./dialogs";
+// import {  } from "./dialogs";
 
+const css = require('../style/index.css');
 const WIDGET_CLASS = 'p-Widget';
 const CONTENT_CLASS = 'jp-Inspector-content';
 const widget_table_name = 'widget-job-cache-display';
@@ -41,11 +42,13 @@ export class JobWidget extends Widget {
 
     let runTab = document.createElement('button');
     runTab.setAttribute('id','defaultOpen');
-    runTab.setAttribute('class','tablinks');
+    // runTab.setAttribute('class','tablink');
+    runTab.setAttribute('class',css.tablink);
     runTab.innerHTML = 'Run Jobs';
 
     let infoTab = document.createElement('button');
-    infoTab.setAttribute('class','tablinks');
+    // infoTab.setAttribute('class','tablink');
+    infoTab.setAttribute('class',css.tablink);
     infoTab.innerHTML = 'Job Info';
 
     tabs.appendChild(runTab);
@@ -87,7 +90,8 @@ export class JobWidget extends Widget {
   _populateRunJobs(job_widget: HTMLDivElement) {
     let runDiv = document.createElement('div');
     runDiv.setAttribute('id','run');
-    runDiv.setAttribute('class','tabcontent');
+    // runDiv.setAttribute('class','tabcontent');
+    runDiv.setAttribute('class',css.tabcontent);
 
     let runTable = document.createElement('table');
     runTable.setAttribute('id','algorithmrun');
