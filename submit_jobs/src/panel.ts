@@ -131,10 +131,7 @@ export class JobWidget extends Widget {
     let algolistdiv = document.createElement('div');
     algolistdiv.id = 'algorithmlist'
     listCell.appendChild(algolistdiv);
-
-    let algos = Array<string>();
-    algos.push('dps_plot:master');
-    algos.push('hello-world_ubuntu:master');
+    
     let algolist = document.createElement('table');
     <HTMLTableSectionElement> algolist.createTHead();
     <HTMLTableSectionElement> algolist.createTBody();
@@ -142,12 +139,35 @@ export class JobWidget extends Widget {
     let acell = ahrow.insertCell(0);
     acell.innerHTML = "<i>Algorithms</i>";
 
-    for (var a of algos) {
+    // let algos = Array<string>();
+    // algos.push('dps_plot:master');
+    // algos.push('hello-world_ubuntu:master');
+    
+    // get list of algos by request
+    var requestUrl = new URL(PageConfig.getBaseUrl() + 'hysds/listAlgorithms');
+    let insertAlgoRow = function(algo:string) {
+      // new table row per algo
       let arow = <HTMLTableRowElement> algolist.insertRow();
-      acell = arow.insertCell();
-      acell.innerHTML = a;
+        acell = arow.insertCell();
+        acell.innerHTML = algo;
     }
-    algolistdiv.appendChild(algolist);
+
+    console.log(requestUrl.href);
+    // send request
+    request('get',requestUrl.href).then((res: RequestResult) => {
+      if (res.ok) {
+        var json_response:any = res.json();
+        let algo_set = json_response['algo_set'];
+        for (var algo in algo_set) {
+          for (var version of algo_set[algo]) {
+            insertAlgoRow(algo+':'+version);
+          }
+        }
+        algolistdiv.appendChild(algolist);
+      } else {
+        algolistdiv.appendChild(algolist);
+      }
+    }); 
   }
 
   _populateExecuteCol(executeCell: HTMLTableCellElement) {
@@ -216,29 +236,13 @@ export class JobWidget extends Widget {
   }
 
   _populateOverviewCol(overviewCell: HTMLTableCellElement) {
-    // dummy algo description to pull from algo
-    // let describe = `Algorithm: dps_plot
-    // Version: master
-    // Input
-    //   Title:  pass_number
-    //   DataType: string
-
-    // Input
-    //   Title:  timestamp
-    //   DataType: string
-
-    // Input
-    //   Title:  username
-    //   DataType: string
-
-    // Output: []`
     let overview_title = document.createElement('h3');
     overview_title.innerText = "Algorithm Overview";
     overviewCell.appendChild(overview_title);
     let pre = document.createElement('pre');
 
+    // request to get algo description
     var requestUrl = new URL(PageConfig.getBaseUrl() + 'hysds/describeProcess');
-    // add params
     requestUrl.searchParams.append('algo_id', this._algorithm);
     requestUrl.searchParams.append('version', this._version);
 
