@@ -13,6 +13,7 @@ import '../style/index.css';
 const WIDGET_CLASS = 'p-Widget';
 const CONTENT_CLASS = 'jp-Inspector-content';
 const widget_table_name = 'widget-job-cache-display';
+const algo_list_id = 'algo-list-table';
 // primitive text panel for storing submitted job information
 export class JobPanel extends Panel{
   job_cache: JobTable;
@@ -90,6 +91,13 @@ export class JobWidget extends Widget {
       div.appendChild(textarea);
       this.node.appendChild(div);
     }
+
+    // update execute, overview when algo chosen
+    this._updateListCol();
+    this._updateExecuteCol();
+    this._updateOverviewCol();
+    // update jobinfo when job chosen
+
     // this.job_cache.setRowClick(widget_table_name,);
   }
 
@@ -104,56 +112,65 @@ export class JobWidget extends Widget {
     let rrow = <HTMLTableRowElement> runTable.insertRow();
     
     let listCell = rrow.insertCell();
-    listCell.setAttribute('id','algolist');
+    listCell.setAttribute('id','cell-algolist');
     listCell.setAttribute('valign','top');
 
     let executeCell = rrow.insertCell();
-    executeCell.setAttribute('id','execute');
+    executeCell.setAttribute('id','cell-execute');
     executeCell.setAttribute('valign','top');
 
     let overviewCell = rrow.insertCell();
-    overviewCell.setAttribute('id','overview');
+    overviewCell.setAttribute('id','cell-overview');
     overviewCell.setAttribute('valign','top');
 
-    this._populateListCol(listCell);
-    this._populateExecuteCol(executeCell);
-    this._populateOverviewCol(overviewCell);
+    this._updateListCol();
+    this._updateExecuteCol();
+    this._updateOverviewCol();
 
     runDiv.appendChild(runTable);
     job_widget.appendChild(runDiv);
   }
 
-  _populateListCol(listCell: HTMLTableCellElement) {
-    let list_title = document.createElement('h3');
-    list_title.innerText = "Algorithm List";
-    listCell.appendChild(list_title);
+  _updateListCol() {
+    let listCell = <HTMLTableCellElement> document.getElementById('cell-algolist');
+    if (document.getElementById('algo-list-header') == null) {
+      let list_title = document.createElement('h3');
+      list_title.id = 'algo-list-header';
+      list_title.innerText = "Algorithm List";
+      listCell.appendChild(list_title);
+    }
 
-    let algolistdiv = document.createElement('div');
-    algolistdiv.id = 'algorithmlist'
-    listCell.appendChild(algolistdiv);
-    
-    let algolist = document.createElement('table');
-    <HTMLTableSectionElement> algolist.createTHead();
-    <HTMLTableSectionElement> algolist.createTBody();
-    let ahrow = <HTMLTableRowElement> algolist.tHead.insertRow(0);
-    let acell = ahrow.insertCell(0);
-    acell.innerHTML = "<i>Algorithms</i>";
+    if (document.getElementById('algo-list-div') == null) {
+      let algolistdiv = document.createElement('div');
+      algolistdiv.id = 'algo-list-div'
+      listCell.appendChild(algolistdiv);
+      
+      let algolist = document.createElement('table');
+      algolist.id = algo_list_id;
+      algolistdiv.appendChild(algolist);
 
-    // let algos = Array<string>();
-    // algos.push('dps_plot:master');
-    // algos.push('hello-world_ubuntu:master');
-    
+      <HTMLTableSectionElement> algolist.createTHead();
+      <HTMLTableSectionElement> algolist.createTBody();
+      let ahrow = <HTMLTableRowElement> algolist.tHead.insertRow(0);
+      let acell = ahrow.insertCell(0);
+      acell.innerHTML = "<i>Algorithms</i>";
+      this._populateListTable();
+    } else {
+      this._populateListTable();
+    }
+  }
+
+  _populateListTable() {
+    let algolist = <HTMLTableElement> document.getElementById(algo_list_id);
     // get list of algos by request
     var requestUrl = new URL(PageConfig.getBaseUrl() + 'hysds/listAlgorithms');
     let insertAlgoRow = function(algo:string) {
       // new table row per algo
       let arow = <HTMLTableRowElement> algolist.insertRow();
-        acell = arow.insertCell();
+        let acell = arow.insertCell();
         acell.innerHTML = algo;
     }
-
     console.log(requestUrl.href);
-    // send request
     request('get',requestUrl.href).then((res: RequestResult) => {
       if (res.ok) {
         var json_response:any = res.json();
@@ -163,101 +180,139 @@ export class JobWidget extends Widget {
             insertAlgoRow(algo+':'+version);
           }
         }
-        algolistdiv.appendChild(algolist);
-      } else {
-        algolistdiv.appendChild(algolist);
       }
-    }); 
+    });
   }
 
-  _populateExecuteCol(executeCell: HTMLTableCellElement) {
+  _updateExecuteCol() {
+    let executeCell = <HTMLTableCellElement> document.getElementById('cell-execute');
     // dummy params list to pull from algo
-    let params = Array<string>();
-    params.push('pass_number');
-    params.push('username');
+    // let params = Array<string>();
+    // params.push('pass_number');
+    // params.push('username');
 
-    let execute_title = document.createElement('h3');
-    execute_title.innerText = "Execute Job";
-    executeCell.appendChild(execute_title);
-    let execute_subtitle = document.createElement('h4');
-    execute_subtitle.innerText = "Inputs";
-    executeCell.appendChild(execute_subtitle);
-
-    let paramdiv = document.createElement('div');
-    paramdiv.id = 'algorithmparams'
-    executeCell.appendChild(paramdiv);
-
-    // inputs TABLE
-    let t = document.createElement('table');
-    <HTMLTableSectionElement> t.createTHead();
-    <HTMLTableSectionElement> t.createTBody();
-    let hrow = <HTMLTableRowElement> t.tHead.insertRow(0);
-    let cell = hrow.insertCell(0);
-    cell.innerHTML = "Parameter";
-    cell = hrow.insertCell(1);
-    cell.innerHTML = "Value";
-
-    // POPULATE ROWS WITH PARAMS
-    for (var i of params){
-      //console.log(i);
-      let inp = document.createElement('input');
-      inp.id = (i+'-input');
-      inp.classList.add(i);
-      
-      let trow = <HTMLTableRowElement> t.insertRow();
-      cell = trow.insertCell();
-      cell.innerHTML = i+':';
-      cell = trow.insertCell();
-      cell.appendChild(inp);
+    if (document.getElementById('execute-header') == null) {
+      let execute_title = document.createElement('h3');
+      execute_title.id = 'execute-header';
+      execute_title.innerText = "Execute Job";
+      executeCell.appendChild(execute_title);
     }
 
-    // ATTACH TABLE
-    paramdiv.appendChild(t);
-    //console.log(paramdiv);
+    if (document.getElementById('execute-subheader') == null) {
+      let execute_subtitle = document.createElement('h4');
+      execute_subtitle.id = 'execute-subheader';
+      execute_subtitle.innerText = "Inputs";
+      executeCell.appendChild(execute_subtitle);
+    }
 
-    // SUBMIT BUTTON
-    let submitBtn = document.createElement('button');
-    submitBtn.id = 'job-execute-button';
-    submitBtn.className = 'execute-button';
-    submitBtn.innerHTML = 'Execute Job';
-    submitBtn.addEventListener('click', function() {
-      for (var i of params) {
-        console.log(i);
-        let name = i+'-input';
-        let val = (<HTMLInputElement>document.getElementById(name)).value;
-        let p = document.createElement('p');
-        p.innerText = val;
-        paramdiv.appendChild(p);
-      }
-      }, false);
-    let br = document.createElement('br');
-    paramdiv.appendChild(br);
-    paramdiv.appendChild(submitBtn);
+    if (document.getElementById('execute-params-div') == null) {
+      let paramdiv = document.createElement('div');
+      paramdiv.id = 'execute-params-div'
+      executeCell.appendChild(paramdiv);
+
+      // inputs TABLE
+      let t = document.createElement('table');
+      t.id = 'execute-params-table';
+      paramdiv.appendChild(t);
+
+      <HTMLTableSectionElement> t.createTHead();
+      <HTMLTableSectionElement> t.createTBody();
+      let hrow = <HTMLTableRowElement> t.tHead.insertRow(0);
+      let cell = hrow.insertCell(0);
+      cell.innerHTML = "<i>Parameter</i>";
+      cell = hrow.insertCell(1);
+      cell.innerHTML = "<i>Value</i>";
+
+      // SUBMIT BUTTON
+      let submitBtn = document.createElement('button');
+      submitBtn.id = 'job-execute-button';
+      submitBtn.className = 'execute-button';
+      submitBtn.innerHTML = 'Execute Job';
+      let br = document.createElement('br');
+      paramdiv.appendChild(br);
+      paramdiv.appendChild(submitBtn);
+
+      this._populateExecuteTable();
+    } else {
+      this._populateExecuteTable();
+    }
   }
 
-  _populateOverviewCol(overviewCell: HTMLTableCellElement) {
-    let overview_title = document.createElement('h3');
-    overview_title.innerText = "Algorithm Overview";
-    overviewCell.appendChild(overview_title);
-    let pre = document.createElement('pre');
+  _populateExecuteTable() {
+    let paramdiv = <HTMLDivElement> document.getElementById('execute-params-div');
+    let t = <HTMLTableElement> document.getElementById('execute-params-table');
+    let submitBtn = <HTMLButtonElement> document.getElementById('execute-button');
+    // request to get algo params
+    var requestUrl = new URL(PageConfig.getBaseUrl() + 'hysds/describeProcess');
+    requestUrl.searchParams.append('algo_id', this._algorithm);
+    requestUrl.searchParams.append('version', this._version);
+    console.log(requestUrl.href);
+    request('get',requestUrl.href).then((res: RequestResult) => {
+      if (res.ok) {
+        var json_response:any = res.json();
+        let params = json_response['algo_set'];
+        // POPULATE ROWS WITH PARAMS
+        for (var i of params){
+          let inp = document.createElement('input');
+          inp.id = (i+'-input');
+          inp.classList.add(i);
+          
+          let trow = <HTMLTableRowElement> t.insertRow();
+          let cell = trow.insertCell();
+          cell.innerHTML = i+':';
+          cell = trow.insertCell();
+          cell.appendChild(inp);
+        }
+        // Reset submit button to use new params list
+        submitBtn.addEventListener('click', function() {
+        for (var i of params) {
+          console.log(i);
+          let name = i+'-input';
+          let val = (<HTMLInputElement>document.getElementById(name)).value;
+          let p = document.createElement('p');
+          p.innerText = val;
+          paramdiv.appendChild(p);
+        }
+        }, false);
+      }
+    });
+  }
 
+  _updateOverviewCol() {
+    let overviewCell = <HTMLTableCellElement> document.getElementById('cell-overview');
+    if (document.getElementById('algo-describe-header') == null) {
+      let overview_title = document.createElement('h3');
+      overview_title.id = 'algo-describe-header';
+      overview_title.innerText = "Algorithm Overview";
+      overviewCell.appendChild(overview_title);
+    }
+
+    if (document.getElementById('algo-describe-div') == null) {
+      let prediv = document.createElement('div');
+      prediv.id = 'algo-describe-div';
+      overviewCell.appendChild(prediv);
+
+      let pre = document.createElement('pre');
+      pre.id = 'algo-describe-pre';
+      prediv.appendChild(pre);
+      this._populateOverviewCol()
+    }
+  }
+
+  _populateOverviewCol() {
+    let pre = <HTMLPreElement> document.getElementById('algo-describe-pre');
     // request to get algo description
     var requestUrl = new URL(PageConfig.getBaseUrl() + 'hysds/describeProcess');
     requestUrl.searchParams.append('algo_id', this._algorithm);
     requestUrl.searchParams.append('version', this._version);
-
     console.log(requestUrl.href);
-    // send request
     request('get',requestUrl.href).then((res: RequestResult) => {
       if (res.ok) {
         var json_response:any = res.json();
         let describe = json_response['result'];
         pre.innerText = describe;
-        overviewCell.appendChild(pre);
-      } else {
-        overviewCell.appendChild(pre);
       }
-    }); 
+    });
   }
 
   _populateJobInfo(job_widget: HTMLDivElement) {
