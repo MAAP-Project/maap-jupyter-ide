@@ -875,7 +875,8 @@ class DescribeProcessHandler(IPythonHandler):
 							for (tag1,txt1) in txt:
 								if tag1 != 'Identifier':
 									result += '\t{tag1}:\t{txt1}\n'.format(tag1=tag1,txt1=txt1)
-									algo_lst.append(tag1);
+									if tag1 == 'Title:':
+										algo_lst.append(txt1);
 							result += '\n'
 
 						elif tag == 'Title':
