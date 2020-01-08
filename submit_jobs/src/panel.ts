@@ -6,7 +6,7 @@ import { Widget, Panel } from '@phosphor/widgets';
 import { INotification } from "jupyterlab_toastify";
 import { getUserInfo } from "./getKeycloak";
 import { request, RequestResult } from './request';
-import { activateMenuOptions } from './funcs';
+import { activateMenuOptions, inputRequestAwait } from './funcs';
 // import {  } from "./dialogs";
 import '../style/index.css';
 
@@ -215,28 +215,32 @@ export class JobWidget extends Widget {
 
   _populateOverviewCol(overviewCell: HTMLTableCellElement) {
     // dummy algo description to pull from algo
-    let describe = `Algorithm: dps_plot
-    Version: master
-    Input
-      Title:  pass_number
-      DataType: string
+    // let describe = `Algorithm: dps_plot
+    // Version: master
+    // Input
+    //   Title:  pass_number
+    //   DataType: string
 
-    Input
-      Title:  timestamp
-      DataType: string
+    // Input
+    //   Title:  timestamp
+    //   DataType: string
 
-    Input
-      Title:  username
-      DataType: string
+    // Input
+    //   Title:  username
+    //   DataType: string
 
-    Output: []`
+    // Output: []`
+    let describe = '';
+    inputRequestAwait('describeProcess',{'algo_id':'dps_plot','version':'master'}).then((json_response) => {
+      describe = json_response['result'];
+      let overview_title = document.createElement('h3');
+      overview_title.innerText = "Algorithm Overview";
+      overviewCell.appendChild(overview_title);
+      let pre = document.createElement('pre');
+      pre.innerText = describe;
+      overviewCell.appendChild(pre);
+    });
 
-    let overview_title = document.createElement('h3');
-    overview_title.innerText = "Algorithm Overview";
-    overviewCell.appendChild(overview_title);
-    let pre = document.createElement('pre');
-    pre.innerText = describe;
-    overviewCell.appendChild(pre);
   }
 
   _populateJobInfo(job_widget: HTMLDivElement) {
