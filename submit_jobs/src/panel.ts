@@ -62,9 +62,8 @@ export class JobWidget extends Widget {
     tabs.appendChild(infoTab);
     job_widget.appendChild(tabs);
 
-    // this._updateListCol();
-    // this._updateExecuteCol();
-    // this._updateOverviewCol();
+    this._populateRunJobs(job_widget);
+    this._populateJobInfo(job_widget);
 
     this.node.appendChild(job_widget);
   }
