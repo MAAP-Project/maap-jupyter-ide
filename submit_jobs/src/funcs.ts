@@ -361,25 +361,6 @@ export function inputRequest(endpt:string,title:string,inputs:{[k:string]:string
   }); 
 }
 
-export function inputRequestAwait(endpt:string,inputs:{[k:string]:string}) : any{
-  var requestUrl = new URL(PageConfig.getBaseUrl() + 'hysds/' + endpt);
-  // add params
-  for (let key in inputs) {
-    var fieldValue = inputs[key].toLowerCase();
-    requestUrl.searchParams.append(key.toLowerCase(), fieldValue);
-  }
-  console.log(requestUrl.href);
-  // send request
-  request('get',requestUrl.href).then((res: RequestResult) => {
-    if (res.ok) {
-      var json_response:any = res.json();
-      return json_response;
-    } else {
-      return {};
-    }
-  }); 
-}
-
 // HySDS endpoints that don't require any inputs
 function noInputRequest(endpt:string,title:string) {
   inputRequest(endpt,title,{});

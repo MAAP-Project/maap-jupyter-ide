@@ -6,7 +6,7 @@ import { Widget, Panel } from '@phosphor/widgets';
 import { INotification } from "jupyterlab_toastify";
 import { getUserInfo } from "./getKeycloak";
 import { request, RequestResult } from './request';
-import { activateMenuOptions, inputRequestAwait } from './funcs';
+import { activateMenuOptions } from './funcs';
 // import {  } from "./dialogs";
 import '../style/index.css';
 
@@ -31,13 +31,15 @@ export class JobPanel extends Panel{
 export class JobWidget extends Widget {
   job_cache: JobTable;
   _algorithm: string;
+  _version: string;
 
   constructor(jobCache: JobTable) {
     super();
     this.job_cache = jobCache;
     this.addClass(CONTENT_CLASS);
     this.addClass(WIDGET_CLASS);
-    this._algorithm = '';
+    this._algorithm = 'dps_plot';
+    this._version = 'master'
 
     let job_widget = document.createElement('div');
     job_widget.id = 'job-widget';
@@ -230,17 +232,28 @@ export class JobWidget extends Widget {
     //   DataType: string
 
     // Output: []`
-    let describe = '';
-    inputRequestAwait('describeProcess',{'algo_id':'dps_plot','version':'master'}).then((json_response) => {
-      describe = json_response['result'];
-      let overview_title = document.createElement('h3');
-      overview_title.innerText = "Algorithm Overview";
-      overviewCell.appendChild(overview_title);
-      let pre = document.createElement('pre');
-      pre.innerText = describe;
-      overviewCell.appendChild(pre);
-    });
+    let overview_title = document.createElement('h3');
+    overview_title.innerText = "Algorithm Overview";
+    overviewCell.appendChild(overview_title);
+    let pre = document.createElement('pre');
 
+    var requestUrl = new URL(PageConfig.getBaseUrl() + 'hysds/describeProcess');
+    // add params
+    requestUrl.searchParams.append('algo_id', this._algorithm);
+    requestUrl.searchParams.append('version', this._version);
+
+    console.log(requestUrl.href);
+    // send request
+    request('get',requestUrl.href).then((res: RequestResult) => {
+      if (res.ok) {
+        var json_response:any = res.json();
+        let describe = json_response['result'];
+        pre.innerText = describe;
+        overviewCell.appendChild(pre);
+      } else {
+        overviewCell.appendChild(pre);
+      }
+    }); 
   }
 
   _populateJobInfo(job_widget: HTMLDivElement) {
