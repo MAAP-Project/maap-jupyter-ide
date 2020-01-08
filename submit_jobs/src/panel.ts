@@ -1,12 +1,15 @@
-import { Widget, Panel } from '@phosphor/widgets';
-import { Dialog, showDialog } from '@jupyterlab/apputils';
+import { ILayoutRestorer, JupyterFrontEnd } from '@jupyterlab/application';
+import { MainAreaWidget, ICommandPalette, Dialog, showDialog } from '@jupyterlab/apputils';
 import { PageConfig } from '@jupyterlab/coreutils'
+import { IMainMenu } from '@jupyterlab/mainmenu';
+import { Widget, Panel } from '@phosphor/widgets';
 import { INotification } from "jupyterlab_toastify";
 import { getUserInfo } from "./getKeycloak";
 import { request, RequestResult } from './request';
+import { activateMenuOptions } from './funcs';
 // import {  } from "./dialogs";
-
 import '../style/index.css';
+
 const WIDGET_CLASS = 'p-Widget';
 const CONTENT_CLASS = 'jp-Inspector-content';
 const widget_table_name = 'widget-job-cache-display';
@@ -27,12 +30,14 @@ export class JobPanel extends Panel{
 
 export class JobWidget extends Widget {
   job_cache: JobTable;
+  _algorithm: string;
 
   constructor(jobCache: JobTable) {
     super();
     this.job_cache = jobCache;
     this.addClass(CONTENT_CLASS);
     this.addClass(WIDGET_CLASS);
+    this._algorithm = '';
 
     let job_widget = document.createElement('div');
     job_widget.id = 'job-widget';
@@ -43,11 +48,11 @@ export class JobWidget extends Widget {
 
     let runTab = document.createElement('button');
     runTab.setAttribute('id','defaultOpen');
-    runTab.setAttribute('class','jp-tablink');
+    runTab.setAttribute('class','tablink');
     runTab.innerHTML = 'Run Jobs';
 
     let infoTab = document.createElement('button');
-    infoTab.setAttribute('class','jp-tablink');
+    infoTab.setAttribute('class','tablink');
     infoTab.innerHTML = 'Job Info';
 
     tabs.appendChild(runTab);
@@ -617,4 +622,86 @@ export class JobTable extends Widget {
   getTable(): string {
     return this._table;
   }
+}
+
+// -------------------------------------------------------------
+// -------------------------------------------------------------
+// reference to jobsTable passed through each submit_job widget (NO LONGER)
+export const jobsTable = new JobTable();
+jobsTable.update();
+export const jobsPanel = new JobPanel(jobsTable);
+let content = new JobWidget(jobsTable);
+const jobsWidget = new MainAreaWidget({content});
+// -------------------------------------------------------------
+// panel widget activation
+const jobCache_update_command = 'jobs: list';
+const jobWidget_command = 'jobs: main-widget';
+
+export function activateJobPanel(app: JupyterFrontEnd, palette: ICommandPalette, mainMenu: IMainMenu): void{
+  var infoPanel = jobsPanel;
+  infoPanel.id = 'job-cache-display';
+  infoPanel.title.label = 'Jobs';
+  infoPanel.title.caption = 'jobs sent to DPS';
+
+  // app.shell.addToLeftArea(infoPanel, {rank:300});
+  app.shell.add(infoPanel, 'left', {rank: 300});
+
+  app.commands.addCommand(jobCache_update_command, {
+    label: 'Refresh Job List',
+    isEnabled: () => true,
+    execute: args => {
+      infoPanel.update();
+    }
+  });
+  palette.addItem({command: jobCache_update_command, category: 'DPS/MAS'});
+  // jobsTable.updateDisplay();
+  console.log('HySDS JobList is activated!');
+
+  activateMenuOptions(app,mainMenu);
+}
+export function activateJobWidget(app: JupyterFrontEnd, palette: ICommandPalette, restorer: ILayoutRestorer) {
+  console.log('JupyterLab extension jupyterlab_apod is activated!');
+
+  // Declare a widget variable
+  // let widget: MainAreaWidget<JobWidget>;
+  let widget: MainAreaWidget<JobWidget>;
+
+  // Add an application command
+  app.commands.addCommand(jobWidget_command, {
+    label: 'Jobs Main Widget',
+    execute: () => {
+      if (!widget) {
+        console.log('setting widget attr');
+        widget = jobsWidget;
+        widget.id = 'jobs-main-widget';
+        widget.title.label = 'Jobs Main Widget';
+        widget.title.closable = true;
+      }
+      // if (!tracker.has(widget)) {
+      //   // Track the state of the widget for later restoration
+      //   tracker.add(widget);
+      // }
+      if (!widget.isAttached) {
+        console.log('attaching widget');
+        // Attach the widget to the main work area if it's not there
+        app.shell.add(widget, 'main');
+      }
+      widget.content.update();
+
+      // Activate the widget
+      app.shell.activateById(widget.id);
+    }
+  });
+
+  // Add the command to the palette.
+  palette.addItem({command: jobWidget_command, category: '!Tutorial' });
+
+  // Track and restore the widget state
+  // let tracker = new WidgetTracker<MainAreaWidget<JobWidget>>({
+  //   namespace: 'jobs'
+  // });
+  // restorer.restore(tracker, {
+  //   command: jobWidget_command,
+  //   name: () => 'jobs'
+  // });
 }

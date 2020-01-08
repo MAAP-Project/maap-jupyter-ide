@@ -3,7 +3,7 @@ import { PageConfig } from '@jupyterlab/coreutils'
 import { INotification } from "jupyterlab_toastify";
 import { getUserInfo } from "./getKeycloak";
 import { request, RequestResult } from './request';
-import { JobPanel } from './panel';
+import { jobsPanel, JobPanel } from './panel';
 import { popupResult, popupTitle } from "./dialogs";
 // import * as $ from "jquery";
 // import { format } from "xml-formatter";
@@ -28,7 +28,7 @@ export class InputWidget extends Widget {
   _jobsPanel: JobPanel;                   // for execute
   _ins_dict: {[k:string]:string};          // for execute
 
-  constructor(req:string, methodFields:string[],uname:string, panel:JobPanel, defaultValues:Object,skipInputs?:boolean) {
+  constructor(req:string, methodFields:string[],uname:string, defaultValues:Object,skipInputs?:boolean) {
     let body = document.createElement('div');
     body.style.display = 'flex';
     body.style.flexDirection = 'column';
@@ -54,7 +54,7 @@ export class InputWidget extends Widget {
     this.fields = methodFields;
     this._responseText = "";
     this._getInputs = false;
-    this._jobsPanel = panel;
+    this._jobsPanel = jobsPanel;
     this._ins_dict = {};
 
     switch (req) {
@@ -188,7 +188,7 @@ export class InputWidget extends Widget {
       (<HTMLDivElement>document.getElementById('result-text')).innerHTML = "<pre>" + this._responseText + "</pre>";
     } else {
       // console.log('create textarea');
-      popupResultText(this._responseText,this._jobsPanel,autoUpdate.includes(this.req),"Results",(!nonXML.includes(this.req)));
+      popupResultText(this._responseText,autoUpdate.includes(this.req),"Results",(!nonXML.includes(this.req)));
     }
   }
 
@@ -369,8 +369,8 @@ export class RegisterWidget extends InputWidget {
   configPath: string;
   // nbPath: string;
 
-  constructor(methodFields:string[],uname:string,panel:JobPanel,defaultValues:Object,subtext?:string,configPath?:string) {
-    super('register', methodFields,uname,panel,defaultValues,true);
+  constructor(methodFields:string[],uname:string,defaultValues:Object,subtext?:string,configPath?:string) {
+    super('register', methodFields,uname,defaultValues,true);
     this.configPath = configPath;
 
 
@@ -493,9 +493,9 @@ export class WidgetResult extends Widget {
   updateCache: boolean;
   okfn: any;
 
-  constructor(b: any, cache: JobPanel, updateCache: boolean,fn?:undefined) {
+  constructor(b: any, updateCache: boolean,fn?:undefined) {
     super({node: b});
-    this.cache = cache;
+    this.cache = jobsPanel;
     this.updateCache = updateCache;
     this.okfn = fn;
   }
@@ -523,7 +523,7 @@ export class WidgetResult extends Widget {
 }
 
 // here because import dependencies of JobPanel(panel.ts),popupResult(dialog.ts), WidgetResult(widget.ts)
-export function popupResultText(result:string,cache:JobPanel,update:boolean,title:string,fn?:any,isXML?:boolean) {
+export function popupResultText(result:string,update:boolean,title:string,fn?:any,isXML?:boolean) {
   let body = document.createElement('div');
   body.style.display = 'flex';
   body.style.flexDirection = 'column';
@@ -547,7 +547,7 @@ export function popupResultText(result:string,cache:JobPanel,update:boolean,titl
   }
   body.appendChild(textarea);
   // console.log(body);
-  popupResult(new WidgetResult(body,cache,update,fn),title);
+  popupResult(new WidgetResult(body,update,fn),title);
 }
 
 // here because import dependencies of JobPanel(panel.ts),popupResult(dialog.ts), WidgetResult(widget.ts)
@@ -568,6 +568,6 @@ export function popupText(result:string,title:string,fn?:any) {
   if (fn == undefined) {
     popupTitle(new Widget({node:body}),title);
   } else {
-    popupTitle(new WidgetResult(body,undefined,false,fn),title);
+    popupTitle(new WidgetResult(body,false,fn),title);
   }
 }

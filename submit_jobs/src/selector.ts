@@ -3,7 +3,7 @@ import { PageConfig } from '@jupyterlab/coreutils'
 import { request, RequestResult } from './request';
 import { InputWidget, RegisterWidget } from './widgets';
 import { getAlgorithms, getDefaultValues, inputRequest } from './funcs';
-import { JobPanel } from './panel';
+import { jobsPanel, JobPanel } from './panel';
 import { popup, popupResult } from "./dialogs";
 
 // popup helper for register to select project
@@ -15,11 +15,11 @@ export class ProjectSelector extends Widget {
   public selection:string;
   _dropdown:HTMLSelectElement;
 
-  constructor(type,fields,uname,jobs_panel) {
+  constructor(type,fields,uname) {
     super();
     this._fields = fields;
     this._username = uname;
-    this._jobsPanel = jobs_panel;
+    this._jobsPanel = jobsPanel;
     this.selection = '';
     this.type = type;
 
@@ -135,7 +135,7 @@ export class ProjectSelector extends Widget {
           console.log('resp');
           var new_fields = resp['ins'] as string[];
           var predefined_fields = resp['old'] as {[k:string]:string};
-          var exec = new InputWidget('execute',new_fields,me._username,me._jobsPanel,{});
+          var exec = new InputWidget('execute',new_fields,me._username,{});
           exec.setPredefinedFields(predefined_fields);
           exec.popupTitle = algo_id+':'+version;
           popup(exec);
@@ -151,7 +151,7 @@ export class ProjectSelector extends Widget {
       getDefaultValues(opt).then((defaultValues) => {
         console.log(defaultValues);
         console.log('create register');
-        let w = new RegisterWidget(this._fields,this._username,this._jobsPanel,defaultValues);
+        let w = new RegisterWidget(this._fields,this._username,defaultValues);
         w.setPredefinedFields(defaultValues);
         console.log(w);
         popup(w);
