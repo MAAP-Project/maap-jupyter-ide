@@ -198,9 +198,9 @@ export class JobWidget extends Widget {
       }
 
       if (document.getElementById('execute-algoname') == null) {
-        let execute_algoname = document.createElement('h4');
+        let execute_algoname = document.createElement('p');
         execute_algoname.id = 'execute-algoname';
-        execute_algoname.innerText = "Algorithm: "+this._algorithm+':'+this._version;
+        execute_algoname.innerText = "<b>Algorithm: </b>    "+this._algorithm+':'+this._version;
         executeCell.appendChild(execute_algoname);
       }
 
@@ -258,9 +258,8 @@ export class JobWidget extends Widget {
       if (res.ok) {
         var json_response:any = res.json();
         // format [[param1,type1],[param2,type2]]
-        let params = json_response['ins'];
         // add username param
-        params.push(['username','string']);
+        let params = json_response['ins'].concat(['username','string']);
         // POPULATE ROWS WITH PARAMS
         for (var i of params){
           // format [param,type] -> param
@@ -282,6 +281,8 @@ export class JobWidget extends Widget {
         // Reset submit button to use new params list
         submitBtn.addEventListener('click', function() {
         for (var i of params) {
+          // format [param,type] -> param
+          i = i[0]
           console.log(i);
           let name = i+'-input';
           let val = (<HTMLInputElement>document.getElementById(name)).value;
