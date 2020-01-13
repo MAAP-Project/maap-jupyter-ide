@@ -39,8 +39,8 @@ export class JobWidget extends Widget {
     this.job_cache = jobCache;
     this.addClass(CONTENT_CLASS);
     this.addClass(WIDGET_CLASS);
-    this._algorithm = 'dps_plot';
-    this._version = 'master'
+    this._algorithm = 'dps_plot';   // FOR TESTING
+    this._version = 'master';       // FOR TESTING
 
     let job_widget = document.createElement('div');
     job_widget.id = 'job-widget';
@@ -242,16 +242,19 @@ export class JobWidget extends Widget {
     let t = <HTMLTableElement> document.getElementById('execute-params-table');
     let submitBtn = <HTMLButtonElement> document.getElementById('execute-button');
     // request to get algo params
-    var requestUrl = new URL(PageConfig.getBaseUrl() + 'hysds/describeProcess');
+    var requestUrl = new URL(PageConfig.getBaseUrl() + 'hysds/executeInputs');
     requestUrl.searchParams.append('algo_id', this._algorithm);
     requestUrl.searchParams.append('version', this._version);
     console.log(requestUrl.href);
     request('get',requestUrl.href).then((res: RequestResult) => {
       if (res.ok) {
         var json_response:any = res.json();
-        let params = json_response['algo_set'];
+        // format [[param1,type1],[param2,type2]]
+        let params = json_response['ins'];
         // POPULATE ROWS WITH PARAMS
         for (var i of params){
+          // format [param,type] -> param
+          i = i[0]
           let inp = document.createElement('input');
           inp.id = (i+'-input');
           inp.classList.add(i);
