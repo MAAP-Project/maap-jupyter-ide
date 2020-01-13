@@ -200,7 +200,7 @@ export class JobWidget extends Widget {
       if (document.getElementById('execute-algoname') == null) {
         let execute_algoname = document.createElement('p');
         execute_algoname.id = 'execute-algoname';
-        execute_algoname.innerText = "<b>Algorithm: </b>    "+this._algorithm+':'+this._version;
+        execute_algoname.innerHTML = '<b>Algorithm: </b>    '+this._algorithm+':'+this._version;
         executeCell.appendChild(execute_algoname);
       }
 
@@ -259,7 +259,7 @@ export class JobWidget extends Widget {
         var json_response:any = res.json();
         // format [[param1,type1],[param2,type2]]
         // add username param
-        let params = json_response['ins'].concat(['username','string']);
+        let params = json_response['ins'].concat([['username','string']]);
         // POPULATE ROWS WITH PARAMS
         for (var i of params){
           // format [param,type] -> param
@@ -287,7 +287,7 @@ export class JobWidget extends Widget {
           let name = i+'-input';
           let val = (<HTMLInputElement>document.getElementById(name)).value;
           let p = document.createElement('p');
-          p.innerText = val;
+          p.innerText = i+': '+val;
           paramdiv.appendChild(p);
         }
         }, false);
