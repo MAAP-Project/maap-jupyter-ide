@@ -29,6 +29,7 @@ export class JobPanel extends Panel{
   }
 }
 
+// MainArea Widget
 export class JobWidget extends Widget {
   job_cache: JobTable;
   _algorithm: string;
@@ -196,6 +197,13 @@ export class JobWidget extends Widget {
         executeCell.appendChild(execute_title);
       }
 
+      if (document.getElementById('execute-algoname') == null) {
+        let execute_algoname = document.createElement('h4');
+        execute_algoname.id = 'execute-algoname';
+        execute_algoname.innerText = "Algorithm: "+this._algorithm+':'+this._version;
+        executeCell.appendChild(execute_algoname);
+      }
+
       if (document.getElementById('execute-subheader') == null) {
         let execute_subtitle = document.createElement('h4');
         execute_subtitle.id = 'execute-subheader';
@@ -240,7 +248,7 @@ export class JobWidget extends Widget {
   _populateExecuteTable() {
     let paramdiv = <HTMLDivElement> document.getElementById('execute-params-div');
     let t = <HTMLTableElement> document.getElementById('execute-params-table');
-    let submitBtn = <HTMLButtonElement> document.getElementById('execute-button');
+    let submitBtn = <HTMLButtonElement> document.getElementById('job-execute-button');
     // request to get algo params
     var requestUrl = new URL(PageConfig.getBaseUrl() + 'hysds/executeInputs');
     requestUrl.searchParams.append('algo_id', this._algorithm);
@@ -251,6 +259,8 @@ export class JobWidget extends Widget {
         var json_response:any = res.json();
         // format [[param1,type1],[param2,type2]]
         let params = json_response['ins'];
+        // add username param
+        params.push(['username','string']);
         // POPULATE ROWS WITH PARAMS
         for (var i of params){
           // format [param,type] -> param
@@ -258,6 +268,10 @@ export class JobWidget extends Widget {
           let inp = document.createElement('input');
           inp.id = (i+'-input');
           inp.classList.add(i);
+          // pre-populate username field
+          if (i == 'username') {
+            inp.value = this.job_cache.getUsername();
+          }
           
           let trow = <HTMLTableRowElement> t.insertRow();
           let cell = trow.insertCell();
@@ -701,6 +715,10 @@ export class JobTable extends Widget {
 
   getTable(): string {
     return this._table;
+  }
+
+  getUsername(): string {
+    return this._username;
   }
 }
 
