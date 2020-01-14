@@ -271,7 +271,7 @@ export function activateMenuOptions(app: JupyterFrontEnd, mainMenu: IMainMenu) {
   dpsMenu.title.label = 'DPS/MAS Operations';
   [
     jobCache_update_command,
-    jobWidget_command,
+    // jobWidget_command,
     capabilities_command,
     listAlgorithm_command,
     registerAlgorithm2_command,
