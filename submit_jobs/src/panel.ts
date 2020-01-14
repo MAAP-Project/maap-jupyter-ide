@@ -758,49 +758,49 @@ export function activateJobPanel(app: JupyterFrontEnd, palette: ICommandPalette,
 
   activateMenuOptions(app,mainMenu);
 }
-export function activateJobWidget(app: JupyterFrontEnd, palette: ICommandPalette, restorer: ILayoutRestorer) {
-  console.log('JupyterLab extension jupyterlab_apod is activated!');
+// export function activateJobWidget(app: JupyterFrontEnd, palette: ICommandPalette, restorer: ILayoutRestorer) {
+//   console.log('JupyterLab extension jupyterlab_apod is activated!');
 
-  // Declare a widget variable
-  // let widget: MainAreaWidget<JobWidget>;
-  let widget: MainAreaWidget<JobWidget>;
+//   // Declare a widget variable
+//   // let widget: MainAreaWidget<JobWidget>;
+//   let widget: MainAreaWidget<JobWidget>;
 
-  // Add an application command
-  app.commands.addCommand(jobWidget_command, {
-    label: 'Jobs Main Widget',
-    execute: () => {
-      if (!widget) {
-        console.log('setting widget attr');
-        widget = jobsWidget;
-        widget.id = 'jobs-main-widget';
-        widget.title.label = 'Jobs Main Widget';
-        widget.title.closable = true;
-      }
-      // if (!tracker.has(widget)) {
-      //   // Track the state of the widget for later restoration
-      //   tracker.add(widget);
-      // }
-      if (!widget.isAttached) {
-        console.log('attaching widget');
-        // Attach the widget to the main work area if it's not there
-        app.shell.add(widget, 'main');
-      }
-      widget.content.update();
+//   // Add an application command
+//   app.commands.addCommand(jobWidget_command, {
+//     label: 'Jobs Main Widget',
+//     execute: () => {
+//       if (!widget) {
+//         console.log('setting widget attr');
+//         widget = jobsWidget;
+//         widget.id = 'jobs-main-widget';
+//         widget.title.label = 'Jobs Main Widget';
+//         widget.title.closable = true;
+//       }
+//       // if (!tracker.has(widget)) {
+//       //   // Track the state of the widget for later restoration
+//       //   tracker.add(widget);
+//       // }
+//       if (!widget.isAttached) {
+//         console.log('attaching widget');
+//         // Attach the widget to the main work area if it's not there
+//         app.shell.add(widget, 'main');
+//       }
+//       widget.content.update();
 
-      // Activate the widget
-      app.shell.activateById(widget.id);
-    }
-  });
+//       // Activate the widget
+//       app.shell.activateById(widget.id);
+//     }
+//   });
 
-  // Add the command to the palette.
-  palette.addItem({command: jobWidget_command, category: '!Tutorial' });
+//   // Add the command to the palette.
+//   palette.addItem({command: jobWidget_command, category: '!Tutorial' });
 
-  // Track and restore the widget state
-  // let tracker = new WidgetTracker<MainAreaWidget<JobWidget>>({
-  //   namespace: 'jobs'
-  // });
-  // restorer.restore(tracker, {
-  //   command: jobWidget_command,
-  //   name: () => 'jobs'
-  // });
-}
+//   // Track and restore the widget state
+//   // let tracker = new WidgetTracker<MainAreaWidget<JobWidget>>({
+//   //   namespace: 'jobs'
+//   // });
+//   // restorer.restore(tracker, {
+//   //   command: jobWidget_command,
+//   //   name: () => 'jobs'
+//   // });
+// }
