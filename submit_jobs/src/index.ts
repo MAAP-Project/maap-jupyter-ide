@@ -1,7 +1,10 @@
 import { JupyterFrontEndPlugin } from '@jupyterlab/application';
 import { ICommandPalette } from '@jupyterlab/apputils';
+import { IFileBrowserFactory } from "@jupyterlab/filebrowser";
 import { ILauncher } from '@jupyterlab/launcher';
-import { activateGetCapabilities, activateDescribe, activateList, activateRegister, activateDeleteAlgorithm, activateExecute, activateGetStatus, activateGetResult, activateDismiss, activateDelete, activateJobCache } from './funcs';
+import { IMainMenu } from '@jupyterlab/mainmenu';
+import { activateGetCapabilities, activateDescribe, activateList, activateRegister, activateRegisterAlgorithm, activateDeleteAlgorithm, activateExecute, activateGetStatus, activateGetResult, activateDismiss, activateDelete } from './funcs'
+import { activateJobPanel, activateJobWidget } from './panel';
 
 const extensionCapabilities: JupyterFrontEndPlugin<void> = {
   id: 'dps-capabilities',
@@ -28,15 +31,22 @@ const extensionList: JupyterFrontEndPlugin<void> = {
 };
 
 const extensionRegister: JupyterFrontEndPlugin<void> = {
-  id: 'dps-register',
+  id: 'mas-register',
   autoStart: true,
   requires: [ICommandPalette],
   optional: [ILauncher],
   activate: activateRegister
 };
 
+const extensionRegisterAlgorithm: JupyterFrontEndPlugin<void> = {
+  id: 'mas-register2',
+  requires: [ICommandPalette, IFileBrowserFactory],
+  autoStart: true,
+  activate: activateRegisterAlgorithm
+};
+
 const extensionDeleteAlgorithm: JupyterFrontEndPlugin<void> = {
-  id: 'dps-algo-delete',
+  id: 'mas-algo-delete',
   autoStart: true,
   requires: [ICommandPalette],
   optional: [ILauncher],
@@ -86,8 +96,15 @@ const extensionDelete: JupyterFrontEndPlugin<void> = {
 const cacheExtension: JupyterFrontEndPlugin<void> = {
   id: 'job-cache-panel',
   autoStart:true,
-  requires: [ICommandPalette],
-  activate: activateJobCache
+  requires: [ICommandPalette,IMainMenu],
+  activate: activateJobPanel
 };
 
-export default [extensionDeleteAlgorithm,extensionRegister,extensionCapabilities,extensionStatus,extensionResult,extensionExecute,extensionDismiss,extensionDelete,extensionDescribe,extensionList, cacheExtension];
+const bigJobsPanel: JupyterFrontEndPlugin<void> = {
+  id: 'jobs-widget',
+  autoStart: false,
+  requires: [ICommandPalette, IMainMenu],
+  activate: activateJobWidget
+};
+
+export default [extensionDeleteAlgorithm,extensionRegister,extensionRegisterAlgorithm,extensionCapabilities,extensionStatus,extensionResult,extensionExecute,extensionDismiss,extensionDelete,extensionDescribe,extensionList, cacheExtension, bigJobsPanel];
