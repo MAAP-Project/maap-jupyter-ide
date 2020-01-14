@@ -7,8 +7,8 @@ from IPython.display import display, HTML
 
 logger = logging.getLogger()
 # logger.setLevel(logging.DEBUG)
-CHE_BASE_URL = 'https://che-k8s.maap.xyz'
-# CHE_BASE_URL = 'https://ade.maap-project.org'
+# CHE_BASE_URL = 'https://che-k8s.maap.xyz'
+CHE_BASE_URL = 'https://ade.maap-project.org'
 
 @magics_class
 class HysdsMagic(Magics):
