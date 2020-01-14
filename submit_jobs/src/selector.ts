@@ -135,6 +135,7 @@ export class ProjectSelector extends Widget {
           console.log('resp');
           var new_fields = resp['ins'] as string[];
           var predefined_fields = resp['old'] as {[k:string]:string};
+          console.log(predefined_fields);
           var exec = new InputWidget('execute',new_fields,me._username,{});
           exec.setPredefinedFields(predefined_fields);
           exec.popupTitle = algo_id+':'+version;

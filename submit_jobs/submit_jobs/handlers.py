@@ -961,7 +961,7 @@ class ExecuteInputsHandler(IPythonHandler):
 			url = BASE_URL+'/mas/algorithm'
 
 		headers = {'Content-Type':'application/json'}
-		# print(url)
+		logging.debug(url)
 
 		r = requests.get(
 			url,
@@ -992,10 +992,10 @@ class ExecuteInputsHandler(IPythonHandler):
 						result += '{identifier}:\t{typ}\n'.format(identifier=identifier,typ=typ)
 					# print(result)
 
-					if result.strip() == '':
-						result = 'Bad Request\nThe provided parameters were\n\talgo_id:{}\n\tversion:{}\n'.format(params['algo_id'],params['version'])
-						self.finish({"status_code": 400, "result": result})
-						return
+					# if len(ins_req) > 0 and result.strip() == '':
+					# 	result = 'Bad Request\nThe provided parameters were\n\talgo_id:{}\n\tversion:{}\n'.format(params['algo_id'],params['version'])
+					# 	self.finish({"status_code": 400, "result": result})
+					# 	return
 
 					logging.debug(params)
 					logging.debug(ins_req)
