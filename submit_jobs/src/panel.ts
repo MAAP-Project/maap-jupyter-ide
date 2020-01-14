@@ -278,18 +278,23 @@ export class JobWidget extends Widget {
           cell = trow.insertCell();
           cell.appendChild(inp);
         }
-        // Reset submit button to use new params list
+        // Set submit button to use new params list
         submitBtn.addEventListener('click', function() {
-        for (var i of params) {
-          // format [param,type] -> param
-          i = i[0]
-          console.log(i);
-          let name = i+'-input';
-          let val = (<HTMLInputElement>document.getElementById(name)).value;
-          let p = document.createElement('p');
-          p.innerText = i+': '+val;
-          paramdiv.appendChild(p);
-        }
+          var requestUrl = new URL(PageConfig.getBaseUrl() + 'hysds/execute');
+          for (let i of params) {
+            // format [param,type] -> param
+            i = i[0]
+            console.log(i);
+            let name = i+'-input';
+            let val = (<HTMLInputElement>document.getElementById(name)).value;
+            // print visually
+            let p = document.createElement('p');
+            p.innerText = i+': '+val;
+            paramdiv.appendChild(p);
+            // add to request
+            requestUrl.searchParams.append(i, val);
+          }
+          console.log(requestUrl);
         }, false);
       }
     });

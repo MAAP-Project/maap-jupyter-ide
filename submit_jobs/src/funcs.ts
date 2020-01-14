@@ -36,7 +36,7 @@ const describeAlgorithm_command = 'hysds: describe-job';
 const listAlgorithm_command = 'hysds: list-algorithms';
 const deleteAlgorithm_command = 'hysds: delete-algorithm';
 const jobCache_update_command = 'jobs: list';
-// const jobWidget_command = 'jobs: main-widget';
+const jobWidget_command = 'jobs: main-widget';
 
 
 export function activateRegister(app: JupyterFrontEnd, 
@@ -271,7 +271,7 @@ export function activateMenuOptions(app: JupyterFrontEnd, mainMenu: IMainMenu) {
   dpsMenu.title.label = 'DPS/MAS Operations';
   [
     jobCache_update_command,
-    // jobWidget_command,
+    jobWidget_command,
     capabilities_command,
     listAlgorithm_command,
     registerAlgorithm2_command,
