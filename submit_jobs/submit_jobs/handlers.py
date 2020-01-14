@@ -9,6 +9,7 @@ import copy
 import sys
 import os
 import logging
+import yaml
 from .fields import getFields
 
 logger = logging.getLogger()
@@ -20,8 +21,9 @@ WORKDIR = FILEPATH+'/..'
 sys.path.append(WORKDIR)
 # USE https when pointing to actual MAAP API server
 #BASE_URL = "http://localhost:5000/api"
-#BASE_URL = "https://api.maap.xyz/api"
-BASE_URL = "https://api.maap-project.org/api"
+BASE_URL = "https://api.maap.xyz/api"
+# BASE_URL = "https://api.maap-project.org/api"
+
 
 # helper to parse out algorithm parameters for execute, describe
 def getParams(node):
@@ -45,16 +47,18 @@ def getProds(node):
 
 # helper to parse out user-defined inputs when registering algorithm
 def parseInputs(popped):
-	a = popped.strip()
-	a = a.replace('\n',';')
-	inputs = [e.split(',') for e in a.split(';')]							# split lines into inputs
-	inputs = [[e.strip().replace(' ','_') for e in e1] for e1 in inputs]	# strip whitespace & replace <space> with _
-	inputs = [e+['false'] if len(e) == 1 else e for e in inputs]			# set false if dl not set
-	inputs = [[e[0],'true'] if e[1].lower() in ['true','download','dl'] else [e[0],'false'] for e in inputs] 	# replace anything not dl=true to false
-	inputs = {e[0]:e[1] for e in inputs}									# convert to dictionary & overwrite duplicate input names
-	# print(a)
-	# print(inputs)
-	return inputs
+	# a = popped.strip()
+	# a = a.replace('\n',';')
+	# inputs = [e.split(',') for e in a.split(';')]							# split lines into inputs
+	# inputs = [[e.strip().replace(' ','_') for e in e1] for e1 in inputs]	# strip whitespace & replace <space> with _
+	# inputs = [e+['false'] if len(e) == 1 else e for e in inputs]			# set false if dl not set
+	# inputs = [[e[0],'true'] if e[1].lower() in ['true','download','dl'] else [e[0],'false'] for e in inputs] 	# replace anything not dl=true to false
+	# inputs = {e[0]:e[1] for e in inputs}									# convert to dictionary & overwrite duplicate input names
+	# # print(a)
+	# # print(inputs)
+	# return inputs
+	p1 = [{e['name']:str(e['download']).lower()} for e in popped] 			# parse {"name":"varname","download":boolean} to {"varname":boolean}, convert boolean to lower
+	return {k: v for d in p1 for k, v in d.items()}							# flatten list of dicts to just 1 dict
 
 # helper to print accepted user-defined inputs when registering algorithm
 def printInputs(resp,inputs):
@@ -92,18 +96,15 @@ def detailed_display(job):
 		result +='	{}: {}\n'.format(i['name'],i['value'])
 	return result
 
+# currently allows repos from both repo.nasa.maap and mas.maap-project
 class RegisterAlgorithmHandler(IPythonHandler):
 	def get(self,**params):
 		# ==================================
 		# Part 1: Parse Required Arguments
 		# ==================================
 		# logging.debug('workdir is '+WORKDIR)
-		fields = ['nb_name','repo_url','version'] + getFields('register')
-		logging.debug('fields')
-		logging.debug(fields)
-
+		fields = ['config_path']
 		params = {}
-		# params['environment'] = 'ubuntu'
 		for f in fields:
 			try:
 				arg = self.get_argument(f.lower(), '').strip()
@@ -112,66 +113,71 @@ class RegisterAlgorithmHandler(IPythonHandler):
 			except:
 				params[f] = ''
 				# logging.debug('no '+f)
-		
-		# print(params)
-		logging.debug('params are')
-		logging.debug(params)
-		nb_name = params['nb_name']
 
-		if params['repo_url'] == '':
-			json_file = WORKDIR+"/submit_jobs/register.json"
-			params.pop('repo_url')
-		else:
-			json_file = WORKDIR+"/submit_jobs/register_url.json"
+		# load register fields from config yaml
+		config = {}
+		os.path.exists(params['config_path'])
+		with open(params['config_path'], 'r') as stream:
+			config = yaml.load(stream)
+
+		logging.debug('fields')
+		logging.debug(fields)
+
+		logging.debug('config params are')
+		logging.debug(config)
+
+		json_file = WORKDIR+"/submit_jobs/register_url.json"
+
+		# only description and inputs are allowed to be empty
+		for f in ['algo_name','version','environment','run_command','repository_url','docker_url']:
+			if config[f] == '':
+				self.finish({"status_code": 412, "result": "Error: Register field {} cannot be empty".format(f)})
+				return
+
+		if not 'inputs' in config.keys():
+			config['inputs']= {}
 
 		# replace spaces in algorithm name
-		params['algo_name'] = params['algo_name'].replace(' ', '_')
+		config['algo_name'] = config['algo_name'].replace(' ', '_')
 
-		# get repo url
-		# proj_path = '/'.join(proj_path.split('/')[:-1])
-		# os.chdir(proj_path)
-		# git_url = subprocess.check_output("git remote get-url origin", shell=True).decode('utf-8').strip()
-		logging.debug('repo url is {}'.format(params['repo_url']))
-		# params['[repo_url]'] = git_url
+		logging.debug('repo url is {}'.format(config['repository_url']))
 
-		# TODO: need way to build registry url instead of hardcoded
-		# user doesn't need to know how to make this parameter
-		if (not ('repo.nasa.maap') in params['repo_url']) or (not ('mas.maap-project') in params[repo_url]):
+		# check if repo is hosted on a MAAP GitLab instance
+		if (not ('repo.nasa.maap') in config['repository_url']) and (not ('mas.maap-project') in config['repository_url']):
 			self.finish({"status_code": 412, "result": "Error: Your git repo is not from a supported host (repo.nasa.maap.xyz or mas.maap-project.org)"})
 			return
-
-		image_name = 'registry.nasa.maap'+(params['repo_url'].split('.git')[0]).split('repo.nasa.maap')[1] # slice off `https://` prefix and `.git` suffix
-		image_tag = 'master'
-		params['docker_url'] = '{}:{}'.format(image_name,image_tag)
-		# params['docker_url'] = os.environ['DOCKERIMAGE_PATH']
-		# params['docker_url'] = 'registry.nasa.maap.xyz/root/dps_plot:master'
-		# params['docker_url'] = 'registry.nasa.maap.xyz/maap-devs/base-images/plant'
 
 		# ==================================
 		# Part 2: Check if User Has Committed
 		# ==================================
-		if nb_name != '':
+		if params['config_path'] != '':
 			# navigate to project directory
-			proj_path = ('/').join(['/projects']+nb_name.split('/')[:-1])
+			# proj_path = ('/').join(['/projects']+params['config_path'].split('/')[:-1])
+			proj_path = ('/').join(params['config_path'].split('/')[:-1])
+			# proj_path = params['config_path']
 			os.chdir(proj_path)
 
 			# get git status
-			git_status_out = subprocess.check_output("git status --porcelain", shell=True).decode("utf-8")
+			git_status_out = subprocess.check_output("git status --branch --porcelain", shell=True).decode("utf-8")
+			logger.debug(git_status_out)
 
 			# is there a git repo?
 			if 'not a git repository' in git_status_out:
 				self.finish({"status_code": 412, "result": "Error: \n{}".format(git_status_out)})
 				return
 
-			git_status = git_status_out.splitlines()
+			git_status = git_status_out.splitlines()[1:]
 			git_status = [e.strip() for e in git_status]
 
 			# filter for unsaved python files
-			unsaved = list(filter(lambda e: ( (e.split('.')[-1] in ['ipynb','py']) and (e[0] in ['M','?']) ), git_status))
-
-			# if there are unsaved python files, user needs to commit
+			unsaved = list(filter(lambda e: ( (e.split('.')[-1] in ['ipynb','py','sh','jl']) and (e[0] in ['M','?']) ), git_status))
 			if len(unsaved) != 0:
 				self.finish({"status_code": 412, "result": "Error: Notebook(s) and/or script(s) have not been committed\n{}".format('\n'.join(unsaved))})
+				return
+
+			git_unpushed = ('[ahead' in git_status_out[0].strip())
+			if git_unpushed:
+				self.finish({"status_code": 412, "result": "Error: Recent commits have not been pushed"})
 				return
 
 		# ==================================
@@ -185,8 +191,8 @@ class RegisterAlgorithmHandler(IPythonHandler):
 			ins_json = f.read()
 
 		# build inputs json		
-		popped = params.pop('inputs')
-		inputs = parseInputs(popped)
+		popped = config.pop('inputs')
+		inputs = parseInputs(popped) if popped != None else {}
 
 		ins = ''
 		for name in inputs.keys():
@@ -194,13 +200,13 @@ class RegisterAlgorithmHandler(IPythonHandler):
 				ins += ins_json.format(field_name=name,dl=inputs[name])
 
 		# print(ins)
-		# add inputs json to params for template substitution
-		params['algo_inputs'] = ins
+		# add inputs json to config for template substitution
+		config['algo_inputs'] = ins
 
 		with open(json_file) as jso:
 			req_json = jso.read()
 
-		req_json = req_json.format(**params)
+		req_json = req_json.format(**config)
 		logging.debug('request is')
 		logging.debug(req_json)
 
@@ -625,7 +631,7 @@ class GetResultHandler(IPythonHandler):
 						lnk = url_lst[-1]
 						url_lst[-1] = '<a href="{}" target="_blank" style="border-bottom: 1px solid #0000ff; color: #0000ff;">{}</a>'.format(lnk,lnk)
 						
-						urls_str = ('<br>	•&nbsp;').join(url_lst)
+						urls_str = '•&nbsp'+('<br>	•&nbsp;').join(url_lst)
 						result += '<tr><td>{}: </td><td style="text-align:left">{}</td></tr>'.format('Locations',urls_str)
 						
 						result += '</tbody>'
@@ -651,7 +657,12 @@ class GetResultHandler(IPythonHandler):
 				self.finish({"status_code": 404, "result": result})
 
 			else:
-				self.finish({"status_code": r.status_code, "result": r.reason})
+				try:
+					rt = ET.fromstring(r.text)
+					result = rt[0][0].text
+					self.finish({"status_code": r.status_code, "result": result})
+				except:
+					self.finish({"status_code": r.status_code, "result": r.reason})
 		except:
 			self.finish({"status_code": 400, "result": "Bad Request"})
 
@@ -862,14 +873,17 @@ class DescribeProcessHandler(IPythonHandler):
 						if tag == 'Input':
 							result += '{}\n'.format(tag)
 							for (tag1,txt1) in txt:
-								result += '\t{tag1}:\t{txt1}\n'.format(tag1=tag1,txt1=txt1)
+								if tag1 != 'Identifier':
+									result += '\t{tag1}:\t{txt1}\n'.format(tag1=tag1,txt1=txt1)
+									if tag1 == 'Title:':
+										algo_lst.append(txt1);
 							result += '\n'
 
 						elif tag == 'Title':
 							txt = txt.split(';')
 							for itm in txt:
 								result += '{}\n'.format(itm.strip())
-						else:
+						elif tag != 'Identifier':
 							result += '{tag}:\t{txt}\n'.format(tag=tag,txt=txt)
 
 				# if no algorithm passed, list all algorithms
@@ -947,7 +961,7 @@ class ExecuteInputsHandler(IPythonHandler):
 			url = BASE_URL+'/mas/algorithm'
 
 		headers = {'Content-Type':'application/json'}
-		# print(url)
+		logging.debug(url)
 
 		r = requests.get(
 			url,
@@ -978,10 +992,10 @@ class ExecuteInputsHandler(IPythonHandler):
 						result += '{identifier}:\t{typ}\n'.format(identifier=identifier,typ=typ)
 					# print(result)
 
-					if result.strip() == '':
-						result = 'Bad Request\nThe provided parameters were\n\talgo_id:{}\n\tversion:{}\n'.format(params['algo_id'],params['version'])
-						self.finish({"status_code": 400, "result": result})
-						return
+					# if len(ins_req) > 0 and result.strip() == '':
+					# 	result = 'Bad Request\nThe provided parameters were\n\talgo_id:{}\n\tversion:{}\n'.format(params['algo_id'],params['version'])
+					# 	self.finish({"status_code": 400, "result": result})
+					# 	return
 
 					logging.debug(params)
 					logging.debug(ins_req)
@@ -1009,12 +1023,11 @@ class ExecuteInputsHandler(IPythonHandler):
 
 class DefaultValuesHandler(IPythonHandler):
 	# inputs: code_path
-	# outputs: repo_url, algo_name, version, run_cmd, dockerfile_path, environment_name
+	# outputs: repository_url, algo_name, version, run_command, docker_url, environment_name
 	def get(self):
 		# ==================================
 		# Part 1: Get Notebook Information Processed in UI
 		# ==================================
-		# fields = ['code_path']
 		fields = getFields('defaultValues')
 
 		params = {}
@@ -1024,7 +1037,6 @@ class DefaultValuesHandler(IPythonHandler):
 				params[f] = arg
 			except:
 				params[f] = ''
-		proj_path = '/projects/'+params['code_path']
 		
 		logging.debug('params are')
 		logging.debug(params)
@@ -1032,10 +1044,11 @@ class DefaultValuesHandler(IPythonHandler):
 		# ==================================
 		# Part 2: Extract Required Register Parameters
 		# ==================================
+		proj_path = '/projects/'+params['code_path']
 		proj_path = '/'.join(proj_path.split('/')[:-1])
 		os.chdir(proj_path)
-		git_url = subprocess.check_output("git remote get-url origin", shell=True).decode('utf-8').strip()
-		print(git_url)
+		repo_url = subprocess.check_output("git remote get-url origin", shell=True).decode('utf-8').strip()
+		# logger.debug(repo_url)
 
 		vals = {}
 		code_path = params['code_path']
@@ -1043,29 +1056,48 @@ class DefaultValuesHandler(IPythonHandler):
 		algo_name = file_name.replace('/',':').replace(' ', '_').replace('"','').replace("'",'')
 		vals['algo_name'] = ('.').join(algo_name.split('.')[:-1])
 
-		# if code_path.split('.')[-1] in ['.py','ipynb']:
-		# 	vals['run_cmd'] = 'python '+code_path
-		# else:
-		# 	vals['run_cmd'] = code_path
-
 		# version is branch name
 		branch_name = subprocess.check_output("git branch | grep '*' | awk '{print $2}'",shell=True).decode('utf-8').strip()
-		# logging.debug('branch name is {}'.format(branch_name))
+		# logging.debug('branch is {}'.format(branch_name))
 		vals['version'] = branch_name
-		vals['repo_url'] = git_url
+		vals['repository_url'] = repo_url
+		# vals['environment'] = os.environ['ENVIRONMENT']
 		vals['environment'] = "ubuntu"
-		# FIX IN DOCKER IMAGE
-		# vals['dockerfile_path'] = os.environ['DOCKERFILE_PATH']
-		# vals['dockerfile_path'] = 'registry.nasa.maap.xyz/root/dps_plot:master'
+		vals['docker_url'] = os.environ['DOCKERIMAGE_PATH']
+		vals['run_cmd'] = params['code_path']
 
-		# outputs: repo_url, algo_name, run_cmd, dockerfile_path, environment_name, branch
-		self.finish({"status_code": 200, "default_values":vals})
+		config_path = proj_path+"/algorithm_config.yaml"
+		prev_config = os.path.exists(config_path)
+		if not prev_config:
+			# read in config template and populate with default values
+			config = ''
+			config_template = WORKDIR+"/submit_jobs/register.yaml"
+			with open(config_template,'r') as infile:
+				config = infile.read()
+				config = config.format(**vals)
 
-class ListUserJobsHandler(IPythonHandler):
+			# output config yaml
+			with open(config_path,'w') as outfile:
+				outfile.write(config)
+
+		logger.debug('vals before reading')
+		logger.debug(vals)
+
+		settings = {}
+		# repopulate vals with current config settings
+		with open(config_path,'r') as stream:
+			settings = yaml.load(stream)
+		
+		logger.debug(settings)
+
+		# outputs: algo_name, version, environment, repository_url, dockerfile_path
+		self.finish({"status_code": 200, "default_values":settings, "config_path":config_path, "previous_config":prev_config})
+
+class ListJobsHandler(IPythonHandler):
 	# inputs: username
 	# outputs: job list, containing job_id, status, algo_id, and inputs
 	def get(self):
-		fields = getFields('listUserJobs')
+		fields = getFields('listJobs')
 
 		params = {}
 		for f in fields:
@@ -1106,6 +1138,8 @@ class ListUserJobsHandler(IPythonHandler):
 					# parse out JobID from response
 					resp = json.loads(r.text)
 					jobs = [parse_job(job) for job in resp['jobs']] 					# parse inputs from string to dict
+					# logger.debug('parsing jobs list')
+					# logger.debug(jobs)
 					jobs = sorted(jobs, key=lambda j: j['timestamp'],reverse=True) 	# sort list of jobs by timestamp (most recent)
 
 					result += '<div id="jobs-div" style="height:100%; width:340px">'
@@ -1155,5 +1189,3 @@ class ListUserJobsHandler(IPythonHandler):
 				self.finish({"status_code": r.status_code, "result": r.reason})
 		except:
 			self.finish({"status_code": 400, "result": "Bad Request"})
-
-

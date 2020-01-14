@@ -7,6 +7,8 @@ from IPython.display import display, HTML
 
 logger = logging.getLogger()
 # logger.setLevel(logging.DEBUG)
+CHE_BASE_URL = 'https://che-k8s.maap.xyz'
+# CHE_BASE_URL = 'https://ade.maap-project.org'
 
 @magics_class
 class HysdsMagic(Magics):
@@ -14,7 +16,6 @@ class HysdsMagic(Magics):
 
     def __init__(self):
         super(HysdsMagic, self).__init__()
-        CHE_BASE_URL = 'https://ade.maap-project.org'
         PREVIEW_URL = os.environ['PREVIEW_URL']
         # self.JUPYTER_SERVER_URL = CHE_BASE_URL+PREVIEW_URL
         self.lk = CHE_BASE_URL+PREVIEW_URL
