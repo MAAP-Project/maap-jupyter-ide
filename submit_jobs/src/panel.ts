@@ -71,6 +71,9 @@ export class JobWidget extends Widget {
 
   /* Handle update requests for the widget. */
   update() {
+    console.log('updating');
+    console.log(me._algorithm);
+    console.log(me._version);
     this.job_cache.update();
 
     console.log(this.job_cache.getTable());
@@ -178,6 +181,7 @@ export class JobWidget extends Widget {
           me._algorithm = algo;
           me._version = version;
           console.log('switching algo to '+algo);
+          console.log('switching algo to '+me._algorithm;
           me.update;
         }
     }
