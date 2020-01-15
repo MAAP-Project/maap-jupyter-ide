@@ -77,7 +77,7 @@ export class JobWidget extends Widget {
     if (document.getElementById(widget_table_name) != null) {
       (<HTMLTextAreaElement>document.getElementById(widget_table_name)).innerHTML = this.job_cache.getTable();
     } else {
-      // create div for table if table doesn't already exist
+      // create div for jobid table if table doesn't already exist
       var div = document.createElement('div');
       div.setAttribute('id', 'widget-job-table');
       div.setAttribute('resize','none');
@@ -185,6 +185,36 @@ export class JobWidget extends Widget {
         }
       }
     });
+
+    // make algo rows clickable
+    this._setAlgoClick(algo_list_id);
+  }
+
+  _setAlgoClick(tableId) {
+    let me = this;
+    this._onRowClick(tableId, function(algoId) {
+      let lst = algoId.split(':');
+      me._algorithm = lst[0];
+      me._version = lst[1];
+    });
+  }
+
+  // clickable table rows helper function
+  _onRowClick(tableId, callback) {
+    let me = this;
+    if (document.getElementById(tableId) != undefined) {
+      let table = document.getElementById(tableId),
+          rows = table.getElementsByTagName('tr'),
+          i;
+      for (i = 1; i < rows.length; i++) {
+        rows[i].onclick = function(row) {
+          return function() {
+            callback(row);
+            me.update();
+          }
+        }(rows[i]);
+      }
+    }
   }
 
   _updateExecuteCol() {
@@ -289,7 +319,7 @@ export class JobWidget extends Widget {
         }
         // Set submit button to use new params list
         let submit_fn = function() {
-          let p = '\n';
+          let p = 'Submitted:\n';
           let new_input_list = "";
           var requestUrl = new URL(PageConfig.getBaseUrl() + 'hysds/execute');
           for (let i of params) {
@@ -374,6 +404,9 @@ export class JobWidget extends Widget {
     infoDiv.setAttribute('class','jp-tabcontent');
 
     job_widget.appendChild(infoDiv);
+
+    let infop = document.createElement('p');
+    infop.innerText = "infodiv";
   }
 }
 
@@ -754,6 +787,10 @@ export class JobTable extends Widget {
 
   getUsername(): string {
     return this._username;
+  }
+
+  getJobID(): string{
+    return this._job_id;
   }
 }
 
