@@ -290,6 +290,7 @@ export class JobWidget extends Widget {
         // Set submit button to use new params list
         submitBtn.addEventListener('click', function() {
           let p = '\n';
+          let new_input_list = "";
           var requestUrl = new URL(PageConfig.getBaseUrl() + 'hysds/execute');
           for (let i of params) {
             // format [param,type] -> param
@@ -298,13 +299,15 @@ export class JobWidget extends Widget {
             let name = i+'-input';
             let val = (<HTMLInputElement>document.getElementById(name)).value;
             // print visually
-            p = p + i+': '+val+'\n';
+            p = p.concat(i,': ',val,'\n');
+            new_input_list = new_input_list.concat(i,',');
             // add to request
             requestUrl.searchParams.append(i, val);
           }
           inputsp.innerText = p;
           requestUrl.searchParams.append('algo_id', me._algorithm);
           requestUrl.searchParams.append('version', me._version);
+          requestUrl.searchParams.append('inputs', new_input_list);
           // add algo identifier info
           console.log(requestUrl.href);
         }, false);
