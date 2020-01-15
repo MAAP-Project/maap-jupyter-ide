@@ -165,14 +165,21 @@ export class JobWidget extends Widget {
   }
 
   _populateListTable() {
+    let me = this;
     let algolist = <HTMLTableElement> document.getElementById(algo_list_id);
     // get list of algos by request
     var requestUrl = new URL(PageConfig.getBaseUrl() + 'hysds/listAlgorithms');
-    let insertAlgoRow = function(algo:string) {
+    let insertAlgoRow = function(algo:string,version:string) {
       // new table row per algo
       let arow = <HTMLTableRowElement> algolist.insertRow();
         let acell = arow.insertCell();
-        acell.innerHTML = algo;
+        acell.innerHTML = algo+':'+version;
+        arow.onclick = function() {
+          me._algorithm = algo;
+          me._version = version;
+          console.log('switching algo to '+algo);
+          me.update;
+        }
     }
     console.log(requestUrl.href);
     request('get',requestUrl.href).then((res: RequestResult) => {
@@ -181,14 +188,14 @@ export class JobWidget extends Widget {
         let algo_set = json_response['algo_set'];
         for (var algo in algo_set) {
           for (var version of algo_set[algo]) {
-            insertAlgoRow(algo+':'+version);
+            insertAlgoRow(algo,version);
           }
         }
       }
     });
 
     // make algo rows clickable
-    this._setAlgoClick(algo_list_id);
+    // this._setAlgoClick(algo_list_id);
   }
 
   _setAlgoClick(tableId) {
