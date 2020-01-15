@@ -288,7 +288,7 @@ export class JobWidget extends Widget {
           cell.appendChild(inp);
         }
         // Set submit button to use new params list
-        submitBtn.addEventListener('click', function() {
+        let submit_fn = function() {
           let p = '\n';
           let new_input_list = "";
           var requestUrl = new URL(PageConfig.getBaseUrl() + 'hysds/execute');
@@ -298,19 +298,33 @@ export class JobWidget extends Widget {
             console.log(i);
             let name = i+'-input';
             let val = (<HTMLInputElement>document.getElementById(name)).value;
-            // print visually
+            // print submitted inputs visually
             p = p.concat(i,': ',val,'\n');
             new_input_list = new_input_list.concat(i,',');
             // add to request
             requestUrl.searchParams.append(i, val);
           }
           inputsp.innerText = p;
+          // add algo identifier info
           requestUrl.searchParams.append('algo_id', me._algorithm);
           requestUrl.searchParams.append('version', me._version);
           requestUrl.searchParams.append('inputs', new_input_list);
-          // add algo identifier info
           console.log(requestUrl.href);
-        }, false);
+
+          // send the execute request
+          request('get', requestUrl.href).then((res: RequestResult) => {
+            if(res.ok){
+              let json_response:any = res.json();
+              // console.log(json_response);
+              p = p.concat(json_response['result']);
+              inputsp.innerText = p;
+            } else {
+              p = p.concat("Error Sending Request.");
+              inputsp.innerText = p;
+            }
+          });
+        }
+        submitBtn.addEventListener('click', submit_fn, false);
       }
     });
   }
