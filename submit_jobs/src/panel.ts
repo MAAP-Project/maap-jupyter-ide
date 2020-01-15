@@ -98,6 +98,7 @@ export class JobWidget extends Widget {
     this._updateExecuteCol();
     this._updateOverviewCol();
     // update jobinfo when job chosen
+    console.log(this.job_cache.getJobID());
 
     // this.job_cache.setRowClick(widget_table_name,);
   }
@@ -196,25 +197,8 @@ export class JobWidget extends Widget {
       let lst = algoId.split(':');
       me._algorithm = lst[0];
       me._version = lst[1];
+      me.update();
     });
-  }
-
-  // clickable table rows helper function
-  _onRowClick(tableId, callback) {
-    let me = this;
-    if (document.getElementById(tableId) != undefined) {
-      let table = document.getElementById(tableId),
-          rows = table.getElementsByTagName('tr'),
-          i;
-      for (i = 1; i < rows.length; i++) {
-        rows[i].onclick = function(row) {
-          return function() {
-            callback(row);
-            me.update();
-          }
-        }(rows[i]);
-      }
-    }
   }
 
   _updateExecuteCol() {
@@ -407,6 +391,32 @@ export class JobWidget extends Widget {
 
     let infop = document.createElement('p');
     infop.innerText = "infodiv";
+  }
+
+  _setJobClick(tableId) {
+    let me = this;
+    this._onRowClick(tableId, function(jobId) {
+      me.job_cache.setJobId(jobId);
+      me.update();
+    })
+  }
+
+  // clickable table rows helper function
+  _onRowClick(tableId, callback) {
+    let me = this;
+    if (document.getElementById(tableId) != undefined) {
+      let table = document.getElementById(tableId),
+          rows = table.getElementsByTagName('tr'),
+          i;
+      for (i = 1; i < rows.length; i++) {
+        rows[i].onclick = function(row) {
+          return function() {
+            callback(row);
+            me.update();
+          }
+        }(rows[i]);
+      }
+    }
   }
 }
 
@@ -791,6 +801,10 @@ export class JobTable extends Widget {
 
   getJobID(): string{
     return this._job_id;
+  }
+
+  setJobID(jobId: string): string{
+    this._job_id = jobId;
   }
 }
 
