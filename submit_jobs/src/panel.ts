@@ -396,7 +396,7 @@ export class JobWidget extends Widget {
   _setJobClick(tableId) {
     let me = this;
     this._onRowClick(tableId, function(jobId) {
-      me.job_cache.setJobId(jobId);
+      me.job_cache.setJobID(jobId);
       me.update();
     })
   }
@@ -803,7 +803,7 @@ export class JobTable extends Widget {
     return this._job_id;
   }
 
-  setJobID(jobId: string): string{
+  setJobID(jobId: string): void{
     this._job_id = jobId;
   }
 }
