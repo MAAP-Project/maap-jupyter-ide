@@ -240,7 +240,7 @@ export class JobWidget extends Widget {
 
         let inputsp = document.createElement('p');
         inputsp.id = 'execute-inputs-p';
-        paramdiv.appendChild(paramdiv);
+        paramdiv.appendChild(inputsp);
 
         this._populateExecuteTable();
       } else {
@@ -250,7 +250,8 @@ export class JobWidget extends Widget {
   }
 
   _populateExecuteTable() {
-    let paramdiv = <HTMLDivElement> document.getElementById('execute-params-div');
+    let me = this;
+    // let paramdiv = <HTMLDivElement> document.getElementById('execute-params-div');
     let t = <HTMLTableElement> document.getElementById('execute-params-table');
     let submitBtn = <HTMLButtonElement> document.getElementById('job-execute-button');
     let inputsp = <HTMLParagraphElement> document.getElementById('execute-inputs-p');
@@ -276,8 +277,8 @@ export class JobWidget extends Widget {
           if (i == 'username') {
             inp.value = this.job_cache.getUsername();
             // username field is readonly and grey background
-            imp.readOnly = true;
-            imp.setAttribute('style','background-color : #d1d1d1');
+            inp.readOnly = true;
+            inp.setAttribute('style','background-color : #d1d1d1');
           }
           
           let trow = <HTMLTableRowElement> t.insertRow();
@@ -302,8 +303,8 @@ export class JobWidget extends Widget {
             requestUrl.searchParams.append(i, val);
           }
           inputsp.innerText = p;
-          requestUrl.searchParams.append('algo_id', this._algorithm);
-          requestUrl.searchParams.append('version', this._version);
+          requestUrl.searchParams.append('algo_id', me._algorithm);
+          requestUrl.searchParams.append('version', me._version);
           // add algo identifier info
           console.log(requestUrl.href);
         }, false);
