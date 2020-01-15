@@ -238,6 +238,10 @@ export class JobWidget extends Widget {
         paramdiv.appendChild(br);
         paramdiv.appendChild(submitBtn);
 
+        let inputsp = document.createElement('p');
+        inputsp.id = 'execute-inputs-p';
+        paramdiv.appendChild(paramdiv);
+
         this._populateExecuteTable();
       } else {
         this._populateExecuteTable();
@@ -249,6 +253,7 @@ export class JobWidget extends Widget {
     let paramdiv = <HTMLDivElement> document.getElementById('execute-params-div');
     let t = <HTMLTableElement> document.getElementById('execute-params-table');
     let submitBtn = <HTMLButtonElement> document.getElementById('job-execute-button');
+    let inputsp = <HTMLParagraphElement> document.getElementById('execute-inputs-p');
     // request to get algo params
     var requestUrl = new URL(PageConfig.getBaseUrl() + 'hysds/executeInputs');
     requestUrl.searchParams.append('algo_id', this._algorithm);
@@ -270,6 +275,9 @@ export class JobWidget extends Widget {
           // pre-populate username field
           if (i == 'username') {
             inp.value = this.job_cache.getUsername();
+            // username field is readonly and grey background
+            imp.readOnly = true;
+            imp.setAttribute('style','background-color : #d1d1d1');
           }
           
           let trow = <HTMLTableRowElement> t.insertRow();
@@ -280,6 +288,7 @@ export class JobWidget extends Widget {
         }
         // Set submit button to use new params list
         submitBtn.addEventListener('click', function() {
+          let p = '\n';
           var requestUrl = new URL(PageConfig.getBaseUrl() + 'hysds/execute');
           for (let i of params) {
             // format [param,type] -> param
@@ -288,13 +297,15 @@ export class JobWidget extends Widget {
             let name = i+'-input';
             let val = (<HTMLInputElement>document.getElementById(name)).value;
             // print visually
-            let p = document.createElement('p');
-            p.innerText = i+': '+val;
-            paramdiv.appendChild(p);
+            p = p + i+': '+val+'\n';
             // add to request
             requestUrl.searchParams.append(i, val);
           }
-          console.log(requestUrl);
+          inputsp.innerText = p;
+          requestUrl.searchParams.append('algo_id', this._algorithm);
+          requestUrl.searchParams.append('version', this._version);
+          // add algo identifier info
+          console.log(requestUrl.href);
         }, false);
       }
     });
