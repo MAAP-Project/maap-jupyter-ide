@@ -162,6 +162,13 @@ export class JobWidget extends Widget {
         acell.innerHTML = "<i>Algorithms</i>";
         this._populateListTable();
       } else {
+        let algolist = <HTMLTableElement> document.getElementById(algo_list_id);
+        algolist.innerHTML = '';
+        <HTMLTableSectionElement> algolist.createTHead();
+        <HTMLTableSectionElement> algolist.createTBody();
+        let ahrow = <HTMLTableRowElement> algolist.tHead.insertRow(0);
+        let acell = ahrow.insertCell(0);
+        acell.innerHTML = "<i>Algorithms</i>";
         this._populateListTable();
       }
     }
@@ -182,7 +189,7 @@ export class JobWidget extends Widget {
           me._version = version;
           console.log('switching algo to '+algo);
           console.log('switching algo to '+me._algorithm);
-          me.update;
+          me.update();
         }
     }
     console.log(requestUrl.href);
@@ -228,6 +235,7 @@ export class JobWidget extends Widget {
         execute_algoname.innerHTML = '<b>Algorithm: </b>    '+this._algorithm+':'+this._version;
         executeCell.appendChild(execute_algoname);
       } else {
+        console.log('algorithm is now '+this._algorithm);
         let execute_algoname = document.getElementById('execute-algoname');
         execute_algoname.innerHTML = '<b>Algorithm: </b>    '+this._algorithm+':'+this._version;
       }
@@ -272,8 +280,8 @@ export class JobWidget extends Widget {
         paramdiv.appendChild(inputsp);
 
         this._populateExecuteTable();
-      // wipe params table if it already exists
       } else {
+        // wipe params table if it already exists
         let t = <HTMLTableElement> document.getElementById('execute-inputs-table');
         t.innerHTML = '';
         <HTMLTableSectionElement> t.createTHead();
