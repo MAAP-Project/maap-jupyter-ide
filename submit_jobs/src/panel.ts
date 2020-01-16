@@ -14,6 +14,7 @@ const WIDGET_CLASS = 'p-Widget';
 const CONTENT_CLASS = 'jp-Inspector-content';
 const widget_table_name = 'widget-job-cache-display';
 const algo_list_id = 'algo-list-table';
+const execute_params_id = 'execute-params-table';
 // primitive text panel for storing submitted job information
 export class JobPanel extends Panel{
   job_cache: JobTable;
@@ -255,7 +256,7 @@ export class JobWidget extends Widget {
 
         // inputs TABLE
         let t = document.createElement('table');
-        t.id = 'execute-params-table';
+        t.id = execute_params_id;
         paramdiv.appendChild(t);
 
         <HTMLTableSectionElement> t.createTHead();
@@ -282,7 +283,7 @@ export class JobWidget extends Widget {
         this._populateExecuteTable();
       } else {
         // wipe params table if it already exists
-        let t = <HTMLTableElement> document.getElementById('execute-inputs-table');
+        let t = <HTMLTableElement> document.getElementById(execute_params_id);
         t.innerHTML = '';
         <HTMLTableSectionElement> t.createTHead();
         <HTMLTableSectionElement> t.createTBody();
@@ -303,7 +304,7 @@ export class JobWidget extends Widget {
     let me = this;
     // (re-)populate params table with new algorithm's params
     // let paramdiv = <HTMLDivElement> document.getElementById('execute-params-div');
-    let t = <HTMLTableElement> document.getElementById('execute-params-table');
+    let t = <HTMLTableElement> document.getElementById(execute_params_id);
     let submitBtn = <HTMLButtonElement> document.getElementById('job-execute-button');
     let inputsp = <HTMLParagraphElement> document.getElementById('execute-inputs-p');
     // request to get algo params
