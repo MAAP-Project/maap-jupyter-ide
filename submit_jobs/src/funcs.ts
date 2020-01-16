@@ -35,8 +35,8 @@ const deleteJob_command = 'hysds: delete-job';
 const describeAlgorithm_command = 'hysds: describe-job';
 const listAlgorithm_command = 'hysds: list-algorithms';
 const deleteAlgorithm_command = 'hysds: delete-algorithm';
-const jobCache_update_command = 'jobs: list';
-const jobWidget_command = 'jobs: main-widget';
+export const jobCache_update_command = 'jobs: refresh';
+export const jobWidget_command = 'jobs: main-widget';
 
 
 export function activateRegister(app: JupyterFrontEnd, 

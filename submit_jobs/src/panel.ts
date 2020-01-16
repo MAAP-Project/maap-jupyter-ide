@@ -6,7 +6,7 @@ import { Widget, Panel } from '@phosphor/widgets';
 import { INotification } from "jupyterlab_toastify";
 import { getUserInfo } from "./getKeycloak";
 import { request, RequestResult } from './request';
-import { activateMenuOptions } from './funcs';
+import { jobCache_update_command, jobWidget_command, activateMenuOptions } from './funcs';
 // import {  } from "./dialogs";
 import '../style/index.css';
 
@@ -120,6 +120,7 @@ export class JobWidget extends Widget {
     let listCell = rrow.insertCell();
     listCell.setAttribute('id','cell-algolist');
     listCell.setAttribute('valign','top');
+    listCell.setAttribute('style','min-width:260px');
 
     let executeCell = rrow.insertCell();
     executeCell.setAttribute('id','cell-execute');
@@ -341,7 +342,7 @@ export class JobWidget extends Widget {
         }
         // Set submit button to use new params list
         let submit_fn = function() {
-          let p = 'Submitted:\n';
+          let p = '\nSubmitted:\n';
           let new_input_list = "";
           var requestUrl = new URL(PageConfig.getBaseUrl() + 'hysds/execute');
           for (let i of params) {
@@ -856,8 +857,8 @@ let content = new JobWidget(jobsTable);
 const jobsWidget = new MainAreaWidget({content});
 // -------------------------------------------------------------
 // panel widget activation
-const jobCache_update_command = 'jobs: list';
-const jobWidget_command = 'jobs: main-widget';
+// const jobCache_update_command = 'jobs: refresh';
+// const jobWidget_command = 'jobs: main-widget';
 
 export function activateJobPanel(app: JupyterFrontEnd, palette: ICommandPalette, mainMenu: IMainMenu): void{
   var infoPanel = jobsPanel;
@@ -872,7 +873,9 @@ export function activateJobPanel(app: JupyterFrontEnd, palette: ICommandPalette,
     label: 'Refresh Job List',
     isEnabled: () => true,
     execute: args => {
+      jobsTable.update();
       infoPanel.update();
+      jobsWidget.update();
     }
   });
   palette.addItem({command: jobCache_update_command, category: 'DPS/MAS'});
