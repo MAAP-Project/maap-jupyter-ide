@@ -227,6 +227,9 @@ export class JobWidget extends Widget {
         execute_algoname.id = 'execute-algoname';
         execute_algoname.innerHTML = '<b>Algorithm: </b>    '+this._algorithm+':'+this._version;
         executeCell.appendChild(execute_algoname);
+      } else {
+        let execute_algoname = document.getElementById('execute-algoname');
+        execute_algoname.innerHTML = '<b>Algorithm: </b>    '+this._algorithm+':'+this._version;
       }
 
       if (document.getElementById('execute-subheader') == null) {
@@ -236,6 +239,7 @@ export class JobWidget extends Widget {
         executeCell.appendChild(execute_subtitle);
       }
 
+      // create params table if not exists
       if (document.getElementById('execute-params-div') == null) {
         let paramdiv = document.createElement('div');
         paramdiv.id = 'execute-params-div'
@@ -268,7 +272,20 @@ export class JobWidget extends Widget {
         paramdiv.appendChild(inputsp);
 
         this._populateExecuteTable();
+      // wipe params table if it already exists
       } else {
+        let t = <HTMLTableElement> document.getElementById('execute-inputs-table');
+        t.innerHTML = '';
+        <HTMLTableSectionElement> t.createTHead();
+        <HTMLTableSectionElement> t.createTBody();
+        let hrow = <HTMLTableRowElement> t.tHead.insertRow(0);
+        let cell = hrow.insertCell(0);
+        cell.innerHTML = "<i>Parameter</i>";
+        cell = hrow.insertCell(1);
+        cell.innerHTML = "<i>Value</i>";
+
+        let inputsp = <HTMLParagraphElement> document.getElementById('execute-inputs-p');
+        inputsp.innerHTML = '';        
         this._populateExecuteTable();
       }
     }
@@ -276,6 +293,7 @@ export class JobWidget extends Widget {
 
   _populateExecuteTable() {
     let me = this;
+    // (re-)populate params table with new algorithm's params
     // let paramdiv = <HTMLDivElement> document.getElementById('execute-params-div');
     let t = <HTMLTableElement> document.getElementById('execute-params-table');
     let submitBtn = <HTMLButtonElement> document.getElementById('job-execute-button');
