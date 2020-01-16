@@ -400,7 +400,11 @@ export class JobWidget extends Widget {
         let pre = document.createElement('pre');
         pre.id = 'algo-describe-pre';
         prediv.appendChild(pre);
-        this._populateOverviewCol()
+        this._populateOverviewCol();
+      } else {
+        let pre = document.getElementById('algo-describe-pre');
+        pre.innerHTML = '';
+        this._populateOverviewCol();
       }
     }
   }
