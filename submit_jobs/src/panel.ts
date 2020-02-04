@@ -35,6 +35,7 @@ export class JobWidget extends Widget {
   job_cache: JobTable;
   _algorithm: string;
   _version: string;
+  _count: number;
 
   constructor(jobCache: JobTable) {
     super();
@@ -43,6 +44,7 @@ export class JobWidget extends Widget {
     this.addClass(WIDGET_CLASS);
     this._algorithm = 'dps_plot';   // FOR TESTING
     this._version = 'master';       // FOR TESTING
+    this._count = 0;                // FOR TESTING
 
     let job_widget = document.createElement('div');
     job_widget.id = 'job-widget';
@@ -340,8 +342,11 @@ export class JobWidget extends Widget {
           cell = trow.insertCell();
           cell.appendChild(inp);
         }
+        let num = me._count;
+        me._count = me._count + 1;
         // Set submit button to use new params list
         let submit_fn = function() {
+          console.log(num);
           let p = '\nSubmitted:\n';
           let new_input_list = "";
           var requestUrl = new URL(PageConfig.getBaseUrl() + 'hysds/execute');
