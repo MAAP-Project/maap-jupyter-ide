@@ -346,7 +346,7 @@ export class JobWidget extends Widget {
         me._count = me._count + 1;
         // Set submit button to use new params list
         let submit_fn = function() {
-          console.log(num);
+          console.log(num );
           let p = '\nSubmitted:\n';
           let new_input_list = "";
           var requestUrl = new URL(PageConfig.getBaseUrl() + 'hysds/execute');
@@ -382,7 +382,8 @@ export class JobWidget extends Widget {
             }
           });
         }
-        submitBtn.addEventListener('click', submit_fn, false);
+        // submitBtn.addEventListener('click', submit_fn, false);
+        submitBtn.onclick = submit_fn;
       }
     });
   }
