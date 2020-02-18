@@ -11,6 +11,7 @@ import logging
 logger = logging.getLogger()
 logger.setLevel(logging.DEBUG)
 
+
 class InjectKeyHandler(IPythonHandler):
     def get(self):
         public_key = self.get_argument('key', '')
@@ -46,6 +47,14 @@ class InjectKeyHandler(IPythonHandler):
         else:
             os.chdir('/projects')
             print("====== SUCCESS ========")
+
+        print("=== Adding MAAP_PGT to environment ===")
+
+        proxy_granting_ticket = self.get_argument('proxyGrantingTicket', '')
+
+        if proxy_granting_ticket:
+            os.environ["MAAP_PGT"] = proxy_granting_ticket
+
 
 class GetHandler(IPythonHandler):
     """
