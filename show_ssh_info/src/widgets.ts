@@ -73,6 +73,10 @@ export class InjectSSH {
         let getUrl = new URL(PageConfig.getBaseUrl() + "show_ssh_info/inject_public_key");
         getUrl.searchParams.append("key", key);
 
+        if (profile['proxyGrantingTicket'] !== undefined) {
+            getUrl.searchParams.append("proxyGrantingTicket", profile['proxyGrantingTicket']);
+        }
+
         // Make call to back end
         let xhr = new XMLHttpRequest();
         xhr.onload = function() {
