@@ -1,41 +1,36 @@
-import { ILayoutRestorer, JupyterFrontEnd } from '@jupyterlab/application';
+import { JupyterFrontEnd } from '@jupyterlab/application';
 import { MainAreaWidget, ICommandPalette, Dialog, showDialog } from '@jupyterlab/apputils';
 import { PageConfig } from '@jupyterlab/coreutils'
 import { IMainMenu } from '@jupyterlab/mainmenu';
-import { Widget, Panel } from '@phosphor/widgets';
+import { Widget } from '@phosphor/widgets';
 import { INotification } from "jupyterlab_toastify";
 import { getUserInfo } from "./getKeycloak";
 import { request, RequestResult } from './request';
 import { jobCache_update_command, jobWidget_command, activateMenuOptions } from './funcs';
-// import {  } from "./dialogs";
+import { ADEPanel, WIDGET_CLASS, CONTENT_CLASS } from './panel';
 import '../style/index.css';
 
-const WIDGET_CLASS = 'p-Widget';
-const CONTENT_CLASS = 'jp-Inspector-content';
 const widget_table_name = 'widget-job-cache-display';
 const algo_list_id = 'algo-list-table';
 const execute_params_id = 'execute-params-table';
-// primitive text panel for storing submitted job information
-export class JobPanel extends Panel{
-  job_cache: JobTable;
-  constructor(jobCache: JobTable) {
-    super();
-    this.job_cache = jobCache;
-    this.addClass(CONTENT_CLASS);
-    this.addClass(WIDGET_CLASS);
-  }
-
-  update() {
-    this.job_cache.update();
-  }
-}
 
 // MainArea Widget
+// Intended layout(functions):
+//  -------------------------------------------------------------------
+//   Run Jobs                 |  Job Info
+//  (update,_populateRunJobs) |(update,_populateJobInfo)
+//  ===================================================================
+//     Algorithm List    |   Execute Job        |  Algorithm Info
+//  (_populateRunJobs)   | (_populateRunJobs)   | (_populateRunJobs)
+//  (_populateListTable) | (_updateExecuteCol)  |(_updateOverviewCol)
+//   (_setAlgoClick)     |(_populateExecuteTable|(_populateOverviewCol)
+//  -------------------------------------------------------------------
+//   Jobs Table (update)
+//  -------------------------------------------------------------------
 export class JobWidget extends Widget {
   job_cache: JobTable;
   _algorithm: string;
   _version: string;
-  _count: number;
 
   constructor(jobCache: JobTable) {
     super();
@@ -44,7 +39,6 @@ export class JobWidget extends Widget {
     this.addClass(WIDGET_CLASS);
     this._algorithm = 'dps_plot';   // FOR TESTING
     this._version = 'master';       // FOR TESTING
-    this._count = 0;                // FOR TESTING
 
     let job_widget = document.createElement('div');
     job_widget.id = 'job-widget';
@@ -342,11 +336,8 @@ export class JobWidget extends Widget {
           cell = trow.insertCell();
           cell.appendChild(inp);
         }
-        let num = me._count;
-        me._count = me._count + 1;
         // Set submit button to use new params list
         let submit_fn = function() {
-          console.log(num );
           let p = '\nSubmitted:\n';
           let new_input_list = "";
           var requestUrl = new URL(PageConfig.getBaseUrl() + 'hysds/execute');
@@ -382,7 +373,6 @@ export class JobWidget extends Widget {
             }
           });
         }
-        // submitBtn.addEventListener('click', submit_fn, false);
         submitBtn.onclick = submit_fn;
       }
     });
@@ -862,7 +852,7 @@ export class JobTable extends Widget {
 // reference to jobsTable passed through each submit_job widget (NO LONGER)
 export const jobsTable = new JobTable();
 jobsTable.update();
-export const jobsPanel = new JobPanel(jobsTable);
+export const jobsPanel = new ADEPanel(jobsTable);
 let content = new JobWidget(jobsTable);
 const jobsWidget = new MainAreaWidget({content});
 // -------------------------------------------------------------
@@ -894,7 +884,7 @@ export function activateJobPanel(app: JupyterFrontEnd, palette: ICommandPalette,
 
   activateMenuOptions(app,mainMenu);
 }
-export function activateJobWidget(app: JupyterFrontEnd, palette: ICommandPalette, restorer: ILayoutRestorer) {
+export function activateJobWidget(app: JupyterFrontEnd, palette: ICommandPalette) {
   console.log('JupyterLab extension jupyterlab_apod is activated!');
 
   // Declare a widget variable
