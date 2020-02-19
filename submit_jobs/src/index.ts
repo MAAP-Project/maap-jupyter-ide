@@ -5,6 +5,7 @@ import { ILauncher } from '@jupyterlab/launcher';
 import { IMainMenu } from '@jupyterlab/mainmenu';
 import { activateGetCapabilities, activateDescribe, activateList, activateRegister, activateRegisterAlgorithm, activateDeleteAlgorithm, activateExecute, activateGetStatus, activateGetResult, activateDismiss, activateDelete } from './funcs'
 import { activateJobPanel, activateJobWidget } from './panel';
+import { SandboxWidget } from './sandbox';
 
 const extensionCapabilities: JupyterFrontEndPlugin<void> = {
   id: 'dps-capabilities',
@@ -107,4 +108,11 @@ const bigJobsPanel: JupyterFrontEndPlugin<void> = {
   activate: activateJobWidget
 };
 
-export default [extensionDeleteAlgorithm,extensionRegister,extensionRegisterAlgorithm,extensionCapabilities,extensionStatus,extensionResult,extensionExecute,extensionDismiss,extensionDelete,extensionDescribe,extensionList, cacheExtension, bigJobsPanel];
+const sandboxPanel: JupyterFrontEndPlugin<void> = {
+  id: 'sandbox-widget',
+  autoStart: true,
+  requires: [ICommandPalette, IMainMenu],
+  activate: SandboxWidget
+};
+
+export default [extensionDeleteAlgorithm,extensionRegister,extensionRegisterAlgorithm,extensionCapabilities,extensionStatus,extensionResult,extensionExecute,extensionDismiss,extensionDelete,extensionDescribe,extensionList, cacheExtension, bigJobsPanel, sandboxPanel];
