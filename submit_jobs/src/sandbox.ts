@@ -1,4 +1,4 @@
-import * as React from 'react';
+//import * as React from 'react';
 
 import { Widget } from '@phosphor/widgets';
 import { ReactWidget } from '@jupyterlab/apputils';
@@ -8,6 +8,6 @@ function SandboxComponent() {
 }
 export class SandboxWidget extends ReactWidget {
   render() {
-    return <MyComponent />;
+    return <SandboxComponent />;
   }
 }
