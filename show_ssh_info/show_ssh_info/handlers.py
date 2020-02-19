@@ -48,12 +48,15 @@ class InjectKeyHandler(IPythonHandler):
             os.chdir('/projects')
             print("====== SUCCESS ========")
 
-        print("=== Adding MAAP_PGT to environment ===")
+        print("=== Checking for existence of MAAP_PGT ===")
 
         proxy_granting_ticket = self.get_argument('proxyGrantingTicket', '')
 
         if proxy_granting_ticket:
+            print("=== MAAP_PGT found. Adding variable to environment ===")
             os.environ["MAAP_PGT"] = proxy_granting_ticket
+        else:
+            print("=== No MAAP_PGT found ===")
 
 
 class GetHandler(IPythonHandler):
