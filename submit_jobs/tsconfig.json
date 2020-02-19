@@ -14,7 +14,8 @@
     "resolveJsonModule": true,
     "esModuleInterop": true,
     "allowJs": true,
-    "noImplicitAny": false
+    "noImplicitAny": false,
+    "jsx": "react"
   },
   "include": ["src/*"]
 }
