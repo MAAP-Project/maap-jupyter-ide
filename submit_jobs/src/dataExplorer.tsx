@@ -45,8 +45,9 @@ export interface IDataExplorer {
 }
 
 const id = "@jupyterlab/dataregistry-extension:data-explorer";
+
 /**
- * Adds a visual data explorer to the sidebar.
+ * Adds a visual data explorer to the sidebar...
  */
 export default {
   activate,
