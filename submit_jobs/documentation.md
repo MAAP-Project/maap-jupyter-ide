@@ -1,6 +1,6 @@
 ## Submit Jobs Extension Documentation & Architecture
 ### Architecture
-![architecture diagram](submit_jobs_architecture.png)
+<img alt="architecture diagram" src="submit_jobs_architecture.png" width="350">
 
 #### sourcefiles
 - index.ts: instantiate & export jupyter extensions
