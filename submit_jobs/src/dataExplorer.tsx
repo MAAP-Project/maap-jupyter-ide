@@ -65,7 +65,7 @@ function activate(
 ): IDataExplorer {
 
   const widget = ReactWidget.create(
-    <div>
+    <div style={{background: 'white'}}>
       test
     </div>
   );
