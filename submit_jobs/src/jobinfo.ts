@@ -47,13 +47,17 @@ export class JobWidget extends Widget {
     tabs.id = 'tab';
     tabs.setAttribute('class','tab');
 
+    // button Run tab
     let runTab = document.createElement('button');
     runTab.setAttribute('id','defaultOpen');
-    runTab.setAttribute('class','tablink');
+    runTab.setAttribute('class','tablinks active');
+    runTab.onclick = (e) => {this._clickTab(event, 'run');};
     runTab.innerHTML = 'Run Jobs';
 
+    // button Info tab
     let infoTab = document.createElement('button');
-    infoTab.setAttribute('class','tablink');
+    infoTab.setAttribute('class','tablinks');
+    infoTab.onclick = (e) => {this._clickTab(event, 'info');};
     infoTab.innerHTML = 'Job Info';
 
     tabs.appendChild(runTab);
@@ -64,6 +68,7 @@ export class JobWidget extends Widget {
     this._populateJobInfo(job_widget);
 
     this.node.appendChild(job_widget);
+    document.getElementById("defaultOpen").click();
   }
 
   /* Handle update requests for the widget. */
@@ -106,7 +111,8 @@ export class JobWidget extends Widget {
   _populateRunJobs(job_widget: HTMLDivElement) {
     let runDiv = document.createElement('div');
     runDiv.setAttribute('id','run');
-    runDiv.setAttribute('class','jp-tabcontent');
+    runDiv.setAttribute('class','tabcontent');
+    runDiv.setAttribute('style','height: 100%; display: block');
 
     let runTable = document.createElement('table');
     runTable.setAttribute('id','algorithmrun');
@@ -424,7 +430,8 @@ export class JobWidget extends Widget {
   _populateJobInfo(job_widget: HTMLDivElement) {
     let infoDiv = document.createElement('div');
     infoDiv.setAttribute('id','info');
-    infoDiv.setAttribute('class','jp-tabcontent');
+    infoDiv.setAttribute('class','tabcontent');
+    infoDiv.setAttribute('style','height: 100%; display: none');
 
     job_widget.appendChild(infoDiv);
 
@@ -456,6 +463,20 @@ export class JobWidget extends Widget {
         }(rows[i]);
       }
     }
+  }
+
+  _clickTab(evt, section) {
+    var i, tabcontent, tablinks;
+    tabcontent = document.getElementsByClassName("tabcontent");
+    for (i = 0; i < tabcontent.length; i++) {
+      tabcontent[i].style.display = "none";
+    }
+    tablinks = document.getElementsByClassName("tablinks");
+    for (i = 0; i < tablinks.length; i++) {
+      tablinks[i].className = tablinks[i].className.replace(" active", "");
+    }
+    document.getElementById(section).style.display = "block";
+    evt.currentTarget.className += " active";
   }
 }
 
