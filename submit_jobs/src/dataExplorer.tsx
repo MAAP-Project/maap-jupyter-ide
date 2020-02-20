@@ -101,7 +101,6 @@ function activate(
 
   const widget = ReactWidget.create(
     <div style={{background: 'white'}}>
-      test
       <Treebeard
             data={data}
         />
