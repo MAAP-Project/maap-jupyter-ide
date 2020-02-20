@@ -5,12 +5,16 @@ import {
   ILayoutRestorer
 } from "@jupyterlab/application";
 
+
+
 //import { Classes } from "@blueprintjs/core";
 import { ReactWidget } from "@jupyterlab/apputils";
 
 import { Token } from "@phosphor/coreutils";
 import { Widget } from "@phosphor/widgets";
 import * as React from "react";
+import {Treebeard} from 'react-treebeard';
+
 //import { classes, style } from "typestyle";
 //import { IActiveDataset, ACTIVE_URL } from "./active";
 //import { UseObservable } from "./utils";
@@ -46,6 +50,37 @@ export interface IDataExplorer {
 
 const id = "@jupyterlab/dataregistry-extension:data-explorer";
 
+const data = {
+    name: 'root',
+    toggled: true,
+    children: [
+        {
+            name: 'parent',
+            children: [
+                { name: 'child1' },
+                { name: 'child2' }
+            ]
+        },
+        {
+            name: 'loading parent',
+            loading: true,
+            children: []
+        },
+        {
+            name: 'parent',
+            children: [
+                {
+                    name: 'nested parent',
+                    children: [
+                        { name: 'nested child 1' },
+                        { name: 'nested child 2' }
+                    ]
+                }
+            ]
+        }
+    ]
+};
+
 /**
  * Adds a visual data explorer to the sidebar...
  */
@@ -67,6 +102,9 @@ function activate(
   const widget = ReactWidget.create(
     <div style={{background: 'white'}}>
       test
+      <Treebeard
+            data={data}
+        />
     </div>
   );
   widget.id = "@jupyterlab-dataRegistry/explorer";
