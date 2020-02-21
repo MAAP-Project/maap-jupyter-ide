@@ -218,6 +218,8 @@ export class FileTreeWidget extends Widget {
         request('get', getUrl.href).then((res: RequestResult) => {
           if(res.ok){
         //    let json_response:any = res.json();
+
+
             // console.log(json_response['status_code']);
             INotification.success("Get user cmr granules success.");
             console.log(res);
