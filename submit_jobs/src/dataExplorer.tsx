@@ -72,8 +72,8 @@ const data = {
                 {
                     name: 'nested parent',
                     children: [
-                        { name: 'nested child 1' },
-                        { name: 'nested child 2' }
+                        { name: 'nested child a' },
+                        { name: 'nested child b' }
                     ]
                 }
             ]
