@@ -68,7 +68,7 @@ export class JobWidget extends Widget {
     this._populateJobInfo(job_widget);
 
     this.node.appendChild(job_widget);
-    document.getElementById("defaultOpen").click();
+    // document.getElementById("defaultOpen").click();
   }
 
   /* Handle update requests for the widget. */
