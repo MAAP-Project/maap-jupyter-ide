@@ -3,7 +3,8 @@ import { PageConfig } from '@jupyterlab/coreutils'
 import { INotification } from "jupyterlab_toastify";
 import { getUserInfo } from "./getKeycloak";
 import { request, RequestResult } from './request';
-import { jobsPanel, JobPanel } from './panel';
+import { jobsPanel } from './jobinfo';
+import { ADEPanel } from './panel';
 import { popupResult, popupTitle } from "./dialogs";
 // import * as $ from "jquery";
 // import { format } from "xml-formatter";
@@ -25,7 +26,7 @@ export class InputWidget extends Widget {
   public username: string;                // for execute & listing jobs in case of timeout
   _responseText: string;
   _getInputs: boolean;                    // for getting predefinedFields
-  _jobsPanel: JobPanel;                   // for execute
+  _jobsPanel: ADEPanel;                   // for execute
   _ins_dict: {[k:string]:string};          // for execute
 
   constructor(req:string, methodFields:string[],uname:string, defaultValues:Object,skipInputs?:boolean) {
@@ -489,7 +490,7 @@ export class RegisterWidget extends InputWidget {
 
 export class WidgetResult extends Widget {
   // pass InputWidget which contains info panel
-  cache: JobPanel;
+  cache: ADEPanel;
   updateCache: boolean;
   okfn: any;
 
