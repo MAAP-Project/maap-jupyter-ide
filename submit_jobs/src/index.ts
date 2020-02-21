@@ -1,4 +1,4 @@
-import { ILayoutRestorer, IRouter, JupyterFrontEnd } from "@jupyterlab/application";
+import { ILayoutRestorer, IRouter, JupyterFrontEnd, JupyterFrontEndPlugin } from "@jupyterlab/application";
 import { ICommandPalette, IWindowResolver } from '@jupyterlab/apputils';
 import { IFileBrowserFactory } from "@jupyterlab/filebrowser";
 import { ILauncher } from '@jupyterlab/launcher';
