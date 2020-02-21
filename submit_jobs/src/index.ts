@@ -5,7 +5,27 @@ import { ILauncher } from '@jupyterlab/launcher';
 import { IMainMenu } from '@jupyterlab/mainmenu';
 import { activateGetCapabilities, activateDescribe, activateList, activateRegister, activateRegisterAlgorithm, activateDeleteAlgorithm, activateExecute, activateGetStatus, activateGetResult, activateDismiss, activateDelete } from './funcs'
 import { activateJobPanel, activateJobWidget } from './panel';
-import DataExplorer from './dataExplorer';
+//import DataExplorer from './dataExplorer';
+
+import {
+  ILayoutRestorer, IRouter, JupyterFrontEnd,
+} from "@jupyterlab/application";
+
+import {
+  IDocumentManager,
+} from "@jupyterlab/docmanager";
+
+import {
+  IWindowResolver
+} from "@jupyterlab/apputils";
+
+
+import {
+  constructFileTreeWidget
+} from "./filetree";
+
+import "../style/index.css";
+
 
 const extensionCapabilities: JupyterFrontEndPlugin<void> = {
   id: 'dps-capabilities',
@@ -108,4 +128,18 @@ const bigJobsPanel: JupyterFrontEndPlugin<void> = {
   activate: activateJobWidget
 };
 
-export default [extensionDeleteAlgorithm,extensionRegister,extensionRegisterAlgorithm,extensionCapabilities,extensionStatus,extensionResult,extensionExecute,extensionDismiss,extensionDelete,extensionDescribe,extensionList, cacheExtension, bigJobsPanel, DataExplorer];
+function activate(app: JupyterFrontEnd, paths: JupyterFrontEnd.IPaths, resolver: IWindowResolver, restorer: ILayoutRestorer, manager: IDocumentManager, router: IRouter) {
+  // tslint:disable-next-line: no-console
+  console.log("JupyterLab extension jupyterlab_filetree is activated!");
+  constructFileTreeWidget(app, "", "filetree-jupyterlab", "left", paths, resolver, restorer, manager, router);
+}
+
+const fileTreePanel: JupyterFrontEndPlugin<void> = {
+  activate,
+  autoStart: true,
+  id: "jupyterlab_filetree",
+  requires: [JupyterFrontEnd.IPaths, IWindowResolver, ILayoutRestorer, IDocumentManager, IRouter],
+};
+
+
+export default [extensionDeleteAlgorithm,extensionRegister,extensionRegisterAlgorithm,extensionCapabilities,extensionStatus,extensionResult,extensionExecute,extensionDismiss,extensionDelete,extensionDescribe,extensionList, cacheExtension, bigJobsPanel, fileTreePanel];
