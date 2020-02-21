@@ -9,8 +9,8 @@ This connects the JupyterLab UI with the HySDS/DPS backend.  There will be 10 AP
 		- GET request sent to https://api.maap-project.org/api/dps/job
 2. Register
 	- endpoint: `hysds/register`
-	- first sends a GET request to `pull_projects/listFiles` to get a list of supported files (currently `.py` and `.ipynb`) and populates a dropdown menu for user to choose from
-	- after user has chosen a file, sends a GET request to `hysds/defaultValues` to prepopulate registration fields for user to go over
+	- ~first sends a GET request to `pull_projects/listFiles` to get a list of supported files (currently `.py` and `.ipynb`) and populates a dropdown menu for user to choose from~
+	- ~after user has chosen a file,~ user right-clicks script they want to register as a job, which sends a GET request to `hysds/defaultValues` to prepopulate registration fields for user to go over in `config.yaml` in the same directory
 	- checks if user has committed unchanged `.py` or `.ipynb` files
 	- sends a POST request to DPS to register a new algorithm
 		- POST request sent to https://api.maap-project.org/api/mas/algorithm

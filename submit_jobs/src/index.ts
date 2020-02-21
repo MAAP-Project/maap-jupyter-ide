@@ -1,31 +1,14 @@
-import { JupyterFrontEndPlugin } from '@jupyterlab/application';
-import { ICommandPalette } from '@jupyterlab/apputils';
+import { ILayoutRestorer, IRouter, JupyterFrontEnd } from "@jupyterlab/application";
+import { ICommandPalette, IWindowResolver } from '@jupyterlab/apputils';
 import { IFileBrowserFactory } from "@jupyterlab/filebrowser";
 import { ILauncher } from '@jupyterlab/launcher';
 import { IMainMenu } from '@jupyterlab/mainmenu';
 import { activateGetCapabilities, activateDescribe, activateList, activateRegister, activateRegisterAlgorithm, activateDeleteAlgorithm, activateExecute, activateGetStatus, activateGetResult, activateDismiss, activateDelete } from './funcs'
-import { activateJobPanel, activateJobWidget } from './panel';
+import { activateJobPanel, activateJobWidget } from './jobinfo';
+import { constructFileTreeWidget } from "./filetree";
 //import DataExplorer from './dataExplorer';
-
-import {
-  ILayoutRestorer, IRouter, JupyterFrontEnd,
-} from "@jupyterlab/application";
-
-import {
-  IDocumentManager,
-} from "@jupyterlab/docmanager";
-
-import {
-  IWindowResolver
-} from "@jupyterlab/apputils";
-
-
-import {
-  constructFileTreeWidget
-} from "./filetree";
-
+import { IDocumentManager } from "@jupyterlab/docmanager";
 import "../style/index.css";
-
 
 const extensionCapabilities: JupyterFrontEndPlugin<void> = {
   id: 'dps-capabilities',
