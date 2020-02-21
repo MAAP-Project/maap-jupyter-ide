@@ -34,7 +34,7 @@ import {
 //
 // import * as JSZip from "jszip";
 
-import "../style/treeview.css.css";
+import "../style/treeview.css";
 
 // tslint:disable: no-namespace
 // tslint:disable: variable-name
