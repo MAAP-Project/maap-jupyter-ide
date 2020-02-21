@@ -92,10 +92,18 @@ export class JobWidget extends Widget {
       // jobs table
       var textarea = document.createElement("table");
       textarea.id = widget_table_name;
-      textarea.className = 'jp-JSONEditor-host';
       textarea.innerHTML = this.job_cache.getTable();
       div.appendChild(textarea);
-      this.node.appendChild(div);
+      let jw_div = document.getElementById('job-widget-div');
+      if (jw_div != null){
+        jw_div.appendChild(document.createElement('hr'));
+        let h = document.createElement('h3');
+        h.innerText = 'Submitted Jobs';
+        jw_div.appendChild(h);
+        jw_div.appendChild(div);
+      } else {
+        this.node.appendChild(div);
+      }
     }
 
     // update execute, overview when algo chosen
