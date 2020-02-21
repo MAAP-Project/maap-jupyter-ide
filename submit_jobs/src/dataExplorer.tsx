@@ -6,14 +6,12 @@ import {
 } from "@jupyterlab/application";
 
 
-
 //import { Classes } from "@blueprintjs/core";
 import { ReactWidget } from "@jupyterlab/apputils";
 
 import { Token } from "@phosphor/coreutils";
 import { Widget } from "@phosphor/widgets";
 import * as React from "react";
-import {Treebeard} from 'react-treebeard';
 
 //import { classes, style } from "typestyle";
 //import { IActiveDataset, ACTIVE_URL } from "./active";
@@ -27,6 +25,18 @@ import {Treebeard} from 'react-treebeard';
 //  // nestedDataType
 // } from "@jupyterlab/dataregistry";
 //import { Observable } from "rxjs";
+
+
+import TreeView = require("react-treeview");
+
+const label = <div>A label</div>;
+
+const elem1: JSX.Element = <TreeView key='1' nodeLabel={label} collapsed={false} onClick={() => undefined}>
+    <div>Entry</div>
+    <TreeView nodeLabel={label} itemClassName='item' treeViewClassName='tree' childrenClassName='children'>
+        <div>Nested Entry</div>
+    </TreeView>
+</TreeView>;
 
 
 /* tslint:disable */
@@ -50,37 +60,6 @@ export interface IDataExplorer {
 
 const id = "@jupyterlab/dataregistry-extension:data-explorer";
 
-const data = {
-    name: 'root',
-    toggled: true,
-    children: [
-        {
-            name: 'parent',
-            children: [
-                { name: 'child1' },
-                { name: 'child2' }
-            ]
-        },
-        {
-            name: 'loading parent',
-            loading: true,
-            children: []
-        },
-        {
-            name: 'parent',
-            children: [
-                {
-                    name: 'nested parent',
-                    children: [
-                        { name: 'nested child a' },
-                        { name: 'nested child b' }
-                    ]
-                }
-            ]
-        }
-    ]
-};
-
 /**
  * Adds a visual data explorer to the sidebar...
  */
@@ -101,7 +80,7 @@ function activate(
 
   const widget = ReactWidget.create(
     <div style={{background: 'white'}}>
-      <Treebeard data={data} />
+        {elem1}
     </div>
   );
   widget.id = "@jupyterlab-dataRegistry/explorer";
