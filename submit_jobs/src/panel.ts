@@ -11,7 +11,7 @@ export class ADEPanel extends Panel{
   constructor(content: any) {
     super();
     this.content = content;
-    this.node.appendChild(content);
+    // this.node.appendChild(content);
     this.addClass(CONTENT_CLASS);
     this.addClass(WIDGET_CLASS);
   }
