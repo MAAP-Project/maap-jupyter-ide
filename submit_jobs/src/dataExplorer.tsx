@@ -27,7 +27,7 @@ import * as React from "react";
 //import { Observable } from "rxjs";
 
 
-import TreeView = require("@types/react-treeview");
+import TreeView = require("react-treeview");
 
 const label = <div>A label</div>;
 
