@@ -101,9 +101,7 @@ function activate(
 
   const widget = ReactWidget.create(
     <div style={{background: 'white'}}>
-      <Treebeard
-            data={data}
-        />
+      <Treebeard data={data} />
     </div>
   );
   widget.id = "@jupyterlab-dataRegistry/explorer";
