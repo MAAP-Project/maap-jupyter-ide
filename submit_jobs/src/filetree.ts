@@ -35,6 +35,8 @@ import {
 // import * as JSZip from "jszip";
 
 import "../style/treeview.css";
+import {INotification} from "jupyterlab_toastify";
+import {request, RequestResult} from "./request";
 
 // tslint:disable: no-namespace
 // tslint:disable: variable-name
@@ -200,6 +202,54 @@ export class FileTreeWidget extends Widget {
     base.then((res) => {
       this.controller[""] = {last_modified: res.last_modified, open: true};
       const table = this.buildTable(["Name", "Size", "Timestamp", "Permission"], res.content);
+
+
+
+
+      //test calls
+      console.log(res.content);
+          // call list jobs endpoint using username
+        var getUrl = new URL('https://api.maap.xyz/api/cmr/granules');
+      //  getUrl.searchParams.append('username',this._username);
+      //  console.log(getUrl.href);
+        // --------------------
+        // get jobs list request
+        // --------------------
+        request('get', getUrl.href).then((res: RequestResult) => {
+          if(res.ok){
+        //    let json_response:any = res.json();
+            // console.log(json_response['status_code']);
+            INotification.success("Get user cmr granules success.");
+            console.log(res);
+            console.log(res.json());
+            // console.log(json_response['displays']);
+
+            // if (json_response['status_code'] == 200){
+            //   this._table = json_response['table'];
+            //   this._jobs = json_response['jobs'];
+            //   // later get user to pick the job
+            //   this._displays = json_response['displays'];
+            //
+            //   // catch case if user has no jobs
+            //   let num_jobs = Object.keys(this._jobs).length;
+            //   if (num_jobs > 0 && this._job_id == '') {
+            //
+            //     this._job_id = json_response['result'][0]['job_id'];
+            //   }
+            //
+            // } else {
+            //   console.log('unable to get user job list');
+            //   INotification.error("Get user jobs failed.");
+            // }
+          } else {
+            console.log('unable to get user job list');
+            INotification.error("Get user jobs failed.");
+          }
+        });
+
+
+
+
       this.node.appendChild(table);
     });
   }
