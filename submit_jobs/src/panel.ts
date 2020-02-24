@@ -1,7 +1,7 @@
 import { Panel } from '@phosphor/widgets';
 // import { activateMenuOptions } from './funcs';
 
-export const WIDGET_CLASS = 'p-Widget';
+export const WIDGET_CLASS = 'jp-Widget';
 export const CONTENT_CLASS = 'jp-Inspector-content';
 // const palette_command = 'palette-command';
 
