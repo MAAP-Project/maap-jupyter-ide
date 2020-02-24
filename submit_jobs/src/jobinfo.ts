@@ -517,7 +517,7 @@ export class JobWidget extends Widget {
 
       let resultsTable = document.createElement('div');
       resultsTable.id = 'result-table';
-      resultsTable.innerHTML = this.job_cache.convertResultToDisplay();
+      this.job_cache.convertResultToDisplay(resultsTable);
       resultsCell.appendChild(resultsTable);
     }
   }
