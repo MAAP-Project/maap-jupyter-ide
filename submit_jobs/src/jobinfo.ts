@@ -68,7 +68,6 @@ export class JobWidget extends Widget {
     this._populateJobInfo(job_widget);
 
     this.node.appendChild(job_widget);
-    document.getElementById("defaultOpen").click();
   }
 
   /* Handle update requests for the widget. */
@@ -77,6 +76,7 @@ export class JobWidget extends Widget {
     console.log(this._algorithm);
     console.log(this._version);
     this.job_cache.update();
+    document.getElementById("defaultOpen").click();
 
     console.log(this.job_cache.getTable());
     if (document.getElementById(widget_table_name) != null) {
