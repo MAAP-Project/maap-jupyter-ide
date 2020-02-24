@@ -50,13 +50,13 @@ export class JobWidget extends Widget {
     // button Run tab
     let runTab = document.createElement('button');
     runTab.setAttribute('id','defaultOpen');
-    runTab.setAttribute('class','tablinks active');
+    runTab.setAttribute('class','tablink');
     runTab.onclick = (e) => {this._clickTab(event, 'run');};
     runTab.innerHTML = 'Run Jobs';
 
     // button Info tab
     let infoTab = document.createElement('button');
-    infoTab.setAttribute('class','tablinks');
+    infoTab.setAttribute('class','tablink');
     infoTab.onclick = (e) => {this._clickTab(event, 'info');};
     infoTab.innerHTML = 'Job Info';
 
@@ -68,7 +68,7 @@ export class JobWidget extends Widget {
     this._populateJobInfo(job_widget);
 
     this.node.appendChild(job_widget);
-    // document.getElementById("defaultOpen").click();
+    document.getElementById("defaultOpen").click();
   }
 
   /* Handle update requests for the widget. */
