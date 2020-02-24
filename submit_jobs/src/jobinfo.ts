@@ -475,15 +475,15 @@ export class JobWidget extends Widget {
       infoHead.id = 'info-name';
       infoCell.appendChild(infoHead);
 
-      let infoText = `JobID: 89ab338b-a5a5-405b-8bb8-288de4cb7360
-      Status: job-failed
-      Algorithm: job-dps_plot:master
-      Inputs:
-        pass_number: 2
-        timestamp: 2020-02-12 22:45:54.104931
-        username: eyam`
+      // let infoText = `JobID: 89ab338b-a5a5-405b-8bb8-288de4cb7360
+      // Status: job-failed
+      // Algorithm: job-dps_plot:master
+      // Inputs:
+      //   pass_number: 2
+      //   timestamp: 2020-02-12 22:45:54.104931
+      //   username: eyam`
       let pre = document.createElement('pre');
-      pre.innerText = infoText;
+      pre.innerHTML = this.job_cache.getDisplay();
       infoCell.appendChild(pre);
 
       let br2 = document.createElement('br');
@@ -517,7 +517,7 @@ export class JobWidget extends Widget {
 
       let resultsTable = document.createElement('div');
       resultsTable.id = 'result-table';
-      this.job_cache.convertResultToDisplay(resultsTable);
+      this.job_cache.convertResultToDisplay(resultsTable,false);
       resultsCell.appendChild(resultsTable);
     }
   }
@@ -692,9 +692,9 @@ export class JobTable extends Widget {
     let setDisplays = function (me:JobTable){
       // create div for job info section
       // parent for everything, created in table response
-      if (document.getElementById('jobs-div') != null) {
+      let div2 = (<HTMLDivElement>document.getElementById('jobs-div'));
+      if (div2 != null) {
         // 1-time add line break and section header for job info
-        let div2 = (<HTMLDivElement>document.getElementById('jobs-div'));
         if (document.getElementById('job-info-head') == null) {
           // line break
           var line = document.createElement('hr');
@@ -878,24 +878,24 @@ export class JobTable extends Widget {
           INotification.error("Get user job result failed.");
         }
         let outerDiv = (<HTMLDivElement>document.getElementById('jobs-div'));
-        this.convertResultToDisplay(outerDiv);
+        this.convertResultToDisplay(outerDiv,true);
       });
     } else {
       me._results = '<p>Job '+me._job_id+' <br>not complete</p>';
       let outerDiv = (<HTMLDivElement>document.getElementById('jobs-div'));
-      this.convertResultToDisplay(outerDiv);
+      this.convertResultToDisplay(outerDiv,true);
     }
   }
 
   // front-end side of display job result table
-  convertResultToDisplay(outerDiv: HTMLDivElement) {
+  convertResultToDisplay(outerDiv: HTMLDivElement, header?:boolean) {
     // let jobResult = this._results[this._job_id];
     // console.log(me._results);
 
     // let outerDiv = (<HTMLDivElement>document.getElementById('jobs-div'));
     if (outerDiv != null) {
       // 1-time add line break and section header for job result
-      if (document.getElementById('job-result-head') == null) {
+      if (header && document.getElementById('job-result-head') == null) {
         // line break
         var line = document.createElement('hr');
         outerDiv.appendChild(line);
@@ -956,8 +956,8 @@ export class JobTable extends Widget {
     return this._table;
   }
 
-  getDisplay(jobId: string): string {
-    return this._displays[jobId];
+  getDisplay(): string {
+    return this._displays[this._job_id];
   }
 
   getResults(): string {
