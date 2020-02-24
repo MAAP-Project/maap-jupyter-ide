@@ -3,7 +3,7 @@ import { ICommandPalette, IWindowResolver } from '@jupyterlab/apputils';
 import { IFileBrowserFactory } from "@jupyterlab/filebrowser";
 import { ILauncher } from '@jupyterlab/launcher';
 import { IMainMenu } from '@jupyterlab/mainmenu';
-import { activateGetCapabilities, activateDescribe, activateList, activateRegister, activateRegisterAlgorithm, activateDeleteAlgorithm, activateExecute, activateGetStatus, activateGetResult, activateDismiss, activateDelete } from './funcs'
+import { activateGetCapabilities, activateDescribe, activateList, activateRegisterAlgorithm, activateDeleteAlgorithm, activateExecute, activateGetStatus, activateGetResult, activateDismiss, activateDelete } from './funcs'
 import { activateJobPanel, activateJobWidget } from './jobinfo';
 import { constructFileTreeWidget } from "./filetree";
 //import DataExplorer from './dataExplorer';
@@ -34,13 +34,13 @@ const extensionList: JupyterFrontEndPlugin<void> = {
   activate: activateList
 };
 
-const extensionRegister: JupyterFrontEndPlugin<void> = {
-  id: 'mas-register',
-  autoStart: true,
-  requires: [ICommandPalette],
-  optional: [ILauncher],
-  activate: activateRegister
-};
+// const extensionRegister: JupyterFrontEndPlugin<void> = {
+//   id: 'mas-register',
+//   autoStart: true,
+//   requires: [ICommandPalette],
+//   optional: [ILauncher],
+//   activate: activateRegister
+// };
 
 const extensionRegisterAlgorithm: JupyterFrontEndPlugin<void> = {
   id: 'mas-register2',
@@ -125,4 +125,4 @@ const fileTreePanel: JupyterFrontEndPlugin<void> = {
 };
 
 
-export default [extensionDeleteAlgorithm,extensionRegister,extensionRegisterAlgorithm,extensionCapabilities,extensionStatus,extensionResult,extensionExecute,extensionDismiss,extensionDelete,extensionDescribe,extensionList, cacheExtension, bigJobsPanel, fileTreePanel];
+export default [extensionDeleteAlgorithm,extensionRegisterAlgorithm,extensionCapabilities,extensionStatus,extensionResult,extensionExecute,extensionDismiss,extensionDelete,extensionDescribe,extensionList, cacheExtension, bigJobsPanel, fileTreePanel];

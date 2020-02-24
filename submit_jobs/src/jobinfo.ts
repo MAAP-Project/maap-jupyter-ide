@@ -14,6 +14,137 @@ const widget_table_name = 'widget-job-cache-display';
 const algo_list_id = 'algo-list-table';
 const execute_params_id = 'execute-params-table';
 
+// set display in 2nd callback after making table rows clickable
+// update/populate jobs table, add delete & dismiss buttons
+let setDisplays = function (jobsTable: JobTable, outerDivId: string){
+  // create div for job info section
+  // parent for everything, created in table response
+  if (document.getElementById(outerDivId) != null) {
+    // 1-time add line break and section header for job info
+    let div2 = (<HTMLDivElement>document.getElementById(outerDivId));
+    if (document.getElementById('job-info-head') == null) {
+      // line break
+      var line = document.createElement('hr');
+      div2.appendChild(line);
+
+      // display header
+      var detailHeader = document.createElement('h4');
+      detailHeader.setAttribute('id','job-info-head');
+      detailHeader.setAttribute('style','margin:0px');
+      detailHeader.innerText = 'Job Information';
+      div2.appendChild(detailHeader);
+    }
+
+    // --------------------
+    // job info
+    // --------------------
+    // set description from response
+    let disp = '';
+    if (jobsTable.getJobID() != ''){
+      disp = jobsTable.getDisplay(jobsTable.getJobID());
+    }
+
+    if (document.getElementById('job-detail-display') != null) {
+      // console.log(jobsTable.getJobID());
+      (<HTMLTextAreaElement>document.getElementById('job-detail-display')).innerHTML = disp;
+    } else {
+      // create textarea if it doesn't already exist
+      // detailed info on one job
+      var display = document.createElement("textarea");
+      display.id = 'job-detail-display';
+      (<HTMLTextAreaElement>display).readOnly = true;
+      (<HTMLTextAreaElement>display).cols = 30;
+      (<HTMLTextAreaElement>display).innerHTML = disp;
+      display.setAttribute('style', 'margin: 0px; height:19%; width: 98%; border: none; resize: none');
+      display.className = 'jp-JSONEditor-host';
+      div2.appendChild(display);
+
+      // create button to delete job 
+      if (document.getElementById('job-delete-button') == null){
+        var deleteBtn = document.createElement("button");
+        deleteBtn.id = 'job-delete-button';
+        deleteBtn.className = 'jupyter-button';
+        deleteBtn.innerHTML = 'Delete Job';
+        // change to get job_id and delete via widget or send request & create own popup
+        deleteBtn.addEventListener('click', function () {
+          var getUrl = new URL(PageConfig.getBaseUrl() + 'hysds/delete');
+          getUrl.searchParams.append('job_id', jobsTable.getJobID());
+          console.log(getUrl.href);
+          request('get',getUrl.href).then((res: RequestResult) => {
+            if (res.ok) {
+              let json_response:any = res.json();
+              let result = json_response['result'];
+
+              let body = document.createElement('div');
+              body.style.display = 'flex';
+              body.style.flexDirection = 'column';
+
+              let textarea = document.createElement("div");
+              textarea.id = 'delete-button-text';
+              textarea.style.display = 'flex';
+              textarea.style.flexDirection = 'column';
+              textarea.innerHTML = "<pre>"+result+"</pre>";
+
+              body.appendChild(textarea);
+              showDialog({
+                title: 'Delete Job',
+                body: new Widget({node:body}),
+                focusNodeSelector: 'input',
+                buttons: [Dialog.okButton({label: 'Ok'})]
+              });
+            }
+          });
+        }, false);
+        div2.appendChild(deleteBtn);
+      }
+
+      // create button to dismiss job
+      if (document.getElementById('job-dismiss-button') == null){
+        var dismissBtn = document.createElement("button");
+        dismissBtn.id = 'job-dismiss-button';
+        dismissBtn.className = 'jupyter-button';
+        dismissBtn.innerHTML = 'Dismiss Job';
+        // change to get job_id and dismiss via widget or send request & create own popup
+        dismissBtn.addEventListener('click', function () {
+          var getUrl = new URL(PageConfig.getBaseUrl() + 'hysds/dismiss');
+          getUrl.searchParams.append('job_id', jobsTable.getJobID());
+          console.log(getUrl.href);
+          request('get',getUrl.href).then((res: RequestResult) => {
+            if (res.ok) {
+              let json_response:any = res.json();
+              let result = json_response['result'];
+
+              let body = document.createElement('div');
+              body.style.display = 'flex';
+              body.style.flexDirection = 'column';
+
+              let textarea = document.createElement("div");
+              textarea.id = 'dismiss-button-text';
+              textarea.style.display = 'flex';
+              textarea.style.flexDirection = 'column';
+              textarea.innerHTML = "<pre>"+result+"</pre>";
+
+              body.appendChild(textarea);
+              showDialog({
+                title: 'Dismiss Job',
+                body: new Widget({node:body}),
+                focusNodeSelector: 'input',
+                buttons: [Dialog.okButton({label: 'Ok'})]
+              });
+            }
+          });
+        }, false);
+
+        let body2 = document.createElement('span');
+        body2.innerHTML = "     ";
+        div2.appendChild(body2);
+        div2.appendChild(dismissBtn);
+      }
+    }
+  }
+}
+// end setDisplays def
+
 // MainArea Widget
 // Intended layout(functions):
 //  -------------------------------------------------------------------
@@ -72,13 +203,13 @@ export class JobWidget extends Widget {
 
   /* Handle update requests for the widget. */
   update() {
-    console.log('updating');
-    console.log(this._algorithm);
-    console.log(this._version);
+    // console.log('updating');
+    // console.log(this._algorithm);
+    // console.log(this._version);
     this.job_cache.update();
     document.getElementById("defaultOpen").click();
 
-    console.log(this.job_cache.getTable());
+    // console.log(this.job_cache.getTable());
     if (document.getElementById(widget_table_name) != null) {
       (<HTMLTextAreaElement>document.getElementById(widget_table_name)).innerHTML = this.job_cache.getTable();
     } else {
@@ -112,6 +243,8 @@ export class JobWidget extends Widget {
     this._updateOverviewCol();
     // update jobinfo when job chosen
     console.log(this.job_cache.getJobID());
+    this._updateInfoCol();
+    this._updateResultsCol();
 
     // this.job_cache.setRowClick(widget_table_name,);
   }
@@ -443,8 +576,81 @@ export class JobWidget extends Widget {
 
     job_widget.appendChild(infoDiv);
 
-    let infop = document.createElement('p');
-    infop.innerText = "infodiv";
+    let infoTable = document.createElement('table');
+    infoTable.setAttribute('id','infotable');
+    infoTable.setAttribute('class','colPadding');
+    let rrow = <HTMLTableRowElement> infoTable.insertRow();
+
+    let infoCell = rrow.insertCell();
+    infoCell.setAttribute('id','cell-jobinfo');
+    infoCell.setAttribute('valign','top');
+    infoCell.setAttribute('style','min-width:260px');
+
+    let resultsCell = rrow.insertCell();
+    resultsCell.setAttribute('id','cell-jobresults');
+    resultsCell.setAttribute('valign','top');
+    resultsCell.setAttribute('style','min-width:260px');
+
+    this._updateInfoCol();
+    this._updateResultsCol();
+
+    infoDiv.appendChild(infoTable);
+    job_widget.appendChild(infoDiv);
+  }
+
+  _updateInfoCol() {
+    let infoCell = document.getElementById('cell-jobinfo');
+    if (infoCell != null) {
+      let infoHead = document.createElement('h3');
+      infoHead.innerText = 'Job Information';
+      infoHead.id = 'info-name';
+      infoCell.appendChild(infoHead);
+
+      let infoText = `JobID: 89ab338b-a5a5-405b-8bb8-288de4cb7360
+      Status: job-failed
+      Algorithm: job-dps_plot:master
+      Inputs:
+        pass_number: 2
+        timestamp: 2020-02-12 22:45:54.104931
+        username: eyam`
+      let pre = document.createElement('pre');
+      pre.innerText = infoText;
+      infoCell.appendChild(pre);
+
+      let br2 = document.createElement('br');
+      infoCell.appendChild(br2);
+
+      let deleteBtn = document.createElement('button');
+      deleteBtn.setAttribute('id','job-delete-button');
+      deleteBtn.setAttribute('class','jupyter-button');
+      deleteBtn.innerText = "Delete Job";
+      infoCell.appendChild(deleteBtn);
+
+      let span = document.createElement('span');
+      span.innerText = '     ';
+      infoCell.appendChild(span);
+
+      let dismissBtn = document.createElement('button');
+      dismissBtn.setAttribute('id','job-dismiss-button');
+      dismissBtn.setAttribute('class','jupyter-button');
+      dismissBtn.innerText = "Dismiss Job";
+      infoCell.appendChild(dismissBtn); 
+    }
+  }
+
+  _updateResultsCol() {
+    let resultsCell = document.getElementById('cell-jobresults');
+    if (resultsCell != null) {
+      let resultsHead = document.createElement('h3');
+      resultsHead.id = 'results-name';
+      resultsHead.innerText = 'Job Results';
+      resultsCell.appendChild(resultsHead);
+
+      let resultsTable = document.createElement('div');
+      resultsTable.id = 'result-table';
+      resultsTable.innerHTML = `<table id="job-result-display" class="jp-JSONEditor-host" style="border-style:none; font-size:14px"><tbody><tr><td>JobID: </td><td style="text-align:left">d9f26ccc-9ab8-4234-8546-e2d6f44770d8</td></tr><tr><td>ProductName: </td><td style="text-align:left">output-2020-02-13T00:10:17.703154</td></tr><tr><td>Locations: </td><td style="text-align:left">•&nbsp;http://maap-dev-dataset.s3-website-us-east-1.amazonaws.com/products/eyam/hello-world-output_ubuntu/master/2020/02/13/00/10/17/703154<br> •&nbsp;s3://s3.us-east-1.amazonaws.com:80/maap-dev-dataset/products/eyam/hello-world-output_ubuntu/master/2020/02/13/00/10/17/703154<br>  •&nbsp;<a href="https://s3.console.aws.amazon.com/s3/buckets/maap-dev-dataset/products/eyam/hello-world-output_ubuntu/master/2020/02/13/00/10/17/703154/?region=us-east-1&amp;tab=overview" target="_blank" style="border-bottom: 1px solid #0000ff; color: #0000ff;">https://s3.console.aws.amazon.com/s3/buckets/maap-dev-dataset/products/eyam/hello-world-output_ubuntu/master/2020/02/13/00/10/17/703154/?region=us-east-1&amp;tab=overview</a></td></tr></tbody></table>`
+      resultsCell.appendChild(resultsTable);
+    }
   }
 
   _setJobClick(tableId) {
@@ -481,7 +687,7 @@ export class JobWidget extends Widget {
     }
     tablinks = document.getElementsByClassName("tablinks");
     for (i = 0; i < tablinks.length; i++) {
-      tablinks[i].className = tablinks[i].className.replace(" active", "");
+      tablinks[i].classList.remove("active");
     }
     document.getElementById(section).style.display = "block";
     evt.currentTarget.className += " active";
@@ -612,139 +818,10 @@ export class JobTable extends Widget {
       }
     }
 
-    // set display in 2nd callback after making table rows clickable
-    // update/populate jobs table, add delete & dismiss buttons
-    let setDisplays = function (me:JobTable){
-      // create div for job info section
-      // parent for everything, created in table response
-      if (document.getElementById('jobs-div') != null) {
-        // 1-time add line break and section header for job info
-        let div2 = (<HTMLDivElement>document.getElementById('jobs-div'));
-        if (document.getElementById('job-info-head') == null) {
-          // line break
-          var line = document.createElement('hr');
-          div2.appendChild(line);
-  
-          // display header
-          var detailHeader = document.createElement('h4');
-          detailHeader.setAttribute('id','job-info-head');
-          detailHeader.setAttribute('style','margin:0px');
-          detailHeader.innerText = 'Job Information';
-          div2.appendChild(detailHeader);
-        }
-  
-        // --------------------
-        // job info
-        // --------------------
-        // set description from response
-        let disp = '';
-        if (me._job_id != ''){
-          disp = me._displays[me._job_id];
-        }
-
-        if (document.getElementById('job-detail-display') != null) {
-          // console.log(me._job_id);
-          (<HTMLTextAreaElement>document.getElementById('job-detail-display')).innerHTML = disp;
-        } else {
-          // create textarea if it doesn't already exist
-          // detailed info on one job
-          var display = document.createElement("textarea");
-          display.id = 'job-detail-display';
-          (<HTMLTextAreaElement>display).readOnly = true;
-          (<HTMLTextAreaElement>display).cols = 30;
-          (<HTMLTextAreaElement>display).innerHTML = disp;
-          display.setAttribute('style', 'margin: 0px; height:19%; width: 98%; border: none; resize: none');
-          display.className = 'jp-JSONEditor-host';
-          div2.appendChild(display);
-
-          // create button to delete job 
-          if (document.getElementById('job-delete-button') == null){
-            var deleteBtn = document.createElement("button");
-            deleteBtn.id = 'job-delete-button';
-            deleteBtn.className = 'jupyter-button';
-            deleteBtn.innerHTML = 'Delete Job';
-            // change to get job_id and delete via widget or send request & create own popup
-            deleteBtn.addEventListener('click', function () {
-              var getUrl = new URL(PageConfig.getBaseUrl() + 'hysds/delete');
-              getUrl.searchParams.append('job_id', me._job_id);
-              console.log(getUrl.href);
-              request('get',getUrl.href).then((res: RequestResult) => {
-                if (res.ok) {
-                  let json_response:any = res.json();
-                  let result = json_response['result'];
-
-                  let body = document.createElement('div');
-                  body.style.display = 'flex';
-                  body.style.flexDirection = 'column';
-
-                  let textarea = document.createElement("div");
-                  textarea.id = 'delete-button-text';
-                  textarea.style.display = 'flex';
-                  textarea.style.flexDirection = 'column';
-                  textarea.innerHTML = "<pre>"+result+"</pre>";
-
-                  body.appendChild(textarea);
-                  showDialog({
-                    title: 'Delete Job',
-                    body: new Widget({node:body}),
-                    focusNodeSelector: 'input',
-                    buttons: [Dialog.okButton({label: 'Ok'})]
-                  });
-                }
-              });
-            }, false);
-            div2.appendChild(deleteBtn);
-          }
-
-          // create button to dismiss job
-          if (document.getElementById('job-dismiss-button') == null){
-            var dismissBtn = document.createElement("button");
-            dismissBtn.id = 'job-dismiss-button';
-            dismissBtn.className = 'jupyter-button';
-            dismissBtn.innerHTML = 'Dismiss Job';
-            // change to get job_id and dismiss via widget or send request & create own popup
-            dismissBtn.addEventListener('click', function () {
-              var getUrl = new URL(PageConfig.getBaseUrl() + 'hysds/dismiss');
-              getUrl.searchParams.append('job_id', me._job_id);
-              console.log(getUrl.href);
-              request('get',getUrl.href).then((res: RequestResult) => {
-                if (res.ok) {
-                  let json_response:any = res.json();
-                  let result = json_response['result'];
-
-                  let body = document.createElement('div');
-                  body.style.display = 'flex';
-                  body.style.flexDirection = 'column';
-
-                  let textarea = document.createElement("div");
-                  textarea.id = 'dismiss-button-text';
-                  textarea.style.display = 'flex';
-                  textarea.style.flexDirection = 'column';
-                  textarea.innerHTML = "<pre>"+result+"</pre>";
-
-                  body.appendChild(textarea);
-                  showDialog({
-                    title: 'Dismiss Job',
-                    body: new Widget({node:body}),
-                    focusNodeSelector: 'input',
-                    buttons: [Dialog.okButton({label: 'Ok'})]
-                  });
-                }
-              });
-            }, false);
-
-            let body2 = document.createElement('span');
-            body2.innerHTML = "     ";
-            div2.appendChild(body2);
-            div2.appendChild(dismissBtn);
-          }
-        }
-      }
-    }
-    // end setDisplays def
+    let setDetailedDisplay = function(me: JobTable) {setDisplays(me,'jobs-div');}
 
     // make clickable table rows after setting job table
-    this.setRowClick('job-cache-display', setDisplays);
+    this.setRowClick('job-cache-display', setDetailedDisplay);
   }
 
   // set clickable rows
@@ -855,12 +932,18 @@ export class JobTable extends Widget {
     }
   }
 
+  // -----------------------------------------------------------
+  // getters for GUI referencing properties in this class
   update(): void {
     this._updateDisplay();
   }
 
   getTable(): string {
     return this._table;
+  }
+
+  getDisplay(jobId: string): string {
+    return this._displays[jobId];
   }
 
   getUsername(): string {
@@ -873,6 +956,7 @@ export class JobTable extends Widget {
 
   setJobID(jobId: string): void{
     this._job_id = jobId;
+    this._updateDisplay();
   }
 }
 
