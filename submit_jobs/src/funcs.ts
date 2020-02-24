@@ -24,7 +24,7 @@ const describeProcessFields = data.describeProcess;
 // ------------------------------------------------------------
 var username:string;
 // ------------------------------------------------------------
-const registerAlgorithm2_command = 'hysds: register';
+// const registerAlgorithm2_command = 'hysds: register';
 const registerAlgorithm_command = 'hysds: register2';
 const capabilities_command = 'hysds: get-capabilities';
 const statusJob_command = 'hysds: get-status';
@@ -39,19 +39,19 @@ export const jobCache_update_command = 'jobs: refresh';
 export const jobWidget_command = 'jobs: main-widget';
 
 
-export function activateRegister(app: JupyterFrontEnd, 
-                        palette: ICommandPalette, 
-                        restorer: ILauncher | null): void{
-  app.commands.addCommand(registerAlgorithm2_command, {
-    label: 'Register Algorithm',
-    isEnabled: () => true,
-    execute: args => {
-      popupResult(new ProjectSelector('register',registerFields,username),"Select a Project");
-    }
-  });
-  palette.addItem({command: registerAlgorithm2_command, category: 'DPS/MAS'});
-  console.log('HySDS Register Algorithm is activated!');
-}
+// export function activateRegister(app: JupyterFrontEnd, 
+//                         palette: ICommandPalette, 
+//                         restorer: ILauncher | null): void{
+//   app.commands.addCommand(registerAlgorithm2_command, {
+//     label: 'Register Algorithm',
+//     isEnabled: () => true,
+//     execute: args => {
+//       popupResult(new ProjectSelector('register',registerFields,username),"Select a Project");
+//     }
+//   });
+//   palette.addItem({command: registerAlgorithm2_command, category: 'DPS/MAS'});
+//   console.log('HySDS Register Algorithm is activated!');
+// }
 
 export function activateRegisterAlgorithm(
   app: JupyterFrontEnd,
