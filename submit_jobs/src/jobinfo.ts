@@ -532,18 +532,19 @@ export class JobWidget extends Widget {
         resultsCell.appendChild(resultsHead);
       }
 
-      let resultsTableDiv = document.getElementById('result-table');
+      let resultsTableDiv = <HTMLDivElement>document.getElementById('results-table-div');
       if (resultsTableDiv == null) {
         resultsTableDiv = document.createElement('div');
         resultsTableDiv.id = 'result-table';
-        // this.job_cache.convertResultToDisplay(resultsTableDiv,false);
-        let resultsTable: HTMLTableElement = <HTMLTableElement>(document.getElementById(this.job_cache.getResultsTableName())).cloneNode(true);
-        resultsTable.id = 'result-display-widget';
-        resultsTableDiv.appendChild(resultsTable);
+        this.job_cache.convertResultToDisplay(resultsTableDiv,false);
+        // let resultsTable: HTMLTableElement = <HTMLTableElement>(document.getElementById(this.job_cache.getResultsTableName())).cloneNode(true);
+        // resultsTable.id = 'result-display-widget';
+        // resultsTableDiv.appendChild(resultsTable);
         resultsCell.appendChild(resultsTableDiv);
       } else {
-        let resultsTable = document.getElementById('result-display-widget');
-        resultsTable.innerHTML = (<HTMLTableElement>document.getElementById(this.job_cache.getResultsTableName()).cloneNode(true)).innerHTML;
+        // let resultsTable = document.getElementById('result-display-widget');
+        // resultsTable.innerHTML = (<HTMLTableElement>document.getElementById(this.job_cache.getResultsTableName()).cloneNode(true)).innerHTML;
+        this.job_cache.updateResultsTable(resultsTableDiv,'results-display-widget');
       }
     }
   }
@@ -940,8 +941,31 @@ export class JobTable extends Widget {
       // job result
       // --------------------
       // console.log('setting results');
-      if (document.getElementById(this._resultsTableName) != null) {
-        (<HTMLTextAreaElement>document.getElementById(this._resultsTableName)).innerHTML = this._results;
+      // if (document.getElementById(this._resultsTableName) != null) {
+      //   (<HTMLTextAreaElement>document.getElementById(this._resultsTableName)).innerHTML = this._results;
+      // } else {
+      //   // create div for table if table doesn't already exist
+      //   var div = document.createElement('div');
+      //   div.setAttribute('id', 'result-table');
+      //   div.setAttribute('resize','none');
+      //   div.setAttribute('class','jp-JSONEditor-host');
+      //   div.setAttribute('style','border-style:none; overflow: auto');
+
+      //   var display = document.createElement("table");
+      //   display.id = 'job-result-display';
+      //   display.innerHTML = this._results;
+      //   display.setAttribute('class','jp-JSONEditor-host');
+      //   display.setAttribute('style','border-style:none; font-size:11px');
+      //   div.appendChild(display);
+      //   outerDiv.appendChild(div);
+      // }
+      this.updateResultsTable(outerDiv,this._resultsTableName);
+    }
+  }
+
+  updateResultsTable(outerDiv: HTMLDivElement, tableName: string) {
+    if (document.getElementById(tableName) != null) {
+        (<HTMLTextAreaElement>document.getElementById(tableName)).innerHTML = this._results;
       } else {
         // create div for table if table doesn't already exist
         var div = document.createElement('div');
@@ -951,14 +975,13 @@ export class JobTable extends Widget {
         div.setAttribute('style','border-style:none; overflow: auto');
 
         var display = document.createElement("table");
-        display.id = 'job-result-display';
+        display.id = tableName;
         display.innerHTML = this._results;
         display.setAttribute('class','jp-JSONEditor-host');
         display.setAttribute('style','border-style:none; font-size:11px');
         div.appendChild(display);
         outerDiv.appendChild(div);
       }
-    }
   }
 
   // -----------------------------------------------------------
@@ -1002,9 +1025,9 @@ export class JobTable extends Widget {
 // reference to jobsTable passed through each submit_job widget (NO LONGER)
 export const jobsTable = new JobTable();
 jobsTable.update();
-export const jobsPanel = new ADEPanel(jobsTable);
 let content = new JobWidget(jobsTable);
 const jobsWidget = new MainAreaWidget({content});
+export const jobsPanel = new ADEPanel(jobsTable,[content]);
 // -------------------------------------------------------------
 // panel widget activation
 // const jobCache_update_command = 'jobs: refresh';
@@ -1023,9 +1046,9 @@ export function activateJobPanel(app: JupyterFrontEnd, palette: ICommandPalette,
     label: 'Refresh Job List',
     isEnabled: () => true,
     execute: args => {
-      jobsTable.update();
+      // jobsTable.update();
       infoPanel.update();
-      jobsWidget.update();
+      // jobsWidget.update();
     }
   });
   palette.addItem({command: jobCache_update_command, category: 'DPS/MAS'});
