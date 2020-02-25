@@ -460,8 +460,8 @@ export class JobWidget extends Widget {
     resultsCell.setAttribute('valign','top');
     resultsCell.setAttribute('style','min-width:360px');
 
-    this._updateInfoCol();
-    this._updateResultsCol();
+    // this._updateInfoCol();
+    // this._updateResultsCol();
 
     infoDiv.appendChild(infoTable);
     job_widget.appendChild(infoDiv);
