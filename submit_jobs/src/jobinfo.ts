@@ -537,13 +537,13 @@ export class JobWidget extends Widget {
         resultsTableDiv = document.createElement('div');
         resultsTableDiv.id = 'result-table';
         // this.job_cache.convertResultToDisplay(resultsTableDiv,false);
-        let resultsTable = (<HTMLTableElement>document.getElementById(this.jobCache.getResultsTableName())).cloneNode(true);
+        let resultsTable = (<HTMLTableElement>document.getElementById(this.job_cache.getResultsTableName())).cloneNode(true);
         resultsTable.id = 'result-display-widget';
         resultsTableDiv.appendChild(resultsTable);
         resultsCell.appendChild(resultsTableDiv);
       } else {
         let resultsTable = document.getElementById('result-display-widget');
-        resultsTable.innerHTML = (<HTMLTableElement>document.getElementById(this.job_cache.getResultsTableName())).cloneNode(true).innerHTML;
+        resultsTable.innerHTML = (<HTMLTableElement>document.getElementById(this.job_cache.getResultsTableName()).cloneNode(true)).innerHTML;
       }
     }
   }
