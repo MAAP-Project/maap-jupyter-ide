@@ -470,40 +470,54 @@ export class JobWidget extends Widget {
   _updateInfoCol() {
     let infoCell = document.getElementById('cell-jobinfo');
     if (infoCell != null) {
-      let infoHead = document.createElement('h3');
-      infoHead.innerText = 'Job Information';
-      infoHead.id = 'info-name';
-      infoCell.appendChild(infoHead);
+      let infoHead = document.getElementById('info-name');
+      if (infoHead == null) {
+        infoHead = document.createElement('h3');
+        infoHead.innerText = 'Job Information';
+        infoHead.id = 'info-name';
+        infoCell.appendChild(infoHead);
+      }
 
-      // let infoText = `JobID: 89ab338b-a5a5-405b-8bb8-288de4cb7360
-      // Status: job-failed
-      // Algorithm: job-dps_plot:master
-      // Inputs:
-      //   pass_number: 2
-      //   timestamp: 2020-02-12 22:45:54.104931
-      //   username: eyam`
-      let pre = document.createElement('pre');
-      pre.innerHTML = this.job_cache.getDisplay();
-      infoCell.appendChild(pre);
+      let pre = document.getElementById('info-pre');
+      if (pre != null) {
+        pre.innerHTML = this.job_cache.getDisplay();  
+      } else {
+        pre = document.createElement('pre');
+        pre.id = 'info-pre';
+        pre.innerHTML = this.job_cache.getDisplay();
+        infoCell.appendChild(pre);
+        
+        let br2 = document.createElement('br');
+        infoCell.appendChild(br2);
+      }
 
-      let br2 = document.createElement('br');
-      infoCell.appendChild(br2);
+      let deleteBtn = document.getElementById('job-delete-button-widget');
+      if (deleteBtn != null){
+        // set delete fn
+        console.log('delete1');
+      } else {
+        deleteBtn = document.createElement('button');
+        deleteBtn.setAttribute('id','job-delete-button-widget');
+        deleteBtn.setAttribute('class','jupyter-button');
+        deleteBtn.innerText = "Delete Job";
+        infoCell.appendChild(deleteBtn);
+        
+        let span = document.createElement('span');
+        span.innerText = '     ';
+        infoCell.appendChild(span);
+      }
 
-      let deleteBtn = document.createElement('button');
-      deleteBtn.setAttribute('id','job-delete-button');
-      deleteBtn.setAttribute('class','jupyter-button');
-      deleteBtn.innerText = "Delete Job";
-      infoCell.appendChild(deleteBtn);
-
-      let span = document.createElement('span');
-      span.innerText = '     ';
-      infoCell.appendChild(span);
-
-      let dismissBtn = document.createElement('button');
-      dismissBtn.setAttribute('id','job-dismiss-button');
-      dismissBtn.setAttribute('class','jupyter-button');
-      dismissBtn.innerText = "Dismiss Job";
-      infoCell.appendChild(dismissBtn); 
+      let dismissBtn = document.getElementById('job-dismiss-button-widget');
+      if (dismissBtn != null ){
+        // set dismiss fn
+        console.log('delete1');
+      } else {
+        dismissBtn = document.createElement('button');
+        dismissBtn.setAttribute('id','job-dismiss-button-widget');
+        dismissBtn.setAttribute('class','jupyter-button');
+        dismissBtn.innerText = "Dismiss Job";
+        infoCell.appendChild(dismissBtn);
+      }
     }
   }
 
@@ -523,13 +537,13 @@ export class JobWidget extends Widget {
         resultsTableDiv = document.createElement('div');
         resultsTableDiv.id = 'result-table';
         // this.job_cache.convertResultToDisplay(resultsTableDiv,false);
-        let resultsTable = <HTMLTableElement>document.querySelector('#'+this.job_cache.getResultsTableName()).cloneNode(true);
+        let resultsTable = (<HTMLTableElement>document.getElementById(this.jobCache.getResultsTableName())).cloneNode(true);
         resultsTable.id = 'result-display-widget';
         resultsTableDiv.appendChild(resultsTable);
         resultsCell.appendChild(resultsTableDiv);
       } else {
         let resultsTable = document.getElementById('result-display-widget');
-        resultsTable.innerHTML = (<HTMLTableElement>document.querySelector('#'+this.job_cache.getResultsTableName()).cloneNode(true)).innerHTML;
+        resultsTable.innerHTML = (<HTMLTableElement>document.getElementById(this.job_cache.getResultsTableName())).cloneNode(true).innerHTML;
       }
     }
   }
