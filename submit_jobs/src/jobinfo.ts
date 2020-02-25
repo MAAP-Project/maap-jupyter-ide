@@ -510,15 +510,27 @@ export class JobWidget extends Widget {
   _updateResultsCol() {
     let resultsCell = document.getElementById('cell-jobresults');
     if (resultsCell != null) {
-      let resultsHead = document.createElement('h3');
-      resultsHead.id = 'results-name';
-      resultsHead.innerText = 'Job Results';
-      resultsCell.appendChild(resultsHead);
+      let resultsHead = document.getElementById('results-name');
+      if (resultsHead == null){
+        resultsHead = document.createElement('h3');
+        resultsHead.id = 'results-name';
+        resultsHead.innerText = 'Job Results';
+        resultsCell.appendChild(resultsHead);
+      }
 
-      let resultsTable = document.createElement('div');
-      resultsTable.id = 'result-table';
-      this.job_cache.convertResultToDisplay(resultsTable,false);
-      resultsCell.appendChild(resultsTable);
+      let resultsTableDiv = document.getElementById('result-table');
+      if (resultsTableDiv == null) {
+        resultsTableDiv = document.createElement('div');
+        resultsTableDiv.id = 'result-table';
+        // this.job_cache.convertResultToDisplay(resultsTableDiv,false);
+        let resultsTable = <HTMLTableElement>document.querySelector('#'+this.job_cache.getResultsTableName()).cloneNode(true);
+        resultsTable.id = 'result-display-widget';
+        resultsTableDiv.appendChild(resultsTable);
+        resultsCell.appendChild(resultsTableDiv);
+      } else {
+        let resultsTable = document.getElementById('result-display-widget');
+        resultsTable.innerHTML = (<HTMLTableElement>document.querySelector('#'+this.job_cache.getResultsTableName()).cloneNode(true)).innerHTML;
+      }
     }
   }
 
@@ -568,6 +580,7 @@ export class JobTable extends Widget {
   _table: string;
   _displays: {[k:string]:string};
   _results: string;
+  _resultsTableName: string;
   _jobs: {[k:string]:string};
   _job_id: string;
   _username: string;
@@ -592,6 +605,7 @@ export class JobTable extends Widget {
 
     this._table = '';
     this._results = '';
+    this._resultsTableName = 'job-result-display';
     this._displays = {};
     this._jobs = {};
     this._job_id = '';
@@ -912,8 +926,8 @@ export class JobTable extends Widget {
       // job result
       // --------------------
       // console.log('setting results');
-      if (document.getElementById('job-result-display') != null) {
-        (<HTMLTextAreaElement>document.getElementById('job-result-display')).innerHTML = this._results;
+      if (document.getElementById(this._resultsTableName) != null) {
+        (<HTMLTextAreaElement>document.getElementById(this._resultsTableName)).innerHTML = this._results;
       } else {
         // create div for table if table doesn't already exist
         var div = document.createElement('div');
@@ -962,6 +976,10 @@ export class JobTable extends Widget {
 
   getResults(): string {
     return this._results;
+  }
+
+  getResultsTableName(): string {
+    return this._resultsTableName;
   }
 }
 
