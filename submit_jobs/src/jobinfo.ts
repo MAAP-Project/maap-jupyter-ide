@@ -10,9 +10,123 @@ import { jobCache_update_command, jobWidget_command, activateMenuOptions } from 
 import { ADEPanel, WIDGET_CLASS, CONTENT_CLASS } from './panel';
 import '../style/index.css';
 
-const widget_table_name = 'widget-job-cache-display';
-const algo_list_id = 'algo-list-table';
-const execute_params_id = 'execute-params-table';
+var DISPLAYS: {[k:string]:string} = {};
+var JOBS: {[k:string]:string} = {};
+
+// create job table with job ids, status, and algorithms
+function getJobs(username: string, job_id: string, setJobId, callback) {
+  // call list jobs endpoint using username
+  var getUrl = new URL(PageConfig.getBaseUrl() + 'hysds/listJobs');
+  getUrl.searchParams.append('username',username);
+  console.log(getUrl.href);
+  // --------------------
+  // get jobs list request
+  // --------------------
+  request('get', getUrl.href).then((res: RequestResult) => {
+    if(res.ok){
+      let json_response:any = res.json();
+      // console.log(json_response['status_code']);
+      INotification.success("Get user jobs success.");
+      // console.log(json_response['result']);
+      // console.log(json_response['displays']);
+
+      if (json_response['status_code'] == 200){
+        let table = json_response['table'];
+        JOBS = json_response['jobs'];
+        // later get user to pick the job
+        // this._displays = json_response['displays'];
+        DISPLAYS = json_response['displays'];
+
+        // catch case if user has no jobs
+        let num_jobs = Object.keys(JOBS).length;
+        if (num_jobs > 0 && job_id == '') {
+          job_id = json_response['result'][0]['job_id'];
+          setJobId(job_id);
+        }
+        callback(table);
+      } else {
+        console.log('unable to get user job list');
+        INotification.error("Get user jobs failed.");
+      }
+    } else {
+      console.log('unable to get user job list');
+      INotification.error("Get user jobs failed.");
+    }
+  });
+}
+
+// passes back results html from python api
+function getJobResults(job_id: string, callback?: any) {
+  let results:string = '';
+  var resultUrl = new URL(PageConfig.getBaseUrl() + 'hysds/getResult');
+    // console.log(me.jobs[me._job_id]);
+    if (job_id != '' && JOBS[job_id]['status'] == 'job-completed') {
+      resultUrl.searchParams.append('job_id',job_id);
+      console.log(resultUrl.href);
+
+      request('get', resultUrl.href).then((res: RequestResult) => {
+        if(res.ok){
+          let json_response:any = res.json();
+          // console.log(json_response['status_code']);
+          INotification.success("Get user job result success.");
+
+          if (json_response['status_code'] == 200){
+            results = json_response['result'];
+
+          } else {
+            console.log('unable to get user job list');
+            INotification.error("Get user job result failed.");
+          }
+        } else {
+          console.log('unable to get user job list');
+          INotification.error("Get user job result failed.");
+        }
+        // let outerDiv = (<HTMLDivElement>document.getElementById('jobs-div'));
+        callback(results);
+      });
+    } else {
+      results = '<p>Job '+job_id+' <br>not complete</p>';
+      // let outerDiv = (<HTMLDivElement>document.getElementById('jobs-div'));
+      callback(results);
+    }
+}
+
+// converts results into display table and appends to provided div element
+function updateResultsTable(outerDiv: HTMLDivElement, tableName: string, results: string) {
+  if (outerDiv == null) {
+    outerDiv = document.createElement('div');
+    outerDiv.setAttribute('id', tableName+'-div');
+    outerDiv.setAttribute('resize','none');
+    outerDiv.setAttribute('class','jp-JSONEditor-host');
+    outerDiv.setAttribute('style','border-style:none; overflow: auto');
+  }
+  if (document.getElementById(tableName) != null) {
+      (<HTMLTextAreaElement>document.getElementById(tableName)).innerHTML = results;
+  } else {
+    var display = document.createElement("table");
+    display.id = tableName;
+    display.innerHTML = results;
+    display.setAttribute('class','jp-JSONEditor-host');
+    display.setAttribute('style','border-style:none; font-size:11px');
+    outerDiv.appendChild(display);
+  }
+}
+
+// clickable table rows helper function
+function onRowClick(tableId, callback) {
+  if (document.getElementById(tableId) != undefined) {
+    let table = document.getElementById(tableId),
+        rows = table.getElementsByTagName('tr'),
+        i;
+    for (i = 1; i < rows.length; i++) {
+      rows[i].onclick = function(row) {
+        return function() {
+          callback(row);
+        }
+      }(rows[i]);
+    }
+  }
+}
 
 // MainArea Widget
 // Intended layout(functions):
@@ -28,17 +142,42 @@ const execute_params_id = 'execute-params-table';
 //   Jobs Table (update)
 //  -------------------------------------------------------------------
 export class JobWidget extends Widget {
-  job_cache: JobTable;
+  _username: string;
   _algorithm: string;
   _version: string;
+  _job_id: string;
 
-  constructor(jobCache: JobTable) {
+  // names
+  _widget_table_name: string;
+  _algo_list_id: string;
+  _execute_params_id: string;
+
+  constructor() {
     super();
-    this.job_cache = jobCache;
     this.addClass(CONTENT_CLASS);
     this.addClass(WIDGET_CLASS);
     this._algorithm = 'dps_plot';   // FOR TESTING
     this._version = 'master';       // FOR TESTING
+    this._job_id = '';
+
+    this._widget_table_name = 'widget-job-cache-display';
+    this._algo_list_id = 'algo-list-table';
+    this._execute_params_id = 'execute-params-table';
+
+    // set username on start
+    // callback should finish before users manage to do anything
+    // now profile timing out shouldn't be a problem
+    let me = this;
+    getUserInfo(function(profile: any) {
+      if (profile['cas:username'] === undefined) {
+        INotification.error("Get username failed.");
+        me._username = 'anonymous';
+      } else {
+        me._username = profile['cas:username'];
+        INotification.success("Got username.");
+        me.update();
+      }
+    });
 
     let job_widget = document.createElement('div');
     job_widget.id = 'job-widget';
@@ -68,6 +207,8 @@ export class JobWidget extends Widget {
     this._populateJobInfo(job_widget);
 
     this.node.appendChild(job_widget);
+
+    this._setAlgoClick(this._algo_list_id);
   }
 
   /* Handle update requests for the widget. */
@@ -75,12 +216,13 @@ export class JobWidget extends Widget {
     // console.log('updating');
     // console.log(this._algorithm);
     // console.log(this._version);
-    this.job_cache.update();
+    let me = this;
     document.getElementById("defaultOpen").click();
 
-    // console.log(this.job_cache.getTable());
-    if (document.getElementById(widget_table_name) != null) {
-      (<HTMLTextAreaElement>document.getElementById(widget_table_name)).innerHTML = this.job_cache.getTable();
+    if (document.getElementById(this._widget_table_name) != null) {
+      getJobs(this._username,this._job_id,this.setJobId,function(table){
+        (<HTMLTextAreaElement>document.getElementById(me._widget_table_name)).innerHTML = table;
+      });
     } else {
       // create div for jobid table if table doesn't already exist
       var div = document.createElement('div');
@@ -91,8 +233,10 @@ export class JobWidget extends Widget {
 
       // jobs table
       var textarea = document.createElement("table");
-      textarea.id = widget_table_name;
-      textarea.innerHTML = this.job_cache.getTable();
+      textarea.id = this._widget_table_name;
+      getJobs(this._username,this._job_id,this.setJobId,function(table){
+        (<HTMLTextAreaElement>document.getElementById(me._widget_table_name)).innerHTML = table;
+      });
       div.appendChild(textarea);
       let jw_div = document.getElementById('job-widget-div');
       if (jw_div != null){
@@ -111,12 +255,14 @@ export class JobWidget extends Widget {
     this._updateExecuteCol();
     this._updateOverviewCol();
     // update jobinfo when job chosen
-    console.log(this.job_cache.getJobID());
+    // console.log(this.job_cache.getJobID());
     this._updateInfoCol();
     this._updateResultsCol();
 
-    // this.job_cache.setRowClick(widget_table_name,);
+    // this.job_cache.setRowClick(this._widget_table_name,);
   }
+
+  // RUN JOBS TAB ==============================================
 
   _populateRunJobs(job_widget: HTMLDivElement) {
     let runDiv = document.createElement('div');
@@ -153,6 +299,8 @@ export class JobWidget extends Widget {
   _updateListCol() {
     let listCell = <HTMLTableCellElement> document.getElementById('cell-algolist');
     if (listCell != null) {
+
+      // one-time create algo list header
       if (document.getElementById('algo-list-header') == null) {
         let list_title = document.createElement('h3');
         list_title.id = 'algo-list-header';
@@ -160,15 +308,10 @@ export class JobWidget extends Widget {
         listCell.appendChild(list_title);
       }
 
-      if (document.getElementById('algo-list-div') == null) {
-        let algolistdiv = document.createElement('div');
-        algolistdiv.id = 'algo-list-div'
-        listCell.appendChild(algolistdiv);
-        
-        let algolist = document.createElement('table');
-        algolist.id = algo_list_id;
-        algolistdiv.appendChild(algolist);
-
+      // populate algo list
+      let algolist = <HTMLTableElement> document.getElementById(this._algo_list_id);
+      if (document.getElementById('algo-list-div') != null){
+        algolist.innerHTML = '';
         <HTMLTableSectionElement> algolist.createTHead();
         <HTMLTableSectionElement> algolist.createTBody();
         let ahrow = <HTMLTableRowElement> algolist.tHead.insertRow(0);
@@ -176,8 +319,14 @@ export class JobWidget extends Widget {
         acell.innerHTML = "<i>Algorithms</i>";
         this._populateListTable();
       } else {
-        let algolist = <HTMLTableElement> document.getElementById(algo_list_id);
-        algolist.innerHTML = '';
+        let algolistdiv = document.createElement('div');
+        algolistdiv.id = 'algo-list-div'
+        listCell.appendChild(algolistdiv);
+        
+        let algolist = document.createElement('table');
+        algolist.id = this._algo_list_id;
+        algolistdiv.appendChild(algolist);
+
         <HTMLTableSectionElement> algolist.createTHead();
         <HTMLTableSectionElement> algolist.createTBody();
         let ahrow = <HTMLTableRowElement> algolist.tHead.insertRow(0);
@@ -190,7 +339,7 @@ export class JobWidget extends Widget {
 
   _populateListTable() {
     let me = this;
-    let algolist = <HTMLTableElement> document.getElementById(algo_list_id);
+    let algolist = <HTMLTableElement> document.getElementById(this._algo_list_id);
     // get list of algos by request
     var requestUrl = new URL(PageConfig.getBaseUrl() + 'hysds/listAlgorithms');
     let insertAlgoRow = function(algo:string,version:string) {
@@ -220,12 +369,13 @@ export class JobWidget extends Widget {
     });
 
     // make algo rows clickable
-    // this._setAlgoClick(algo_list_id);
+    this._setAlgoClick(this._algo_list_id);
   }
 
   _setAlgoClick(tableId) {
     let me = this;
-    this._onRowClick(tableId, function(algoId) {
+    onRowClick(tableId, function(row) {
+      let algoId = row.getElementsByTagName('td')[0].innerHTML;
       let lst = algoId.split(':');
       me._algorithm = lst[0];
       me._version = lst[1];
@@ -269,7 +419,7 @@ export class JobWidget extends Widget {
 
         // inputs TABLE
         let t = document.createElement('table');
-        t.id = execute_params_id;
+        t.id = this._execute_params_id;
         paramdiv.appendChild(t);
 
         <HTMLTableSectionElement> t.createTHead();
@@ -296,7 +446,7 @@ export class JobWidget extends Widget {
         this._populateExecuteTable();
       } else {
         // wipe params table if it already exists
-        let t = <HTMLTableElement> document.getElementById(execute_params_id);
+        let t = <HTMLTableElement> document.getElementById(this._execute_params_id);
         t.innerHTML = '';
         <HTMLTableSectionElement> t.createTHead();
         <HTMLTableSectionElement> t.createTBody();
@@ -317,7 +467,7 @@ export class JobWidget extends Widget {
     let me = this;
     // (re-)populate params table with new algorithm's params
     // let paramdiv = <HTMLDivElement> document.getElementById('execute-params-div');
-    let t = <HTMLTableElement> document.getElementById(execute_params_id);
+    let t = <HTMLTableElement> document.getElementById(this._execute_params_id);
     let submitBtn = <HTMLButtonElement> document.getElementById('job-execute-button');
     let inputsp = <HTMLParagraphElement> document.getElementById('execute-inputs-p');
     // request to get algo params
@@ -340,7 +490,7 @@ export class JobWidget extends Widget {
           inp.classList.add(i);
           // pre-populate username field
           if (i == 'username') {
-            inp.value = this.job_cache.getUsername();
+            inp.value = this._username;
             // username field is readonly and grey background
             inp.readOnly = true;
             inp.setAttribute('style','background-color : #d1d1d1');
@@ -437,6 +587,8 @@ export class JobWidget extends Widget {
     });
   }
 
+  // JOB INFO TAB ==============================================
+
   _populateJobInfo(job_widget: HTMLDivElement) {
     let infoDiv = document.createElement('div');
     infoDiv.setAttribute('id','info');
@@ -460,9 +612,6 @@ export class JobWidget extends Widget {
     resultsCell.setAttribute('valign','top');
     resultsCell.setAttribute('style','min-width:360px');
 
-    // this._updateInfoCol();
-    // this._updateResultsCol();
-
     infoDiv.appendChild(infoTable);
     job_widget.appendChild(infoDiv);
   }
@@ -480,11 +629,11 @@ export class JobWidget extends Widget {
 
       let pre = document.getElementById('info-pre');
       if (pre != null) {
-        pre.innerHTML = this.job_cache.getDisplay();
+        pre.innerHTML = DISPLAYS[this._job_id];
       } else {
         pre = document.createElement('pre');
         pre.id = 'info-pre';
-        pre.innerHTML = this.job_cache.getDisplay();
+        pre.innerHTML = DISPLAYS[this._job_id];
         infoCell.appendChild(pre);
         
         let br2 = document.createElement('br');
@@ -536,44 +685,29 @@ export class JobWidget extends Widget {
       if (resultsTableDiv == null) {
         resultsTableDiv = document.createElement('div');
         resultsTableDiv.id = 'result-table-div';
-        // this.job_cache.convertResultToDisplay(resultsTableDiv,false);
         let resultsTable = document.createElement('table');
-        resultsTable.id = 'result-display-widget';
+        resultsTable.id = 'widget-result-table';
         resultsTableDiv.appendChild(resultsTable);
         resultsCell.appendChild(resultsTableDiv);
       } else {
-        let resultsTable = document.getElementById('result-display-widget');
-        resultsTable.innerHTML = (<HTMLTableElement>document.getElementById(this.job_cache.getResults())).innerHTML;
-        // this.job_cache.updateResultsTable(resultsTableDiv,'results-display-widget');
+        getJobResults(this._job_id, function(results) {
+          updateResultsTable(resultsTableDiv,'widget-result-table',results);
+        });
+        // let resultsTable = document.getElementById('result-display-widget');
+        // resultsTable.innerHTML = (<HTMLTableElement>document.getElementById(this.job_cache.getResults())).innerHTML;
       }
     }
   }
+
+  // OTHER.     ==============================================
 
   _setJobClick(tableId) {
     let me = this;
-    this._onRowClick(tableId, function(jobId) {
-      me.job_cache.setJobID(jobId);
-      me.job_cache.update();
+    onRowClick(tableId, function(row) {
+      let job_id = row.getElementsByTagName('td')[0].innerHTML;
+      me._job_id = job_id;
       me.update();
     })
-  }
-
-  // clickable table rows helper function
-  _onRowClick(tableId, callback) {
-    let me = this;
-    if (document.getElementById(tableId) != undefined) {
-      let table = document.getElementById(tableId),
-          rows = table.getElementsByTagName('tr'),
-          i;
-      for (i = 1; i < rows.length; i++) {
-        rows[i].onclick = function(row) {
-          return function() {
-            callback(row);
-            me.update();
-          }
-        }(rows[i]);
-      }
-    }
   }
 
   _clickTab(evt, section) {
@@ -589,20 +723,27 @@ export class JobWidget extends Widget {
     document.getElementById(section).style.display = "block";
     evt.currentTarget.className += " active";
   }
+
+  setJobId(job_id: string) {
+    this._job_id = job_id;
+  }
 }
 
 export class JobTable extends Widget {
   public opt:string;
   _table: string;
-  _displays: {[k:string]:string};
   _results: string;
   _resultsTableName: string;
-  _jobs: {[k:string]:string};
   _job_id: string;
   _username: string;
 
   constructor() {
     super();
+    this._table = '';
+    this._results = '';
+    this._resultsTableName = 'job-result-display';
+    this._job_id = '';
+    this.addClass(CONTENT_CLASS);
 
     // set username on start
     // callback should finish before users manage to do anything
@@ -618,57 +759,13 @@ export class JobTable extends Widget {
         me.update();
       }
     });
-
-    this._table = '';
-    this._results = '';
-    this._resultsTableName = 'job-result-display';
-    this._displays = {};
-    this._jobs = {};
-    this._job_id = '';
-    this.addClass(CONTENT_CLASS);
   }
 
   _updateDisplay(): void {
     var x = document.createElement("BR");
     this.node.appendChild(x);
 
-    // call list jobs endpoint using username
-    var getUrl = new URL(PageConfig.getBaseUrl() + 'hysds/listJobs');
-    getUrl.searchParams.append('username',this._username);
-    console.log(getUrl.href);
-    // --------------------
-    // get jobs list request
-    // --------------------
-    request('get', getUrl.href).then((res: RequestResult) => {
-      if(res.ok){
-        let json_response:any = res.json();
-        // console.log(json_response['status_code']);
-        INotification.success("Get user jobs success.");
-        // console.log(json_response['result']);
-        // console.log(json_response['displays']);
-
-        if (json_response['status_code'] == 200){
-          this._table = json_response['table'];
-          this._jobs = json_response['jobs'];
-          // later get user to pick the job
-          this._displays = json_response['displays'];
-
-          // catch case if user has no jobs
-          let num_jobs = Object.keys(this._jobs).length;
-          if (num_jobs > 0 && this._job_id == '') {
-
-            this._job_id = json_response['result'][0]['job_id'];
-          }
-
-        } else {
-          console.log('unable to get user job list');
-          INotification.error("Get user jobs failed.");
-        }
-      } else {
-        console.log('unable to get user job list');
-        INotification.error("Get user jobs failed.");
-      }
-    });
+    getJobs(this._username,this._job_id, this.setJobId,this.setTable);
 
     console.log('got table, setting panel display');
     this._getJobInfo();
@@ -719,7 +816,7 @@ export class JobTable extends Widget {
 
     // set display in 2nd callback after making table rows clickable
     // update/populate jobs table, add delete & dismiss buttons
-    let setDisplays = function (me:JobTable){
+    let setDisplays = function(me:JobTable){
       // create div for job info section
       // parent for everything, created in table response
       let div2 = (<HTMLDivElement>document.getElementById('jobs-div'));
@@ -744,7 +841,8 @@ export class JobTable extends Widget {
         // set description from response
         let disp = '';
         if (me._job_id != ''){
-          disp = me._displays[me._job_id];
+          // disp = me._displays[me._job_id];
+          disp = DISPLAYS[me._job_id];
         }
 
         if (document.getElementById('job-detail-display') != null) {
@@ -849,83 +947,35 @@ export class JobTable extends Widget {
     // end setDisplays def
 
     // make clickable table rows after setting job table
-    this.setRowClick('job-cache-display', setDisplays);
+    this._setRowClick('job-cache-display', setDisplays);
   }
 
   // set clickable rows
-  setRowClick(div_name, setDisplays) {
+  _setRowClick(div_name, setDisplays) {
     let me = this;
-    this._onRowClick(div_name, function(row){
+    onRowClick(div_name, function(row){
       let job_id = row.getElementsByTagName('td')[0].innerHTML;
-      // document.getElementById('click-response').innerHTML = job_id;
       me._job_id = job_id;
-    }, setDisplays);
-  }
-
-  // clickable table rows helper function
-  _onRowClick(tableId, setJobId, setDisplays) {
-    let me = this;
-    if (document.getElementById(tableId) != undefined) {
-      let table = document.getElementById(tableId),
-          rows = table.getElementsByTagName('tr'),
-          i;
-        for (i = 1; i < rows.length; i++) {
-          rows[i].onclick = function(row) {
-            return function() {
-              setJobId(row);
-              setDisplays(me);
-              me.getJobResult(me);
-            }
-          }(rows[i]);
-        }
-      }
-    this._results = '';
+      setDisplays(me);
+      me._getJobResult(me);
+      me._results = '';
+    });
   }
 
   // get job result for display
-  getJobResult(me:JobTable) {
-    var resultUrl = new URL(PageConfig.getBaseUrl() + 'hysds/getResult');
-    // console.log(me.jobs[me._job_id]);
-    if (me._job_id != '' && me._jobs[me._job_id]['status'] == 'job-completed') {
-      resultUrl.searchParams.append('job_id',me._job_id);
-      console.log(resultUrl.href);
-
-      request('get', resultUrl.href).then((res: RequestResult) => {
-        if(res.ok){
-          let json_response:any = res.json();
-          // console.log(json_response['status_code']);
-          INotification.success("Get user job result success.");
-
-          if (json_response['status_code'] == 200){
-            me._results = json_response['result'];
-
-          } else {
-            console.log('unable to get user job list');
-            INotification.error("Get user job result failed.");
-          }
-        } else {
-          console.log('unable to get user job list');
-          INotification.error("Get user job result failed.");
-        }
-        let outerDiv = (<HTMLDivElement>document.getElementById('jobs-div'));
-        this.convertResultToDisplay(outerDiv,true);
-      });
-    } else {
-      me._results = '<p>Job '+me._job_id+' <br>not complete</p>';
-      let outerDiv = (<HTMLDivElement>document.getElementById('jobs-div'));
-      this.convertResultToDisplay(outerDiv,true);
-    }
+  _getJobResult(me:JobTable) {
+    getJobResults(me._job_id,function(results) {me.convertResultToDisplay(me,results)});
   }
 
   // front-end side of display job result table
-  convertResultToDisplay(outerDiv: HTMLDivElement, header?:boolean) {
+  convertResultToDisplay(me:JobTable, results: string) {
     // let jobResult = this._results[this._job_id];
     // console.log(me._results);
-
-    // let outerDiv = (<HTMLDivElement>document.getElementById('jobs-div'));
+    me._results = results;
+    let outerDiv = (<HTMLDivElement>document.getElementById('jobs-div'));
     if (outerDiv != null) {
       // 1-time add line break and section header for job result
-      if (header && document.getElementById('job-result-head') == null) {
+      if (document.getElementById('job-result-head') == null) {
         // line break
         var line = document.createElement('hr');
         outerDiv.appendChild(line);
@@ -937,52 +987,8 @@ export class JobTable extends Widget {
         detailHeader.innerText = 'Job Results';
         outerDiv.appendChild(detailHeader);
       }
-
-      // --------------------
-      // job result
-      // --------------------
-      // console.log('setting results');
-      // if (document.getElementById(this._resultsTableName) != null) {
-      //   (<HTMLTextAreaElement>document.getElementById(this._resultsTableName)).innerHTML = this._results;
-      // } else {
-      //   // create div for table if table doesn't already exist
-      //   var div = document.createElement('div');
-      //   div.setAttribute('id', 'result-table');
-      //   div.setAttribute('resize','none');
-      //   div.setAttribute('class','jp-JSONEditor-host');
-      //   div.setAttribute('style','border-style:none; overflow: auto');
-
-      //   var display = document.createElement("table");
-      //   display.id = 'job-result-display';
-      //   display.innerHTML = this._results;
-      //   display.setAttribute('class','jp-JSONEditor-host');
-      //   display.setAttribute('style','border-style:none; font-size:11px');
-      //   div.appendChild(display);
-      //   outerDiv.appendChild(div);
-      // }
-      this.updateResultsTable(outerDiv,this._resultsTableName);
+      updateResultsTable(outerDiv,me._resultsTableName,me._results);
     }
-  }
-
-  updateResultsTable(outerDiv: HTMLDivElement, tableName: string) {
-    if (document.getElementById(tableName) != null) {
-        (<HTMLTextAreaElement>document.getElementById(tableName)).innerHTML = this._results;
-      } else {
-        // create div for table if table doesn't already exist
-        var div = document.createElement('div');
-        div.setAttribute('id', tableName+'-div');
-        div.setAttribute('resize','none');
-        div.setAttribute('class','jp-JSONEditor-host');
-        div.setAttribute('style','border-style:none; overflow: auto');
-
-        var display = document.createElement("table");
-        display.id = tableName;
-        display.innerHTML = this._results;
-        display.setAttribute('class','jp-JSONEditor-host');
-        display.setAttribute('style','border-style:none; font-size:11px');
-        div.appendChild(display);
-        outerDiv.appendChild(div);
-      }
   }
 
   // -----------------------------------------------------------
@@ -991,35 +997,12 @@ export class JobTable extends Widget {
     this._updateDisplay();
   }
 
-  getUsername(): string {
-    return this._username;
+  setJobId(job_id: string) {
+    this._job_id = job_id;
   }
 
-  getJobID(): string{
-    return this._job_id;
-  }
-
-  setJobID(jobId: string): void{
-    this._job_id = jobId;
-    this._updateDisplay();
-  }
-
-  getTable(): string {
-    return this._table;
-  }
-
-  getDisplay(): string {
-    console.log('get display');
-    console.log(this._displays[this._job_id]);
-    return this._displays[this._job_id];
-  }
-
-  getResults(): string {
-    return this._results;
-  }
-
-  getResultsTableName(): string {
-    return this._resultsTableName;
+  setTable(table: string) {
+    this._table = table;
   }
 }
 
@@ -1028,9 +1011,9 @@ export class JobTable extends Widget {
 // reference to jobsTable passed through each submit_job widget (NO LONGER)
 export const jobsTable = new JobTable();
 jobsTable.update();
-let content = new JobWidget(jobsTable);
+let content = new JobWidget();
 const jobsWidget = new MainAreaWidget({content});
-export const jobsPanel = new ADEPanel(jobsTable,[content]);
+export const jobsPanel = new ADEPanel(jobsTable);
 // -------------------------------------------------------------
 // panel widget activation
 // const jobCache_update_command = 'jobs: refresh';
