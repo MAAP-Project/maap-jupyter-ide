@@ -535,7 +535,7 @@ export class JobWidget extends Widget {
       let resultsTableDiv = <HTMLDivElement>document.getElementById('results-table-div');
       if (resultsTableDiv == null) {
         resultsTableDiv = document.createElement('div');
-        resultsTableDiv.id = 'result-table';
+        resultsTableDiv.id = 'result-table-div';
         this.job_cache.convertResultToDisplay(resultsTableDiv,false);
         // let resultsTable: HTMLTableElement = <HTMLTableElement>(document.getElementById(this.job_cache.getResultsTableName())).cloneNode(true);
         // resultsTable.id = 'result-display-widget';
