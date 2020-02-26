@@ -536,15 +536,15 @@ export class JobWidget extends Widget {
       if (resultsTableDiv == null) {
         resultsTableDiv = document.createElement('div');
         resultsTableDiv.id = 'result-table-div';
-        this.job_cache.convertResultToDisplay(resultsTableDiv,false);
-        // let resultsTable: HTMLTableElement = <HTMLTableElement>(document.getElementById(this.job_cache.getResultsTableName())).cloneNode(true);
-        // resultsTable.id = 'result-display-widget';
-        // resultsTableDiv.appendChild(resultsTable);
+        // this.job_cache.convertResultToDisplay(resultsTableDiv,false);
+        let resultsTable = document.createElement('table');
+        resultsTable.id = 'result-display-widget';
+        resultsTableDiv.appendChild(resultsTable);
         resultsCell.appendChild(resultsTableDiv);
       } else {
-        // let resultsTable = document.getElementById('result-display-widget');
-        // resultsTable.innerHTML = (<HTMLTableElement>document.getElementById(this.job_cache.getResultsTableName()).cloneNode(true)).innerHTML;
-        this.job_cache.updateResultsTable(resultsTableDiv,'results-display-widget');
+        let resultsTable = document.getElementById('result-display-widget');
+        resultsTable.innerHTML = (<HTMLTableElement>document.getElementById(this.job_cache.getResults())).innerHTML;
+        // this.job_cache.updateResultsTable(resultsTableDiv,'results-display-widget');
       }
     }
   }
@@ -553,6 +553,7 @@ export class JobWidget extends Widget {
     let me = this;
     this._onRowClick(tableId, function(jobId) {
       me.job_cache.setJobID(jobId);
+      me.job_cache.update();
       me.update();
     })
   }
@@ -656,7 +657,7 @@ export class JobTable extends Widget {
           let num_jobs = Object.keys(this._jobs).length;
           if (num_jobs > 0 && this._job_id == '') {
 
-            this.setJobID(json_response['result'][0]['job_id']);
+            this._job_id = json_response['result'][0]['job_id'];
           }
 
         } else {
@@ -857,8 +858,7 @@ export class JobTable extends Widget {
     this._onRowClick(div_name, function(row){
       let job_id = row.getElementsByTagName('td')[0].innerHTML;
       // document.getElementById('click-response').innerHTML = job_id;
-      // me._job_id = job_id;
-      me.setJobID(job_id);
+      me._job_id = job_id;
     }, setDisplays);
   }
 
