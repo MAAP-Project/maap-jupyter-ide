@@ -656,7 +656,7 @@ export class JobTable extends Widget {
           let num_jobs = Object.keys(this._jobs).length;
           if (num_jobs > 0 && this._job_id == '') {
 
-            this._job_id = json_response['result'][0]['job_id'];
+            this.setJobID(json_response['result'][0]['job_id']);
           }
 
         } else {
