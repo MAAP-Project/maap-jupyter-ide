@@ -857,7 +857,8 @@ export class JobTable extends Widget {
     this._onRowClick(div_name, function(row){
       let job_id = row.getElementsByTagName('td')[0].innerHTML;
       // document.getElementById('click-response').innerHTML = job_id;
-      me._job_id = job_id;
+      // me._job_id = job_id;
+      me.setJobID(job_id);
     }, setDisplays);
   }
 
