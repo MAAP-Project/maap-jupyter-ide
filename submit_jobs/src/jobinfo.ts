@@ -220,7 +220,7 @@ export class JobWidget extends Widget {
     document.getElementById("defaultOpen").click();
 
     if (document.getElementById(this._widget_table_name) != null) {
-      getJobs(this._username,this._job_id,this.setJobId,function(table){
+      getJobs(this._username,this._job_id,function(job_id){me._job_id=job_id;},function(table){
         (<HTMLTextAreaElement>document.getElementById(me._widget_table_name)).innerHTML = table;
       });
     } else {
@@ -234,7 +234,7 @@ export class JobWidget extends Widget {
       // jobs table
       var textarea = document.createElement("table");
       textarea.id = this._widget_table_name;
-      getJobs(this._username,this._job_id,this.setJobId,function(table){
+      getJobs(this._username,this._job_id,function(job_id){me._job_id=job_id;},function(table){
         (<HTMLTextAreaElement>document.getElementById(me._widget_table_name)).innerHTML = table;
       });
       div.appendChild(textarea);
@@ -723,24 +723,16 @@ export class JobWidget extends Widget {
     document.getElementById(section).style.display = "block";
     evt.currentTarget.className += " active";
   }
-
-  setJobId(job_id: string) {
-    this._job_id = job_id;
-  }
 }
 
 export class JobTable extends Widget {
-  public opt:string;
-  _table: string;
+  _username: string;
+  _job_id: string;
   _results: string;
   _resultsTableName: string;
-  _job_id: string;
-  _username: string;
 
   constructor() {
     super();
-    this._table = '';
-    this._results = '';
     this._resultsTableName = 'job-result-display';
     this._job_id = '';
     this.addClass(CONTENT_CLASS);
@@ -764,22 +756,20 @@ export class JobTable extends Widget {
   _updateDisplay(): void {
     var x = document.createElement("BR");
     this.node.appendChild(x);
-
-    getJobs(this._username,this._job_id, this.setJobId,this.setTable);
-
-    console.log('got table, setting panel display');
-    this._getJobInfo();
+    let me = this;
+    getJobs(this._username,this._job_id, function(job_id){me._job_id = job_id;},this._getJobInfo);
   }
 
   // front-end side of display jobs table and job info
-  _getJobInfo() {
+  _getJobInfo(table) {
     // --------------------
     // job table
     // --------------------
+    console.log('got table, setting panel display');
     // set table, from response
     let me = this;
     if (document.getElementById('job-cache-display') != null) {
-      (<HTMLTextAreaElement>document.getElementById('job-cache-display')).innerHTML = me._table;
+      (<HTMLTextAreaElement>document.getElementById('job-cache-display')).innerHTML = table;
     } else {
       // create div for table if table doesn't already exist
       var div = document.createElement('div');
@@ -791,7 +781,7 @@ export class JobTable extends Widget {
       // jobs table
       var textarea = document.createElement("table");
       textarea.id = 'job-cache-display';
-      textarea.innerHTML = me._table;
+      textarea.innerHTML = table;
       textarea.className = 'jp-JSONEditor-host';
       div.appendChild(textarea);
       me.node.appendChild(div);
@@ -841,7 +831,6 @@ export class JobTable extends Widget {
         // set description from response
         let disp = '';
         if (me._job_id != ''){
-          // disp = me._displays[me._job_id];
           disp = DISPLAYS[me._job_id];
         }
 
@@ -995,14 +984,6 @@ export class JobTable extends Widget {
   // getters for GUI referencing properties in this class
   update(): void {
     this._updateDisplay();
-  }
-
-  setJobId(job_id: string) {
-    this._job_id = job_id;
-  }
-
-  setTable(table: string) {
-    this._table = table;
   }
 }
 
