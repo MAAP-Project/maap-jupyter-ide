@@ -9,10 +9,10 @@ export const CONTENT_CLASS = 'jp-Inspector-content';
 export class ADEPanel extends Panel{
   content: any;
   updates: any[];
-  constructor(content: any, updates: any[]) {
+  constructor(content: any) {
     super();
     this.content = content;
-    this.updates = updates;
+    // this.updates = updates;
     // this.node.appendChild(content);
     this.addClass(CONTENT_CLASS);
     this.addClass(WIDGET_CLASS);
@@ -20,9 +20,9 @@ export class ADEPanel extends Panel{
 
   update() {
     this.content.update();
-    for (var item of this.updates) {
-      item.update();
-    }
+    // for (var item of this.updates) {
+    //   item.update();
+    // }
   }
 }
 
