@@ -480,7 +480,7 @@ export class JobWidget extends Widget {
 
       let pre = document.getElementById('info-pre');
       if (pre != null) {
-        pre.innerHTML = this.job_cache.getDisplay();  
+        pre.innerHTML = this.job_cache.getDisplay();
       } else {
         pre = document.createElement('pre');
         pre.id = 'info-pre';
@@ -969,7 +969,7 @@ export class JobTable extends Widget {
       } else {
         // create div for table if table doesn't already exist
         var div = document.createElement('div');
-        div.setAttribute('id', 'result-table');
+        div.setAttribute('id', tableName+'-div');
         div.setAttribute('resize','none');
         div.setAttribute('class','jp-JSONEditor-host');
         div.setAttribute('style','border-style:none; overflow: auto');
@@ -1008,6 +1008,8 @@ export class JobTable extends Widget {
   }
 
   getDisplay(): string {
+    console.log('get display');
+    console.log(this._displays[this._job_id]);
     return this._displays[this._job_id];
   }
 
