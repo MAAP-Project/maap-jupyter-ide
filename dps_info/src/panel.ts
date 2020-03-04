@@ -1,9 +1,7 @@
 import { Panel } from '@phosphor/widgets';
-// import { activateMenuOptions } from './funcs';
 
 export const WIDGET_CLASS = 'jp-Widget';
 export const CONTENT_CLASS = 'jp-Inspector-content';
-// const palette_command = 'palette-command';
 
 // Generic Panel that can be created with any content
 export class ADEPanel extends Panel{
@@ -12,8 +10,6 @@ export class ADEPanel extends Panel{
   constructor(content: any) {
     super();
     this.content = content;
-    // this.updates = updates;
-    // this.node.appendChild(content);
     this.addClass(CONTENT_CLASS);
     this.addClass(WIDGET_CLASS);
   }
