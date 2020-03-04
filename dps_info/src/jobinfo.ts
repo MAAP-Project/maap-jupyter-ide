@@ -2,19 +2,22 @@ import { JupyterFrontEnd } from '@jupyterlab/application';
 import { MainAreaWidget, ICommandPalette, Dialog, showDialog } from '@jupyterlab/apputils';
 import { PageConfig } from '@jupyterlab/coreutils'
 import { IMainMenu } from '@jupyterlab/mainmenu';
+import { Menu } from '@phosphor/widgets';
 import { Widget } from '@phosphor/widgets';
 import { INotification } from "jupyterlab_toastify";
-import { getUserInfo } from "./getKeycloak";
+// import { getUserInfo } from "./getKeycloak";
 import { request, RequestResult } from './request';
-import { jobCache_update_command, jobWidget_command, activateMenuOptions } from './funcs';
+// import { jobCache_update_command, jobWidget_command, activateMenuOptions } from './funcs';
 import { ADEPanel, WIDGET_CLASS, CONTENT_CLASS } from './panel';
 import '../style/index.css';
 
+export const jobCache_update_command = 'jobs: refresh';
+export const jobWidget_command = 'jobs: main-widget';
 var DISPLAYS: {[k:string]:string} = {};
 var JOBS: {[k:string]:string} = {};
 
 // create job table with job ids, status, and algorithms
-function getJobs(username: string, job_id: string, setJobId, callback) {
+function getJobs(username: string, job_id: string, setJobId:any, callback:any) {
   // call list jobs endpoint using username
   var getUrl = new URL(PageConfig.getBaseUrl() + 'hysds/listJobs');
   getUrl.searchParams.append('username',username);
@@ -113,13 +116,13 @@ function updateResultsTable(outerDiv: HTMLDivElement, tableName: string, results
 }
 
 // clickable table rows helper function
-function onRowClick(tableId, callback) {
+function onRowClick(tableId:string, callback:any) {
   if (document.getElementById(tableId) != undefined) {
     let table = document.getElementById(tableId),
         rows = table.getElementsByTagName('tr'),
         i;
     for (i = 1; i < rows.length; i++) {
-      rows[i].onclick = function(row) {
+      rows[i].onclick = function(row:HTMLTableRowElement) {
         return function() {
           callback(row);
         }
@@ -168,16 +171,19 @@ export class JobWidget extends Widget {
     // callback should finish before users manage to do anything
     // now profile timing out shouldn't be a problem
     let me = this;
-    getUserInfo(function(profile: any) {
-      if (profile['cas:username'] === undefined) {
-        INotification.error("Get username failed.");
-        me._username = 'anonymous';
-      } else {
-        me._username = profile['cas:username'];
-        INotification.success("Got username.");
-        me.update();
-      }
-    });
+    // for local testing
+    me._username = 'eyam';
+    me.update();
+    // getUserInfo(function(profile: any) {
+    //   if (profile['cas:username'] === undefined) {
+    //     INotification.error("Get username failed.");
+    //     me._username = 'anonymous';
+    //   } else {
+    //     me._username = profile['cas:username'];
+    //     INotification.success("Got username.");
+    //     me.update();
+    //   }
+    // });
 
     let job_widget = document.createElement('div');
     job_widget.id = 'job-widget';
@@ -220,7 +226,7 @@ export class JobWidget extends Widget {
     document.getElementById("defaultOpen").click();
 
     if (document.getElementById(this._widget_table_name) != null) {
-      getJobs(this._username,this._job_id,function(job_id){me._job_id=job_id;},function(table){
+      getJobs(this._username,this._job_id,function(job_id:string){me._job_id=job_id;},function(table:string){
         (<HTMLTextAreaElement>document.getElementById(me._widget_table_name)).innerHTML = table;
       });
     } else {
@@ -234,7 +240,7 @@ export class JobWidget extends Widget {
       // jobs table
       var textarea = document.createElement("table");
       textarea.id = this._widget_table_name;
-      getJobs(this._username,this._job_id,function(job_id){me._job_id=job_id;},function(table){
+      getJobs(this._username,this._job_id,function(job_id:string){me._job_id=job_id;},function(table:string){
         (<HTMLTextAreaElement>document.getElementById(me._widget_table_name)).innerHTML = table;
       });
       div.appendChild(textarea);
@@ -372,9 +378,9 @@ export class JobWidget extends Widget {
     this._setAlgoClick(this._algo_list_id);
   }
 
-  _setAlgoClick(tableId) {
+  _setAlgoClick(tableId:string) {
     let me = this;
-    onRowClick(tableId, function(row) {
+    onRowClick(tableId, function(row:HTMLTableRowElement) {
       let algoId = row.getElementsByTagName('td')[0].innerHTML;
       let lst = algoId.split(':');
       me._algorithm = lst[0];
@@ -690,7 +696,7 @@ export class JobWidget extends Widget {
         resultsTableDiv.appendChild(resultsTable);
         resultsCell.appendChild(resultsTableDiv);
       } else {
-        getJobResults(this._job_id, function(results) {
+        getJobResults(this._job_id, function(results:string) {
           updateResultsTable(resultsTableDiv,'widget-result-table',results);
         });
         // let resultsTable = document.getElementById('result-display-widget');
@@ -701,16 +707,16 @@ export class JobWidget extends Widget {
 
   // OTHER.     ==============================================
 
-  _setJobClick(tableId) {
+  _setJobClick(tableId:string) {
     let me = this;
-    onRowClick(tableId, function(row) {
+    onRowClick(tableId, function(row:HTMLTableRowElement) {
       let job_id = row.getElementsByTagName('td')[0].innerHTML;
       me._job_id = job_id;
       me.update();
     })
   }
 
-  _clickTab(evt, section) {
+  _clickTab(evt, section:string) {
     var i, tabcontent, tablinks;
     tabcontent = document.getElementsByClassName("tabcontent");
     for (i = 0; i < tabcontent.length; i++) {
@@ -741,16 +747,19 @@ export class JobTable extends Widget {
     // callback should finish before users manage to do anything
     // now profile timing out shouldn't be a problem
     let me = this;
-    getUserInfo(function(profile: any) {
-      if (profile['cas:username'] === undefined) {
-        INotification.error("Get username failed.");
-        me._username = 'anonymous';
-      } else {
-        me._username = profile['cas:username'];
-        INotification.success("Got username.");
-        me.update();
-      }
-    });
+    // for local testing
+    me._username = 'eyam';
+    me.update();
+    // getUserInfo(function(profile: any) {
+    //   if (profile['cas:username'] === undefined) {
+    //     INotification.error("Get username failed.");
+    //     me._username = 'anonymous';
+    //   } else {
+    //     me._username = profile['cas:username'];
+    //     INotification.success("Got username.");
+    //     me.update();
+    //   }
+    // });
   }
 
   _updateDisplay(): void {
@@ -761,7 +770,7 @@ export class JobTable extends Widget {
   }
 
   // front-end side of display jobs table and job info
-  _getJobInfo(table) {
+  _getJobInfo(table:string) {
     // --------------------
     // job table
     // --------------------
@@ -940,9 +949,9 @@ export class JobTable extends Widget {
   }
 
   // set clickable rows
-  _setRowClick(div_name, setDisplays) {
+  _setRowClick(div_name:string, setDisplays:any) {
     let me = this;
-    onRowClick(div_name, function(row){
+    onRowClick(div_name, function(row:HTMLTableRowElement){
       let job_id = row.getElementsByTagName('td')[0].innerHTML;
       me._job_id = job_id;
       setDisplays(me);
@@ -953,7 +962,7 @@ export class JobTable extends Widget {
 
   // get job result for display
   _getJobResult(me:JobTable) {
-    getJobResults(me._job_id,function(results) {me.convertResultToDisplay(me,results)});
+    getJobResults(me._job_id,function(results:string) {me.convertResultToDisplay(me,results)});
   }
 
   // front-end side of display job result table
@@ -1069,4 +1078,18 @@ export function activateJobWidget(app: JupyterFrontEnd, palette: ICommandPalette
   //   command: jobWidget_command,
   //   name: () => 'jobs'
   // });
+}
+
+// add DPS options to Menu dropdown
+export function activateMenuOptions(app: JupyterFrontEnd, mainMenu: IMainMenu) {
+  const { commands } = app;
+  let dpsMenu = new Menu({ commands });
+  dpsMenu.title.label = 'DPS/MAS Operations';
+  [
+    jobCache_update_command,
+    jobWidget_command,
+  ].forEach(command => {
+    dpsMenu.addItem({ command });
+  });
+  mainMenu.addMenu(dpsMenu, { rank: 101 });
 }
