@@ -7,7 +7,6 @@ import { Widget } from '@phosphor/widgets';
 import { INotification } from "jupyterlab_toastify";
 // import { getUserInfo } from "./getKeycloak";
 import { request, RequestResult } from './request';
-// import { jobCache_update_command, jobWidget_command, activateMenuOptions } from './funcs';
 import { ADEPanel, WIDGET_CLASS, CONTENT_CLASS } from './panel';
 import '../style/index.css';
 
@@ -171,19 +170,16 @@ export class JobWidget extends Widget {
     // callback should finish before users manage to do anything
     // now profile timing out shouldn't be a problem
     let me = this;
-    // for local testing
-    me._username = 'eyam';
-    me.update();
-    // getUserInfo(function(profile: any) {
-    //   if (profile['cas:username'] === undefined) {
-    //     INotification.error("Get username failed.");
-    //     me._username = 'anonymous';
-    //   } else {
-    //     me._username = profile['cas:username'];
-    //     INotification.success("Got username.");
-    //     me.update();
-    //   }
-    // });
+    getUserInfo(function(profile: any) {
+      if (profile['cas:username'] === undefined) {
+        INotification.error("Get username failed.");
+        me._username = 'anonymous';
+      } else {
+        me._username = profile['cas:username'];
+        INotification.success("Got username.");
+        me.update();
+      }
+    });
 
     let job_widget = document.createElement('div');
     job_widget.id = 'job-widget';
@@ -747,19 +743,16 @@ export class JobTable extends Widget {
     // callback should finish before users manage to do anything
     // now profile timing out shouldn't be a problem
     let me = this;
-    // for local testing
-    me._username = 'eyam';
-    me.update();
-    // getUserInfo(function(profile: any) {
-    //   if (profile['cas:username'] === undefined) {
-    //     INotification.error("Get username failed.");
-    //     me._username = 'anonymous';
-    //   } else {
-    //     me._username = profile['cas:username'];
-    //     INotification.success("Got username.");
-    //     me.update();
-    //   }
-    // });
+    getUserInfo(function(profile: any) {
+      if (profile['cas:username'] === undefined) {
+        INotification.error("Get username failed.");
+        me._username = 'anonymous';
+      } else {
+        me._username = profile['cas:username'];
+        INotification.success("Got username.");
+        me.update();
+      }
+    });
   }
 
   _updateDisplay(): void {
