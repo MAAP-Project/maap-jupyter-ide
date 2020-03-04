@@ -1,7 +1,7 @@
 import { JupyterFrontEndPlugin } from '@jupyterlab/application';
 import { ICommandPalette } from '@jupyterlab/apputils';
 import { IMainMenu } from '@jupyterlab/mainmenu';
-import { activateJobPanel, activateJobWidget } from './jobinfo';
+import { activateJobPanel, activateJobWidget } from './activate';
 
 /**
  * Initialization data for the dps_info extension.

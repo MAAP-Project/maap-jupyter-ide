@@ -2,7 +2,8 @@ import { ILayoutRestorer, IRouter, JupyterFrontEnd, JupyterFrontEndPlugin } from
 import { ICommandPalette, IWindowResolver } from '@jupyterlab/apputils';
 import { IFileBrowserFactory } from "@jupyterlab/filebrowser";
 import { ILauncher } from '@jupyterlab/launcher';
-import { activateGetCapabilities, activateDescribe, activateList, activateRegisterAlgorithm, activateDeleteAlgorithm, activateExecute, activateGetStatus, activateGetResult, activateDismiss, activateDelete } from './funcs'
+import { IMainMenu } from '@jupyterlab/mainmenu';
+import { activateGetCapabilities, activateDescribe, activateList, activateRegisterAlgorithm, activateDeleteAlgorithm, activateExecute, activateGetStatus, activateGetResult, activateDismiss, activateDelete, activateMenuOptions } from './activate'
 import { constructFileTreeWidget } from "./filetree";
 //import DataExplorer from './dataExplorer';
 import { IDocumentManager } from "@jupyterlab/docmanager";
@@ -87,6 +88,13 @@ const extensionDelete: JupyterFrontEndPlugin<void> = {
   activate: activateDelete
 };
 
+const extensionDPSMASMenu: JupyterFrontEndPlugin<void> = {
+  id: 'dps-mas-menu',
+  autoStart: true,
+  requires: [IMainMenu],
+  activate: activateMenuOptions
+};
+
 
 function activate(app: JupyterFrontEnd, paths: JupyterFrontEnd.IPaths, resolver: IWindowResolver, restorer: ILayoutRestorer, manager: IDocumentManager, router: IRouter) {
   // tslint:disable-next-line: no-console
@@ -102,4 +110,4 @@ const fileTreePanel: JupyterFrontEndPlugin<void> = {
 };
 
 
-export default [extensionDeleteAlgorithm,extensionRegisterAlgorithm,extensionCapabilities,extensionStatus,extensionResult,extensionExecute,extensionDismiss,extensionDelete,extensionDescribe,extensionList, fileTreePanel];
+export default [extensionDeleteAlgorithm,extensionRegisterAlgorithm,extensionCapabilities,extensionStatus,extensionResult,extensionExecute,extensionDismiss,extensionDelete,extensionDescribe,extensionList,extensionDPSMASMenu, fileTreePanel];

@@ -2,8 +2,8 @@ import { Widget } from '@phosphor/widgets';
 import { PageConfig } from '@jupyterlab/coreutils'
 import { INotification } from "jupyterlab_toastify";
 import { getUserInfo } from "./getKeycloak";
+import { popupTitle, popupResult } from './dialogs';
 import { request, RequestResult } from './request';
-import { popupResult, popupTitle } from "./dialogs";
 
 // -----------------------
 // HySDS endpoints that require user inputs
@@ -505,7 +505,7 @@ export class WidgetResult extends Widget {
   }
 }
 
-// here because import dependencies of JobPanel(panel.ts),popupResult(dialog.ts), WidgetResult(widget.ts)
+// here because import dependencies of popupResult(dialog.ts), WidgetResult(widget.ts)
 export function popupResultText(result:string,title:string,fn?:any,isXML?:boolean) {
   let body = document.createElement('div');
   body.style.display = 'flex';
@@ -533,7 +533,7 @@ export function popupResultText(result:string,title:string,fn?:any,isXML?:boolea
   popupResult(new WidgetResult(body,fn),title);
 }
 
-// here because import dependencies of JobPanel(panel.ts),popupResult(dialog.ts), WidgetResult(widget.ts)
+// here because import dependencies of popupResult(dialog.ts), WidgetResult(widget.ts)
 export function popupText(result:string,title:string,fn?:any) {
   let body = document.createElement('div');
   body.style.display = 'flex';
