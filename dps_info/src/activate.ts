@@ -6,7 +6,7 @@ import { ADEPanel } from './panel';
 import { JobWidget, JobTable } from './jobinfo';
 import '../style/index.css';
 
-export const jobCache_update_command = 'jobs: refresh';
+export const jobCache_update_command = 'jobs: panel-refresh';
 export const jobWidget_command = 'jobs: main-widget';
 
 export const jobsTable = new JobTable();
