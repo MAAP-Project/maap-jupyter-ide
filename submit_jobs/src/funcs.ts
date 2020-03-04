@@ -24,7 +24,6 @@ const describeProcessFields = data.describeProcess;
 // ------------------------------------------------------------
 var username:string;
 // ------------------------------------------------------------
-// const registerAlgorithm2_command = 'hysds: register';
 const registerAlgorithm_command = 'hysds: register2';
 const capabilities_command = 'hysds: get-capabilities';
 const statusJob_command = 'hysds: get-status';
@@ -35,23 +34,6 @@ const deleteJob_command = 'hysds: delete-job';
 const describeAlgorithm_command = 'hysds: describe-job';
 const listAlgorithm_command = 'hysds: list-algorithms';
 const deleteAlgorithm_command = 'hysds: delete-algorithm';
-export const jobCache_update_command = 'jobs: refresh';
-export const jobWidget_command = 'jobs: main-widget';
-
-
-// export function activateRegister(app: JupyterFrontEnd, 
-//                         palette: ICommandPalette, 
-//                         restorer: ILauncher | null): void{
-//   app.commands.addCommand(registerAlgorithm2_command, {
-//     label: 'Register Algorithm',
-//     isEnabled: () => true,
-//     execute: args => {
-//       popupResult(new ProjectSelector('register',registerFields,username),"Select a Project");
-//     }
-//   });
-//   palette.addItem({command: registerAlgorithm2_command, category: 'DPS/MAS'});
-//   console.log('HySDS Register Algorithm is activated!');
-// }
 
 export function activateRegisterAlgorithm(
   app: JupyterFrontEnd,
@@ -148,8 +130,6 @@ export function activateGetCapabilities(app: JupyterFrontEnd,
     label: 'Get Capabilities',
     isEnabled: () => true,
     execute: args => {
-      // var w = new InputWidget('getCapabilities',getCapabilitiesFields,username,jobsTable,{});
-      // w.getValue();
       noInputRequest('getCapabilities','Capabilities');
     }
   });
@@ -242,8 +222,6 @@ export function activateList(app: JupyterFrontEnd,
     label: 'List Algorithms',
     isEnabled: () => true,
     execute: args => {
-      // var w = new InputWidget('listAlgorithms',listAlgorithmsFields,username,{});
-      // w.getValue();
       noInputRequest('listAlgorithms', 'List Algorithms');
     }
   });
@@ -270,12 +248,8 @@ export function activateMenuOptions(app: JupyterFrontEnd, mainMenu: IMainMenu) {
   let dpsMenu = new Menu({ commands });
   dpsMenu.title.label = 'DPS/MAS Operations';
   [
-    jobCache_update_command,
-    jobWidget_command,
     capabilities_command,
     listAlgorithm_command,
-    // registerAlgorithm2_command,
-    // registerAlgorithm_command,
     describeAlgorithm_command,
     executeJob_command,
     statusJob_command,
@@ -352,7 +326,7 @@ export function inputRequest(endpt:string,title:string,inputs:{[k:string]:string
       // console.log(fn);
       if (fn == undefined) {
         console.log('fn undefined');
-        popupResultText(json_response['result'],false,title);
+        popupResultText(json_response['result'],title);
       } else {
         console.log('fn defined');
         fn(json_response);

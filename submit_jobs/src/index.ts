@@ -2,9 +2,7 @@ import { ILayoutRestorer, IRouter, JupyterFrontEnd, JupyterFrontEndPlugin } from
 import { ICommandPalette, IWindowResolver } from '@jupyterlab/apputils';
 import { IFileBrowserFactory } from "@jupyterlab/filebrowser";
 import { ILauncher } from '@jupyterlab/launcher';
-import { IMainMenu } from '@jupyterlab/mainmenu';
 import { activateGetCapabilities, activateDescribe, activateList, activateRegisterAlgorithm, activateDeleteAlgorithm, activateExecute, activateGetStatus, activateGetResult, activateDismiss, activateDelete } from './funcs'
-import { activateJobPanel, activateJobWidget } from './jobinfo';
 import { constructFileTreeWidget } from "./filetree";
 //import DataExplorer from './dataExplorer';
 import { IDocumentManager } from "@jupyterlab/docmanager";
@@ -33,14 +31,6 @@ const extensionList: JupyterFrontEndPlugin<void> = {
   optional: [ILauncher],
   activate: activateList
 };
-
-// const extensionRegister: JupyterFrontEndPlugin<void> = {
-//   id: 'mas-register',
-//   autoStart: true,
-//   requires: [ICommandPalette],
-//   optional: [ILauncher],
-//   activate: activateRegister
-// };
 
 const extensionRegisterAlgorithm: JupyterFrontEndPlugin<void> = {
   id: 'mas-register2',
@@ -97,19 +87,6 @@ const extensionDelete: JupyterFrontEndPlugin<void> = {
   activate: activateDelete
 };
 
-const cacheExtension: JupyterFrontEndPlugin<void> = {
-  id: 'job-cache-panel',
-  autoStart:true,
-  requires: [ICommandPalette,IMainMenu],
-  activate: activateJobPanel
-};
-
-const bigJobsPanel: JupyterFrontEndPlugin<void> = {
-  id: 'jobs-widget',
-  autoStart: true,
-  requires: [ICommandPalette, IMainMenu],
-  activate: activateJobWidget
-};
 
 function activate(app: JupyterFrontEnd, paths: JupyterFrontEnd.IPaths, resolver: IWindowResolver, restorer: ILayoutRestorer, manager: IDocumentManager, router: IRouter) {
   // tslint:disable-next-line: no-console
@@ -125,4 +102,4 @@ const fileTreePanel: JupyterFrontEndPlugin<void> = {
 };
 
 
-export default [extensionDeleteAlgorithm,extensionRegisterAlgorithm,extensionCapabilities,extensionStatus,extensionResult,extensionExecute,extensionDismiss,extensionDelete,extensionDescribe,extensionList, cacheExtension, bigJobsPanel, fileTreePanel];
+export default [extensionDeleteAlgorithm,extensionRegisterAlgorithm,extensionCapabilities,extensionStatus,extensionResult,extensionExecute,extensionDismiss,extensionDelete,extensionDescribe,extensionList, fileTreePanel];
