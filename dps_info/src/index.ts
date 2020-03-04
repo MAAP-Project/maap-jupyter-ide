@@ -1,7 +1,7 @@
 import { JupyterFrontEndPlugin } from '@jupyterlab/application';
 import { ICommandPalette } from '@jupyterlab/apputils';
 import { IMainMenu } from '@jupyterlab/mainmenu';
-import { activateJobPanel, activateJobWidget } from './activate';
+import { activateJobPanel, activateJobWidget, activateMenuOptions } from './activate';
 
 /**
  * Initialization data for the dps_info extension.
@@ -30,4 +30,11 @@ const bigJobsPanel: JupyterFrontEndPlugin<void> = {
   activate: activateJobWidget
 };
 
-export default [cacheExtension, bigJobsPanel]
+const DPSMASinterface: JupyterFrontEndPlugin<void> = {
+  id: 'dps-mas-interface',
+  autoStart: true,
+  requires: [IMainMenu],
+  activate: activateMenuOptions
+};
+
+export default [cacheExtension, bigJobsPanel, DPSMASinterface]
