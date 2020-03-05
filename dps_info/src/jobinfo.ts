@@ -1,11 +1,10 @@
-import { Dialog, showDialog } from '@jupyterlab/apputils';
 import { PageConfig } from '@jupyterlab/coreutils'
 import { Widget } from '@phosphor/widgets';
-// import { INotification } from "jupyterlab_toastify";
-// import { getUserInfo } from "./getKeycloak";
+import { INotification } from "jupyterlab_toastify";
+import { getUserInfo } from "./getKeycloak";
 import { request, RequestResult } from './request';
 import { WIDGET_CLASS, CONTENT_CLASS } from './panel';
-import { getJobs, getJobResults, updateResultsTable, onRowClick, DISPLAYS } from './funcs';
+import { getJobs, getJobResults, updateResultsTable, onRowClick, deleteDismissJob, DISPLAYS } from './funcs';
 import '../style/index.css';
 
 // MainArea Widget
@@ -48,18 +47,16 @@ export class JobWidget extends Widget {
     // callback should finish before users manage to do anything
     // now profile timing out shouldn't be a problem
     let me = this;
-    me._username = 'eyam';
-    me.update();
-    // getUserInfo(function(profile: any) {
-    //   if (profile['cas:username'] === undefined) {
-    //     INotification.error("Get username failed.");
-    //     me._username = 'anonymous';
-    //   } else {
-    //     me._username = profile['cas:username'];
-    //     INotification.success("Got username.");
-    //     me.update();
-    //   }
-    // });
+    getUserInfo(function(profile: any) {
+      if (profile['cas:username'] === undefined) {
+        INotification.error("Get username failed.");
+        me._username = 'anonymous';
+      } else {
+        me._username = profile['cas:username'];
+        INotification.success("Got username.");
+        me.update();
+      }
+    });
 
     let job_widget = document.createElement('div');
     job_widget.id = 'job-widget';
@@ -95,26 +92,21 @@ export class JobWidget extends Widget {
 
   /* Handle update requests for the widget. */
   update() {
-    // console.log('updating');
-    // console.log(this._algorithm);
-    // console.log(this._version);
     let me = this;
-    // document.getElementById("defaultOpen").click();
-
     // update execute, overview when algo chosen
     this._updateListCol();
     this._updateExecuteCol();
     this._updateOverviewCol();
+    
     // update jobinfo when job chosen
-    // console.log(this.job_cache.getJobID());
     this._updateInfoCol();
     this._updateResultsCol();
-
-    // this.job_cache.setRowClick(this._widget_table_name,);
 
     if (document.getElementById(this._widget_table_name) != null) {
       getJobs(this._username,this._job_id,function(job_id:string){me._job_id=job_id;},function(me:JobWidget, table:string){
         (<HTMLTextAreaElement>document.getElementById(me._widget_table_name)).innerHTML = table;
+        // set widget job table clickable rows
+        me._setJobClick(me._widget_table_name);
       },me);
     } else {
       // create div for jobid table if table doesn't already exist
@@ -129,6 +121,8 @@ export class JobWidget extends Widget {
       textarea.id = this._widget_table_name;
       getJobs(this._username,this._job_id,function(job_id:string){me._job_id=job_id;},function(me:JobWidget, table:string){
         textarea.innerHTML = table;
+        // set widget job table clickable rows
+        me._setJobClick(me._widget_table_name);
       },me);
       div.appendChild(textarea);
       let jw_div = document.getElementById('job-widget');
@@ -138,9 +132,7 @@ export class JobWidget extends Widget {
         h.innerText = 'Submitted Jobs';
         jw_div.appendChild(h);
         jw_div.appendChild(div);
-      } //else {
-      //   this.node.appendChild(div);
-      // }
+      }
     }
   }
 
@@ -348,7 +340,6 @@ export class JobWidget extends Widget {
   _populateExecuteTable() {
     let me = this;
     // (re-)populate params table with new algorithm's params
-    // let paramdiv = <HTMLDivElement> document.getElementById('execute-params-div');
     let t = <HTMLTableElement> document.getElementById(this._execute_params_id);
     let submitBtn = <HTMLButtonElement> document.getElementById('job-execute-button');
     let inputsp = <HTMLParagraphElement> document.getElementById('execute-inputs-p');
@@ -412,7 +403,6 @@ export class JobWidget extends Widget {
           request('get', requestUrl.href).then((res: RequestResult) => {
             if(res.ok){
               let json_response:any = res.json();
-              // console.log(json_response);
               p = p.concat(json_response['result']);
               inputsp.innerText = p;
             } else {
@@ -522,10 +512,11 @@ export class JobWidget extends Widget {
         infoCell.appendChild(br2);
       }
 
-      let deleteBtn = document.getElementById('job-delete-button-widget');
+      // Delete Job Button
+      let deleteBtn = <HTMLButtonElement>document.getElementById('job-delete-button-widget');
       if (deleteBtn != null){
         // set delete fn
-        console.log('delete1');
+        deleteDismissJob(deleteBtn,this._job_id,'delete');
       } else {
         deleteBtn = document.createElement('button');
         deleteBtn.setAttribute('id','job-delete-button-widget');
@@ -536,18 +527,21 @@ export class JobWidget extends Widget {
         let span = document.createElement('span');
         span.innerText = '     ';
         infoCell.appendChild(span);
+        deleteDismissJob(deleteBtn,this._job_id,'delete');
       }
 
-      let dismissBtn = document.getElementById('job-dismiss-button-widget');
+      // Dismiss Job Button
+      let dismissBtn = <HTMLButtonElement>document.getElementById('job-dismiss-button-widget');
       if (dismissBtn != null ){
         // set dismiss fn
-        console.log('delete1');
+        deleteDismissJob(dismissBtn,this._job_id,'dismiss');
       } else {
         dismissBtn = document.createElement('button');
         dismissBtn.setAttribute('id','job-dismiss-button-widget');
         dismissBtn.setAttribute('class','jupyter-button');
         dismissBtn.innerText = "Dismiss Job";
         infoCell.appendChild(dismissBtn);
+        deleteDismissJob(dismissBtn,this._job_id,'dismiss');
       }
     }
   }
@@ -555,6 +549,7 @@ export class JobWidget extends Widget {
   _updateResultsCol() {
     let resultsCell = document.getElementById('cell-jobresults');
     if (resultsCell != null) {
+      // section header
       let resultsHead = document.getElementById('results-name');
       if (resultsHead == null){
         resultsHead = document.createElement('h3');
@@ -563,20 +558,25 @@ export class JobWidget extends Widget {
         resultsCell.appendChild(resultsHead);
       }
 
+      // results table
       let resultsTableDiv = <HTMLDivElement>document.getElementById('results-table-div');
-      if (resultsTableDiv == null) {
+      if (resultsTableDiv != null) {
+        getJobResults(this._job_id, function(results:string) {
+          updateResultsTable(resultsTableDiv,'widget-result-table',results);
+        });
+      } else {
+        console.log('creating results table div');
         resultsTableDiv = document.createElement('div');
-        resultsTableDiv.id = 'result-table-div';
+        resultsTableDiv.id = 'results-table-div';
+
         let resultsTable = document.createElement('table');
         resultsTable.id = 'widget-result-table';
         resultsTableDiv.appendChild(resultsTable);
         resultsCell.appendChild(resultsTableDiv);
-      } else {
+
         getJobResults(this._job_id, function(results:string) {
           updateResultsTable(resultsTableDiv,'widget-result-table',results);
         });
-        // let resultsTable = document.getElementById('result-display-widget');
-        // resultsTable.innerHTML = (<HTMLTableElement>document.getElementById(this.job_cache.getResults())).innerHTML;
       }
     }
   }
@@ -588,7 +588,8 @@ export class JobWidget extends Widget {
     onRowClick(tableId, function(row:HTMLTableRowElement) {
       let job_id = row.getElementsByTagName('td')[0].innerHTML;
       me._job_id = job_id;
-      me.update();
+      me._updateInfoCol();
+      me._updateResultsCol();
     })
   }
 
@@ -623,19 +624,16 @@ export class JobTable extends Widget {
     // callback should finish before users manage to do anything
     // now profile timing out shouldn't be a problem
     let me = this;
-    // local testing only
-    me._username = 'eyam';
-    me.update();
-    // getUserInfo(function(profile: any) {
-    //   if (profile['cas:username'] === undefined) {
-    //     INotification.error("Get username failed.");
-    //     me._username = 'anonymous';
-    //   } else {
-    //     me._username = profile['cas:username'];
-    //     INotification.success("Got username.");
-    //     me.update();
-    //   }
-    // });
+    getUserInfo(function(profile: any) {
+      if (profile['cas:username'] === undefined) {
+        INotification.error("Get username failed.");
+        me._username = 'anonymous';
+      } else {
+        me._username = profile['cas:username'];
+        INotification.success("Got username.");
+        me.update();
+      }
+    });
     // make clickable table rows after setting job table
     var x = document.createElement("BR");
     this.node.appendChild(x);
@@ -644,7 +642,10 @@ export class JobTable extends Widget {
   _updateDisplay(): void {
     console.log("getting jobs list");
     let me = this;
-    getJobs(this._username,this._job_id, function(job_id){me._job_id = job_id;},this._getJobInfo, me);
+    getJobs(this._username,this._job_id, function(job_id){
+      console.log('setting job id');
+      me._job_id = job_id;
+    },this._getJobInfo, me);
   }
 
   // front-end side of display jobs table and job info
@@ -652,9 +653,7 @@ export class JobTable extends Widget {
     // --------------------
     // job table
     // --------------------
-    console.log('got table, setting panel display');
     // set table, from response
-    // let me = this;
     if (document.getElementById('job-cache-display') != null) {
       (<HTMLTextAreaElement>document.getElementById('job-cache-display')).innerHTML = table;
     } else {
@@ -732,91 +731,40 @@ export class JobTable extends Widget {
           (<HTMLTextAreaElement>display).readOnly = true;
           (<HTMLTextAreaElement>display).cols = 30;
           (<HTMLTextAreaElement>display).innerHTML = disp;
-          display.setAttribute('style', 'margin: 0px; height:16%; width: 98%; border: none; resize: none');
+          display.setAttribute('style', 'margin: 0px; height:17%; width: 98%; border: none; resize: none');
           display.className = 'jp-JSONEditor-host';
           div2.appendChild(display);
+        }
 
-          // create button to delete job 
-          if (document.getElementById('job-delete-button') == null){
-            var deleteBtn = document.createElement("button");
-            deleteBtn.id = 'job-delete-button';
-            deleteBtn.className = 'jupyter-button';
-            deleteBtn.innerHTML = 'Delete Job';
-            // change to get job_id and delete via widget or send request & create own popup
-            deleteBtn.addEventListener('click', function () {
-              var getUrl = new URL(PageConfig.getBaseUrl() + 'hysds/delete');
-              getUrl.searchParams.append('job_id', me._job_id);
-              console.log(getUrl.href);
-              request('get',getUrl.href).then((res: RequestResult) => {
-                if (res.ok) {
-                  let json_response:any = res.json();
-                  let result = json_response['result'];
+        // create button to delete job 
+        if (document.getElementById('job-delete-button') == null){
+          var deleteBtn = document.createElement("button");
+          deleteBtn.id = 'job-delete-button';
+          deleteBtn.className = 'jupyter-button';
+          deleteBtn.innerHTML = 'Delete Job';
+          // update to delete with new job id
+          deleteDismissJob(deleteBtn,me._job_id,'delete');
+          div2.appendChild(deleteBtn);
+        } else {
+          let deleteBtn = <HTMLButtonElement>document.getElementById('job-delete-button');
+          deleteDismissJob(deleteBtn,me._job_id,'delete');
+        }
 
-                  let body = document.createElement('div');
-                  body.style.display = 'flex';
-                  body.style.flexDirection = 'column';
-
-                  let textarea = document.createElement("div");
-                  textarea.id = 'delete-button-text';
-                  textarea.style.display = 'flex';
-                  textarea.style.flexDirection = 'column';
-                  textarea.innerHTML = "<pre>"+result+"</pre>";
-
-                  body.appendChild(textarea);
-                  showDialog({
-                    title: 'Delete Job',
-                    body: new Widget({node:body}),
-                    focusNodeSelector: 'input',
-                    buttons: [Dialog.okButton({label: 'Ok'})]
-                  });
-                }
-              });
-            }, false);
-            div2.appendChild(deleteBtn);
-          }
-
-          // create button to dismiss job
-          if (document.getElementById('job-dismiss-button') == null){
-            var dismissBtn = document.createElement("button");
-            dismissBtn.id = 'job-dismiss-button';
-            dismissBtn.className = 'jupyter-button';
-            dismissBtn.innerHTML = 'Dismiss Job';
-            // change to get job_id and dismiss via widget or send request & create own popup
-            dismissBtn.addEventListener('click', function () {
-              var getUrl = new URL(PageConfig.getBaseUrl() + 'hysds/dismiss');
-              getUrl.searchParams.append('job_id', me._job_id);
-              console.log(getUrl.href);
-              request('get',getUrl.href).then((res: RequestResult) => {
-                if (res.ok) {
-                  let json_response:any = res.json();
-                  let result = json_response['result'];
-
-                  let body = document.createElement('div');
-                  body.style.display = 'flex';
-                  body.style.flexDirection = 'column';
-
-                  let textarea = document.createElement("div");
-                  textarea.id = 'dismiss-button-text';
-                  textarea.style.display = 'flex';
-                  textarea.style.flexDirection = 'column';
-                  textarea.innerHTML = "<pre>"+result+"</pre>";
-
-                  body.appendChild(textarea);
-                  showDialog({
-                    title: 'Dismiss Job',
-                    body: new Widget({node:body}),
-                    focusNodeSelector: 'input',
-                    buttons: [Dialog.okButton({label: 'Ok'})]
-                  });
-                }
-              });
-            }, false);
-
-            let body2 = document.createElement('span');
-            body2.innerHTML = "     ";
-            div2.appendChild(body2);
-            div2.appendChild(dismissBtn);
-          }
+        // create button to dismiss job
+        if (document.getElementById('job-dismiss-button') == null){
+          var dismissBtn = document.createElement("button");
+          dismissBtn.id = 'job-dismiss-button';
+          dismissBtn.className = 'jupyter-button';
+          dismissBtn.innerHTML = 'Dismiss Job';
+          // update to dismiss with new job id
+          deleteDismissJob(deleteBtn,me._job_id,'dismiss');
+          let body2 = document.createElement('span');
+          body2.innerHTML = "     ";
+          div2.appendChild(body2);
+          div2.appendChild(dismissBtn);
+        } else {
+          let dismissBtn = <HTMLButtonElement>document.getElementById('job-dismiss-button');
+          deleteDismissJob(dismissBtn,me._job_id,'dismiss');
         }
       }
     }
@@ -826,7 +774,6 @@ export class JobTable extends Widget {
 
   // set clickable rows
   _setRowClick(div_name:string, setDisplays:any) {
-    console.log('setting clickable rows panel');
     let me = this;
     onRowClick(div_name, function(row:HTMLTableRowElement){
       let job_id = row.getElementsByTagName('td')[0].innerHTML;
@@ -844,8 +791,6 @@ export class JobTable extends Widget {
 
   // front-end side of display job result table
   convertResultToDisplay(me:JobTable, results: string) {
-    // let jobResult = this._results[this._job_id];
-    // console.log(me._results);
     me._results = results;
     let outerDiv = (<HTMLDivElement>document.getElementById('jobs-div'));
     if (outerDiv != null) {
@@ -866,8 +811,6 @@ export class JobTable extends Widget {
     }
   }
 
-  // -----------------------------------------------------------
-  // getters for GUI referencing properties in this class
   update(): void {
     this._updateDisplay();
   }

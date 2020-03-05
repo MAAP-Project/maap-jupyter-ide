@@ -1,4 +1,6 @@
+import { Dialog, showDialog } from '@jupyterlab/apputils';
 import { PageConfig } from '@jupyterlab/coreutils'
+import { Widget } from '@phosphor/widgets';
 import { INotification } from "jupyterlab_toastify";
 import { request, RequestResult } from './request';
 import '../style/index.css';
@@ -22,9 +24,6 @@ export function getJobs(username: string, job_id: string, setJobId:any, callback
       let json_response:any = res.json();
       // console.log(json_response['status_code']);
       INotification.success("Get user jobs success.");
-      // console.log(json_response['result']);
-      // console.log(json_response['displays']);
-
       if (json_response['status_code'] == 200){
         let table = json_response['table'];
         JOBS = json_response['jobs'];
@@ -54,7 +53,6 @@ export function getJobs(username: string, job_id: string, setJobId:any, callback
 export function getJobResults(job_id: string, callback?: any) {
   let results:string = '';
   var resultUrl = new URL(PageConfig.getBaseUrl() + 'hysds/getResult');
-    // console.log(me.jobs[me._job_id]);
     if (job_id != '' && JOBS[job_id]['status'] == 'job-completed') {
       resultUrl.searchParams.append('job_id',job_id);
       console.log(resultUrl.href);
@@ -121,4 +119,44 @@ export function onRowClick(tableId:string, callback:any) {
       }(rows[i]);
     }
   }
+}
+
+export function deleteDismissJob(btn: HTMLButtonElement, job_id: string, fn: string) {
+  let title:string = '';
+  if (fn == 'delete') {
+    title = 'Delete Job';
+  } else {
+    title = 'Dismiss Job';
+  }
+  
+  let btn_fn = function () {
+    var getUrl = new URL(PageConfig.getBaseUrl() + 'hysds/' + fn);
+    getUrl.searchParams.append('job_id', job_id);
+    console.log(getUrl.href);
+    request('get',getUrl.href).then((res: RequestResult) => {
+      if (res.ok) {
+        let json_response:any = res.json();
+        let result = json_response['result'];
+
+        let body = document.createElement('div');
+        body.style.display = 'flex';
+        body.style.flexDirection = 'column';
+
+        let textarea = document.createElement("div");
+        textarea.id = fn+'-button-text';
+        textarea.style.display = 'flex';
+        textarea.style.flexDirection = 'column';
+        textarea.innerHTML = "<pre>"+result+"</pre>";
+
+        body.appendChild(textarea);
+        showDialog({
+          title: title,
+          body: new Widget({node:body}),
+          focusNodeSelector: 'input',
+          buttons: [Dialog.okButton({label: 'Ok'})]
+        });
+      }
+    });
+  }
+  btn.onclick = btn_fn;
 }
