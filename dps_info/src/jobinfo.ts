@@ -1,8 +1,8 @@
 import { Dialog, showDialog } from '@jupyterlab/apputils';
 import { PageConfig } from '@jupyterlab/coreutils'
 import { Widget } from '@phosphor/widgets';
-import { INotification } from "jupyterlab_toastify";
-import { getUserInfo } from "./getKeycloak";
+// import { INotification } from "jupyterlab_toastify";
+// import { getUserInfo } from "./getKeycloak";
 import { request, RequestResult } from './request';
 import { WIDGET_CLASS, CONTENT_CLASS } from './panel';
 import { getJobs, getJobResults, updateResultsTable, onRowClick, DISPLAYS } from './funcs';
@@ -48,16 +48,18 @@ export class JobWidget extends Widget {
     // callback should finish before users manage to do anything
     // now profile timing out shouldn't be a problem
     let me = this;
-    getUserInfo(function(profile: any) {
-      if (profile['cas:username'] === undefined) {
-        INotification.error("Get username failed.");
-        me._username = 'anonymous';
-      } else {
-        me._username = profile['cas:username'];
-        INotification.success("Got username.");
-        me.update();
-      }
-    });
+    me._username = 'eyam';
+    me.update();
+    // getUserInfo(function(profile: any) {
+    //   if (profile['cas:username'] === undefined) {
+    //     INotification.error("Get username failed.");
+    //     me._username = 'anonymous';
+    //   } else {
+    //     me._username = profile['cas:username'];
+    //     INotification.success("Got username.");
+    //     me.update();
+    //   }
+    // });
 
     let job_widget = document.createElement('div');
     job_widget.id = 'job-widget';
@@ -69,7 +71,7 @@ export class JobWidget extends Widget {
     // button Run tab
     let runTab = document.createElement('button');
     runTab.setAttribute('id','defaultOpen');
-    runTab.setAttribute('class','tablink');
+    runTab.setAttribute('class','tablink active');
     runTab.onclick = (e) => {this._clickTab(event, 'run');};
     runTab.innerHTML = 'Run Jobs';
 
@@ -97,38 +99,7 @@ export class JobWidget extends Widget {
     // console.log(this._algorithm);
     // console.log(this._version);
     let me = this;
-    document.getElementById("defaultOpen").click();
-
-    if (document.getElementById(this._widget_table_name) != null) {
-      getJobs(this._username,this._job_id,function(job_id:string){me._job_id=job_id;},function(table:string){
-        (<HTMLTextAreaElement>document.getElementById(me._widget_table_name)).innerHTML = table;
-      });
-    } else {
-      // create div for jobid table if table doesn't already exist
-      var div = document.createElement('div');
-      div.setAttribute('id', 'widget-job-table');
-      div.setAttribute('resize','none');
-      div.setAttribute('class','jp-JSONEditor-host');
-      div.setAttribute('style','border-style:none;');
-
-      // jobs table
-      var textarea = document.createElement("table");
-      textarea.id = this._widget_table_name;
-      getJobs(this._username,this._job_id,function(job_id:string){me._job_id=job_id;},function(table:string){
-        (<HTMLTextAreaElement>document.getElementById(me._widget_table_name)).innerHTML = table;
-      });
-      div.appendChild(textarea);
-      let jw_div = document.getElementById('job-widget-div');
-      if (jw_div != null){
-        jw_div.appendChild(document.createElement('hr'));
-        let h = document.createElement('h3');
-        h.innerText = 'Submitted Jobs';
-        jw_div.appendChild(h);
-        jw_div.appendChild(div);
-      } else {
-        this.node.appendChild(div);
-      }
-    }
+    // document.getElementById("defaultOpen").click();
 
     // update execute, overview when algo chosen
     this._updateListCol();
@@ -140,6 +111,37 @@ export class JobWidget extends Widget {
     this._updateResultsCol();
 
     // this.job_cache.setRowClick(this._widget_table_name,);
+
+    if (document.getElementById(this._widget_table_name) != null) {
+      getJobs(this._username,this._job_id,function(job_id:string){me._job_id=job_id;},function(me:JobWidget, table:string){
+        (<HTMLTextAreaElement>document.getElementById(me._widget_table_name)).innerHTML = table;
+      },me);
+    } else {
+      // create div for jobid table if table doesn't already exist
+      var div = document.createElement('div');
+      div.setAttribute('id', 'widget-job-table');
+      div.setAttribute('resize','none');
+      div.setAttribute('class','jp-JSONEditor-host');
+      div.setAttribute('style','border-style:none;');
+
+      // jobs table
+      var textarea = document.createElement("table");
+      textarea.id = this._widget_table_name;
+      getJobs(this._username,this._job_id,function(job_id:string){me._job_id=job_id;},function(me:JobWidget, table:string){
+        textarea.innerHTML = table;
+      },me);
+      div.appendChild(textarea);
+      let jw_div = document.getElementById('job-widget');
+      if (jw_div != null){
+        jw_div.appendChild(document.createElement('hr'));
+        let h = document.createElement('h3');
+        h.innerText = 'Submitted Jobs';
+        jw_div.appendChild(h);
+        jw_div.appendChild(div);
+      } //else {
+      //   this.node.appendChild(div);
+      // }
+    }
   }
 
   // RUN JOBS TAB ==============================================
@@ -158,7 +160,7 @@ export class JobWidget extends Widget {
     let listCell = rrow.insertCell();
     listCell.setAttribute('id','cell-algolist');
     listCell.setAttribute('valign','top');
-    listCell.setAttribute('style','min-width:260px');
+    listCell.setAttribute('style','min-width:295px');
 
     let executeCell = rrow.insertCell();
     executeCell.setAttribute('id','cell-execute');
@@ -621,33 +623,38 @@ export class JobTable extends Widget {
     // callback should finish before users manage to do anything
     // now profile timing out shouldn't be a problem
     let me = this;
-    getUserInfo(function(profile: any) {
-      if (profile['cas:username'] === undefined) {
-        INotification.error("Get username failed.");
-        me._username = 'anonymous';
-      } else {
-        me._username = profile['cas:username'];
-        INotification.success("Got username.");
-        me.update();
-      }
-    });
+    // local testing only
+    me._username = 'eyam';
+    me.update();
+    // getUserInfo(function(profile: any) {
+    //   if (profile['cas:username'] === undefined) {
+    //     INotification.error("Get username failed.");
+    //     me._username = 'anonymous';
+    //   } else {
+    //     me._username = profile['cas:username'];
+    //     INotification.success("Got username.");
+    //     me.update();
+    //   }
+    // });
+    // make clickable table rows after setting job table
+    var x = document.createElement("BR");
+    this.node.appendChild(x);
   }
 
   _updateDisplay(): void {
-    var x = document.createElement("BR");
-    this.node.appendChild(x);
+    console.log("getting jobs list");
     let me = this;
-    getJobs(this._username,this._job_id, function(job_id){me._job_id = job_id;},this._getJobInfo);
+    getJobs(this._username,this._job_id, function(job_id){me._job_id = job_id;},this._getJobInfo, me);
   }
 
   // front-end side of display jobs table and job info
-  _getJobInfo(table:string) {
+  _getJobInfo(me: JobTable, table:string) {
     // --------------------
     // job table
     // --------------------
     console.log('got table, setting panel display');
     // set table, from response
-    let me = this;
+    // let me = this;
     if (document.getElementById('job-cache-display') != null) {
       (<HTMLTextAreaElement>document.getElementById('job-cache-display')).innerHTML = table;
     } else {
@@ -725,7 +732,7 @@ export class JobTable extends Widget {
           (<HTMLTextAreaElement>display).readOnly = true;
           (<HTMLTextAreaElement>display).cols = 30;
           (<HTMLTextAreaElement>display).innerHTML = disp;
-          display.setAttribute('style', 'margin: 0px; height:19%; width: 98%; border: none; resize: none');
+          display.setAttribute('style', 'margin: 0px; height:16%; width: 98%; border: none; resize: none');
           display.className = 'jp-JSONEditor-host';
           div2.appendChild(display);
 
@@ -814,13 +821,12 @@ export class JobTable extends Widget {
       }
     }
     // end setDisplays def
-
-    // make clickable table rows after setting job table
-    this._setRowClick('job-cache-display', setDisplays);
+    me._setRowClick('job-cache-display', setDisplays);
   }
 
   // set clickable rows
   _setRowClick(div_name:string, setDisplays:any) {
+    console.log('setting clickable rows panel');
     let me = this;
     onRowClick(div_name, function(row:HTMLTableRowElement){
       let job_id = row.getElementsByTagName('td')[0].innerHTML;

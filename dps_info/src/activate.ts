@@ -16,9 +16,6 @@ const jobsWidget = new MainAreaWidget({content});
 export const jobsPanel = new ADEPanel(jobsTable);
 // -------------------------------------------------------------
 // panel widget activation
-// const jobCache_update_command = 'jobs: refresh';
-// const jobWidget_command = 'jobs: main-widget';
-
 export function activateJobPanel(app: JupyterFrontEnd, palette: ICommandPalette, mainMenu: IMainMenu): void{
   var infoPanel = jobsPanel;
   infoPanel.id = 'job-cache-display';
@@ -36,9 +33,9 @@ export function activateJobPanel(app: JupyterFrontEnd, palette: ICommandPalette,
   });
   palette.addItem({command: jobCache_update_command, category: 'DPS/MAS'});
   console.log('HySDS JobList is activated!');
-
-  activateMenuOptions(app,mainMenu);
 }
+
+// activate main area widget
 export function activateJobWidget(app: JupyterFrontEnd, palette: ICommandPalette) {
   console.log('JupyterLab extension jupyterlab_apod is activated!');
 
@@ -74,7 +71,7 @@ export function activateJobWidget(app: JupyterFrontEnd, palette: ICommandPalette
   });
 
   // Add the command to the palette.
-  palette.addItem({command: jobWidget_command, category: '!Tutorial' });
+  palette.addItem({command: jobWidget_command, category: 'DPS/MAS' });
 
   // Track and restore the widget state
   // let tracker = new WidgetTracker<MainAreaWidget<JobWidget>>({
