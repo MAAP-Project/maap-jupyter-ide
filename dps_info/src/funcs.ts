@@ -9,7 +9,7 @@ export var JOBS: {[k:string]:string} = {};
 export var DISPLAYS: {[k:string]:string} = {};
 
 // create job table with job ids, status, and algorithms
-export function getJobs(username: string, job_id: string, setJobId:any, callback:any) {
+export function getJobs(username: string, job_id: string, setJobId:any, callback:any,obj?:any) {
   // call list jobs endpoint using username
   var getUrl = new URL(PageConfig.getBaseUrl() + 'hysds/listJobs');
   getUrl.searchParams.append('username',username);
@@ -38,7 +38,7 @@ export function getJobs(username: string, job_id: string, setJobId:any, callback
           job_id = json_response['result'][0]['job_id'];
           setJobId(job_id);
         }
-        callback(table);
+        callback(obj, table);
       } else {
         console.log('unable to get user job list');
         INotification.error("Get user jobs failed.");
