@@ -1,13 +1,9 @@
-import { ILayoutRestorer, IRouter, JupyterFrontEnd, JupyterFrontEndPlugin } from "@jupyterlab/application";
-import { ICommandPalette, IWindowResolver } from '@jupyterlab/apputils';
+import { JupyterFrontEndPlugin } from "@jupyterlab/application";
+import { ICommandPalette } from '@jupyterlab/apputils';
 import { IFileBrowserFactory } from "@jupyterlab/filebrowser";
 import { ILauncher } from '@jupyterlab/launcher';
 import { IMainMenu } from '@jupyterlab/mainmenu';
 import { activateGetCapabilities, activateDescribe, activateList, activateRegisterAlgorithm, activateDeleteAlgorithm, activateExecute, activateGetStatus, activateGetResult, activateDismiss, activateDelete, activateMenuOptions } from './activate'
-import { constructFileTreeWidget } from "./filetree";
-//import DataExplorer from './dataExplorer';
-import { IDocumentManager } from "@jupyterlab/docmanager";
-import "../style/index.css";
 
 const extensionCapabilities: JupyterFrontEndPlugin<void> = {
   id: 'dps-capabilities',
@@ -96,18 +92,4 @@ const extensionDPSMASMenu: JupyterFrontEndPlugin<void> = {
 };
 
 
-function activate(app: JupyterFrontEnd, paths: JupyterFrontEnd.IPaths, resolver: IWindowResolver, restorer: ILayoutRestorer, manager: IDocumentManager, router: IRouter) {
-  // tslint:disable-next-line: no-console
-  console.log("JupyterLab extension jupyterlab_filetree is activated!");
-  constructFileTreeWidget(app, "", "filetree-jupyterlab", "left", paths, resolver, restorer, manager, router);
-}
-
-const fileTreePanel: JupyterFrontEndPlugin<void> = {
-  activate,
-  autoStart: true,
-  id: "jupyterlab_filetree",
-  requires: [JupyterFrontEnd.IPaths, IWindowResolver, ILayoutRestorer, IDocumentManager, IRouter],
-};
-
-
-export default [extensionDeleteAlgorithm,extensionRegisterAlgorithm,extensionCapabilities,extensionStatus,extensionResult,extensionExecute,extensionDismiss,extensionDelete,extensionDescribe,extensionList,extensionDPSMASMenu, fileTreePanel];
+export default [extensionDeleteAlgorithm,extensionRegisterAlgorithm,extensionCapabilities,extensionStatus,extensionResult,extensionExecute,extensionDismiss,extensionDelete,extensionDescribe,extensionList,extensionDPSMASMenu];
