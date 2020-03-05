@@ -8,9 +8,8 @@ import {IFileBrowserFactory} from "@jupyterlab/filebrowser";
 import {Widget} from "@phosphor/widgets";
 
 import { SshWidget, InstallSshWidget, UserInfoWidget } from './widgets'
-const bucket_name = 'maap-mount-dev';
-
-
+// const bucket_name = 'maap-mount-dev';
+const bucket_name = 'maap-dev-dataset';
 
 export function popup(b:Widget,title:string): void {
   showDialog({
