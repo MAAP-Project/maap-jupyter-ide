@@ -6,16 +6,6 @@ import { activateJobPanel, activateJobWidget, activateMenuOptions } from './acti
 /**
  * Initialization data for the dps_info extension.
  */
-// const extension: JupyterFrontEndPlugin<void> = {
-//   id: 'dps_info',
-//   autoStart: true,
-//   activate: (app: JupyterFrontEnd) => {
-//     console.log('JupyterLab extension dps_info is activated!');
-//   }
-// };
-
-// export default extension;
-
 const cacheExtension: JupyterFrontEndPlugin<void> = {
   id: 'job-cache-panel',
   autoStart:true,

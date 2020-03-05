@@ -23,6 +23,7 @@ export function activateJobPanel(app: JupyterFrontEnd, palette: ICommandPalette,
   infoPanel.title.caption = 'jobs sent to DPS';
 
   app.shell.add(infoPanel, 'left', {rank: 300});
+  infoPanel.update();
 
   app.commands.addCommand(jobCache_update_command, {
     label: 'Refresh Job List',
