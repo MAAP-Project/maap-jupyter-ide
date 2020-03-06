@@ -215,11 +215,11 @@ class MountBucketHandler(IPythonHandler):
                 logging.debug('mount log {}'.format(mount_output))
 
                 # create user's folder within s3 bucket if it doesn't already exist
-                if not os.path.exists('{}/{}'.format(user_workspace,username)):
-                    os.mkdir('{}/{}'.format(user_workspace,username))
+                if not os.path.exists('{}/dps_output'.format(user_workspace)):
+                    os.mkdir('{}/dps_output'.format(user_workspace))
 
                 # touch & rm file to register folder to filesystem
-                touch_output = subprocess.check_output('touch {path}/{user}/dps_output/testfile && rm {path}/{user}/dps_output/testfile'.format(path=user_workspace,user=username), shell=True).decode('utf-8')
+                touch_output = subprocess.check_output('touch {path}/dps_output/testfile && rm {path}/dps_output/testfile'.format(path=user_workspace), shell=True).decode('utf-8')
                 message = touch_output
                 logging.debug('touch output {}'.format(touch_output))
 
