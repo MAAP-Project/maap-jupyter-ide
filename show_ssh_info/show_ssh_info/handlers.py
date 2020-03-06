@@ -344,7 +344,7 @@ class Presigneds3UrlHandler(IPythonHandler):
         # expiration = '300' # 5 min in seconds
         expiration = '43200' # 12 hrs in seconds
         logging.debug('expiration is {} seconds'+expiration)
-        keys = subprocess.check_output('cat ~/.passwd-s3fs',shell=True).decode('utf-8').strip().split(':')
+        keys = subprocess.check_output('cat /.passwd-s3fs',shell=True).decode('utf-8').strip().split(':')
 
         # check if provided key exists
         try:
