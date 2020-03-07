@@ -11,6 +11,7 @@ import logging
 logger = logging.getLogger()
 logger.setLevel(logging.DEBUG)
 
+
 class InjectKeyHandler(IPythonHandler):
     def get(self):
         public_key = self.get_argument('key', '')
@@ -46,6 +47,17 @@ class InjectKeyHandler(IPythonHandler):
         else:
             os.chdir('/projects')
             print("====== SUCCESS ========")
+
+        print("=== Checking for existence of MAAP_PGT ===")
+
+        proxy_granting_ticket = self.get_argument('proxyGrantingTicket', '')
+
+        if proxy_granting_ticket:
+            print("=== MAAP_PGT found. Adding variable to environment ===")
+            os.environ["MAAP_PGT"] = proxy_granting_ticket
+        else:
+            print("=== No MAAP_PGT found ===")
+
 
 class GetHandler(IPythonHandler):
     """
@@ -198,7 +210,7 @@ class MountBucketHandler(IPythonHandler):
                 logging.debug('chmod tmp {}'.format(chtmp_output))
 
                 # mount whole bucket first
-                mount_output = subprocess.check_output('s3fs -o passwd_file="/.passwd-s3fs" -o use_cache=/tmp/cache {} /projects/{}'.format(bucket,username), shell=True).decode('utf-8')
+                mount_output = subprocess.check_output('s3fs -o passwd_file="/.passwd-s3fs" -o use_cache=/tmp/cache {} {}'.format(bucket,user_workspace), shell=True).decode('utf-8')
                 message = mount_output
                 logging.debug('mount log {}'.format(mount_output))
 
@@ -206,8 +218,16 @@ class MountBucketHandler(IPythonHandler):
                 if not os.path.exists('{}/{}'.format(user_workspace,username)):
                     os.mkdir('{}/{}'.format(user_workspace,username))
 
+                # make sure folder permissions are at least 755
+                chmod_output = subprocess.check_output('chmod 755 {path}/{username}'.format(path=user_workspace,username=username), shell=True).decode('utf-8')
+                message = chmod_output
+                logging.debug('chmod output {}'.format(chmod_output))
+
+                if not os.path.exists('{}/{}/dps_output'.format(user_workspace,username)):
+                    os.mkdir('{}/{}/dps_output'.format(user_workspace,username))
+
                 # touch & rm file to register folder to filesystem
-                touch_output = subprocess.check_output('touch {path}/{user}/testfile && rm {path}/{user}/testfile'.format(path=user_workspace,user=username), shell=True).decode('utf-8')
+                touch_output = subprocess.check_output('touch {path}/{username}/dps_output/testfile && rm {path}/{username}/dps_output/testfile'.format(path=user_workspace,username=username), shell=True).decode('utf-8')
                 message = touch_output
                 logging.debug('touch output {}'.format(touch_output))
 
@@ -332,7 +352,7 @@ class Presigneds3UrlHandler(IPythonHandler):
         # expiration = '300' # 5 min in seconds
         expiration = '43200' # 12 hrs in seconds
         logging.debug('expiration is {} seconds'+expiration)
-        keys = subprocess.check_output('cat ~/.passwd-s3fs',shell=True).decode('utf-8').strip().split(':')
+        keys = subprocess.check_output('cat /.passwd-s3fs',shell=True).decode('utf-8').strip().split(':')
 
         # check if provided key exists
         try:

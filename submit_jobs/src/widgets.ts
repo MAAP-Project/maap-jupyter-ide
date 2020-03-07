@@ -2,17 +2,14 @@ import { Widget } from '@phosphor/widgets';
 import { PageConfig } from '@jupyterlab/coreutils'
 import { INotification } from "jupyterlab_toastify";
 import { getUserInfo } from "./getKeycloak";
+import { popupTitle, popupResult } from './dialogs';
 import { request, RequestResult } from './request';
-import { jobsPanel, JobPanel } from './panel';
-import { popupResult, popupTitle } from "./dialogs";
-// import * as $ from "jquery";
-// import { format } from "xml-formatter";
 
 // -----------------------
 // HySDS endpoints that require user inputs
 // -----------------------
 const nonXML: string[] = ['deleteAlgorithm','listAlgorithms','registerAuto','getResult','executeInputs','getStatus','execute','describeProcess','getCapabilities','register', 'delete','dismiss'];
-const autoUpdate: string[] = ['execute','delete','dismiss'];
+// const autoUpdate: string[] = ['execute','delete','dismiss'];
 const notImplemented: string[] = [];
 
 export class InputWidget extends Widget {
@@ -25,7 +22,6 @@ export class InputWidget extends Widget {
   public username: string;                // for execute & listing jobs in case of timeout
   _responseText: string;
   _getInputs: boolean;                    // for getting predefinedFields
-  _jobsPanel: JobPanel;                   // for execute
   _ins_dict: {[k:string]:string};          // for execute
 
   constructor(req:string, methodFields:string[],uname:string, defaultValues:Object,skipInputs?:boolean) {
@@ -54,7 +50,6 @@ export class InputWidget extends Widget {
     this.fields = methodFields;
     this._responseText = "";
     this._getInputs = false;
-    this._jobsPanel = jobsPanel;
     this._ins_dict = {};
 
     switch (req) {
@@ -177,10 +172,6 @@ export class InputWidget extends Widget {
     // TODO enforce input types
   }
 
-  updateJobPanel(){
-    this._jobsPanel.update();
-  }
-
   updateSearchResults(): void {
     // document.getElementById('search-text').innerHTML = this._responseText;
     if (document.getElementById('result-text') != null){
@@ -188,7 +179,7 @@ export class InputWidget extends Widget {
       (<HTMLDivElement>document.getElementById('result-text')).innerHTML = "<pre>" + this._responseText + "</pre>";
     } else {
       // console.log('create textarea');
-      popupResultText(this._responseText,autoUpdate.includes(this.req),"Results",(!nonXML.includes(this.req)));
+      popupResultText(this._responseText,"Results",(!nonXML.includes(this.req)));
     }
   }
 
@@ -489,25 +480,17 @@ export class RegisterWidget extends InputWidget {
 
 export class WidgetResult extends Widget {
   // pass InputWidget which contains info panel
-  cache: JobPanel;
-  updateCache: boolean;
   okfn: any;
 
-  constructor(b: any, updateCache: boolean,fn?:undefined) {
+  constructor(b: any, fn?:undefined) {
     super({node: b});
-    this.cache = jobsPanel;
-    this.updateCache = updateCache;
+    // this.cache = jobsPanel;
+    // this.updateCache = updateCache;
     this.okfn = fn;
   }
 
   // update panel text on resolution of result popup
   getValue() {
-    if (this.updateCache && this.cache != undefined) {
-      this.cache.update();
-    }
-    // if (this.parentWidget.req == 'execute' || this.parentWidget.req == 'delete' || this.parentWidget.req == 'dismiss') {
-    //   this.parentWidget.updateJobPanel();
-    // }
     console.log('checking popup resolution fn');
     if (this.okfn != undefined) {
       console.log(this.okfn);
@@ -522,8 +505,8 @@ export class WidgetResult extends Widget {
   }
 }
 
-// here because import dependencies of JobPanel(panel.ts),popupResult(dialog.ts), WidgetResult(widget.ts)
-export function popupResultText(result:string,update:boolean,title:string,fn?:any,isXML?:boolean) {
+// here because import dependencies of popupResult(dialog.ts), WidgetResult(widget.ts)
+export function popupResultText(result:string,title:string,fn?:any,isXML?:boolean) {
   let body = document.createElement('div');
   body.style.display = 'flex';
   body.style.flexDirection = 'column';
@@ -547,10 +530,10 @@ export function popupResultText(result:string,update:boolean,title:string,fn?:an
   }
   body.appendChild(textarea);
   // console.log(body);
-  popupResult(new WidgetResult(body,update,fn),title);
+  popupResult(new WidgetResult(body,fn),title);
 }
 
-// here because import dependencies of JobPanel(panel.ts),popupResult(dialog.ts), WidgetResult(widget.ts)
+// here because import dependencies of popupResult(dialog.ts), WidgetResult(widget.ts)
 export function popupText(result:string,title:string,fn?:any) {
   let body = document.createElement('div');
   body.style.display = 'flex';
@@ -568,6 +551,6 @@ export function popupText(result:string,title:string,fn?:any) {
   if (fn == undefined) {
     popupTitle(new Widget({node:body}),title);
   } else {
-    popupTitle(new WidgetResult(body,false,fn),title);
+    popupTitle(new WidgetResult(body,fn),title);
   }
 }
