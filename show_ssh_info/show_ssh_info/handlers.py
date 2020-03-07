@@ -218,13 +218,13 @@ class MountBucketHandler(IPythonHandler):
                 if not os.path.exists('{}/{}'.format(user_workspace,username)):
                     os.mkdir('{}/{}'.format(user_workspace,username))
 
-                if not os.path.exists('{}/{}/dps_output'.format(user_workspace,username)):
-                    os.mkdir('{}/{}/dps_output'.format(user_workspace,username))
-
                 # make sure folder permissions are at least 755
-                chmod_output = subprocess.check_output('chmod 755 {path}/{username}').format(path=user_workspace,username=username)
+                chmod_output = subprocess.check_output('chmod 755 {path}/{username}'.format(path=user_workspace,username=username), shell=True).decode('utf-8')
                 message = chmod_output
                 logging.debug('chmod output {}'.format(chmod_output))
+
+                if not os.path.exists('{}/{}/dps_output'.format(user_workspace,username)):
+                    os.mkdir('{}/{}/dps_output'.format(user_workspace,username))
 
                 # touch & rm file to register folder to filesystem
                 touch_output = subprocess.check_output('touch {path}/{username}/dps_output/testfile && rm {path}/{username}/dps_output/testfile'.format(path=user_workspace,username=username), shell=True).decode('utf-8')
