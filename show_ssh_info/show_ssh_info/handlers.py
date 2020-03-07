@@ -210,7 +210,7 @@ class MountBucketHandler(IPythonHandler):
                 logging.debug('chmod tmp {}'.format(chtmp_output))
 
                 # mount whole bucket first
-                mount_output = subprocess.check_output('s3fs -o passwd_file="/.passwd-s3fs" -o use_cache=/tmp/cache {} /projects/{}'.format(bucket,username), shell=True).decode('utf-8')
+                mount_output = subprocess.check_output('s3fs -o passwd_file="/.passwd-s3fs" -o use_cache=/tmp/cache {} {}'.format(bucket,user_workspace), shell=True).decode('utf-8')
                 message = mount_output
                 logging.debug('mount log {}'.format(mount_output))
 
@@ -218,8 +218,13 @@ class MountBucketHandler(IPythonHandler):
                 if not os.path.exists('{}/dps_output'.format(user_workspace)):
                     os.mkdir('{}/dps_output'.format(user_workspace))
 
+                # make sure folder permissions are at least 755
+                chmod_output = subprocess.check_output('chmod 755 {path}/{username}').format(path=user_workspace,username=username)
+                message = chmod_output
+                logging.debug('chmod output {}'.format(chmod_output))
+
                 # touch & rm file to register folder to filesystem
-                touch_output = subprocess.check_output('touch {path}/dps_output/testfile && rm {path}/dps_output/testfile'.format(path=user_workspace), shell=True).decode('utf-8')
+                touch_output = subprocess.check_output('touch {path}/{username}/dps_output/testfile && rm {path}/{username}/dps_output/testfile'.format(path=user_workspace,username=username), shell=True).decode('utf-8')
                 message = touch_output
                 logging.debug('touch output {}'.format(touch_output))
 
