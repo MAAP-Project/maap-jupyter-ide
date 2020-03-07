@@ -33,7 +33,7 @@
 }
 
 /* Style tab links */
-.tablink {
+.tablinks {
   background-color: #555;
   color: white;
   float: left;
@@ -54,6 +54,15 @@
   animation: fadeEffect 1s; /* Fading effect takes 1 second */
   min-height: 100%;
 }
+
+/* Set font of pre tag to Times New Roman */
+pre {
+  display: block;
+  font-family: Times New Roman;
+  font-size: 12px;
+  white-space: pre;
+  margin: 1em 0;
+} 
 
 /* Go from zero to full opacity */
 @keyframes fadeEffect {

@@ -1,10 +1,9 @@
-import { JupyterFrontEndPlugin } from '@jupyterlab/application';
+import { JupyterFrontEndPlugin } from "@jupyterlab/application";
 import { ICommandPalette } from '@jupyterlab/apputils';
 import { IFileBrowserFactory } from "@jupyterlab/filebrowser";
 import { ILauncher } from '@jupyterlab/launcher';
 import { IMainMenu } from '@jupyterlab/mainmenu';
-import { activateGetCapabilities, activateDescribe, activateList, activateRegister, activateRegisterAlgorithm, activateDeleteAlgorithm, activateExecute, activateGetStatus, activateGetResult, activateDismiss, activateDelete } from './funcs'
-import { activateJobPanel, activateJobWidget } from './panel';
+import { activateGetCapabilities, activateDescribe, activateList, activateRegisterAlgorithm, activateDeleteAlgorithm, activateExecute, activateGetStatus, activateGetResult, activateDismiss, activateDelete, activateMenuOptions } from './activate'
 
 const extensionCapabilities: JupyterFrontEndPlugin<void> = {
   id: 'dps-capabilities',
@@ -28,14 +27,6 @@ const extensionList: JupyterFrontEndPlugin<void> = {
   requires: [ICommandPalette],
   optional: [ILauncher],
   activate: activateList
-};
-
-const extensionRegister: JupyterFrontEndPlugin<void> = {
-  id: 'mas-register',
-  autoStart: true,
-  requires: [ICommandPalette],
-  optional: [ILauncher],
-  activate: activateRegister
 };
 
 const extensionRegisterAlgorithm: JupyterFrontEndPlugin<void> = {
@@ -93,18 +84,12 @@ const extensionDelete: JupyterFrontEndPlugin<void> = {
   activate: activateDelete
 };
 
-const cacheExtension: JupyterFrontEndPlugin<void> = {
-  id: 'job-cache-panel',
-  autoStart:true,
-  requires: [ICommandPalette,IMainMenu],
-  activate: activateJobPanel
+const extensionDPSMASMenu: JupyterFrontEndPlugin<void> = {
+  id: 'dps-mas-menu',
+  autoStart: true,
+  requires: [IMainMenu],
+  activate: activateMenuOptions
 };
 
-const bigJobsPanel: JupyterFrontEndPlugin<void> = {
-  id: 'jobs-widget',
-  autoStart: false,
-  requires: [ICommandPalette, IMainMenu],
-  activate: activateJobWidget
-};
 
-export default [extensionDeleteAlgorithm,extensionRegister,extensionRegisterAlgorithm,extensionCapabilities,extensionStatus,extensionResult,extensionExecute,extensionDismiss,extensionDelete,extensionDescribe,extensionList, cacheExtension, bigJobsPanel];
+export default [extensionDeleteAlgorithm,extensionRegisterAlgorithm,extensionCapabilities,extensionStatus,extensionResult,extensionExecute,extensionDismiss,extensionDelete,extensionDescribe,extensionList,extensionDPSMASMenu];

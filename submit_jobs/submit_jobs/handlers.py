@@ -612,7 +612,7 @@ class GetResultHandler(IPythonHandler):
 						# print(job_id)
 
 						result = '<table id="job-result-display" style="border-style: none; font-size: 11px">'
-						result += '<thead><tr><th colspan="2" style="text-align:left"> Job Results</th></tr></thead>'
+						# result += '<thead><tr><th colspan="2" style="text-align:left"> Job Results</th></tr></thead>'
 						result += '<tbody>'
 						result += '<tr><td>JobID: </td><td style="text-align:left">{}</td></tr>'.format(job_id)
 

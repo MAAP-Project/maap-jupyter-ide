@@ -3,7 +3,6 @@ import { PageConfig } from '@jupyterlab/coreutils'
 import { request, RequestResult } from './request';
 import { InputWidget, RegisterWidget } from './widgets';
 import { getAlgorithms, getDefaultValues, inputRequest } from './funcs';
-import { jobsPanel, JobPanel } from './panel';
 import { popup, popupResult } from "./dialogs";
 
 // popup helper for register to select project
@@ -11,7 +10,6 @@ export class ProjectSelector extends Widget {
   type: string;
   _fields: string[];
   _username:string;
-  _jobsPanel: JobPanel;
   public selection:string;
   _dropdown:HTMLSelectElement;
 
@@ -19,7 +17,6 @@ export class ProjectSelector extends Widget {
     super();
     this._fields = fields;
     this._username = uname;
-    this._jobsPanel = jobsPanel;
     this.selection = '';
     this.type = type;
 
@@ -93,8 +90,6 @@ export class ProjectSelector extends Widget {
           var json_response:any = res.json();
           console.log(json_response);
           var projects = json_response['project_files'];
-          // console.log(servers);
-          // console.log(servers.length);
           if (projects.length == 0) {
             me.selection = "No open notebooks";
             return;

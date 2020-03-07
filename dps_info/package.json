@@ -1,8 +1,8 @@
 {
   "private": true,
-  "name": "submit_jobs",
+  "name": "dps_info",
   "version": "0.0.1",
-  "description": "UI form for users to submit jobs to HySDS/DPS",
+  "description": "more user-friendly UI for interacting with HySDS/DPS/MAS",
   "author": "Elizabeth Yam",
   "files": [
     "lib/**/*.{d.ts,eot,gif,html,jpg,js,js.map,json,png,svg,woff2,ttf}",
