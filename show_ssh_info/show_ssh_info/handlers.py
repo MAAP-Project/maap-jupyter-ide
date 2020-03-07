@@ -215,8 +215,11 @@ class MountBucketHandler(IPythonHandler):
                 logging.debug('mount log {}'.format(mount_output))
 
                 # create user's folder within s3 bucket if it doesn't already exist
-                if not os.path.exists('{}/dps_output'.format(user_workspace)):
-                    os.mkdir('{}/dps_output'.format(user_workspace))
+                if not os.path.exists('{}/{}'.format(user_workspace,username)):
+                    os.mkdir('{}/{}'.format(user_workspace,username))
+
+                if not os.path.exists('{}/{}/dps_output'.format(user_workspace,username)):
+                    os.mkdir('{}/{}/dps_output'.format(user_workspace,username))
 
                 # make sure folder permissions are at least 755
                 chmod_output = subprocess.check_output('chmod 755 {path}/{username}').format(path=user_workspace,username=username)
