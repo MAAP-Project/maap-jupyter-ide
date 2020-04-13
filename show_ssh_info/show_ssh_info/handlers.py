@@ -19,7 +19,7 @@ class InjectKeyHandler(IPythonHandler):
         print("=== Injecting SSH KEY ===")
 
         # Check if .ssh directory exists, if not create it
-        os.chdir('/root')
+        os.chdir('/projects')
         if not os.path.exists(".ssh"):
             os.makedirs(".ssh")
 
