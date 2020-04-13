@@ -28,4 +28,8 @@ env | grep _ >> /etc/environment
 # Add conda bin to path
 export PATH=$PATH:/opt/conda/bin
 
+# in show_ssh_info extension we inject user's keys to authorized keys file under the root dir
+# by default sshd looks in the home dir which is /projects - must direct sshd to look at /root
+echo "AuthorizedKeysFile  /root/.ssh/authorized_keys" >> /etc/ssh/sshd_config &&  service ssh restart
+
 jupyter lab --ip=0.0.0.0 --port=3100 --allow-root --NotebookApp.token='' --LabApp.base_url=$PREVIEW_URL --no-browser --debug
