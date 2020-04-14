@@ -45,7 +45,7 @@ class InjectKeyHandler(IPythonHandler):
 
         # If not in file, inject key into authorized keys
         if not found:
-            cmd = "echo " + public_key + " >> .ssh/authorized_keys && chmod 700 .ssh/ && chmod 600 .ssh/authorized_keys"
+            cmd = "echo " + public_key + " >> .ssh/authorized_keys && chmod 700 /projects && chmod 700 .ssh/ && chmod 600 .ssh/authorized_keys"
             print(cmd)
             subprocess.check_output(cmd, shell=True)
             os.chdir('/projects')
