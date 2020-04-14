@@ -21,8 +21,11 @@ WORKDIR = FILEPATH+'/..'
 sys.path.append(WORKDIR)
 # USE https when pointing to actual MAAP API server
 #BASE_URL = "http://localhost:5000/api"
+
+# set base url based on ops/dev environment
 BASE_URL = "https://api.maap.xyz/api"
-# BASE_URL = "https://api.maap-project.org/api"
+if 'ENVIRONMENT' in os.environ.keys() and os.environ['ENVIRONMENT'] == 'OPS':
+    BASE_URL = "https://api.maap-project.org/api"
 
 
 # helper to parse out algorithm parameters for execute, describe

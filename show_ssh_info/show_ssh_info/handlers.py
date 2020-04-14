@@ -11,6 +11,11 @@ import logging
 logger = logging.getLogger()
 logger.setLevel(logging.DEBUG)
 
+# set base url based on ops/dev environment
+CHE_BASE_URL = "https://che-k8s.maap.xyz"
+if 'ENVIRONMENT' in os.environ.keys() and os.environ['ENVIRONMENT'] == 'OPS':
+    CHE_BASE_URL = "https://ade.maap-project.org"
+
 
 class InjectKeyHandler(IPythonHandler):
     def get(self):
@@ -19,7 +24,7 @@ class InjectKeyHandler(IPythonHandler):
         print("=== Injecting SSH KEY ===")
 
         # Check if .ssh directory exists, if not create it
-        os.chdir('/projects')
+        os.chdir('/root')
         if not os.path.exists(".ssh"):
             os.makedirs(".ssh")
 
@@ -103,8 +108,7 @@ class CheckInstallersHandler(IPythonHandler):
         # self.finish({'status': True})
 
         che_machine_token = os.environ['CHE_MACHINE_TOKEN']
-        url = 'https://ade.maap-project.org/api/workspace/' + os.environ.get('CHE_WORKSPACE_ID')
-        # url = 'https://che-k8s.maap.xyz/api/workspace/' + os.environ.get('CHE_WORKSPACE_ID')
+        url = '{}/api/workspace/{}'.format(CHE_BASE_URL,os.environ.get('CHE_WORKSPACE_ID'))
         # --------------------------------------------------
         # TODO: FIGURE OUT AUTH KEY & verify
         # --------------------------------------------------
@@ -134,8 +138,7 @@ class InstallHandler(IPythonHandler):
     def get(self):
 
         che_machine_token = os.environ['CHE_MACHINE_TOKEN']
-        url = 'https://ade.maap-project.org/api/workspace/' + os.environ.get('CHE_WORKSPACE_ID')
-        # url = 'https://che-k8s.maap.xyz/api/workspace/' + os.environ.get('CHE_WORKSPACE_ID')
+        url = '{}/api/workspace/{}'.format(CHE_BASE_URL,os.environ.get('CHE_WORKSPACE_ID'))
         # --------------------------------------------------
         # TODO: FIGURE OUT AUTH KEY & verify
         # --------------------------------------------------
@@ -154,6 +157,8 @@ class InstallHandler(IPythonHandler):
 
         # Update workspace config with new installers
         workspace_config['config']['environments']["default"]["machines"]["ws/jupyter"]['installers'] = installers
+
+        put_url = 'https://ade.maap-project.org/api/workspace/' + os.environ.get('CHE_WORKSPACE_ID')
 
         r = requests.put(
             url,
@@ -250,9 +255,7 @@ class MountOrgBucketsHandler(IPythonHandler):
         # ts pass keycloak token from window
         token = self.get_argument('token','')
         bucket = self.get_argument('bucket','')
-        url = 'https://ade.maap-project.org/api/organization'
-        # url = 'https://che-k8s.maap.xyz/api/organization'
-        
+        url = '{}/api/organization'.format(CHE_BASE_URL)
         headers = {
             'Accept':'application/json',
             'Authorization':'Bearer {token}'.format(token=token)

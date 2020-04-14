@@ -11,8 +11,15 @@ from git import Repo
 import shutil
 import urllib
 
-# GITLAB_REPO = "mas.maap-project.org"
+# set base url based on ops/dev environment
 GITLAB_REPO = "repo.nasa.maap.xyz"
+if 'ENVIRONMENT' in os.environ.keys() and os.environ['ENVIRONMENT'] == 'OPS':
+    GITLAB_REPO = "mas.maap-project.org"
+
+CHE_BASE_URL = "https://che-k8s.maap.xyz"
+if 'ENVIRONMENT' in os.environ.keys() and os.environ['ENVIRONMENT'] == 'OPS':
+    CHE_BASE_URL = "https://ade.maap-project.org"
+
 
 # Set selected ADE Docker Image 
 class ListProjectsHandler(IPythonHandler):
@@ -20,8 +27,7 @@ class ListProjectsHandler(IPythonHandler):
         # 'https://ade.maap-project.org/api/workspace/workspacetn41o4yl4a7kxclz'
         workspace_id = os.environ['CHE_WORKSPACE_ID']
         che_machine_token = os.environ['CHE_MACHINE_TOKEN']
-        # url = 'https://ade.maap-project.org/api/workspace/{workspace_id}'.format(workspace_id=workspace_id)
-        url = 'https://che-k8s.maap.xyz/api/workspace/{workspace_id}'.format(workspace_id=workspace_id)
+        url = '{base_url}/api/workspace/{workspace_id}'.format(base_url=CHE_BASE_URL,workspace_id=workspace_id)
         # --------------------------------------------------
         # TODO: FIGURE OUT AUTH KEY & verify
         # --------------------------------------------------
@@ -56,8 +62,7 @@ class ListFilesHandler(IPythonHandler):
         # 'https://ade.maap-project.org/api/workspace/workspacetn41o4yl4a7kxclz'
         workspace_id = os.environ['CHE_WORKSPACE_ID']
         che_machine_token = os.environ['CHE_MACHINE_TOKEN']
-        # url = 'https://ade.maap-project.org/api/workspace/{workspace_id}'.format(workspace_id=workspace_id)
-        url = 'https://che-k8s.maap.xyz/api/workspace/{workspace_id}'.format(workspace_id=workspace_id)
+        url = '{base_url}/api/workspace/{workspace_id}'.format(base_url=CHE_BASE_URL,workspace_id=workspace_id)
         # --------------------------------------------------
         # TODO: FIGURE OUT AUTH KEY & verify
         # --------------------------------------------------
@@ -131,8 +136,7 @@ class GetAllProjectsHandler(IPythonHandler):
         # --------------------------------------------------
         workspace_id = os.environ['CHE_WORKSPACE_ID']
         che_machine_token = os.environ['CHE_MACHINE_TOKEN']
-        # url = 'https://ade.maap-project.org/api/workspace/{workspace_id}'.format(workspace_id=workspace_id)
-        url = 'https://che-k8s.maap.xyz/api/workspace/{workspace_id}'.format(workspace_id=workspace_id)
+        url = '{base_url}/api/workspace/{workspace_id}'.format(base_url=CHE_BASE_URL,workspace_id=workspace_id)
         # --------------------------------------------------
         # TODO: FIGURE OUT AUTH KEY & verify
         # --------------------------------------------------
