@@ -1,9 +1,6 @@
 {
   "compilerOptions": {
-    //"declaration": true,
-    "allowJs": true,
-    "allowSyntheticDefaultImports": true,
-    "lib": ["es2015", "dom", "ES5", "ES2015.Promise", "DOM", "es6"],
+    "lib": ["es2015", "dom","es2017"],
     "module": "commonjs",
     "moduleResolution": "node",
     "noEmitOnError": true,
@@ -12,8 +9,12 @@
     "rootDir": "src",
     "strict": true,
     "strictNullChecks": false,
-    "target": "es2015",
-    "types": ["node"]
+    "target": "ES6",
+    "types": ["node"],
+    "resolveJsonModule": true,
+    "esModuleInterop": true,
+    "allowJs": true,
+    "noImplicitAny": false,
   },
   "include": ["src/*"]
 }
