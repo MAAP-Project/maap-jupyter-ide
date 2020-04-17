@@ -1,5 +1,7 @@
 import { Widget } from '@phosphor/widgets';
 import { PageConfig } from '@jupyterlab/coreutils'
+import { INotification } from 'jupyterlab_toastify';
+import { getUserInfo } from './getKeycloak';
 import { request, RequestResult } from './request';
 import { InputWidget, RegisterWidget } from './widgets';
 import { getAlgorithms, getDefaultValues, inputRequest } from './funcs';
@@ -52,7 +54,7 @@ export class ProjectSelector extends Widget {
         }
         this.node.appendChild(this._dropdown);
       });
-    } else if (type == 'describeProcess' || type == 'executeInputs' || type == 'deleteAlgorithm') {
+    } else if (['describeProcess','publishAlgorithm','executeInputs','deleteAlgorithm'].includes(type)) {
       let me = this;
       getAlgorithms().then((algo_lst:{[k:string]:Array<string>}) => {
         if (Object.keys(algo_lst).length == 0) {
@@ -118,7 +120,7 @@ export class ProjectSelector extends Widget {
       popupResult("No Option Selected","Select Failed");
 
     // these calls all require just params algo_id, version
-    } else if (this.type == 'describeProcess' || this.type == 'executeInputs' || this.type == 'deleteAlgorithm') {
+    } else if (['describeProcess','publishAlgorithm','executeInputs','deleteAlgorithm'].includes(this.type)) {
       let lst = opt.split(':');
       let algo_id = lst[0];
       let version = lst[1];
@@ -139,6 +141,18 @@ export class ProjectSelector extends Widget {
         inputRequest(this.type,algo_id,{'algo_id':algo_id,'version':version},fn);
 
         // no additional user action required after selection
+      } else if (this.type == 'describeProcess' || this.type == 'publishAlgorithm') {
+        let type = this.type;
+        // get proxy-ticket
+        let proxy_ticket = '';
+        getUserInfo(function(profile:any) {
+          if (profile['proxyGrantingTicket'] !== undefined) {
+            proxy_ticket = profile['proxyGrantingTicket'];
+          } else {
+            INotification.error("Error retrieving proxy ticket for unpublished algorithms.");
+          }
+          inputRequest(type,algo_id,{'algo_id':algo_id,'version':version,'proxy-ticket':proxy_ticket});
+        });
       } else {
         inputRequest(this.type,algo_id,{'algo_id':algo_id,'version':version});
       }

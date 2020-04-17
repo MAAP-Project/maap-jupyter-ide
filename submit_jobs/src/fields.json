@@ -1,9 +1,10 @@
 {
 	"register": ["algo_name","version","description","run_command","inputs"],
 	"deleteAlgorithm": ["algo_id","version"],
+	"publishAlgorithm": ["algo_id","version","proxy-ticket"],
 	"getCapabilities": [],
 	"listAlgorithms": [],
-	"describeProcess": ["algo_id","version"],
+	"describeProcess": ["algo_id","version","proxy-ticket"],
 	"executeInputs": ["algo_id","version"],
 	"execute" : ["identifier","algo_id","version","inputs"],
 	"getStatus": ["job_id"],

@@ -310,6 +310,88 @@ class DeleteAlgorithmHandler(IPythonHandler):
 		else:
 			self.finish({"status_code": 400, "result": "Bad Request"})
 
+class PublishAlgorithmHandler(IPythonHandler):
+	def get(self):
+		# ==================================
+		# Part 1: Parse Required Arguments
+		# ==================================
+		complete = True
+		fields = getFields('deleteAlgorithm')
+
+		params = {}
+		for f in fields:
+			try:
+				arg = self.get_argument(f.lower(), '').strip()
+				params[f] = arg
+			except:
+				complete = False
+
+		if all(e == '' for e in list(params.values())):
+			complete = False
+
+		print(complete)
+		logging.debug('params are')
+		logging.debug(params)
+
+		# ==================================
+		# Part 2: Build & Send Request
+		# ==================================
+		# return all algorithms if malformed request
+		headers = {'Content-Type':'application/json'}
+		if complete:
+			url = BASE_URL+'/mas/publish/{algo_id}:{version}'.format(**params) 
+			r = requests.delete(
+				url,
+				headers=headers
+			)
+		else:
+			url = BASE_URL+'/mas/algorithm'
+			r = requests.post(
+				url,
+				headers=headers
+			)
+
+		# print(url)
+		# print(r.status_code)
+		# print(r.text)
+
+		# ==================================
+		# Part 3: Check & Parse Response
+		# ==================================
+
+		if r.status_code == 200:
+			try:
+				if complete:
+					# MAAP API response
+					resp = json.loads(r.text)
+					# show registered inputs
+					result = resp['message']
+				else:
+					resp = json.loads(r.text)
+					result = 'Algorithms:\n'
+					for e in resp['algorithms']:
+						result += '\t{}:{}\n'.format(e['type'],e['version'])
+
+				if result.strip() == '':
+					result = 'Bad Request\nThe provided parameters were\n\talgo_id:{}\n\tversion:{}\n'.format(params['algo_id'],params['version'])
+					self.finish({"status_code": 400, "result": result})
+					return
+
+				# print(result)
+				self.finish({"status_code": r.status_code, "result": result})
+			except:
+				self.finish({"status_code": r.status_code, "result": r.text})
+
+		# malformed request will still give 500
+		elif r.status_code == 500:
+			if 'AttributeError' in r.text:
+				result = 'Bad Request\nThe provided parameters were\n\talgo_id:{}\n\tversion:{}\n'.format(params['algo_id'],params['version'])
+				self.finish({"status_code": 400, "result": result})
+			else:
+				self.finish({"status_code": r.status_code, "result": r.reason})
+		else:
+			self.finish({"status_code": 400, "result": "Bad Request"})
+
 class GetCapabilitiesHandler(IPythonHandler):
 	def get(self):
 		# No Required Arguments
@@ -592,7 +674,9 @@ class GetMetricsHandler(IPythonHandler):
 					# parse out JobID from response
 					rt = json.loads(r.text)
 
-					metrics = rt['metrics']
+					# metrics = rt['metrics']
+					# for testing only
+					metrics = {'algo_id':'hello_world_ubuntu','job_id':'job-0123456789','memory':'2.0M','execution_time':'2s'}
 
 					result = '<table name="job-metrics">'
 					result += '<tbody>'
@@ -895,13 +979,16 @@ class DescribeProcessHandler(IPythonHandler):
 		# ==================================
 		# Part 2: Build & Send Request
 		# ==================================
+		headers = {'Content-Type':'application/json'}
+		if 'proxy-ticket' in params.keys():
+			headers['proxy-ticket'] = params.pop('proxy-ticket')
+
 		# return all algorithms if malformed request
 		if complete:
 			url = BASE_URL+'/mas/algorithm/{algo_id}:{version}'.format(**params) 
 		else:
 			url = BASE_URL+'/mas/algorithm'
 
-		headers = {'Content-Type':'application/json'}
 		# print(url)
 
 		r = requests.get(
