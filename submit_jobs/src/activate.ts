@@ -278,6 +278,7 @@ export function activateMenuOptions(app: JupyterFrontEnd, mainMenu: IMainMenu) {
   [
     capabilities_command,
     listAlgorithm_command,
+    publishAlgorithm_command,
     describeAlgorithm_command,
     executeJob_command,
     statusJob_command,
