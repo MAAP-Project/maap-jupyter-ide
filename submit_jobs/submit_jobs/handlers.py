@@ -343,7 +343,7 @@ class PublishAlgorithmHandler(IPythonHandler):
 			r = requests.post(
 				url,
 				headers=headers,
-				body={'algo_id':'{algo_id}:{version}'.format(**params)}
+				data={'algo_id':'{algo_id}:{version}'.format(**params)}
 			)
 		else:
 			url = BASE_URL+'/mas/algorithm'
