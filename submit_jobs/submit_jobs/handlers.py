@@ -596,7 +596,7 @@ class GetMetricsHandler(IPythonHandler):
 
 					result = '<table name="job-metrics">'
 					result += '<tbody>'
-					for k in metrics.keys()
+					for k in metrics.keys():
 						result += '<tr><td>{}</td><td>{}</td></tr>'.format(k,metrics[k])
 					result += '</tbody>'
 					result += '</table>'
