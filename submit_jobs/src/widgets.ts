@@ -8,7 +8,7 @@ import { request, RequestResult } from './request';
 // -----------------------
 // HySDS endpoints that require user inputs
 // -----------------------
-const nonXML: string[] = ['deleteAlgorithm','listAlgorithms','registerAuto','getResult','executeInputs','getStatus','execute','describeProcess','getCapabilities','register', 'delete','dismiss'];
+const nonXML: string[] = ['deleteAlgorithm','listAlgorithms','registerAuto','getResult','executeInputs','getStatus','getMetrics','execute','describeProcess','getCapabilities','register', 'delete','dismiss'];
 // const autoUpdate: string[] = ['execute','delete','dismiss'];
 const notImplemented: string[] = [];
 
@@ -17,12 +17,12 @@ export class InputWidget extends Widget {
   // TODO: protect instance vars
   public readonly req: string;
   public popupTitle: string;
-  public predefinedFields: Object; // store predefined fields (default values)
+  public predefinedFields: Object;        // store predefined fields (default values)
   public readonly fields: string[];       // user inputs to fill out
   public username: string;                // for execute & listing jobs in case of timeout
   _responseText: string;
   _getInputs: boolean;                    // for getting predefinedFields
-  _ins_dict: {[k:string]:string};          // for execute
+  _ins_dict: {[k:string]:string};         // for execute
 
   constructor(req:string, methodFields:string[],uname:string, defaultValues:Object,skipInputs?:boolean) {
     let body = document.createElement('div');

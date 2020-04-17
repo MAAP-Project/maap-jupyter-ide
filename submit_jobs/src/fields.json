@@ -7,6 +7,7 @@
 	"executeInputs": ["algo_id","version"],
 	"execute" : ["identifier","algo_id","version","inputs"],
 	"getStatus": ["job_id"],
+	"getMetrics": ["job_id"],
 	"getResult": ["job_id"],
 	"dismiss": ["job_id"],
 	"delete": ["job_id"],

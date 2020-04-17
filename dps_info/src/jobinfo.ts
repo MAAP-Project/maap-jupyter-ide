@@ -4,7 +4,7 @@ import { INotification } from "jupyterlab_toastify";
 import { getUserInfo } from "./getKeycloak";
 import { request, RequestResult } from './request';
 import { WIDGET_CLASS, CONTENT_CLASS } from './panel';
-import { getJobs, getJobResults, updateResultsTable, onRowClick, deleteDismissJob, DISPLAYS } from './funcs';
+import { getJobs, getJobMetrics, getJobResults, updateResultsTable, onRowClick, deleteDismissJob, DISPLAYS } from './funcs';
 import '../style/index.css';
 
 // MainArea Widget
@@ -24,7 +24,7 @@ export class JobWidget extends Widget {
   _username: string;
   _algorithm: string;
   _version: string;
-  _job_id: string;
+  _job_id: string;0
 
   // names
   _widget_table_name: string;
@@ -472,6 +472,7 @@ export class JobWidget extends Widget {
     let infoTable = document.createElement('table');
     infoTable.setAttribute('id','infotable');
     infoTable.setAttribute('class','colPadding');
+
     let rrow = <HTMLTableRowElement> infoTable.insertRow();
 
     let infoCell = rrow.insertCell();
@@ -483,6 +484,13 @@ export class JobWidget extends Widget {
     resultsCell.setAttribute('id','cell-jobresults');
     resultsCell.setAttribute('valign','top');
     resultsCell.setAttribute('style','min-width:360px');
+
+    rrow = <HTMLTableRowElement> infoTable.insertRow();
+
+    let metricsCell = rrow.insertCell();
+    metricsCell.setAttribute('id','cell-jobmetrics');
+    metricsCell.setAttribute('valign','top');
+    metricsCell.setAttribute('style','min-width:720px')
 
     infoDiv.appendChild(infoTable);
     job_widget.appendChild(infoDiv);
@@ -576,6 +584,41 @@ export class JobWidget extends Widget {
 
         getJobResults(this._job_id, function(results:string) {
           updateResultsTable(resultsTableDiv,'widget-result-table',results);
+        });
+      }
+    }
+  }
+
+  _updateMetricsRow() {
+    let metricsCell = document.getElementById('cell-jobmetrics');
+    if (metricsCell != null) {
+      // section header
+      let metricsHead = document.getElementById('metrics-name');
+      if (metricsHead == null){
+        metricsHead = document.createElement('h3');
+        metricsHead.id = 'metrics-name';
+        metricsHead.innerText = 'Job Metrics';
+        metricsCell.appendChild(metricsHead);
+      }
+
+      // metrics table
+      let metricsTableDiv = <HTMLDivElement>document.getElementById('metrics-table-div');
+      if (metricsTableDiv != null) {
+        getJobMetrics(this._job_id, function(results:string) {
+          updateResultsTable(metricsTableDiv,'widget-metrics-table',results);
+        });
+      } else {
+        console.log('creating results table div');
+        metricsTableDiv = document.createElement('div');
+        metricsTableDiv.id = 'metrics-table-div';
+
+        let resultsTable = document.createElement('table');
+        resultsTable.id = 'widget-metrics-table';
+        metricsTableDiv.appendChild(resultsTable);
+        metricsCell.appendChild(metricsTableDiv);
+
+        getJobMetrics(this._job_id, function(results:string) {
+          updateResultsTable(metricsTableDiv,'widget-metrics-table',results);
         });
       }
     }

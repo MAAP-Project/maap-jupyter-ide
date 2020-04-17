@@ -50,16 +50,6 @@ def getProds(node):
 
 # helper to parse out user-defined inputs when registering algorithm
 def parseInputs(popped):
-	# a = popped.strip()
-	# a = a.replace('\n',';')
-	# inputs = [e.split(',') for e in a.split(';')]							# split lines into inputs
-	# inputs = [[e.strip().replace(' ','_') for e in e1] for e1 in inputs]	# strip whitespace & replace <space> with _
-	# inputs = [e+['false'] if len(e) == 1 else e for e in inputs]			# set false if dl not set
-	# inputs = [[e[0],'true'] if e[1].lower() in ['true','download','dl'] else [e[0],'false'] for e in inputs] 	# replace anything not dl=true to false
-	# inputs = {e[0]:e[1] for e in inputs}									# convert to dictionary & overwrite duplicate input names
-	# # print(a)
-	# # print(inputs)
-	# return inputs
 	p1 = [{e['name']:str(e['download']).lower()} for e in popped] 			# parse {"name":"varname","download":boolean} to {"varname":boolean}, convert boolean to lower
 	return {k: v for d in p1 for k, v in d.items()}							# flatten list of dicts to just 1 dict
 
@@ -556,6 +546,68 @@ class GetStatusHandler(IPythonHandler):
 				self.finish({"status_code": r.status_code, "result": r.reason, "job_status":''})
 		except:
 			self.finish({"status_code": 400, "result": "Bad Request","job_status":''})
+
+class GetMetricsHandler(IPythonHandler):
+	def get(self):
+		# ==================================
+		# Part 1: Parse Required Arguments
+		# ==================================
+		fields = getFields('getMetrics')
+
+		params = {}
+		for f in fields:
+			try:
+				arg = self.get_argument(f.lower(), '').strip()
+				params[f] = arg
+			except:
+				arg = ''
+
+		# print(params)
+		logging.debug('params are')
+		logging.debug(params)
+
+		# ==================================
+		# Part 2: Build & Send Request
+		# ==================================
+		url = BASE_URL+'/dps/job/{job_id}/metrics'.format(**params)
+		headers = {'Content-Type':'application/xml'}
+		# print(url)
+		# print(req_xml)
+
+		try:
+			r = requests.get(
+				url,
+				headers=headers
+			)
+
+			# print(r.status_code)
+			# print(r.text)
+
+			# ==================================
+			# Part 3: Check Response
+			# ==================================
+			# good response is JSON, bad response is XML (to be standardized after demo)# bad job id will still give 200
+			if r.status_code == 200:
+				try:
+					# parse out JobID from response
+					rt = json.loads(r.text)
+
+					metrics = rt['metrics']
+
+					result = '<table name="job-metrics">'
+					result += '<tbody>'
+					for k in metrics.keys()
+						result += '<tr><td>{}</td><td>{}</td></tr>'.format(k,metrics[k])
+					result += '</tbody>'
+					result += '</table>'
+					# print("success!")
+					self.finish({"status_code": r.status_code, "result": result, "metrics":metrics})
+				except:
+					self.finish({"status_code": r.status_code, "result": r.text, "metrics":{}})
+			else:
+				self.finish({"status_code": r.status_code, "result": r.reason, "metrics":{}})
+		except:
+			self.finish({"status_code": 400, "result": "Bad Request","metrics":{}})
 
 class GetResultHandler(IPythonHandler):
 	def get(self):

@@ -14,6 +14,7 @@ const registerFields = data.register;
 const deleteAlgorithmFields = data.deleteAlgorithm;
 const executeInputsFields = data.executeInputs;
 const getStatusFields = data.getStatus;
+const getMetricsFields = data.getMetrics;
 const getResultFields = data.getResult;
 const dismissFields = data.dismiss;
 const deleteFields = data.delete;
@@ -26,6 +27,7 @@ var username:string;
 const registerAlgorithm_command = 'hysds: register2';
 const capabilities_command = 'hysds: get-capabilities';
 const statusJob_command = 'hysds: get-status';
+const metricsJob_command = 'hysds: get-metrics';
 const resultJob_command = 'hysds: get-result';
 const executeJob_command = 'hysds: execute-job';
 const dismissJob_comand = 'hysds: dismiss-job';
@@ -147,6 +149,19 @@ export function activateGetStatus(app: JupyterFrontEnd,
   });
   palette.addItem({command: statusJob_command, category: 'DPS/MAS'});
   console.log('HySDS Get Job Status is activated!');
+}
+export function activateGetMetrics(app: JupyterFrontEnd, 
+                        palette: ICommandPalette, 
+                        restorer: ILauncher | null): void{  
+  app.commands.addCommand(metricsJob_command, {
+    label: 'Get DPS Job Metrics',
+    isEnabled: () => true,
+    execute: args => {
+      popup(new InputWidget('getMetrics',getMetricsFields,username,{}));
+    }
+  });
+  palette.addItem({command: statusJob_command, category: 'DPS/MAS'});
+  console.log('HySDS Get Job Metrics is activated!');
 }
 export function activateGetResult(app: JupyterFrontEnd, 
                         palette: ICommandPalette, 

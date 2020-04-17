@@ -3,7 +3,7 @@ import { ICommandPalette } from '@jupyterlab/apputils';
 import { IFileBrowserFactory } from "@jupyterlab/filebrowser";
 import { ILauncher } from '@jupyterlab/launcher';
 import { IMainMenu } from '@jupyterlab/mainmenu';
-import { activateGetCapabilities, activateDescribe, activateList, activateRegisterAlgorithm, activateDeleteAlgorithm, activateExecute, activateGetStatus, activateGetResult, activateDismiss, activateDelete, activateMenuOptions } from './activate'
+import { activateGetCapabilities, activateDescribe, activateList, activateRegisterAlgorithm, activateDeleteAlgorithm, activateExecute, activateGetStatus, activateGetMetrics, activateGetResult, activateDismiss, activateDelete, activateMenuOptions } from './activate'
 
 const extensionCapabilities: JupyterFrontEndPlugin<void> = {
   id: 'dps-capabilities',
@@ -60,6 +60,14 @@ const extensionStatus: JupyterFrontEndPlugin<void> = {
   activate: activateGetStatus
 };
 
+const extensionMetrics: JupyterFrontEndPlugin<void> = {
+  id: 'dps-job-metrics',
+  autoStart: true,
+  requires: [ICommandPalette],
+  optional: [ILauncher],
+  activate: activateGetMetrics
+};
+
 const extensionResult: JupyterFrontEndPlugin<void> = {
   id: 'dps-job-result',
   autoStart: true,
@@ -92,4 +100,4 @@ const extensionDPSMASMenu: JupyterFrontEndPlugin<void> = {
 };
 
 
-export default [extensionDeleteAlgorithm,extensionRegisterAlgorithm,extensionCapabilities,extensionStatus,extensionResult,extensionExecute,extensionDismiss,extensionDelete,extensionDescribe,extensionList,extensionDPSMASMenu];
+export default [extensionDeleteAlgorithm,extensionRegisterAlgorithm,extensionCapabilities,extensionStatus,extensionMetrics,extensionResult,extensionExecute,extensionDismiss,extensionDelete,extensionDescribe,extensionList,extensionDPSMASMenu];
