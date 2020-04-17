@@ -316,7 +316,7 @@ class PublishAlgorithmHandler(IPythonHandler):
 		# Part 1: Parse Required Arguments
 		# ==================================
 		complete = True
-		fields = getFields('deleteAlgorithm')
+		fields = getFields('publishAlgorithm')
 
 		params = {}
 		for f in fields:
@@ -338,6 +338,9 @@ class PublishAlgorithmHandler(IPythonHandler):
 		# ==================================
 		# return all algorithms if malformed request
 		headers = {'Content-Type':'application/json'}
+		if 'proxy-ticket' in params.keys():
+			headers['proxy-ticket'] = params.pop('proxy-ticket')
+
 		if complete:
 			url = BASE_URL+'/mas/publish' 
 			r = requests.post(
