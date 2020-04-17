@@ -678,14 +678,12 @@ class GetMetricsHandler(IPythonHandler):
 					# parse out JobID from response
 					rt = json.loads(r.text)
 
-					# metrics = rt['metrics']
-					# for testing only
-					metrics = {'algo_id':'hello_world_ubuntu','job_id':'job-0123456789','memory':'2.0M','execution_time':'2s'}
-
-					result = '<table name="job-metrics">'
+					metrics = rt['metrics']
+					
+					result = '<table id="job-metrics" style="border-style: none; font-size: 11px">'
 					result += '<tbody>'
 					for k in metrics.keys():
-						result += '<tr><td>{}</td><td>{}</td></tr>'.format(k,metrics[k])
+						result += '<tr><td style="text-align:left">{}</td><td style="text-align:left">{}</td></tr>'.format(k,metrics[k])
 					result += '</tbody>'
 					result += '</table>'
 					# print("success!")
@@ -694,6 +692,17 @@ class GetMetricsHandler(IPythonHandler):
 					self.finish({"status_code": r.status_code, "result": r.text, "metrics":{}})
 			else:
 				self.finish({"status_code": r.status_code, "result": r.reason, "metrics":{}})
+
+			# for testing only
+			metrics = {'algo_id':'hello_world_ubuntu','job_id':'job-0123456789','memory':'2.0M','execution_time':'2s'}
+			result = '<table id="job-metrics" style="border-style: none; font-size: 11px">'
+			result += '<tbody>'
+			for k in metrics.keys():
+				result += '<tr><td style="text-align:left">{}</td><td style="text-align:left">{}</td></tr>'.format(k,metrics[k])
+			result += '</tbody>'
+			result += '</table>'
+			self.finish ({"status_code": 200, "result": result, "metrics":metrics})
+
 		except:
 			self.finish({"status_code": 400, "result": "Bad Request","metrics":{}})
 
