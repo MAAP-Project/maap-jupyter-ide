@@ -66,6 +66,10 @@ export class InputWidget extends Widget {
         this.popupTitle = "Get Job Status";
         console.log('getStatus');
         break;
+      case 'getMetrics':
+        this.popupTitle = "Get Job Metrics";
+        console.log('getMetrics');
+        break;
       case 'getResult':
         this.popupTitle = "Get Job Result";
         console.log('getResult');
