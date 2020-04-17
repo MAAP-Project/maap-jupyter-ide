@@ -394,7 +394,7 @@ class PublishAlgorithmHandler(IPythonHandler):
 			else:
 				self.finish({"status_code": r.status_code, "result": r.reason})
 		else:
-			self.finish({"status_code": 400, "result": "Bad Request"})
+			self.finish({"status_code": r.status_code, "result": r.reason})
 
 class GetCapabilitiesHandler(IPythonHandler):
 	def get(self):
