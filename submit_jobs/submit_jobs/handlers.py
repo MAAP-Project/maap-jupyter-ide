@@ -339,10 +339,11 @@ class PublishAlgorithmHandler(IPythonHandler):
 		# return all algorithms if malformed request
 		headers = {'Content-Type':'application/json'}
 		if complete:
-			url = BASE_URL+'/mas/publish/{algo_id}:{version}'.format(**params) 
-			r = requests.delete(
+			url = BASE_URL+'/mas/publish' 
+			r = requests.post(
 				url,
-				headers=headers
+				headers=headers,
+				body={'algo_id':'{algo_id}:{version}'.format(**params)}
 			)
 		else:
 			url = BASE_URL+'/mas/algorithm'

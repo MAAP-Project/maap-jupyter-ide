@@ -12,6 +12,7 @@ import * as data from './fields.json';
 
 const registerFields = data.register;
 const describeProcessFields = data.describeProcess;
+const publishAlgorithmFields = data.publishAlgorithm;
 const executeInputsFields = data.executeInputs;
 const getStatusFields = data.getStatus;
 const getMetricsFields = data.getMetrics;
@@ -158,11 +159,11 @@ export function activatePublishAlgorithm(app: JupyterFrontEnd,
     label: 'Publish Algorithm',
     isEnabled: () => true,
     execute: args => {
-      popupResult(new ProjectSelector('publishAlgorithm',describeProcessFields,username),"Select an Algorithm");
+      popupResult(new ProjectSelector('publishAlgorithm',publishAlgorithmFields,username),"Select an Algorithm");
     }
   });
-  palette.addItem({command: describeAlgorithm_command, category: 'DPS/MAS'});
-  console.log('HySDS Describe Job is activated!');
+  palette.addItem({command: publishAlgorithm_command, category: 'DPS/MAS'});
+  console.log('HySDS Publish Algorithm is activated!');
 }
 export function activateDescribe(app: JupyterFrontEnd, 
                         palette: ICommandPalette, 
