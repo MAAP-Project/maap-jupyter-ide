@@ -101,6 +101,7 @@ export class JobWidget extends Widget {
     // update jobinfo when job chosen
     this._updateInfoCol();
     this._updateResultsCol();
+    this._updateMetricsRow();
 
     if (document.getElementById(this._widget_table_name) != null) {
       getJobs(this._username,this._job_id,function(job_id:string){me._job_id=job_id;},function(me:JobWidget, table:string){
@@ -633,6 +634,7 @@ export class JobWidget extends Widget {
       me._job_id = job_id;
       me._updateInfoCol();
       me._updateResultsCol();
+      me._updateMetricsRow();
     })
   }
 
