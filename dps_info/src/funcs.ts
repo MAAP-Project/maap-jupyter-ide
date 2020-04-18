@@ -68,6 +68,7 @@ export function getJobMetrics(job_id: string, callback?: any) {
           console.log('unable to get job metrics');
           INotification.error("Get user job metrics failed.");
         }
+        callback(metrics);
       } else {
         console.log('unable to get job metrics');
         INotification.error("Get user job metrics failed.");

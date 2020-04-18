@@ -605,21 +605,25 @@ export class JobWidget extends Widget {
       // metrics table
       let metricsTableDiv = <HTMLDivElement>document.getElementById('metrics-table-div');
       if (metricsTableDiv != null) {
-        getJobMetrics(this._job_id, function(results:string) {
-          updateResultsTable(metricsTableDiv,'widget-metrics-table',results);
+        getJobMetrics(this._job_id, function(metrics:string) {
+          console.log('got metrics');
+          console.log(metrics);
+          updateResultsTable(metricsTableDiv,'widget-metrics-table',metrics);
         });
       } else {
-        console.log('creating results table div');
+        console.log('creating metrics table div');
         metricsTableDiv = document.createElement('div');
         metricsTableDiv.id = 'metrics-table-div';
 
-        let resultsTable = document.createElement('table');
-        resultsTable.id = 'widget-metrics-table';
-        metricsTableDiv.appendChild(resultsTable);
+        let metricsTable = document.createElement('table');
+        metricsTable.id = 'widget-metrics-table';
+        metricsTableDiv.appendChild(metricsTable);
         metricsCell.appendChild(metricsTableDiv);
 
-        getJobMetrics(this._job_id, function(results:string) {
-          updateResultsTable(metricsTableDiv,'widget-metrics-table',results);
+        getJobMetrics(this._job_id, function(metrics:string) {
+          console.log('got metrics');
+          console.log(metrics);
+          updateResultsTable(metricsTableDiv,'widget-metrics-table',metrics);
         });
       }
     }
