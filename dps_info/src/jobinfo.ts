@@ -491,7 +491,8 @@ export class JobWidget extends Widget {
     let metricsCell = rrow.insertCell();
     metricsCell.setAttribute('id','cell-jobmetrics');
     metricsCell.setAttribute('valign','top');
-    metricsCell.setAttribute('style','min-width:720px')
+    metricsCell.setAttribute('style','min-width:720px');
+    metricsCell.setAttribute('colspan','2');
 
     infoDiv.appendChild(infoTable);
     job_widget.appendChild(infoDiv);

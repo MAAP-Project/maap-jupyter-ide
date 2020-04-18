@@ -87,6 +87,7 @@ export function getJobResults(job_id: string, callback?: any) {
     console.log(resultUrl.href);
 
     request('get', resultUrl.href).then((res: RequestResult) => {
+      console.log(res);
       if(res.ok){
         let json_response:any = res.json();
         // console.log(json_response['status_code']);
