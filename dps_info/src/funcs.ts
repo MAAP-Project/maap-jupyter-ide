@@ -52,7 +52,7 @@ export function getJobs(username: string, job_id: string, setJobId:any, callback
 // passes back metrics html from python api
 export function getJobMetrics(job_id: string, callback?: any) {
   let metrics:string = '';
-  var metricsUrl = new URL(PageConfig.getBaseUrl() + 'hysds/getMatrics');
+  var metricsUrl = new URL(PageConfig.getBaseUrl() + 'hysds/getMetrics');
   if (job_id != '' && JOBS[job_id]['status'] == 'job-completed') {
     metricsUrl.searchParams.append('job',job_id);
     console.log(metricsUrl.href);
