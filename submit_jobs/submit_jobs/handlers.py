@@ -180,6 +180,10 @@ class RegisterAlgorithmHandler(IPythonHandler):
 		url = BASE_URL+'/mas/algorithm'
 		headers = {'Content-Type':'application/json'}
 
+		logging.debug('request sent to {}'.format(url))
+		logging.debug('headers:')
+		logging.debug(headers)
+
 		with open(json_in_file) as f:
 			ins_json = f.read()
 
@@ -256,14 +260,19 @@ class DeleteAlgorithmHandler(IPythonHandler):
 		# ==================================
 		# return all algorithms if malformed request
 		headers = {'Content-Type':'application/json'}
+		logging.debug('headers:')
+		logging.debug(headers)
+
 		if complete:
 			url = BASE_URL+'/mas/algorithm/{algo_id}:{version}'.format(**params) 
+			logging.debug('request sent to {}'.format(url))
 			r = requests.delete(
 				url,
 				headers=headers
 			)
 		else:
 			url = BASE_URL+'/mas/algorithm'
+			logging.debug('request sent to {}'.format(url))
 			r = requests.get(
 				url,
 				headers=headers
@@ -341,15 +350,21 @@ class PublishAlgorithmHandler(IPythonHandler):
 		if 'proxy-ticket' in params.keys():
 			headers['proxy-ticket'] = params.pop('proxy-ticket')
 
+		logging.debug('headers:')
+		logging.debug(headers)
+
 		if complete:
 			url = BASE_URL+'/mas/publish' 
+			body = {'algo_id':'{algo_id}:{version}'.format(**params)}
+			logging.debug('request sent to {}'.format(url))
 			r = requests.post(
 				url,
 				headers=headers,
-				data={'algo_id':'{algo_id}:{version}'.format(**params)}
+				data=body
 			)
 		else:
 			url = BASE_URL+'/mas/algorithm'
+			logging.debug('request sent to {}'.format(url))
 			r = requests.post(
 				url,
 				headers=headers
@@ -404,6 +419,9 @@ class GetCapabilitiesHandler(IPythonHandler):
 		# ==================================
 		url = BASE_URL+'/dps/job'
 		headers = {'Content-Type':'application/json'}
+		logging.debug('request sent to {}'.format(url))
+		logging.debug('headers:')
+		logging.debug(headers)
 
 		r = requests.get(
 			url,
@@ -497,6 +515,9 @@ class ExecuteHandler(IPythonHandler):
 		ins_xml = ''
 		url = BASE_URL+'/dps/job'
 		headers = {'Content-Type':'application/xml'}
+		logging.debug('request sent to {}'.format(url))
+		logging.debug('headers:')
+		logging.debug(headers)
 
 		other = ''
 		with open(input_xml) as xml:
@@ -589,6 +610,9 @@ class GetStatusHandler(IPythonHandler):
 		# ==================================
 		url = BASE_URL+'/dps/job/{job_id}/status'.format(**params)
 		headers = {'Content-Type':'application/xml'}
+		logging.debug('request sent to {}'.format(url))
+		logging.debug('headers:')
+		logging.debug(headers)
 		# print(url)
 		# print(req_xml)
 
@@ -657,6 +681,9 @@ class GetMetricsHandler(IPythonHandler):
 		# ==================================
 		url = BASE_URL+'/dps/job/{job_id}/metrics'.format(**params)
 		headers = {'Content-Type':'application/xml'}
+		logging.debug('request sent to {}'.format(url))
+		logging.debug('headers:')
+		logging.debug(headers)
 		# print(url)
 		# print(req_xml)
 
@@ -730,6 +757,9 @@ class GetResultHandler(IPythonHandler):
 		# ==================================
 		url = BASE_URL+'/dps/job/{job_id}'.format(**params)
 		headers = {'Content-Type':'application/xml'}
+		logging.debug('request sent to {}'.format(url))
+		logging.debug('headers:')
+		logging.debug(headers)
 		# print(url)
 		# print(req_xml)
 
@@ -842,6 +872,9 @@ class DismissHandler(IPythonHandler):
 		# ==================================
 		url = BASE_URL+'/dps/job/revoke/{job_id}'.format(**params)
 		headers = {'Content-Type':'application/xml'}
+		logging.debug('request sent to {}'.format(url))
+		logging.debug('headers:')
+		logging.debug(headers)
 		# print(url)
 		# print(req_xml)
 
@@ -922,6 +955,9 @@ class DeleteHandler(IPythonHandler):
 		# ==================================
 		url = BASE_URL+'/dps/job/{job_id}'.format(**params)
 		headers = {'Content-Type':'application/xml'}
+		logging.debug('request sent to {}'.format(url))
+		logging.debug('headers:')
+		logging.debug(headers)
 		# print(url)
 		# print(req_xml)
 
@@ -998,11 +1034,13 @@ class DescribeProcessHandler(IPythonHandler):
 
 		# return all algorithms if malformed request
 		if complete:
-			url = BASE_URL+'/mas/algorithm/{algo_id}:{version}'.format(**params) 
+			url = BASE_URL+'/mas/algorithm/{algo_id}:{version}'.format(**params)
 		else:
 			url = BASE_URL+'/mas/algorithm'
 
-		# print(url)
+		logging.debug('request sent to {}'.format(url))
+		logging.debug('headers:')
+		logging.debug(headers)
 
 		r = requests.get(
 			url,
@@ -1109,14 +1147,17 @@ class ExecuteInputsHandler(IPythonHandler):
 		# ==================================
 		# Part 2: Build & Send Request
 		# ==================================
+		headers = {'Content-Type':'application/json'}
 		# return all algorithms if malformed request
 		if complete:
 			url = BASE_URL+'/mas/algorithm/{algo_id}:{version}'.format(**params2) 
 		else:
 			url = BASE_URL+'/mas/algorithm'
 
-		headers = {'Content-Type':'application/json'}
-		logging.debug(url)
+		logging.debug('request sent to {}'.format(url))
+		logging.debug('headers:')
+		logging.debug(headers)
+		
 
 		r = requests.get(
 			url,
@@ -1271,6 +1312,9 @@ class ListJobsHandler(IPythonHandler):
 		# ==================================
 		url = BASE_URL+'/dps/job/{username}/list'.format(**params)
 		headers = {'Content-Type':'application/xml'}
+		logging.debug('request sent to {}'.format(url))
+		logging.debug('headers:')
+		logging.debug(headers)
 
 		try:
 			r = requests.get(
