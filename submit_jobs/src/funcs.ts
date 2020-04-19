@@ -44,7 +44,7 @@ export function getDefaultValues(code_path) {
 }
 
 // HySDS endpoints that require inputs
-export function inputRequest(endpt:string,title:string,inputs:{[k:string]:string},fn?:any) {
+export function inputRequest(endpt: string, title: string, inputs: {[k: string]: string}, fn?: any) {
   var requestUrl = new URL(PageConfig.getBaseUrl() + 'hysds/' + endpt);
   // add params
   for (let key in inputs) {
