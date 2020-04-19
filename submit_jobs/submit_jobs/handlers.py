@@ -702,35 +702,35 @@ class GetMetricsHandler(IPythonHandler):
 			# ==================================
 			# Part 3: Check Response
 			# ==================================
-			# good response is JSON, bad response is XML (to be standardized after demo)# bad job id will still give 200
-			# if r.status_code == 200:
-			# 	try:
-			# 		# parse out JobID from response
-			# 		rt = json.loads(r.text)
+			good response is JSON, bad response is XML (to be standardized after demo)# bad job id will still give 200
+			if r.status_code == 200:
+				try:
+					# parse out JobID from response
+					rt = json.loads(r.text)
 
-			# 		metrics = rt['metrics']
+					metrics = rt['metrics']
 					
-			# 		result = '<table id="job-metrics" style="border-style: none; font-size: 11px">'
-			# 		result += '<tbody>'
-			# 		for k in metrics.keys():
-			# 			result += '<tr><td style="text-align:left">{}</td><td style="text-align:left">{}</td></tr>'.format(k,metrics[k])
-			# 		result += '</tbody>'
-			# 		result += '</table>'
-			# 		# print("success!")
-			# 		self.finish({"status_code": r.status_code, "result": result, "metrics":metrics})
-			# 	except:
-			# 		self.finish({"status_code": r.status_code, "result": r.text, "metrics":{}})
-			# else:
-			# 	self.finish({"status_code": r.status_code, "result": r.reason, "metrics":{}})
+					result = '<table id="job-metrics" style="border-style: none; font-size: 11px">'
+					result += '<tbody>'
+					for k in metrics.keys():
+						result += '<tr><td style="text-align:left">{}</td><td style="text-align:left">{}</td></tr>'.format(k,metrics[k])
+					result += '</tbody>'
+					result += '</table>'
+					# print("success!")
+					self.finish({"status_code": r.status_code, "result": result, "metrics":metrics})
+				except:
+					self.finish({"status_code": r.status_code, "result": r.text, "metrics":{}})
+			else:
+				self.finish({"status_code": r.status_code, "result": r.reason, "metrics":{}})
 
 			# for testing only
-			metrics = {'algo_id':'hello_world_ubuntu','job_id':'job-0123456789','memory':'2.0M','execution_time':'2s'}
-			result = '<table id="job-metrics" style="border-style: none; font-size: 11px">'
-			result += '<tbody>'
-			for k in metrics.keys():
-				result += '<tr><td style="text-align:left">{}</td><td style="text-align:left">{}</td></tr>'.format(k,metrics[k])
-			result += '</tbody>'
-			result += '</table>'
+			# metrics = {'algo_id':'hello_world_ubuntu','job_id':'job-0123456789','memory':'2.0M','execution_time':'2s'}
+			# result = '<table id="job-metrics" style="border-style: none; font-size: 11px">'
+			# result += '<tbody>'
+			# for k in metrics.keys():
+			# 	result += '<tr><td style="text-align:left">{}</td><td style="text-align:left">{}</td></tr>'.format(k,metrics[k])
+			# result += '</tbody>'
+			# result += '</table>'
 			self.finish ({"status_code": 200, "result": result, "metrics":metrics})
 
 		except:
