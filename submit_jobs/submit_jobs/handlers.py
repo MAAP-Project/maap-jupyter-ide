@@ -179,6 +179,9 @@ class RegisterAlgorithmHandler(IPythonHandler):
 		json_in_file = WORKDIR+"/submit_jobs/register_inputs.json"
 		url = BASE_URL+'/mas/algorithm'
 		headers = {'Content-Type':'application/json'}
+		
+		if 'proxy-ticket' in params.keys():
+			headers['proxy-ticket'] = params.get('proxy-ticket')
 
 		logging.debug('request sent to {}'.format(url))
 		logging.debug('headers:')
@@ -348,7 +351,7 @@ class PublishAlgorithmHandler(IPythonHandler):
 		# return all algorithms if malformed request
 		headers = {'Content-Type':'application/json'}
 		if 'proxy-ticket' in params.keys():
-			headers['proxy-ticket'] = params.pop('proxy-ticket')
+			headers['proxy-ticket'] = params.get('proxy-ticket')
 
 		logging.debug('headers:')
 		logging.debug(headers)
@@ -1030,7 +1033,7 @@ class DescribeProcessHandler(IPythonHandler):
 		# ==================================
 		headers = {'Content-Type':'application/json'}
 		if 'proxy-ticket' in params.keys():
-			headers['proxy-ticket'] = params.pop('proxy-ticket')
+			headers['proxy-ticket'] = params.get('proxy-ticket')
 
 		# return all algorithms if malformed request
 		if complete:
@@ -1148,6 +1151,10 @@ class ExecuteInputsHandler(IPythonHandler):
 		# Part 2: Build & Send Request
 		# ==================================
 		headers = {'Content-Type':'application/json'}
+
+		if 'proxy-ticket' in params.keys():
+			headers['proxy-ticket'] = params.get('proxy-ticket')
+
 		# return all algorithms if malformed request
 		if complete:
 			url = BASE_URL+'/mas/algorithm/{algo_id}:{version}'.format(**params2) 
@@ -1312,6 +1319,10 @@ class ListJobsHandler(IPythonHandler):
 		# ==================================
 		url = BASE_URL+'/dps/job/{username}/list'.format(**params)
 		headers = {'Content-Type':'application/xml'}
+
+		if 'proxy-ticket' in params.keys():
+			headers['proxy-ticket'] = params.get('proxy-ticket')
+
 		logging.debug('request sent to {}'.format(url))
 		logging.debug('headers:')
 		logging.debug(headers)
