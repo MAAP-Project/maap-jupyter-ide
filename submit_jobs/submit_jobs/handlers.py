@@ -702,7 +702,7 @@ class GetMetricsHandler(IPythonHandler):
 			# ==================================
 			# Part 3: Check Response
 			# ==================================
-			good response is JSON, bad response is XML (to be standardized after demo)# bad job id will still give 200
+			# good response is JSON, bad response is XML (to be standardized after demo)# bad job id will still give 200
 			if r.status_code == 200:
 				try:
 					# parse out JobID from response
