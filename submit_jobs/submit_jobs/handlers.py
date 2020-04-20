@@ -717,8 +717,8 @@ class GetMetricsHandler(IPythonHandler):
 					logging.debug(result)
 					# print("success!")
 					self.finish({"status_code": r.status_code, "result": result, "metrics":metrics})
-				except:
-					self.finish({"status_code": r.status_code, "result": r.text, "metrics":{}})
+				# except:
+				# 	self.finish({"status_code": r.status_code, "result": r.text, "metrics":{}})
 			else:
 				self.finish({"status_code": r.status_code, "result": r.reason, "metrics":{}})
 
