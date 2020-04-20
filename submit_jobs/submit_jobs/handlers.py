@@ -692,6 +692,7 @@ class GetMetricsHandler(IPythonHandler):
 					metrics = ET.fromstring(r.text)
 					logging.debug(metrics)
 					
+					# format metrics into html table
 					result = '<table id="job-metrics" style="border-style: none; font-size: 11px">'
 					result += '<tbody>'
 					for n in metrics:
@@ -795,9 +796,6 @@ class GetResultHandler(IPythonHandler):
 						result += '</tbody>'
 						result += '</table>'
 						logging.debug(result)
-						# result = result.replace(',',',<br>	')
-						# result = result.replace('\n','<br>')
-						# print(result)
 
 						# print("success!")
 						self.finish({"status_code": r.status_code, "result": result})
