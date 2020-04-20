@@ -703,20 +703,20 @@ class GetMetricsHandler(IPythonHandler):
 			# Part 3: Check Response
 			# ==================================
 			if r.status_code == 200:
-				try:
-					# parse XML response
-					metrics = ET.fromstring(r.text)
-					logging.debug(metrics)
-					
-					result = '<table id="job-metrics" style="border-style: none; font-size: 11px">'
-					result += '<tbody>'
-					for n in metrics:
-						result += '<tr><td style="text-align:left">{}</td><td style="text-align:left">{}</td></tr>'.format(n.tag,n.text)
-					result += '</tbody>'
-					result += '</table>'
-					logging.debug(result)
-					# print("success!")
-					self.finish({"status_code": r.status_code, "result": result, "metrics":metrics})
+				# try:
+				# parse XML response
+				metrics = ET.fromstring(r.text)
+				logging.debug(metrics)
+				
+				result = '<table id="job-metrics" style="border-style: none; font-size: 11px">'
+				result += '<tbody>'
+				for n in metrics:
+					result += '<tr><td style="text-align:left">{}</td><td style="text-align:left">{}</td></tr>'.format(n.tag,n.text)
+				result += '</tbody>'
+				result += '</table>'
+				logging.debug(result)
+				# print("success!")
+				self.finish({"status_code": r.status_code, "result": result, "metrics":metrics})
 				# except:
 				# 	self.finish({"status_code": r.status_code, "result": r.text, "metrics":{}})
 			else:
