@@ -48,6 +48,7 @@ class HysdsMagic(Magics):
         lstt.append(['%describe','describe the selected algorithm'])
         lstt.append(['%execute', 'submit a job to DPS using an algorithm registered in MAS'])
         lstt.append(['%status','check the status of a submitted job'])
+        lstt.append(['%metrics','get the metrics of a completed job'])
         lstt.append(['%result','get the results for a completed job'])
         lstt.append(['%delete_algorithm','remove a registered algorithm from MAS'])
         lstt.append(['%delete_job','remove a completed job from DPS'])

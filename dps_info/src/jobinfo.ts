@@ -607,8 +607,8 @@ export class JobWidget extends Widget {
       let metricsTableDiv = <HTMLDivElement>document.getElementById('metrics-table-div');
       if (metricsTableDiv != null) {
         getJobMetrics(this._job_id, function(metrics:string) {
-          console.log('got metrics');
-          console.log(metrics);
+          // console.log('got metrics');
+          // console.log(metrics);
           updateResultsTable(metricsTableDiv,'widget-metrics-table',metrics);
         });
       } else {
@@ -622,8 +622,8 @@ export class JobWidget extends Widget {
         metricsCell.appendChild(metricsTableDiv);
 
         getJobMetrics(this._job_id, function(metrics:string) {
-          console.log('got metrics');
-          console.log(metrics);
+          // console.log('got metrics');
+          // console.log(metrics);
           updateResultsTable(metricsTableDiv,'widget-metrics-table',metrics);
         });
       }
