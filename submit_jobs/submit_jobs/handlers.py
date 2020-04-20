@@ -179,7 +179,7 @@ class RegisterAlgorithmHandler(IPythonHandler):
 		json_in_file = WORKDIR+"/submit_jobs/register_inputs.json"
 		url = BASE_URL+'/mas/algorithm'
 		headers = {'Content-Type':'application/json'}
-		
+
 		if 'proxy-ticket' in params.keys():
 			headers['proxy-ticket'] = params.get('proxy-ticket')
 
@@ -358,7 +358,7 @@ class PublishAlgorithmHandler(IPythonHandler):
 
 		if complete:
 			url = BASE_URL+'/mas/publish' 
-			body = {'algo_id':'{algo_id}:{version}'.format(**params)}
+			body = {'algo_id': params['algo_id'],'version': params['version']}
 			logging.debug('request sent to {}'.format(url))
 			r = requests.post(
 				url,
