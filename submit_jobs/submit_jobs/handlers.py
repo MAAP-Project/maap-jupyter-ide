@@ -690,42 +690,40 @@ class GetMetricsHandler(IPythonHandler):
 		# print(url)
 		# print(req_xml)
 
-		# try:
-		r = requests.get(
-			url,
-			headers=headers
-		)
+		try:
+			r = requests.get(
+				url,
+				headers=headers
+			)
 
-		# print(r.status_code)
-		# print(r.text)
+			# print(r.status_code)
+			# print(r.text)
 
-		# ==================================
-		# Part 3: Check Response
-		# ==================================
-		if r.status_code == 200:
-			# try:
-			# parse XML response
-			metrics = ET.fromstring(r.text)
-			logging.debug(metrics)
-			
-			result = '<table id="job-metrics" style="border-style: none; font-size: 11px">'
-			result += '<tbody>'
-			for n in metrics:
-				result += '<tr><td style="text-align:left">{}</td><td style="text-align:left">{}</td></tr>'.format(n.tag,n.text)
-			result += '</tbody>'
-			result += '</table>'
-			logging.debug(result)
-			# print("success!")
-			self.finish({"status_code": r.status_code, "result": result, "metrics":metrics})
-			# except:
-			# 	self.finish({"status_code": r.status_code, "result": r.text, "metrics":{}})
-		else:
-			self.finish({"status_code": r.status_code, "result": r.reason, "metrics":{}})
+			# ==================================
+			# Part 3: Check Response
+			# ==================================
+			if r.status_code == 200:
+				try:
+					# parse XML response
+					metrics = ET.fromstring(r.text)
+					logging.debug(metrics)
+					
+					result = '<table id="job-metrics" style="border-style: none; font-size: 11px">'
+					result += '<tbody>'
+					for n in metrics:
+						result += '<tr><td style="text-align:left">{}</td><td style="text-align:left">{}</td></tr>'.format(n.tag,n.text)
+					result += '</tbody>'
+					result += '</table>'
+					logging.debug(result)
+					# print("success!")
+					self.finish({"status_code": r.status_code, "result": result, "metrics":r.text})
+				except:
+					self.finish({"status_code": r.status_code, "result": r.text, "metrics":{}})
+			else:
+				self.finish({"status_code": r.status_code, "result": r.reason, "metrics":{}})
 
-			# self.finish ({"status_code": 200, "result": result, "metrics":metrics})
-
-		# except:
-		# 	self.finish({"status_code": 400, "result": "Bad Request","metrics":{}})
+		except:
+			self.finish({"status_code": 400, "result": "Bad Request","metrics":{}})
 
 class GetResultHandler(IPythonHandler):
 	def get(self):
