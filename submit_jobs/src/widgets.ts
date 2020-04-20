@@ -119,7 +119,7 @@ export class InputWidget extends Widget {
         } else {
           fieldName = field[0];
         }
-        if (fieldName != 'inputs') {
+        if (fieldName != 'inputs' && fieldName != 'proxy-ticket') {
           var fieldLabel = document.createElement("Label");
           fieldLabel.innerHTML = fieldName;
           this.node.appendChild(fieldLabel);
