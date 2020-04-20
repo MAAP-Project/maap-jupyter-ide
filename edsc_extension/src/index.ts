@@ -23,12 +23,6 @@ import { IFrameWidget } from './widgets';
 import { setResultsLimit, displaySearchParams } from './popups'
 import globals = require("./globals");
 
-declare var process : {
-  env: {
-    ENVIRONMENT: string
-  }
-}
-
 const SEARCH_CLIENT_URL = document.location.origin + ':3052/search';
 console.log(SEARCH_CLIENT_URL);
 
