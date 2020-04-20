@@ -358,7 +358,7 @@ class PublishAlgorithmHandler(IPythonHandler):
 
 		if complete:
 			url = BASE_URL+'/mas/publish' 
-			body = {'algo_id': params['algo_id'],'version', params['version']}
+			body = {'algo_id': params['algo_id'],'version': params['version']}
 			logging.debug('request sent to {}'.format(url))
 			r = requests.post(
 				url,
