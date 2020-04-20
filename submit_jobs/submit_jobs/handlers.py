@@ -789,7 +789,7 @@ class GetResultHandler(IPythonHandler):
 						lnk = url_lst[-1]
 						url_lst[-1] = '<a href="{}" target="_blank" style="border-bottom: 1px solid #0000ff; color: #0000ff;">{}</a>'.format(lnk,lnk)
 						
-						urls_str = '•&nbsp'+('<br>	•&nbsp;').join(url_lst)
+						urls_str = '•&nbsp'+('<br>•&nbsp;').join(url_lst)
 						result += '<tr><td>{}: </td><td style="text-align:left">{}</td></tr>'.format('Locations',urls_str)
 						
 						result += '</tbody>'
