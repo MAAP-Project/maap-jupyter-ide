@@ -54,7 +54,7 @@ export function getJobMetrics(job_id: string, callback?: any) {
   let metrics:string = '';
   var metricsUrl = new URL(PageConfig.getBaseUrl() + 'hysds/getMetrics');
   if (job_id != '' && JOBS[job_id]['status'] == 'job-completed') {
-    metricsUrl.searchParams.append('job',job_id);
+    metricsUrl.searchParams.append('job_id',job_id);
     console.log(metricsUrl.href);
 
     request('get', metricsUrl.href).then((res: RequestResult) => {
