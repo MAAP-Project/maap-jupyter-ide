@@ -23,10 +23,17 @@ import { IFrameWidget } from './widgets';
 import { setResultsLimit, displaySearchParams } from './popups'
 import globals = require("./globals");
 
+declare var process : {
+  env: {
+    ENVIRONMENT: string
+  }
+}
+
 var SEARCH_CLIENT_URL = "https://che-k8s.maap.xyz:3052/search";
 if (process.env.ENVIRONMENT == 'OPS') {
   SEARCH_CLIENT_URL = "https://ade.maap-project.org:3052/search";
 }
+console.log(process.env.ENVIRONMENT);
 console.log(SEARCH_CLIENT_URL);
 
 ///////////////////////////////////////////////////////////////
