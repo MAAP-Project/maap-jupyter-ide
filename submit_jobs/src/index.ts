@@ -3,7 +3,7 @@ import { ICommandPalette } from '@jupyterlab/apputils';
 import { IFileBrowserFactory } from "@jupyterlab/filebrowser";
 import { ILauncher } from '@jupyterlab/launcher';
 import { IMainMenu } from '@jupyterlab/mainmenu';
-import { activateGetCapabilities, activateDescribe, activateList, activateRegisterAlgorithm, activateDeleteAlgorithm, activateExecute, activateGetStatus, activateGetResult, activateDismiss, activateDelete, activateMenuOptions } from './activate'
+import { activateGetCapabilities, activateDescribe, activateList, activateRegisterAlgorithm, activateDeleteAlgorithm, activatePublishAlgorithm, activateExecute, activateGetStatus, activateGetMetrics, activateGetResult, activateDismiss, activateDelete, activateMenuOptions } from './activate'
 
 const extensionCapabilities: JupyterFrontEndPlugin<void> = {
   id: 'dps-capabilities',
@@ -44,6 +44,14 @@ const extensionDeleteAlgorithm: JupyterFrontEndPlugin<void> = {
   activate: activateDeleteAlgorithm
 };
 
+const extensionPublishAlgorithm: JupyterFrontEndPlugin<void> = {
+  id: 'mas-algo-publish',
+  autoStart: true,
+  requires: [ICommandPalette],
+  optional: [ILauncher],
+  activate: activatePublishAlgorithm
+};
+
 const extensionExecute: JupyterFrontEndPlugin<void> = {
   id: 'dps-job-execute',
   autoStart: true,
@@ -58,6 +66,14 @@ const extensionStatus: JupyterFrontEndPlugin<void> = {
   requires: [ICommandPalette],
   optional: [ILauncher],
   activate: activateGetStatus
+};
+
+const extensionMetrics: JupyterFrontEndPlugin<void> = {
+  id: 'dps-job-metrics',
+  autoStart: true,
+  requires: [ICommandPalette],
+  optional: [ILauncher],
+  activate: activateGetMetrics
 };
 
 const extensionResult: JupyterFrontEndPlugin<void> = {
@@ -92,4 +108,4 @@ const extensionDPSMASMenu: JupyterFrontEndPlugin<void> = {
 };
 
 
-export default [extensionDeleteAlgorithm,extensionRegisterAlgorithm,extensionCapabilities,extensionStatus,extensionResult,extensionExecute,extensionDismiss,extensionDelete,extensionDescribe,extensionList,extensionDPSMASMenu];
+export default [extensionCapabilities,extensionDescribe,extensionList,extensionRegisterAlgorithm,extensionDeleteAlgorithm,extensionPublishAlgorithm,extensionExecute,extensionStatus,extensionMetrics,extensionResult,extensionDismiss,extensionDelete,extensionDPSMASMenu];

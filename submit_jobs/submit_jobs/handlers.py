@@ -50,16 +50,6 @@ def getProds(node):
 
 # helper to parse out user-defined inputs when registering algorithm
 def parseInputs(popped):
-	# a = popped.strip()
-	# a = a.replace('\n',';')
-	# inputs = [e.split(',') for e in a.split(';')]							# split lines into inputs
-	# inputs = [[e.strip().replace(' ','_') for e in e1] for e1 in inputs]	# strip whitespace & replace <space> with _
-	# inputs = [e+['false'] if len(e) == 1 else e for e in inputs]			# set false if dl not set
-	# inputs = [[e[0],'true'] if e[1].lower() in ['true','download','dl'] else [e[0],'false'] for e in inputs] 	# replace anything not dl=true to false
-	# inputs = {e[0]:e[1] for e in inputs}									# convert to dictionary & overwrite duplicate input names
-	# # print(a)
-	# # print(inputs)
-	# return inputs
 	p1 = [{e['name']:str(e['download']).lower()} for e in popped] 			# parse {"name":"varname","download":boolean} to {"varname":boolean}, convert boolean to lower
 	return {k: v for d in p1 for k, v in d.items()}							# flatten list of dicts to just 1 dict
 
@@ -190,6 +180,13 @@ class RegisterAlgorithmHandler(IPythonHandler):
 		url = BASE_URL+'/mas/algorithm'
 		headers = {'Content-Type':'application/json'}
 
+		if 'proxy-ticket' in params.keys():
+			headers['proxy-ticket'] = params.get('proxy-ticket')
+
+		logging.debug('request sent to {}'.format(url))
+		logging.debug('headers:')
+		logging.debug(headers)
+
 		with open(json_in_file) as f:
 			ins_json = f.read()
 
@@ -266,14 +263,19 @@ class DeleteAlgorithmHandler(IPythonHandler):
 		# ==================================
 		# return all algorithms if malformed request
 		headers = {'Content-Type':'application/json'}
+		logging.debug('headers:')
+		logging.debug(headers)
+
 		if complete:
 			url = BASE_URL+'/mas/algorithm/{algo_id}:{version}'.format(**params) 
+			logging.debug('request sent to {}'.format(url))
 			r = requests.delete(
 				url,
 				headers=headers
 			)
 		else:
 			url = BASE_URL+'/mas/algorithm'
+			logging.debug('request sent to {}'.format(url))
 			r = requests.get(
 				url,
 				headers=headers
@@ -320,6 +322,82 @@ class DeleteAlgorithmHandler(IPythonHandler):
 		else:
 			self.finish({"status_code": 400, "result": "Bad Request"})
 
+class PublishAlgorithmHandler(IPythonHandler):
+	def get(self):
+		# ==================================
+		# Part 1: Parse Required Arguments
+		# ==================================
+		fields = getFields('publishAlgorithm')
+
+		params = {}
+		for f in fields:
+			arg = self.get_argument(f.lower(), '').strip()
+			params[f] = arg
+
+		logging.debug('params are')
+		logging.debug(params)
+
+		# ==================================
+		# Part 2: Build & Send Request
+		# ==================================
+		# return all algorithms if malformed request
+		headers = {'Content-Type':'application/json'}
+		if 'proxy-ticket' in params.keys():
+			headers['proxy-ticket'] = params.get('proxy-ticket')
+
+		logging.debug('headers:')
+		logging.debug(headers)
+
+		url = BASE_URL+'/mas/publish' 
+		body = {'algo_id': params['algo_id'], 'version': params['version']}
+		logging.debug('request sent to {}'.format(url))
+		r = requests.post(
+			url,
+			headers=headers,
+			data=body
+		)
+
+		# print(url)
+		# print(r.status_code)
+		# print(r.text)
+
+		# ==================================
+		# Part 3: Check & Parse Response
+		# ==================================
+
+		if r.status_code == 200:
+			try:
+				if complete:
+					# MAAP API response
+					resp = json.loads(r.text)
+					# show registered inputs
+					result = resp['message']
+				else:
+					resp = json.loads(r.text)
+					result = 'Algorithms:\n'
+					for e in resp['algorithms']:
+						result += '\t{}:{}\n'.format(e['type'],e['version'])
+
+				if result.strip() == '':
+					result = 'Bad Request\nThe provided parameters were\n\talgo_id:{}\n\tversion:{}\n'.format(params['algo_id'],params['version'])
+					self.finish({"status_code": 400, "result": result})
+					return
+
+				# print(result)
+				self.finish({"status_code": r.status_code, "result": result})
+			except:
+				self.finish({"status_code": r.status_code, "result": r.text})
+
+		# malformed request will still give 500
+		elif r.status_code == 500:
+			if 'AttributeError' in r.text:
+				result = 'Bad Request\nThe provided parameters were\n\talgo_id:{}\n\tversion:{}\n'.format(params['algo_id'],params['version'])
+				self.finish({"status_code": 400, "result": result})
+			else:
+				self.finish({"status_code": r.status_code, "result": r.reason})
+		else:
+			self.finish({"status_code": r.status_code, "result": r.reason})
+
 class GetCapabilitiesHandler(IPythonHandler):
 	def get(self):
 		# No Required Arguments
@@ -328,6 +406,9 @@ class GetCapabilitiesHandler(IPythonHandler):
 		# ==================================
 		url = BASE_URL+'/dps/job'
 		headers = {'Content-Type':'application/json'}
+		logging.debug('request sent to {}'.format(url))
+		logging.debug('headers:')
+		logging.debug(headers)
 
 		r = requests.get(
 			url,
@@ -421,6 +502,9 @@ class ExecuteHandler(IPythonHandler):
 		ins_xml = ''
 		url = BASE_URL+'/dps/job'
 		headers = {'Content-Type':'application/xml'}
+		logging.debug('request sent to {}'.format(url))
+		logging.debug('headers:')
+		logging.debug(headers)
 
 		other = ''
 		with open(input_xml) as xml:
@@ -513,6 +597,9 @@ class GetStatusHandler(IPythonHandler):
 		# ==================================
 		url = BASE_URL+'/dps/job/{job_id}/status'.format(**params)
 		headers = {'Content-Type':'application/xml'}
+		logging.debug('request sent to {}'.format(url))
+		logging.debug('headers:')
+		logging.debug(headers)
 		# print(url)
 		# print(req_xml)
 
@@ -557,6 +644,72 @@ class GetStatusHandler(IPythonHandler):
 		except:
 			self.finish({"status_code": 400, "result": "Bad Request","job_status":''})
 
+class GetMetricsHandler(IPythonHandler):
+	def get(self):
+		# ==================================
+		# Part 1: Parse Required Arguments
+		# ==================================
+		fields = getFields('getMetrics')
+
+		params = {}
+		for f in fields:
+			try:
+				arg = self.get_argument(f.lower(), '').strip()
+				params[f] = arg
+			except:
+				arg = ''
+
+		# print(params)
+		logging.debug('params are')
+		logging.debug(params)
+
+		# ==================================
+		# Part 2: Build & Send Request
+		# ==================================
+		url = BASE_URL+'/dps/job/{job_id}/metrics'.format(**params)
+		headers = {'Content-Type':'application/xml'}
+		logging.debug('request sent to {}'.format(url))
+		logging.debug('headers:')
+		logging.debug(headers)
+		# print(url)
+		# print(req_xml)
+
+		try:
+			r = requests.get(
+				url,
+				headers=headers
+			)
+
+			# print(r.status_code)
+			# print(r.text)
+
+			# ==================================
+			# Part 3: Check Response
+			# ==================================
+			if r.status_code == 200:
+				try:
+					# parse XML response
+					metrics = ET.fromstring(r.text)
+					logging.debug(metrics)
+					
+					# format metrics into html table
+					result = '<table id="job-metrics" style="border-style: none; font-size: 11px">'
+					result += '<tbody>'
+					for n in metrics:
+						result += '<tr><td style="text-align:left">{}</td><td style="text-align:left">{}</td></tr>'.format(n.tag,n.text)
+					result += '</tbody>'
+					result += '</table>'
+					logging.debug(result)
+					# print("success!")
+					self.finish({"status_code": r.status_code, "result": result, "metrics":r.text})
+				except:
+					self.finish({"status_code": r.status_code, "result": r.text, "metrics":{}})
+			else:
+				self.finish({"status_code": r.status_code, "result": r.reason, "metrics":{}})
+
+		except:
+			self.finish({"status_code": 400, "result": "Bad Request","metrics":{}})
+
 class GetResultHandler(IPythonHandler):
 	def get(self):
 		# ==================================
@@ -581,6 +734,9 @@ class GetResultHandler(IPythonHandler):
 		# ==================================
 		url = BASE_URL+'/dps/job/{job_id}'.format(**params)
 		headers = {'Content-Type':'application/xml'}
+		logging.debug('request sent to {}'.format(url))
+		logging.debug('headers:')
+		logging.debug(headers)
 		# print(url)
 		# print(req_xml)
 
@@ -634,15 +790,12 @@ class GetResultHandler(IPythonHandler):
 						lnk = url_lst[-1]
 						url_lst[-1] = '<a href="{}" target="_blank" style="border-bottom: 1px solid #0000ff; color: #0000ff;">{}</a>'.format(lnk,lnk)
 						
-						urls_str = '•&nbsp'+('<br>	•&nbsp;').join(url_lst)
+						urls_str = '•&nbsp'+('<br>•&nbsp;').join(url_lst)
 						result += '<tr><td>{}: </td><td style="text-align:left">{}</td></tr>'.format('Locations',urls_str)
 						
 						result += '</tbody>'
 						result += '</table>'
 						logging.debug(result)
-						# result = result.replace(',',',<br>	')
-						# result = result.replace('\n','<br>')
-						# print(result)
 
 						# print("success!")
 						self.finish({"status_code": r.status_code, "result": result})
@@ -693,6 +846,9 @@ class DismissHandler(IPythonHandler):
 		# ==================================
 		url = BASE_URL+'/dps/job/revoke/{job_id}'.format(**params)
 		headers = {'Content-Type':'application/xml'}
+		logging.debug('request sent to {}'.format(url))
+		logging.debug('headers:')
+		logging.debug(headers)
 		# print(url)
 		# print(req_xml)
 
@@ -773,6 +929,9 @@ class DeleteHandler(IPythonHandler):
 		# ==================================
 		url = BASE_URL+'/dps/job/{job_id}'.format(**params)
 		headers = {'Content-Type':'application/xml'}
+		logging.debug('request sent to {}'.format(url))
+		logging.debug('headers:')
+		logging.debug(headers)
 		# print(url)
 		# print(req_xml)
 
@@ -843,14 +1002,19 @@ class DescribeProcessHandler(IPythonHandler):
 		# ==================================
 		# Part 2: Build & Send Request
 		# ==================================
+		headers = {'Content-Type':'application/json'}
+		if 'proxy-ticket' in params.keys():
+			headers['proxy-ticket'] = params.get('proxy-ticket')
+
 		# return all algorithms if malformed request
 		if complete:
-			url = BASE_URL+'/mas/algorithm/{algo_id}:{version}'.format(**params) 
+			url = BASE_URL+'/mas/algorithm/{algo_id}:{version}'.format(**params)
 		else:
 			url = BASE_URL+'/mas/algorithm'
 
-		headers = {'Content-Type':'application/json'}
-		# print(url)
+		logging.debug('request sent to {}'.format(url))
+		logging.debug('headers:')
+		logging.debug(headers)
 
 		r = requests.get(
 			url,
@@ -957,14 +1121,21 @@ class ExecuteInputsHandler(IPythonHandler):
 		# ==================================
 		# Part 2: Build & Send Request
 		# ==================================
+		headers = {'Content-Type':'application/json'}
+
+		if 'proxy-ticket' in params.keys():
+			headers['proxy-ticket'] = params.get('proxy-ticket')
+
 		# return all algorithms if malformed request
 		if complete:
 			url = BASE_URL+'/mas/algorithm/{algo_id}:{version}'.format(**params2) 
 		else:
 			url = BASE_URL+'/mas/algorithm'
 
-		headers = {'Content-Type':'application/json'}
-		logging.debug(url)
+		logging.debug('request sent to {}'.format(url))
+		logging.debug('headers:')
+		logging.debug(headers)
+		
 
 		r = requests.get(
 			url,
@@ -1119,6 +1290,13 @@ class ListJobsHandler(IPythonHandler):
 		# ==================================
 		url = BASE_URL+'/dps/job/{username}/list'.format(**params)
 		headers = {'Content-Type':'application/xml'}
+
+		if 'proxy-ticket' in params.keys():
+			headers['proxy-ticket'] = params.get('proxy-ticket')
+
+		logging.debug('request sent to {}'.format(url))
+		logging.debug('headers:')
+		logging.debug(headers)
 
 		try:
 			r = requests.get(

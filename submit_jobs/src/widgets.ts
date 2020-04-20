@@ -1,6 +1,6 @@
 import { Widget } from '@phosphor/widgets';
 import { PageConfig } from '@jupyterlab/coreutils'
-import { INotification } from "jupyterlab_toastify";
+import { INotification } from 'jupyterlab_toastify';
 import { getUserInfo } from "./getKeycloak";
 import { popupTitle, popupResult } from './dialogs';
 import { request, RequestResult } from './request';
@@ -8,7 +8,7 @@ import { request, RequestResult } from './request';
 // -----------------------
 // HySDS endpoints that require user inputs
 // -----------------------
-const nonXML: string[] = ['deleteAlgorithm','listAlgorithms','registerAuto','getResult','executeInputs','getStatus','execute','describeProcess','getCapabilities','register', 'delete','dismiss'];
+const nonXML: string[] = ['deleteAlgorithm','listAlgorithms','registerAuto','getResult','executeInputs','getStatus','getMetrics','execute','describeProcess','getCapabilities','register', 'delete','dismiss'];
 // const autoUpdate: string[] = ['execute','delete','dismiss'];
 const notImplemented: string[] = [];
 
@@ -17,12 +17,12 @@ export class InputWidget extends Widget {
   // TODO: protect instance vars
   public readonly req: string;
   public popupTitle: string;
-  public predefinedFields: Object; // store predefined fields (default values)
+  public predefinedFields: Object;        // store predefined fields (default values)
   public readonly fields: string[];       // user inputs to fill out
   public username: string;                // for execute & listing jobs in case of timeout
   _responseText: string;
   _getInputs: boolean;                    // for getting predefinedFields
-  _ins_dict: {[k:string]:string};          // for execute
+  _ins_dict: {[k:string]:string};         // for execute
 
   constructor(req:string, methodFields:string[],uname:string, defaultValues:Object,skipInputs?:boolean) {
     let body = document.createElement('div');
@@ -65,6 +65,10 @@ export class InputWidget extends Widget {
       case 'getStatus':
         this.popupTitle = "Get Job Status";
         console.log('getStatus');
+        break;
+      case 'getMetrics':
+        this.popupTitle = "Get Job Metrics";
+        console.log('getMetrics');
         break;
       case 'getResult':
         this.popupTitle = "Get Job Result";
@@ -115,7 +119,7 @@ export class InputWidget extends Widget {
         } else {
           fieldName = field[0];
         }
-        if (fieldName != 'inputs') {
+        if (fieldName != 'inputs' && fieldName != 'proxy-ticket') {
           var fieldLabel = document.createElement("Label");
           fieldLabel.innerHTML = fieldName;
           this.node.appendChild(fieldLabel);
