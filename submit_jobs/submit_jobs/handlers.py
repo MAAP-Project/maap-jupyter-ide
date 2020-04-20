@@ -327,21 +327,13 @@ class PublishAlgorithmHandler(IPythonHandler):
 		# ==================================
 		# Part 1: Parse Required Arguments
 		# ==================================
-		complete = True
 		fields = getFields('publishAlgorithm')
 
 		params = {}
 		for f in fields:
-			try:
-				arg = self.get_argument(f.lower(), '').strip()
-				params[f] = arg
-			except:
-				complete = False
+			arg = self.get_argument(f.lower(), '').strip()
+			params[f] = arg
 
-		if all(e == '' for e in list(params.values())):
-			complete = False
-
-		print(complete)
 		logging.debug('params are')
 		logging.debug(params)
 
@@ -356,22 +348,14 @@ class PublishAlgorithmHandler(IPythonHandler):
 		logging.debug('headers:')
 		logging.debug(headers)
 
-		if complete:
-			url = BASE_URL+'/mas/publish' 
-			body = {'algo_id': params['algo_id'],'version': params['version']}
-			logging.debug('request sent to {}'.format(url))
-			r = requests.post(
-				url,
-				headers=headers,
-				data=body
-			)
-		else:
-			url = BASE_URL+'/mas/algorithm'
-			logging.debug('request sent to {}'.format(url))
-			r = requests.post(
-				url,
-				headers=headers
-			)
+		url = BASE_URL+'/mas/publish' 
+		body = {'algo_id': params['algo_id'], 'version': params['version']}
+		logging.debug('request sent to {}'.format(url))
+		r = requests.post(
+			url,
+			headers=headers,
+			data=body
+		)
 
 		# print(url)
 		# print(r.status_code)
