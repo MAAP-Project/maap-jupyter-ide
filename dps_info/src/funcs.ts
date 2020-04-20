@@ -75,6 +75,9 @@ export function getJobMetrics(job_id: string, callback?: any) {
       }
       callback(metrics);
     })
+  } else {
+    results = '<p>Job '+job_id+' <br>not complete</p>';
+    callback(results);
   }
 }
 
