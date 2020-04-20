@@ -709,8 +709,8 @@ class GetMetricsHandler(IPythonHandler):
 					
 					result = '<table id="job-metrics" style="border-style: none; font-size: 11px">'
 					result += '<tbody>'
-				for n in metrics:
-					result += '<tr><td style="text-align:left">{}</td><td style="text-align:left">{}</td></tr>'.format(n.tag,n.text)
+					for n in metrics:
+						result += '<tr><td style="text-align:left">{}</td><td style="text-align:left">{}</td></tr>'.format(n.tag,n.text)
 					result += '</tbody>'
 					result += '</table>'
 					# print("success!")
