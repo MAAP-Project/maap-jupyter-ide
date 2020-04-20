@@ -29,11 +29,7 @@ declare var process : {
   }
 }
 
-var SEARCH_CLIENT_URL = "https://che-k8s.maap.xyz:3052/search";
-if (process.env.ENVIRONMENT == 'OPS') {
-  SEARCH_CLIENT_URL = "https://ade.maap-project.org:3052/search";
-}
-console.log(process.env.ENVIRONMENT);
+const SEARCH_CLIENT_URL = document.location.origin + ':3052/search';
 console.log(SEARCH_CLIENT_URL);
 
 ///////////////////////////////////////////////////////////////
