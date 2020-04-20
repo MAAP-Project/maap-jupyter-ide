@@ -11,6 +11,11 @@ import logging
 logger = logging.getLogger()
 logger.setLevel(logging.DEBUG)
 
+# set base url based on ops/dev environment
+CHE_BASE_URL = "https://che-k8s.maap.xyz"
+if 'ENVIRONMENT' in os.environ.keys() and os.environ['ENVIRONMENT'] == 'OPS':
+    CHE_BASE_URL = "https://ade.maap-project.org"
+
 
 class InjectKeyHandler(IPythonHandler):
     def get(self):
@@ -19,7 +24,7 @@ class InjectKeyHandler(IPythonHandler):
         print("=== Injecting SSH KEY ===")
 
         # Check if .ssh directory exists, if not create it
-        os.chdir('/root')
+        os.chdir('/projects')
         if not os.path.exists(".ssh"):
             os.makedirs(".ssh")
 
@@ -40,13 +45,12 @@ class InjectKeyHandler(IPythonHandler):
 
         # If not in file, inject key into authorized keys
         if not found:
-            cmd = "echo " + public_key + " >> .ssh/authorized_keys && chmod 700 .ssh/ && chmod 600 .ssh/authorized_keys"
+            cmd = "echo " + public_key + " >> .ssh/authorized_keys && chmod 700 /projects && chmod 700 .ssh/ && chmod 600 .ssh/authorized_keys"
             print(cmd)
             subprocess.check_output(cmd, shell=True)
-            os.chdir('/projects')
+            print("=== INJECTED KEY ===")
         else:
-            os.chdir('/projects')
-            print("====== SUCCESS ========")
+            print("=== KEY ALREADY PRESENT ===")
 
         print("=== Checking for existence of MAAP_PGT ===")
 
@@ -103,7 +107,7 @@ class CheckInstallersHandler(IPythonHandler):
         # self.finish({'status': True})
 
         che_machine_token = os.environ['CHE_MACHINE_TOKEN']
-        url = 'https://ade.maap-project.org/api/workspace/' + os.environ.get('CHE_WORKSPACE_ID')
+        url = '{}/api/workspace/{}'.format(CHE_BASE_URL,os.environ.get('CHE_WORKSPACE_ID'))
         # --------------------------------------------------
         # TODO: FIGURE OUT AUTH KEY & verify
         # --------------------------------------------------
@@ -133,7 +137,7 @@ class InstallHandler(IPythonHandler):
     def get(self):
 
         che_machine_token = os.environ['CHE_MACHINE_TOKEN']
-        url = 'https://ade.maap-project.org/api/workspace/' + os.environ.get('CHE_WORKSPACE_ID')
+        url = '{}/api/workspace/{}'.format(CHE_BASE_URL,os.environ.get('CHE_WORKSPACE_ID'))
         # --------------------------------------------------
         # TODO: FIGURE OUT AUTH KEY & verify
         # --------------------------------------------------
@@ -250,7 +254,7 @@ class MountOrgBucketsHandler(IPythonHandler):
         # ts pass keycloak token from window
         token = self.get_argument('token','')
         bucket = self.get_argument('bucket','')
-        url = 'https://ade.maap-project.org/api/organization'
+        url = '{}/api/organization'.format(CHE_BASE_URL)
         headers = {
             'Accept':'application/json',
             'Authorization':'Bearer {token}'.format(token=token)
