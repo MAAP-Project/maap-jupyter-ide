@@ -690,51 +690,42 @@ class GetMetricsHandler(IPythonHandler):
 		# print(url)
 		# print(req_xml)
 
-		try:
-			r = requests.get(
-				url,
-				headers=headers
-			)
+		# try:
+		r = requests.get(
+			url,
+			headers=headers
+		)
 
-			# print(r.status_code)
-			# print(r.text)
+		# print(r.status_code)
+		# print(r.text)
 
-			# ==================================
-			# Part 3: Check Response
-			# ==================================
-			# good response is JSON, bad response is XML (to be standardized after demo)# bad job id will still give 200
-			# if r.status_code == 200:
-			# 	try:
-			# 		# parse out JobID from response
-			# 		rt = json.loads(r.text)
-
-			# 		metrics = rt['metrics']
-					
-			# 		result = '<table id="job-metrics" style="border-style: none; font-size: 11px">'
-			# 		result += '<tbody>'
-			# 		for k in metrics.keys():
-			# 			result += '<tr><td style="text-align:left">{}</td><td style="text-align:left">{}</td></tr>'.format(k,metrics[k])
-			# 		result += '</tbody>'
-			# 		result += '</table>'
-			# 		# print("success!")
-			# 		self.finish({"status_code": r.status_code, "result": result, "metrics":metrics})
-			# 	except:
-			# 		self.finish({"status_code": r.status_code, "result": r.text, "metrics":{}})
-			# else:
-			# 	self.finish({"status_code": r.status_code, "result": r.reason, "metrics":{}})
-
-			# for testing only
-			metrics = {'algo_id':'hello_world_ubuntu','job_id':'job-0123456789','memory':'2.0M','execution_time':'2s'}
+		# ==================================
+		# Part 3: Check Response
+		# ==================================
+		if r.status_code == 200:
+			# try:
+			# parse XML response
+			metrics = ET.fromstring(r.text)
+			logging.debug(metrics)
+			
 			result = '<table id="job-metrics" style="border-style: none; font-size: 11px">'
 			result += '<tbody>'
-			for k in metrics.keys():
-				result += '<tr><td style="text-align:left">{}</td><td style="text-align:left">{}</td></tr>'.format(k,metrics[k])
+			for n in metrics:
+				result += '<tr><td style="text-align:left">{}</td><td style="text-align:left">{}</td></tr>'.format(n.tag,n.text)
 			result += '</tbody>'
 			result += '</table>'
-			self.finish ({"status_code": 200, "result": result, "metrics":metrics})
+			logging.debug(result)
+			# print("success!")
+			self.finish({"status_code": r.status_code, "result": result, "metrics":metrics})
+			# except:
+			# 	self.finish({"status_code": r.status_code, "result": r.text, "metrics":{}})
+		else:
+			self.finish({"status_code": r.status_code, "result": r.reason, "metrics":{}})
 
-		except:
-			self.finish({"status_code": 400, "result": "Bad Request","metrics":{}})
+			# self.finish ({"status_code": 200, "result": result, "metrics":metrics})
+
+		# except:
+		# 	self.finish({"status_code": 400, "result": "Bad Request","metrics":{}})
 
 class GetResultHandler(IPythonHandler):
 	def get(self):
