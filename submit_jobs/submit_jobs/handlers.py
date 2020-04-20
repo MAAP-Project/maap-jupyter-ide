@@ -706,6 +706,7 @@ class GetMetricsHandler(IPythonHandler):
 				try:
 					# parse XML response
 					metrics = ET.fromstring(r.text)
+					logging.debug(metrics)
 					
 					result = '<table id="job-metrics" style="border-style: none; font-size: 11px">'
 					result += '<tbody>'
@@ -713,6 +714,7 @@ class GetMetricsHandler(IPythonHandler):
 						result += '<tr><td style="text-align:left">{}</td><td style="text-align:left">{}</td></tr>'.format(n.tag,n.text)
 					result += '</tbody>'
 					result += '</table>'
+					logging.debug(result)
 					# print("success!")
 					self.finish({"status_code": r.status_code, "result": result, "metrics":metrics})
 				except:
@@ -720,7 +722,7 @@ class GetMetricsHandler(IPythonHandler):
 			else:
 				self.finish({"status_code": r.status_code, "result": r.reason, "metrics":{}})
 
-			self.finish ({"status_code": 200, "result": result, "metrics":metrics})
+			# self.finish ({"status_code": 200, "result": result, "metrics":metrics})
 
 		except:
 			self.finish({"status_code": 400, "result": "Bad Request","metrics":{}})
