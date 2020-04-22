@@ -108,11 +108,7 @@ class CheckInstallersHandler(IPythonHandler):
         # self.finish({'status': True})
 
         che_machine_token = os.environ['CHE_MACHINE_TOKEN']
-<<<<<<< HEAD
-        url = 'https://ade.maap-project.org/api/workspace/' + os.environ.get('CHE_WORKSPACE_ID')
-=======
         url = '{}/api/workspace/{}'.format(CHE_BASE_URL,os.environ.get('CHE_WORKSPACE_ID'))
->>>>>>> c188692... set base url for extension requests based on ops/dev environment
         # --------------------------------------------------
         # TODO: FIGURE OUT AUTH KEY & verify
         # --------------------------------------------------
@@ -142,11 +138,7 @@ class InstallHandler(IPythonHandler):
     def get(self):
 
         che_machine_token = os.environ['CHE_MACHINE_TOKEN']
-<<<<<<< HEAD
-        url = 'https://ade.maap-project.org/api/workspace/' + os.environ.get('CHE_WORKSPACE_ID')
-=======
         url = '{}/api/workspace/{}'.format(CHE_BASE_URL,os.environ.get('CHE_WORKSPACE_ID'))
->>>>>>> c188692... set base url for extension requests based on ops/dev environment
         # --------------------------------------------------
         # TODO: FIGURE OUT AUTH KEY & verify
         # --------------------------------------------------
@@ -263,11 +255,7 @@ class MountOrgBucketsHandler(IPythonHandler):
         # ts pass keycloak token from window
         token = self.get_argument('token','')
         bucket = self.get_argument('bucket','')
-<<<<<<< HEAD
-        url = 'https://ade.maap-project.org/api/organization'
-=======
         url = '{}/api/organization'.format(CHE_BASE_URL)
->>>>>>> c188692... set base url for extension requests based on ops/dev environment
         headers = {
             'Accept':'application/json',
             'Authorization':'Bearer {token}'.format(token=token)
