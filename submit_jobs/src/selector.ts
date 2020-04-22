@@ -126,57 +126,48 @@ export class ProjectSelector extends Widget {
       opt = opt.substr(0,ind).trim();
     }
     console.log(opt);
-    var that = this;
+    
+    // guarantee RegisterWidget is passed a value
+    if (opt == null || opt == '') {
+      console.log('no option selected');
+      popupResult("No Option Selected","Select Failed");
 
-    this.loadUserProxyTicket().then(
-      function(proxy_ticket) {
-        // guarantee RegisterWidget is passed a value
-        if (opt == null || opt == '') {
-          console.log('no option selected');
-          popupResult("No Option Selected","Select Failed");
+    // these calls all require just params algo_id, version
+    } else if (this.type == 'describeProcess' || this.type == 'executeInputs' || this.type == 'deleteAlgorithm') {
+      let lst = opt.split(':');
+      let algo_id = lst[0];
+      let version = lst[1];
 
-        // these calls all require just params algo_id, version
-        } else if (['describeProcess','publishAlgorithm','executeInputs','deleteAlgorithm'].includes(that.type)) {
-          let lst = opt.split(':');
-          let algo_id = lst[0];
-          let version = lst[1];
-
-          if (that.type == 'executeInputs'){
-            let me = that;
-            // define function callback to be run after evaluation of selection
-            let fn = function(resp:{[k:string]:(string|string[]|{[k:string]:string})}) {
-              console.log('resp');
-              var new_fields = resp['ins'] as string[];
-              var predefined_fields = resp['old'] as {[k:string]:string};
-              console.log(predefined_fields);
-              var exec = new InputWidget('execute',new_fields,me._username,{});
-              exec.setPredefinedFields(predefined_fields);
-              exec.popupTitle = algo_id+':'+version;
-              popup(exec);
-            }
-            inputRequest(that.type, algo_id, {'algo_id': algo_id, 'version': version, 'proxy-ticket': String(proxy_ticket)}, fn);
-
-            // no additional user action required after selection
-          } else if (that.type == 'describeProcess' || that.type == 'publishAlgorithm') {
-            inputRequest(that.type, algo_id, {'algo_id': algo_id, 'version': version, 'proxy-ticket': String(proxy_ticket)});
-          } else {
-            inputRequest(that.type, algo_id, {'algo_id': algo_id, 'version': version, 'proxy-ticket': String(proxy_ticket)});
-          }
-
-        } else if (that.type == 'register') {
-          getDefaultValues(opt).then((defaultValues) => {
-            console.log(defaultValues);
-            console.log('create register');
-            let w = new RegisterWidget(that._fields,that._username,defaultValues);
-            w.setPredefinedFields(defaultValues);
-            console.log(w);
-            popup(w);
-          });
+      if (this.type == 'executeInputs'){
+        let me = this;
+        // define function callback to be run after evaluation of selection
+        let fn = function(resp:{[k:string]:(string|string[]|{[k:string]:string})}) {
+          console.log('resp');
+          var new_fields = resp['ins'] as string[];
+          var predefined_fields = resp['old'] as {[k:string]:string};
+          console.log(predefined_fields);
+          var exec = new InputWidget('execute',new_fields,me._username,{});
+          exec.setPredefinedFields(predefined_fields);
+          exec.popupTitle = algo_id+':'+version;
+          popup(exec);
         }
-      },
-      error => INotification.error("Error retrieving proxy ticket") 
-    );
+        inputRequest(this.type,algo_id,{'algo_id':algo_id,'version':version},fn);
 
+        // no additional user action required after selection
+      } else {
+        inputRequest(this.type,algo_id,{'algo_id':algo_id,'version':version});
+      }
+
+    } else if (this.type == 'register') {
+      getDefaultValues(opt).then((defaultValues) => {
+        console.log(defaultValues);
+        console.log('create register');
+        let w = new RegisterWidget(this._fields,this._username,defaultValues);
+        w.setPredefinedFields(defaultValues);
+        console.log(w);
+        popup(w);
+      });
+    }
     return;
   }
 }
