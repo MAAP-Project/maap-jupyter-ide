@@ -352,7 +352,7 @@ class MountOrgBucketsHandler(IPythonHandler):
 class Presigneds3UrlHandler(IPythonHandler):
     def get(self):
         # get arguments
-        bucket = self.get_argument('bucket','')
+        bucket = DPS_BUCKET_NAME
         key = self.get_argument('key','')
         logging.debug('bucket is '+bucket)
         logging.debug('key is '+key)
