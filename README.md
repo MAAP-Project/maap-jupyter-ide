@@ -157,3 +157,4 @@ POST body:
 }
 ```
 reference: https://www.eclipse.org/che/docs/che-6/stacks.html#sharing-stacks-and-system-stacks
+.
