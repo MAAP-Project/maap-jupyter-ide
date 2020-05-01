@@ -13,8 +13,11 @@ logger.setLevel(logging.DEBUG)
 
 # set base url based on ops/dev environment
 CHE_BASE_URL = "https://che-k8s.maap.xyz"
+DPS_BUCKET_NAME = "maap-dev-dataset"
+
 if 'ENVIRONMENT' in os.environ.keys() and os.environ['ENVIRONMENT'] == 'OPS':
     CHE_BASE_URL = "https://ade.maap-project.org"
+    DPS_BUCKET_NAME = "maap-ops-dataset"
 
 
 class InjectKeyHandler(IPythonHandler):
@@ -176,7 +179,7 @@ class MountBucketHandler(IPythonHandler):
         try:
             # get bucket name and username
             username = self.get_argument('username','')
-            bucket = self.get_argument('bucket','')
+            bucket = DPS_BUCKET_NAME
             logging.debug('username is '+username)
             logging.debug('bucket is '+bucket)
 
@@ -254,7 +257,7 @@ class MountOrgBucketsHandler(IPythonHandler):
         # Send request to Che API for list of user's orgs
         # ts pass keycloak token from window
         token = self.get_argument('token','')
-        bucket = self.get_argument('bucket','')
+        bucket = DPS_BUCKET_NAME
         url = '{}/api/organization'.format(CHE_BASE_URL)
         headers = {
             'Accept':'application/json',
