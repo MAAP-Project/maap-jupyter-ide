@@ -49,39 +49,71 @@ export function getJobs(username: string, job_id: string, setJobId:any, callback
   });
 }
 
+// passes back metrics html from python api
+export function getJobMetrics(job_id: string, callback?: any) {
+  let metrics:string = '';
+  var metricsUrl = new URL(PageConfig.getBaseUrl() + 'hysds/getMetrics');
+  if (job_id != '' && JOBS[job_id]['status'] == 'job-completed') {
+    metricsUrl.searchParams.append('job_id',job_id);
+    console.log(metricsUrl.href);
+
+    request('get', metricsUrl.href).then((res: RequestResult) => {
+      if(res.ok){
+        let json_response:any = res.json();
+        INotification.success("Get user job metrics success.");
+
+        if (json_response['status_code'] == 200){
+          metrics = json_response['result'];
+        } else {
+          console.log('unable to get job metrics');
+          INotification.error("Get user job metrics failed.");
+        }
+        callback(metrics);
+      } else {
+        console.log('unable to get job metrics');
+        INotification.error("Get user job metrics failed.");
+      }
+      callback(metrics);
+    })
+  } else {
+    let results = '<p>Job '+job_id+' <br>not complete</p>';
+    callback(results);
+  }
+}
+
 // passes back results html from python api
 export function getJobResults(job_id: string, callback?: any) {
   let results:string = '';
   var resultUrl = new URL(PageConfig.getBaseUrl() + 'hysds/getResult');
-    if (job_id != '' && JOBS[job_id]['status'] == 'job-completed') {
-      resultUrl.searchParams.append('job_id',job_id);
-      console.log(resultUrl.href);
+  if (job_id != '' && JOBS[job_id]['status'] == 'job-completed') {
+    resultUrl.searchParams.append('job_id',job_id);
+    console.log(resultUrl.href);
 
-      request('get', resultUrl.href).then((res: RequestResult) => {
-        if(res.ok){
-          let json_response:any = res.json();
-          // console.log(json_response['status_code']);
-          INotification.success("Get user job result success.");
+    request('get', resultUrl.href).then((res: RequestResult) => {
+      console.log(res);
+      if(res.ok){
+        let json_response:any = res.json();
+        // console.log(json_response['status_code']);
+        INotification.success("Get user job result success.");
 
-          if (json_response['status_code'] == 200){
-            results = json_response['result'];
-
-          } else {
-            console.log('unable to get user job list');
-            INotification.error("Get user job result failed.");
-          }
+        if (json_response['status_code'] == 200){
+          results = json_response['result'];
         } else {
-          console.log('unable to get user job list');
+          console.log('unable to get user job result');
           INotification.error("Get user job result failed.");
         }
-        // let outerDiv = (<HTMLDivElement>document.getElementById('jobs-div'));
-        callback(results);
-      });
-    } else {
-      results = '<p>Job '+job_id+' <br>not complete</p>';
+      } else {
+        console.log('unable to get user job result');
+        INotification.error("Get user job result failed.");
+      }
       // let outerDiv = (<HTMLDivElement>document.getElementById('jobs-div'));
       callback(results);
-    }
+    });
+  } else {
+    results = '<p>Job '+job_id+' <br>not complete</p>';
+    // let outerDiv = (<HTMLDivElement>document.getElementById('jobs-div'));
+    callback(results);
+  }
 }
 
 // converts results into display table and appends to provided div element

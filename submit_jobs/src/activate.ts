@@ -11,28 +11,32 @@ import { noInputRequest, inputRequest, algorithmExists } from './funcs';
 import * as data from './fields.json';
 
 const registerFields = data.register;
-const deleteAlgorithmFields = data.deleteAlgorithm;
+const describeProcessFields = data.describeProcess;
+const publishAlgorithmFields = data.publishAlgorithm;
 const executeInputsFields = data.executeInputs;
 const getStatusFields = data.getStatus;
+const getMetricsFields = data.getMetrics;
 const getResultFields = data.getResult;
 const dismissFields = data.dismiss;
 const deleteFields = data.delete;
-const describeProcessFields = data.describeProcess;
+const deleteAlgorithmFields = data.deleteAlgorithm;
 
 // I really don't like these hacks
 // ------------------------------------------------------------
 var username:string;
 // ------------------------------------------------------------
-const registerAlgorithm_command = 'hysds: register2';
-const capabilities_command = 'hysds: get-capabilities';
-const statusJob_command = 'hysds: get-status';
-const resultJob_command = 'hysds: get-result';
-const executeJob_command = 'hysds: execute-job';
-const dismissJob_comand = 'hysds: dismiss-job';
-const deleteJob_command = 'hysds: delete-job';
-const describeAlgorithm_command = 'hysds: describe-job';
-const listAlgorithm_command = 'hysds: list-algorithms';
-const deleteAlgorithm_command = 'hysds: delete-algorithm';
+const capabilities_command = 'dps: get-capabilities';
+const registerAlgorithm_command = 'mas: algorithm-register';
+const listAlgorithm_command = 'mas: algorithm-list';
+const publishAlgorithm_command = 'mas: algorithm-publish';
+const describeAlgorithm_command = 'mas: algorithm-describe';
+const executeJob_command = 'dps: job-execute';
+const statusJob_command = 'dps: job-status';
+const metricsJob_command = 'dps: job-metrics';
+const resultJob_command = 'dps: job-result';
+const dismissJob_comand = 'dps: job-dismiss';
+const deleteJob_command = 'dps: job-delete';
+const deleteAlgorithm_command = 'mas: algorithm-delete';
 
 export function activateRegisterAlgorithm(
   app: JupyterFrontEnd,
@@ -135,31 +139,44 @@ export function activateGetCapabilities(app: JupyterFrontEnd,
   palette.addItem({command: capabilities_command, category: 'DPS/MAS'});
   console.log('HySDS Get Capabilities is activated!');
 }
-export function activateGetStatus(app: JupyterFrontEnd, 
-                        palette: ICommandPalette, 
-                        restorer: ILauncher | null): void{  
-  app.commands.addCommand(statusJob_command, {
-    label: 'Get DPS Job Status',
-    isEnabled: () => true,
-    execute: args => {
-      popup(new InputWidget('getStatus',getStatusFields,username,{}));
-    }
-  });
-  palette.addItem({command: statusJob_command, category: 'DPS/MAS'});
-  console.log('HySDS Get Job Status is activated!');
-}
-export function activateGetResult(app: JupyterFrontEnd, 
+export function activateList(app: JupyterFrontEnd, 
                         palette: ICommandPalette, 
                         restorer: ILauncher | null): void{
-  app.commands.addCommand(resultJob_command, {
-    label: 'Get DPS Job Result',
+  app.commands.addCommand(listAlgorithm_command, {
+    label: 'List Algorithms',
     isEnabled: () => true,
     execute: args => {
-      popup(new InputWidget('getResult',getResultFields,username,{}));
+      noInputRequest('listAlgorithms', 'List Algorithms');
     }
   });
-  palette.addItem({command: resultJob_command, category: 'DPS/MAS'});
-  console.log('HySDS Get Job Result is activated!');
+  palette.addItem({command: listAlgorithm_command, category: 'DPS/MAS'});
+  console.log('HySDS Describe Job is activated!');
+}
+export function activatePublishAlgorithm(app: JupyterFrontEnd, 
+                        palette: ICommandPalette, 
+                        restorer: ILauncher | null): void{
+  app.commands.addCommand(publishAlgorithm_command, {
+    label: 'Publish Algorithm',
+    isEnabled: () => true,
+    execute: args => {
+      popupResult(new ProjectSelector('publishAlgorithm',publishAlgorithmFields,username),"Select an Algorithm");
+    }
+  });
+  palette.addItem({command: publishAlgorithm_command, category: 'DPS/MAS'});
+  console.log('HySDS Publish Algorithm is activated!');
+}
+export function activateDescribe(app: JupyterFrontEnd, 
+                        palette: ICommandPalette, 
+                        restorer: ILauncher | null): void{
+  app.commands.addCommand(describeAlgorithm_command, {
+    label: 'Describe Algorithm',
+    isEnabled: () => true,
+    execute: args => {
+      popupResult(new ProjectSelector('describeProcess',describeProcessFields,username),"Select an Algorithm");
+    }
+  });
+  palette.addItem({command: describeAlgorithm_command, category: 'DPS/MAS'});
+  console.log('HySDS Describe Job is activated!');
 }
 export function activateExecute(app: JupyterFrontEnd, 
                         palette: ICommandPalette, 
@@ -173,6 +190,45 @@ export function activateExecute(app: JupyterFrontEnd,
   });
   palette.addItem({command: executeJob_command, category: 'DPS/MAS'});
   console.log('HySDS Execute Job is activated!');
+}
+export function activateGetStatus(app: JupyterFrontEnd, 
+                        palette: ICommandPalette, 
+                        restorer: ILauncher | null): void{  
+  app.commands.addCommand(statusJob_command, {
+    label: 'Get DPS Job Status',
+    isEnabled: () => true,
+    execute: args => {
+      popup(new InputWidget('getStatus',getStatusFields,username,{}));
+    }
+  });
+  palette.addItem({command: statusJob_command, category: 'DPS/MAS'});
+  console.log('HySDS Get Job Status is activated!');
+}
+export function activateGetMetrics(app: JupyterFrontEnd, 
+                        palette: ICommandPalette, 
+                        restorer: ILauncher | null): void{  
+  app.commands.addCommand(metricsJob_command, {
+    label: 'Get DPS Job Metrics',
+    isEnabled: () => true,
+    execute: args => {
+      popup(new InputWidget('getMetrics',getMetricsFields,username,{}));
+    }
+  });
+  palette.addItem({command: metricsJob_command, category: 'DPS/MAS'});
+  console.log('HySDS Get Job Metrics is activated!');
+}
+export function activateGetResult(app: JupyterFrontEnd, 
+                        palette: ICommandPalette, 
+                        restorer: ILauncher | null): void{
+  app.commands.addCommand(resultJob_command, {
+    label: 'Get DPS Job Result',
+    isEnabled: () => true,
+    execute: args => {
+      popup(new InputWidget('getResult',getResultFields,username,{}));
+    }
+  });
+  palette.addItem({command: resultJob_command, category: 'DPS/MAS'});
+  console.log('HySDS Get Job Result is activated!');
 }
 export function activateDismiss(app: JupyterFrontEnd, 
                         palette: ICommandPalette, 
@@ -200,32 +256,6 @@ export function activateDelete(app: JupyterFrontEnd,
   palette.addItem({command: deleteJob_command, category: 'DPS/MAS'});
   console.log('HySDS Delete Job is activated!');
 }
-export function activateDescribe(app: JupyterFrontEnd, 
-                        palette: ICommandPalette, 
-                        restorer: ILauncher | null): void{
-  app.commands.addCommand(describeAlgorithm_command, {
-    label: 'Describe Algorithm',
-    isEnabled: () => true,
-    execute: args => {
-      popupResult(new ProjectSelector('describeProcess',describeProcessFields,username),"Select an Algorithm");
-    }
-  });
-  palette.addItem({command: describeAlgorithm_command, category: 'DPS/MAS'});
-  console.log('HySDS Describe Job is activated!');
-}
-export function activateList(app: JupyterFrontEnd, 
-                        palette: ICommandPalette, 
-                        restorer: ILauncher | null): void{
-  app.commands.addCommand(listAlgorithm_command, {
-    label: 'List Algorithms',
-    isEnabled: () => true,
-    execute: args => {
-      noInputRequest('listAlgorithms', 'List Algorithms');
-    }
-  });
-  palette.addItem({command: listAlgorithm_command, category: 'DPS/MAS'});
-  console.log('HySDS Describe Job is activated!');
-}
 export function activateDeleteAlgorithm(app: JupyterFrontEnd, 
                         palette: ICommandPalette, 
                         restorer: ILauncher | null): void{
@@ -249,9 +279,11 @@ export function activateMenuOptions(app: JupyterFrontEnd, mainMenu: IMainMenu) {
   [
     capabilities_command,
     listAlgorithm_command,
+    publishAlgorithm_command,
     describeAlgorithm_command,
     executeJob_command,
     statusJob_command,
+    metricsJob_command,
     resultJob_command,
     dismissJob_comand,
     deleteJob_command,

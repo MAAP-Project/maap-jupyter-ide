@@ -48,6 +48,7 @@ class HysdsMagic(Magics):
         lstt.append(['%describe','describe the selected algorithm'])
         lstt.append(['%execute', 'submit a job to DPS using an algorithm registered in MAS'])
         lstt.append(['%status','check the status of a submitted job'])
+        lstt.append(['%metrics','get the metrics of a completed job'])
         lstt.append(['%result','get the results for a completed job'])
         lstt.append(['%delete_algorithm','remove a registered algorithm from MAS'])
         lstt.append(['%delete_job','remove a completed job from DPS'])
@@ -162,6 +163,29 @@ class HysdsMagic(Magics):
         return
 
     @line_magic
+    def metrics(self, line):
+        logging.debug('line call is')
+        logging.debug(line)
+
+        if line.strip() in ['','h','help']:
+            metrics_help = 'Job Metrics Help<br><br>Check the metrics of a completed job in DPS.  You need to know your job ID.'
+            metrics_str = 'Example Result Call:<br>    %metrics ef6fde9e-0975-4556-b8a7-ee52e91d8e61'
+            self.html(metrics_help,metrics_str)
+            return
+
+        endpoint = '/hysds/getMetrics'
+        call = '?job_id={}'.format(line.strip())
+
+        logging.debug("call is")
+        logging.debug(call)
+
+        url = self.lk + endpoint + call
+        r = requests.get(url)
+        resp = json.loads(r.text)
+        self.html(resp['result'])
+        return
+
+    @line_magic
     def capabilities(self,line):
         logging.debug('line call is')
         logging.debug(line)
@@ -177,7 +201,6 @@ class HysdsMagic(Magics):
         r = requests.get(url)
         resp = json.loads(r.text)
         self.html(resp['result'])
-    
         
     @line_magic
     def list(self, line):
