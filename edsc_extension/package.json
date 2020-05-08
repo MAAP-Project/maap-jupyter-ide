@@ -36,6 +36,7 @@
     "@jupyterlab/mainmenu": "^1.0.1",
     "@jupyterlab/notebook": "^1.0.1",
     "@types/jquery": "^3.3.30",
+    "@types/node": "^13.11.1",
     "jquery": "^3.4.1",
     "jupyterlab_toastify": "^2.3.0"
   },

@@ -1,5 +1,7 @@
 import { Widget } from '@phosphor/widgets';
 import { PageConfig } from '@jupyterlab/coreutils'
+//import { INotification } from 'jupyterlab_toastify';
+import { getUserInfo } from './getKeycloak';
 import { request, RequestResult } from './request';
 import { InputWidget, RegisterWidget } from './widgets';
 import { getAlgorithms, getDefaultValues, inputRequest } from './funcs';
@@ -52,7 +54,7 @@ export class ProjectSelector extends Widget {
         }
         this.node.appendChild(this._dropdown);
       });
-    } else if (type == 'describeProcess' || type == 'executeInputs' || type == 'deleteAlgorithm') {
+    } else if (['describeProcess','publishAlgorithm','executeInputs','deleteAlgorithm'].includes(type)) {
       let me = this;
       getAlgorithms().then((algo_lst:{[k:string]:Array<string>}) => {
         if (Object.keys(algo_lst).length == 0) {
@@ -99,6 +101,19 @@ export class ProjectSelector extends Widget {
         resolve(projectList);
         }
       });
+    });
+  }
+
+  loadUserProxyTicket() {
+    return new Promise(function(resolve, reject) {
+        getUserInfo(function(profile:any) {
+          if (profile['proxyGrantingTicket'] !== undefined) {
+            console.log(`Loaded proxy ticket ${profile['proxyGrantingTicket']}`);
+            resolve(profile['proxyGrantingTicket']);
+          } else {
+            reject(new Error('Error retrieving proxy ticket'));
+          }
+        });
     });
   }
 
