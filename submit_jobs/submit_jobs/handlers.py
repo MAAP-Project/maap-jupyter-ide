@@ -150,14 +150,20 @@ class RegisterAlgorithmHandler(IPythonHandler):
 			# proj_path = params['config_path']
 			os.chdir(proj_path)
 
-			# get git status
-			git_status_out = subprocess.check_output("git status --branch --porcelain", shell=True).decode("utf-8")
-			logger.debug(git_status_out)
+			try:
+				# get git status
+				git_status_out = subprocess.check_output("git status --branch --porcelain", shell=True).decode("utf-8")
+				logger.debug(git_status_out)
 
-			# is there a git repo?
-			if 'not a git repository' in git_status_out:
-				self.finish({"status_code": 412, "result": "Error: \n{}".format(git_status_out)})
-				return
+				# is there a git repo?
+				if 'not a git repository' in git_status_out:
+					self.finish({"status_code": 412, "result": "Error: \n{}".format(git_status_out)})
+					return
+
+			except:
+				# subprocess could also error out (nonzero exit code)
+				self.finish({"status_code": 412, "result": "Error: \nThe code you want to register is not saved in a git repository."})
+					return
 
 			git_status = git_status_out.splitlines()[1:]
 			git_status = [e.strip() for e in git_status]
