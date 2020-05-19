@@ -338,7 +338,7 @@ export class InputWidget extends Widget {
             // console.log(json_response);
             me._responseText = me._responseText + '\n' + json_response['result'];
           } else {
-            me._responseText = "Error Sending Request.";
+            me._responseText = "Error Sending Request:\n" + json_response['result'];
           }
           console.log("updating");
           me.updateSearchResults();
