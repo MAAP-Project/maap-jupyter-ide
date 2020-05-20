@@ -1278,7 +1278,7 @@ class DefaultValuesHandler(IPythonHandler):
 		logger.debug(settings)
 
 		# outputs: algo_name, version, environment, repository_url, dockerfile_path
-		self.finish({"status_code": 200, "default_values":settings, "config_path":config_path, "previous_config":prev_config})
+		self.finish({"status_code": 200, "result": "Got default values.", "default_values":settings, "config_path":config_path, "previous_config":prev_config})
 
 class ListJobsHandler(IPythonHandler):
 	# inputs: username
