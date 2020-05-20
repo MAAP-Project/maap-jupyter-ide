@@ -163,7 +163,7 @@ class RegisterAlgorithmHandler(IPythonHandler):
 			except:
 				# subprocess could also error out (nonzero exit code)
 				self.finish({"status_code": 412, "result": "Error: \nThe code you want to register is not saved in a git repository."})
-					return
+				return
 
 			git_status = git_status_out.splitlines()[1:]
 			git_status = [e.strip() for e in git_status]
