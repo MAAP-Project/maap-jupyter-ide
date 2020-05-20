@@ -150,16 +150,12 @@ class RegisterAlgorithmHandler(IPythonHandler):
 			# proj_path = params['config_path']
 			os.chdir(proj_path)
 
+			# get git status
 			try:
-				# get git status
 				git_status_out = subprocess.check_output("git status --branch --porcelain", shell=True).decode("utf-8")
 				logger.debug(git_status_out)
 
-				# is there a git repo?
-				if 'not a git repository' in git_status_out:
-					self.finish({"status_code": 412, "result": "Error: \n{}".format(git_status_out)})
-					return
-
+			# is there a git repo?
 			except:
 				# subprocess could also error out (nonzero exit code)
 				self.finish({"status_code": 412, "result": "Error: \nThe code you want to register is not saved in a git repository."})
@@ -1227,8 +1223,19 @@ class DefaultValuesHandler(IPythonHandler):
 		proj_path = '/projects/'+params['code_path']
 		proj_path = '/'.join(proj_path.split('/')[:-1])
 		os.chdir(proj_path)
-		repo_url = subprocess.check_output("git remote get-url origin", shell=True).decode('utf-8').strip()
-		# logger.debug(repo_url)
+
+		# try to get git remote url
+		try:
+			repo_url = subprocess.check_output("git remote get-url origin", shell=True).decode('utf-8').strip()
+			logger.debug(repo_url)
+			print('reop url is {}'.format(repo_url))
+
+		# is there a git repo?
+		except:
+			# subprocess could also error out (nonzero exit code)
+			self.finish({"status_code": 412, "result": "Error: \nThe code you want to register is not saved in a git repository."})
+			return
+
 
 		vals = {}
 		code_path = params['code_path']
