@@ -164,8 +164,8 @@ class RegisterAlgorithmHandler(IPythonHandler):
 			git_status = git_status_out.splitlines()[1:]
 			git_status = [e.strip() for e in git_status]
 
-			# filter for unsaved python files
-			unsaved = list(filter(lambda e: ( (e.split('.')[-1] in ['ipynb','py','sh','jl']) and (e[0] in ['M','?']) ), git_status))
+			# filter for unsaved python, julia, matlab shell files
+			unsaved = list(filter(lambda e: ( (e.split('.')[-1] in ['ipynb','py','sh','jl','r','m','mat']) and (e[0] in ['M','?']) ), git_status))
 			if len(unsaved) != 0:
 				self.finish({"status_code": 412, "result": "Error: Notebook(s) and/or script(s) have not been committed\n{}".format('\n'.join(unsaved))})
 				return
