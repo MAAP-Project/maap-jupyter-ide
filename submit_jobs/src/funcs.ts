@@ -49,10 +49,8 @@ export function inputRequest(endpt:string,title:string,inputs:{[k:string]:string
   // add params
   for (let key in inputs) {
     var fieldValue = inputs[key];
-
-    if(key !== 'proxy-ticket')
-      fieldValue = fieldValue.toLowerCase();
-
+    // if(key !== 'proxy-ticket')
+    //   fieldValue = fieldValue.toLowerCase();
     requestUrl.searchParams.append(key.toLowerCase(), fieldValue);
   }
   console.log(requestUrl.href);
