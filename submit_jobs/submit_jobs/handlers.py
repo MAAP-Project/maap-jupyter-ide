@@ -123,7 +123,7 @@ class RegisterAlgorithmHandler(IPythonHandler):
 
 		# only description and inputs are allowed to be empty
 		for f in ['algo_name','version','environment','run_command','repository_url','docker_url']:
-			if config[f] == '':
+			if config[f] == '' or config[f] == None:
 				self.finish({"status_code": 412, "result": "Error: Register field {} cannot be empty".format(f)})
 				return
 
