@@ -68,6 +68,9 @@ export function inputRequest(endpt:string,title:string,inputs:{[k:string]:string
         console.log('fn defined');
         fn(json_response);
       }
+    } else {
+      var json_response:any = res.json();
+      INotification.error(json_response['result']);
     }
   }); 
 }
