@@ -340,6 +340,7 @@ export class InputWidget extends Widget {
           } else {
             let json_response:any = res.json();
             me._responseText = "Error Sending Request:\n" + json_response['result'];
+            INotification.error(me._responseText);
           }
           console.log("updating");
           me.updateSearchResults();
