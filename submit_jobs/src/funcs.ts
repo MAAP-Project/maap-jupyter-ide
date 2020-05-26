@@ -1,4 +1,5 @@
 import { PageConfig } from '@jupyterlab/coreutils'
+import { INotification } from 'jupyterlab_toastify';
 import { request, RequestResult } from './request';
 import { popupResultText } from './widgets';
 
