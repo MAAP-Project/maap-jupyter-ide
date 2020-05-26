@@ -27,6 +27,6 @@ env | grep _ >> /etc/environment
 
 # Add conda bin to path
 export PATH=$PATH:/opt/conda/bin
-source /root/.bashrc
+cp /root/.bashrc ~/.bash_profile
 
 jupyter lab --ip=0.0.0.0 --port=3100 --allow-root --NotebookApp.token='' --LabApp.base_url=$PREVIEW_URL --no-browser --debug
