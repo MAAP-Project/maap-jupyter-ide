@@ -335,11 +335,14 @@ export class InputWidget extends Widget {
         request('get', getUrl.href).then((res: RequestResult) => {
           if(res.ok){
             let json_response:any = res.json();
-            console.log(json_response);
+            // console.log(json_response);
             me._responseText = me._responseText + '\n' + json_response['result'];
+            if (json_response['status_code'] != 200) {
+              INotification.error(me._responseText);
+            }
           } else {
             let json_response:any = res.json();
-            console.log(json_response);
+            // console.log(json_response);
             me._responseText = "Error Sending Request:\n" + json_response['result'];
             INotification.error(me._responseText);
           }
