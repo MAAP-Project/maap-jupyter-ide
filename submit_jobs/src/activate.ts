@@ -4,6 +4,7 @@ import { ILauncher } from '@jupyterlab/launcher';
 import { IFileBrowserFactory } from "@jupyterlab/filebrowser";
 import { IMainMenu } from '@jupyterlab/mainmenu';
 import { Menu } from '@phosphor/widgets';
+import { INotification } from 'jupyterlab_toastify';
 import { InputWidget, RegisterWidget, popupText } from './widgets';
 import { ProjectSelector } from './selector';
 import { popup, popupResult } from './dialogs';
@@ -72,6 +73,7 @@ export function activateRegisterAlgorithm(
         if (resp['status_code'] != 200) {
           // error
           popupText(resp['result'],'Error Registering Algorithm');
+          INotification.error(resp['result']);
         } else {
           let configPath = resp['config_path'] as string;
           let defaultValues = resp['default_values'] as Object;
