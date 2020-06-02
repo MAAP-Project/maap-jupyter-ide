@@ -1,5 +1,6 @@
 import { JupyterFrontEnd } from '@jupyterlab/application';
 import { ICommandPalette } from '@jupyterlab/apputils';
+import { IStateDB } from '@jupyterlab/coreutils';
 import { ILauncher } from '@jupyterlab/launcher';
 import { IFileBrowserFactory } from "@jupyterlab/filebrowser";
 import { IMainMenu } from '@jupyterlab/mainmenu';
@@ -37,6 +38,8 @@ const resultJob_command = 'dps: job-result';
 const dismissJob_comand = 'dps: job-dismiss';
 const deleteJob_command = 'dps: job-delete';
 const deleteAlgorithm_command = 'mas: algorithm-delete';
+
+const profileId = 'maapsec-extension:IMaapProfile';
 
 export function activateRegisterAlgorithm(
   app: JupyterFrontEnd,
@@ -141,12 +144,18 @@ export function activateGetCapabilities(app: JupyterFrontEnd,
 }
 export function activateList(app: JupyterFrontEnd, 
                         palette: ICommandPalette, 
+                        state: IStateDB,
                         restorer: ILauncher | null): void{
   app.commands.addCommand(listAlgorithm_command, {
     label: 'List Algorithms',
     isEnabled: () => true,
     execute: args => {
-      noInputRequest('listAlgorithms', 'List Algorithms');
+      state.fetch(profileId).then((profile) => {
+        let profileObj = JSON.parse(JSON.stringify(profile));
+        let uname:string = profileObj.preferred_username;
+        let ticket:string = profileObj.proxyGrantingTicket;
+        inputRequest('listAlgorithms', 'List Algorithms',{'username':uname,'proxy-ticket':ticket});
+      });
     }
   });
   palette.addItem({command: listAlgorithm_command, category: 'DPS/MAS'});

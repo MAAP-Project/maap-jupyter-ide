@@ -1,5 +1,6 @@
 import { JupyterFrontEndPlugin } from "@jupyterlab/application";
 import { ICommandPalette } from '@jupyterlab/apputils';
+import { IStateDB } from '@jupyterlab/coreutils';
 import { IFileBrowserFactory } from "@jupyterlab/filebrowser";
 import { ILauncher } from '@jupyterlab/launcher';
 import { IMainMenu } from '@jupyterlab/mainmenu';
@@ -24,9 +25,9 @@ const extensionDescribe: JupyterFrontEndPlugin<void> = {
 const extensionList: JupyterFrontEndPlugin<void> = {
   id: 'dps-job-list',
   autoStart: true,
-  requires: [ICommandPalette],
+  requires: [ICommandPalette, IStateDB],
   optional: [ILauncher],
-  activate: activateList
+  activate: activateList,
 };
 
 const extensionRegisterAlgorithm: JupyterFrontEndPlugin<void> = {

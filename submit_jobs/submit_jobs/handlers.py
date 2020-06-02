@@ -988,6 +988,8 @@ class DescribeProcessHandler(IPythonHandler):
 			try:
 				arg = self.get_argument(f.lower(), '').strip()
 				params[f] = arg
+				if params[f] == '':
+					complete = False
 			except:
 				complete = False
 
