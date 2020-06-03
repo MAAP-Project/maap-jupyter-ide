@@ -4,6 +4,7 @@ import { ILauncher } from '@jupyterlab/launcher';
 import { IFileBrowserFactory } from "@jupyterlab/filebrowser";
 import { IMainMenu } from '@jupyterlab/mainmenu';
 import { Menu } from '@phosphor/widgets';
+import { INotification } from 'jupyterlab_toastify';
 import { InputWidget, RegisterWidget, popupText } from './widgets';
 import { ProjectSelector } from './selector';
 import { popup, popupResult } from './dialogs';
@@ -68,47 +69,54 @@ export function activateRegisterAlgorithm(
       // send request to defaultvalueshandler
       let getValuesFn = function(resp:Object) {
         console.log('getValuesFn');
-        let configPath = resp['config_path'] as string;
-        let defaultValues = resp['default_values'] as Object;
-        let prevConfig = resp['previous_config'] as boolean;
+        console.log(resp['status_code']);
+        if (resp['status_code'] != 200) {
+          // error
+          popupText(resp['result'],'Error Registering Algorithm');
+          INotification.error(resp['result']);
+        } else {
+          let configPath = resp['config_path'] as string;
+          let defaultValues = resp['default_values'] as Object;
+          let prevConfig = resp['previous_config'] as boolean;
 
-        if (defaultValues['inputs'] == undefined) {
-          defaultValues['inputs'] = [];
-        }
-        if (defaultValues['description'] == undefined) {
-          defaultValues['description'] = '';
-        }
-
-        console.log(defaultValues);
-
-        let subtext = 'Auto-generated algorithm configuration:';
-        if (prevConfig) {
-          subtext = 'Current algorithm configuration:';
-        }
-
-        // register function to be called
-        // popup read-only default values
-        let registerfn = function() {
-          console.log('registerfn testing');
-          let w = new RegisterWidget(registerFields,username,defaultValues,subtext,configPath);
-          w.setPredefinedFields(defaultValues);
-          console.log(w);
-          popup(w);
-        }
-
-        // check if algorithm already exists
-        // ok -> call registeralgorithmhandler
-        // cancel -> edit template at algorithm_config.yaml (config_path)
-        algorithmExists(defaultValues['algo_name'],defaultValues['version'],defaultValues['environment']).then((algoExists) => {
-          console.log('algo Exists');
-          console.log(algoExists);
-          if (algoExists != undefined && algoExists) {
-            popupText('WARNING Algorithm name and version already exists.  \n If you continue, the previously registered algorithm \nwill be LOST','Overwrite Algorithm?',registerfn);
-            // ask user if they want to continue
-          } else {
-            registerfn()
+          if (defaultValues['inputs'] == undefined) {
+            defaultValues['inputs'] = [];
           }
-        });
+          if (defaultValues['description'] == undefined) {
+            defaultValues['description'] = '';
+          }
+
+          console.log(defaultValues);
+
+          let subtext = 'Auto-generated algorithm configuration:';
+          if (prevConfig) {
+            subtext = 'Current algorithm configuration:';
+          }
+
+          // register function to be called
+          // popup read-only default values
+          let registerfn = function() {
+            console.log('registerfn testing');
+            let w = new RegisterWidget(registerFields,username,defaultValues,subtext,configPath);
+            w.setPredefinedFields(defaultValues);
+            console.log(w);
+            popup(w);
+          }
+
+          // check if algorithm already exists
+          // ok -> call registeralgorithmhandler
+          // cancel -> edit template at algorithm_config.yaml (config_path)
+          algorithmExists(defaultValues['algo_name'],defaultValues['version'],defaultValues['environment']).then((algoExists) => {
+            console.log('algo Exists');
+            console.log(algoExists);
+            if (algoExists != undefined && algoExists) {
+              popupText('WARNING Algorithm name and version already exists.  \n If you continue, the previously registered algorithm \nwill be LOST','Overwrite Algorithm?',registerfn);
+              // ask user if they want to continue
+            } else {
+              registerfn()
+            }
+          });
+        }
       };
       inputRequest('defaultValues','Register Algorithm',{'code_path':path},getValuesFn);
     },
