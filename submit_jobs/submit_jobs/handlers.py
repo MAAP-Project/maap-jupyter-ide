@@ -988,16 +988,10 @@ class DescribeProcessHandler(IPythonHandler):
 			try:
 				arg = self.get_argument(f.lower(), '').strip()
 				params[f] = arg
-				if params[f] == '':
-					complete = False
 			except:
 				complete = False
 
-		if all(e == '' for e in list(params.values())):
-			complete = False
-
 		# print(params)
-		print(complete)
 		logging.debug('params are')
 		logging.debug(params)
 
@@ -1007,6 +1001,13 @@ class DescribeProcessHandler(IPythonHandler):
 		headers = {'Content-Type':'application/json'}
 		if 'proxy-ticket' in params.keys():
 			headers['proxy-ticket'] = params.get('proxy-ticket')
+
+		params.pop('proxy-ticket')
+		if all(e == '' for e in list(params.values())):
+			complete = False
+
+		logging.debug(list(params.values()))
+		logging.debug(complete)
 
 		# return all algorithms if malformed request
 		if complete:

@@ -1,7 +1,7 @@
 import { Widget } from '@phosphor/widgets';
 import { PageConfig } from '@jupyterlab/coreutils'
 //import { INotification } from 'jupyterlab_toastify';
-import { getUserInfo } from './getKeycloak';
+// import { getUserInfo } from './getKeycloak';
 import { request, RequestResult } from './request';
 import { InputWidget, RegisterWidget } from './widgets';
 import { getAlgorithms, getDefaultValues, inputRequest } from './funcs';
@@ -12,13 +12,15 @@ export class ProjectSelector extends Widget {
   type: string;
   _fields: string[];
   _username:string;
+  _ticket: string;
   public selection:string;
   _dropdown:HTMLSelectElement;
 
-  constructor(type,fields,uname) {
+  constructor(type,fields,uname,ticket) {
     super();
     this._fields = fields;
     this._username = uname;
+    this._ticket = ticket;
     this.selection = '';
     this.type = type;
 
@@ -56,7 +58,8 @@ export class ProjectSelector extends Widget {
       });
     } else if (['describeProcess','publishAlgorithm','executeInputs','deleteAlgorithm'].includes(type)) {
       let me = this;
-      getAlgorithms().then((algo_lst:{[k:string]:Array<string>}) => {
+      console.log('getAlgorithms');
+      getAlgorithms(this._ticket).then((algo_lst:{[k:string]:Array<string>}) => {
         if (Object.keys(algo_lst).length == 0) {
           me.selection = "No algorithms available";
         }
@@ -72,6 +75,7 @@ export class ProjectSelector extends Widget {
             opt.appendChild(document.createTextNode(txt));
             this._dropdown.appendChild(opt);
           }
+          console.log('appending '+algo);
         }
         this.node.appendChild(this._dropdown)
       });
@@ -104,18 +108,18 @@ export class ProjectSelector extends Widget {
     });
   }
 
-  loadUserProxyTicket() {
-    return new Promise(function(resolve, reject) {
-        getUserInfo(function(profile:any) {
-          if (profile['proxyGrantingTicket'] !== undefined) {
-            console.log(`Loaded proxy ticket ${profile['proxyGrantingTicket']}`);
-            resolve(profile['proxyGrantingTicket']);
-          } else {
-            reject(new Error('Error retrieving proxy ticket'));
-          }
-        });
-    });
-  }
+  // loadUserProxyTicket() {
+  //   return new Promise(function(resolve, reject) {
+  //       getUserInfo(function(profile:any) {
+  //         if (profile['proxyGrantingTicket'] !== undefined) {
+  //           console.log(`Loaded proxy ticket ${profile['proxyGrantingTicket']}`);
+  //           resolve(profile['proxyGrantingTicket']);
+  //         } else {
+  //           reject(new Error('Error retrieving proxy ticket'));
+  //         }
+  //       });
+  //   });
+  // }
 
   // overrides resolution of popup dialog
   getValue() {
@@ -133,7 +137,7 @@ export class ProjectSelector extends Widget {
       popupResult("No Option Selected","Select Failed");
 
     // these calls all require just params algo_id, version
-    } else if (this.type == 'describeProcess' || this.type == 'executeInputs' || this.type == 'deleteAlgorithm') {
+    } else if (this.type == 'describeProcess' || this.type == 'publishAlgorithm' || this.type == 'executeInputs' || this.type == 'deleteAlgorithm') {
       let lst = opt.split(':');
       let algo_id = lst[0];
       let version = lst[1];
@@ -146,23 +150,23 @@ export class ProjectSelector extends Widget {
           var new_fields = resp['ins'] as string[];
           var predefined_fields = resp['old'] as {[k:string]:string};
           console.log(predefined_fields);
-          var exec = new InputWidget('execute',new_fields,me._username,{});
+          var exec = new InputWidget('execute',new_fields,me._username,me._ticket,{});
           exec.setPredefinedFields(predefined_fields);
           exec.popupTitle = algo_id+':'+version;
           popup(exec);
         }
-        inputRequest(this.type,algo_id,{'algo_id':algo_id,'version':version},fn);
+        inputRequest(this.type,algo_id,{'algo_id':algo_id,'version':version,'username':this._username,'proxy-ticket':this._ticket},fn);
 
         // no additional user action required after selection
       } else {
-        inputRequest(this.type,algo_id,{'algo_id':algo_id,'version':version});
+        inputRequest(this.type,algo_id,{'algo_id':algo_id,'version':version,'username':this._username,'proxy-ticket':this._ticket});
       }
 
     } else if (this.type == 'register') {
       getDefaultValues(opt).then((defaultValues) => {
         console.log(defaultValues);
         console.log('create register');
-        let w = new RegisterWidget(this._fields,this._username,defaultValues);
+        let w = new RegisterWidget(this._fields,this._username,this._ticket,defaultValues);
         w.setPredefinedFields(defaultValues);
         console.log(w);
         popup(w);

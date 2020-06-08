@@ -8,7 +8,7 @@ import { Menu } from '@phosphor/widgets';
 import { InputWidget, RegisterWidget, popupText } from './widgets';
 import { ProjectSelector } from './selector';
 import { popup, popupResult } from './dialogs';
-import { noInputRequest, inputRequest, algorithmExists } from './funcs';
+import { getUsernamePassword, noInputRequest, inputRequest, algorithmExists } from './funcs';
 import * as data from './fields.json';
 
 const registerFields = data.register;
@@ -21,10 +21,6 @@ const getResultFields = data.getResult;
 const dismissFields = data.dismiss;
 const deleteFields = data.delete;
 const deleteAlgorithmFields = data.deleteAlgorithm;
-
-// I really don't like these hacks
-// ------------------------------------------------------------
-var username:string;
 // ------------------------------------------------------------
 const capabilities_command = 'dps: get-capabilities';
 const registerAlgorithm_command = 'mas: algorithm-register';
@@ -44,6 +40,7 @@ const profileId = 'maapsec-extension:IMaapProfile';
 export function activateRegisterAlgorithm(
   app: JupyterFrontEnd,
   palette: ICommandPalette,
+  state: IStateDB,
   factory: IFileBrowserFactory,
 ): void {
   const { commands } = app;
@@ -67,53 +64,58 @@ export function activateRegisterAlgorithm(
 
       let path = item.path;
       console.log(path);
-      
-      // send request to defaultvalueshandler
-      let getValuesFn = function(resp:Object) {
-        console.log('getValuesFn');
-        let configPath = resp['config_path'] as string;
-        let defaultValues = resp['default_values'] as Object;
-        let prevConfig = resp['previous_config'] as boolean;
+      state.fetch(profileId).then((profile) => {
+        let profileObj = JSON.parse(JSON.stringify(profile));
+        let uname:string = profileObj.preferred_username;
+        let ticket:string = profileObj.proxyGrantingTicket;
 
-        if (defaultValues['inputs'] == undefined) {
-          defaultValues['inputs'] = [];
-        }
-        if (defaultValues['description'] == undefined) {
-          defaultValues['description'] = '';
-        }
+        // send request to defaultvalueshandler
+        let getValuesFn = function(resp:Object) {
+          console.log('getValuesFn');
+          let configPath = resp['config_path'] as string;
+          let defaultValues = resp['default_values'] as Object;
+          let prevConfig = resp['previous_config'] as boolean;
 
-        console.log(defaultValues);
-
-        let subtext = 'Auto-generated algorithm configuration:';
-        if (prevConfig) {
-          subtext = 'Current algorithm configuration:';
-        }
-
-        // register function to be called
-        // popup read-only default values
-        let registerfn = function() {
-          console.log('registerfn testing');
-          let w = new RegisterWidget(registerFields,username,defaultValues,subtext,configPath);
-          w.setPredefinedFields(defaultValues);
-          console.log(w);
-          popup(w);
-        }
-
-        // check if algorithm already exists
-        // ok -> call registeralgorithmhandler
-        // cancel -> edit template at algorithm_config.yaml (config_path)
-        algorithmExists(defaultValues['algo_name'],defaultValues['version'],defaultValues['environment']).then((algoExists) => {
-          console.log('algo Exists');
-          console.log(algoExists);
-          if (algoExists != undefined && algoExists) {
-            popupText('WARNING Algorithm name and version already exists.  \n If you continue, the previously registered algorithm \nwill be LOST','Overwrite Algorithm?',registerfn);
-            // ask user if they want to continue
-          } else {
-            registerfn()
+          if (defaultValues['inputs'] == undefined) {
+            defaultValues['inputs'] = [];
           }
-        });
-      };
-      inputRequest('defaultValues','Register Algorithm',{'code_path':path},getValuesFn);
+          if (defaultValues['description'] == undefined) {
+            defaultValues['description'] = '';
+          }
+
+          console.log(defaultValues);
+
+          let subtext = 'Auto-generated algorithm configuration:';
+          if (prevConfig) {
+            subtext = 'Current algorithm configuration:';
+          }
+
+          // register function to be called
+          // popup read-only default values
+          let registerfn = function() {
+            console.log('registerfn testing');
+            let w = new RegisterWidget(registerFields,uname,ticket,defaultValues,subtext,configPath);
+            w.setPredefinedFields(defaultValues);
+            console.log(w);
+            popup(w);
+          }
+
+          // check if algorithm already exists
+          // ok -> call registeralgorithmhandler
+          // cancel -> edit template at algorithm_config.yaml (config_path)
+          algorithmExists(defaultValues['algo_name'],defaultValues['version'],defaultValues['environment'],ticket).then((algoExists) => {
+            console.log('algo Exists');
+            console.log(algoExists);
+            if (algoExists != undefined && algoExists) {
+              popupText('WARNING Algorithm name and version already exists.  \n If you continue, the previously registered algorithm \nwill be LOST','Overwrite Algorithm?',registerfn);
+              // ask user if they want to continue
+            } else {
+              registerfn()
+            }
+          });
+        };
+        inputRequest('defaultValues','Register Algorithm',{'code_path':path},getValuesFn);
+      });
     },
     isVisible: () =>
       tracker.currentWidget &&
@@ -140,7 +142,7 @@ export function activateGetCapabilities(app: JupyterFrontEnd,
     }
   });
   palette.addItem({command: capabilities_command, category: 'DPS/MAS'});
-  console.log('HySDS Get Capabilities is activated!');
+  // console.log('HySDS Get Capabilities is activated!');
 }
 export function activateList(app: JupyterFrontEnd, 
                         palette: ICommandPalette, 
@@ -150,25 +152,25 @@ export function activateList(app: JupyterFrontEnd,
     label: 'List Algorithms',
     isEnabled: () => true,
     execute: args => {
-      state.fetch(profileId).then((profile) => {
-        let profileObj = JSON.parse(JSON.stringify(profile));
-        let uname:string = profileObj.preferred_username;
-        let ticket:string = profileObj.proxyGrantingTicket;
+      getUsernamePassword(state,profileId,function(uname:string,ticket:string) {
         inputRequest('listAlgorithms', 'List Algorithms',{'username':uname,'proxy-ticket':ticket});
       });
     }
   });
   palette.addItem({command: listAlgorithm_command, category: 'DPS/MAS'});
-  console.log('HySDS Describe Job is activated!');
+  // console.log('HySDS Describe Job is activated!');
 }
 export function activatePublishAlgorithm(app: JupyterFrontEnd, 
                         palette: ICommandPalette, 
+                        state: IStateDB,
                         restorer: ILauncher | null): void{
   app.commands.addCommand(publishAlgorithm_command, {
     label: 'Publish Algorithm',
     isEnabled: () => true,
     execute: args => {
-      popupResult(new ProjectSelector('publishAlgorithm',publishAlgorithmFields,username),"Select an Algorithm");
+      getUsernamePassword(state,profileId,function(uname:string,ticket:string) {
+        popupResult(new ProjectSelector('publishAlgorithm',publishAlgorithmFields,uname,ticket),"Select an Algorithm");
+      })
     }
   });
   palette.addItem({command: publishAlgorithm_command, category: 'DPS/MAS'});
@@ -176,25 +178,37 @@ export function activatePublishAlgorithm(app: JupyterFrontEnd,
 }
 export function activateDescribe(app: JupyterFrontEnd, 
                         palette: ICommandPalette, 
+                        state: IStateDB,
                         restorer: ILauncher | null): void{
   app.commands.addCommand(describeAlgorithm_command, {
     label: 'Describe Algorithm',
     isEnabled: () => true,
     execute: args => {
-      popupResult(new ProjectSelector('describeProcess',describeProcessFields,username),"Select an Algorithm");
+      state.fetch(profileId).then((profile) => {
+        let profileObj = JSON.parse(JSON.stringify(profile));
+        let uname:string = profileObj.preferred_username;
+        let ticket:string = profileObj.proxyGrantingTicket;
+        popupResult(new ProjectSelector('describeProcess',describeProcessFields,uname,ticket),"Select an Algorithm");
+      });
     }
   });
   palette.addItem({command: describeAlgorithm_command, category: 'DPS/MAS'});
-  console.log('HySDS Describe Job is activated!');
+  // console.log('HySDS Describe Job is activated!');
 }
 export function activateExecute(app: JupyterFrontEnd, 
                         palette: ICommandPalette, 
+                        state: IStateDB,
                         restorer: ILauncher | null): void{
   app.commands.addCommand(executeJob_command, {
     label: 'Execute DPS Job',
     isEnabled: () => true,
     execute: args => {
-      popupResult(new ProjectSelector('executeInputs',executeInputsFields,username),"Select an Algorithm");
+      state.fetch(profileId).then((profile) => {
+        let profileObj = JSON.parse(JSON.stringify(profile));
+        let uname:string = profileObj.preferred_username;
+        let ticket:string = profileObj.proxyGrantingTicket;
+        popupResult(new ProjectSelector('executeInputs',executeInputsFields,uname,ticket),"Select an Algorithm");
+      });
     }
   });
   palette.addItem({command: executeJob_command, category: 'DPS/MAS'});
@@ -202,81 +216,99 @@ export function activateExecute(app: JupyterFrontEnd,
 }
 export function activateGetStatus(app: JupyterFrontEnd, 
                         palette: ICommandPalette, 
+                        state: IStateDB,
                         restorer: ILauncher | null): void{  
   app.commands.addCommand(statusJob_command, {
     label: 'Get DPS Job Status',
     isEnabled: () => true,
     execute: args => {
-      popup(new InputWidget('getStatus',getStatusFields,username,{}));
+      getUsernamePassword(state,profileId,function(uname:string,ticket:string) {
+        popup(new InputWidget('getStatus',getStatusFields,uname,ticket,{}));
+      });
     }
   });
   palette.addItem({command: statusJob_command, category: 'DPS/MAS'});
-  console.log('HySDS Get Job Status is activated!');
+  // console.log('HySDS Get Job Status is activated!');
 }
 export function activateGetMetrics(app: JupyterFrontEnd, 
                         palette: ICommandPalette, 
+                        state: IStateDB,
                         restorer: ILauncher | null): void{  
   app.commands.addCommand(metricsJob_command, {
     label: 'Get DPS Job Metrics',
     isEnabled: () => true,
     execute: args => {
-      popup(new InputWidget('getMetrics',getMetricsFields,username,{}));
+      getUsernamePassword(state,profileId,function(uname:string,ticket:string) {
+        popup(new InputWidget('getMetrics',getMetricsFields,uname,ticket,{}));
+      });
     }
   });
   palette.addItem({command: metricsJob_command, category: 'DPS/MAS'});
-  console.log('HySDS Get Job Metrics is activated!');
+  // console.log('HySDS Get Job Metrics is activated!');
 }
 export function activateGetResult(app: JupyterFrontEnd, 
                         palette: ICommandPalette, 
+                        state: IStateDB,
                         restorer: ILauncher | null): void{
   app.commands.addCommand(resultJob_command, {
     label: 'Get DPS Job Result',
     isEnabled: () => true,
     execute: args => {
-      popup(new InputWidget('getResult',getResultFields,username,{}));
+      getUsernamePassword(state,profileId,function(uname:string,ticket:string) {
+        popup(new InputWidget('getResult',getResultFields,uname,ticket,{}));
+      });
     }
   });
   palette.addItem({command: resultJob_command, category: 'DPS/MAS'});
-  console.log('HySDS Get Job Result is activated!');
+  // console.log('HySDS Get Job Result is activated!');
 }
 export function activateDismiss(app: JupyterFrontEnd, 
                         palette: ICommandPalette, 
+                        state: IStateDB,
                         restorer: ILauncher | null): void{
   app.commands.addCommand(dismissJob_comand, {
     label: 'Dismiss DPS Job',
     isEnabled: () => true,
     execute: args => {
-      popup(new InputWidget('dismiss',dismissFields,username,{}));
+      getUsernamePassword(state,profileId,function(uname:string,ticket:string) {
+        popup(new InputWidget('dismiss',dismissFields,uname,ticket,{}));
+      });
     }
   });
   palette.addItem({command: dismissJob_comand, category: 'DPS/MAS'});
-  console.log('HySDS Dismiss Job is activated!');
+  // console.log('HySDS Dismiss Job is activated!');
 }
 export function activateDelete(app: JupyterFrontEnd, 
                         palette: ICommandPalette, 
+                        state: IStateDB,
                         restorer: ILauncher | null): void{
   app.commands.addCommand(deleteJob_command, {
     label: 'Delete DPS Job',
     isEnabled: () => true,
     execute: args => {
-      popup(new InputWidget('delete',deleteFields,username,{}));
+      getUsernamePassword(state,profileId,function(uname:string,ticket:string) {
+        popup(new InputWidget('delete',deleteFields,uname,ticket,{}));
+      });
     }
   });
   palette.addItem({command: deleteJob_command, category: 'DPS/MAS'});
-  console.log('HySDS Delete Job is activated!');
+  // console.log('HySDS Delete Job is activated!');
 }
 export function activateDeleteAlgorithm(app: JupyterFrontEnd, 
                         palette: ICommandPalette, 
+                        state: IStateDB,
                         restorer: ILauncher | null): void{
   app.commands.addCommand(deleteAlgorithm_command, {
     label: 'Delete Algorithm',
     isEnabled: () => true,
     execute: args => {
-      popup(new ProjectSelector('deleteAlgorithm',deleteAlgorithmFields,username));
+      getUsernamePassword(state,profileId,function(uname:string,ticket:string) {
+        popup(new ProjectSelector('deleteAlgorithm',deleteAlgorithmFields,uname,ticket));
+      });
     }
   });
   palette.addItem({command: deleteAlgorithm_command, category: 'DPS/MAS'});
-  console.log('HySDS Describe Job is activated!');
+  // console.log('HySDS Describe Job is activated!');
 }
 
 // add DPS options to Menu dropdown
@@ -301,4 +333,6 @@ export function activateMenuOptions(app: JupyterFrontEnd, mainMenu: IMainMenu) {
     dpsMenu.addItem({ command });
   });
   mainMenu.addMenu(dpsMenu, { rank: 101 });
+
+  console.log('MAAP submit jobs extension activated');
 }
