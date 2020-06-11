@@ -1,7 +1,7 @@
 import { PageConfig } from '@jupyterlab/coreutils'
 import { Widget } from '@phosphor/widgets';
-import { INotification } from "jupyterlab_toastify";
-import { getUserInfo } from "./getKeycloak";
+// import { INotification } from "jupyterlab_toastify";
+// import { getUserInfo } from "./getKeycloak";
 import { request, RequestResult } from './request';
 import { WIDGET_CLASS, CONTENT_CLASS } from './panel';
 import { getJobs, getJobMetrics, getJobResults, updateResultsTable, onRowClick, deleteDismissJob, DISPLAYS } from './funcs';
@@ -31,10 +31,11 @@ export class JobWidget extends Widget {
   _algo_list_id: string;
   _execute_params_id: string;
 
-  constructor() {
+  constructor(uname:string) {
     super();
     this.addClass(CONTENT_CLASS);
     this.addClass(WIDGET_CLASS);
+    this._username = uname;
     this._algorithm = 'dps_plot';   // FOR TESTING
     this._version = 'master';       // FOR TESTING
     this._job_id = '';
@@ -42,21 +43,6 @@ export class JobWidget extends Widget {
     this._widget_table_name = 'widget-job-cache-display';
     this._algo_list_id = 'algo-list-table';
     this._execute_params_id = 'execute-params-table';
-
-    // set username on start
-    // callback should finish before users manage to do anything
-    // now profile timing out shouldn't be a problem
-    let me = this;
-    getUserInfo(function(profile: any) {
-      if (profile['cas:username'] === undefined) {
-        INotification.error("Get username failed.");
-        me._username = 'anonymous';
-      } else {
-        me._username = profile['cas:username'];
-        INotification.success("Got username.");
-        me.update();
-      }
-    });
 
     let job_widget = document.createElement('div');
     job_widget.id = 'job-widget';
@@ -195,7 +181,7 @@ export class JobWidget extends Widget {
         this._populateListTable();
       } else {
         let algolistdiv = document.createElement('div');
-        algolistdiv.id = 'algo-list-div'
+        algolistdiv.id = 'algo-list-div';
         listCell.appendChild(algolistdiv);
         
         let algolist = document.createElement('table');
@@ -664,26 +650,13 @@ export class JobTable extends Widget {
   _results: string;
   _resultsTableName: string;
 
-  constructor() {
+  constructor(uname:string) {
     super();
+    this._username = uname;
     this._resultsTableName = 'job-result-display';
     this._job_id = '';
     this.addClass(CONTENT_CLASS);
 
-    // set username on start
-    // callback should finish before users manage to do anything
-    // now profile timing out shouldn't be a problem
-    let me = this;
-    getUserInfo(function(profile: any) {
-      if (profile['cas:username'] === undefined) {
-        INotification.error("Get username failed.");
-        me._username = 'anonymous';
-      } else {
-        me._username = profile['cas:username'];
-        INotification.success("Got username.");
-        me.update();
-      }
-    });
     // make clickable table rows after setting job table
     var x = document.createElement("BR");
     this.node.appendChild(x);
