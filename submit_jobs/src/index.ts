@@ -32,7 +32,7 @@ const extensionList: JupyterFrontEndPlugin<void> = {
 
 const extensionRegisterAlgorithm: JupyterFrontEndPlugin<void> = {
   id: 'mas-algo-register',
-  requires: [ICommandPalette, IFileBrowserFactory],
+  requires: [ICommandPalette, IStateDB, IFileBrowserFactory],
   autoStart: true,
   activate: activateRegisterAlgorithm
 };

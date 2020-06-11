@@ -1,6 +1,6 @@
 import { JupyterFrontEnd } from '@jupyterlab/application';
 import { ICommandPalette } from '@jupyterlab/apputils';
-import { IStateDB } from '@jupyterlab/coreutils';
+import { PageConfig, IStateDB } from '@jupyterlab/coreutils';
 import { ILauncher } from '@jupyterlab/launcher';
 import { IFileBrowserFactory } from "@jupyterlab/filebrowser";
 import { IMainMenu } from '@jupyterlab/mainmenu';
@@ -62,8 +62,10 @@ export function activateRegisterAlgorithm(
         return;
       }
 
-      let path = item.path;
+      // get full path, not just relative path of script to register
+      let path = PageConfig.getOption('serverRoot') + '/' + item.path;
       console.log(path);
+
       state.fetch(profileId).then((profile) => {
         let profileObj = JSON.parse(JSON.stringify(profile));
         let uname:string = profileObj.preferred_username;
@@ -129,6 +131,7 @@ export function activateRegisterAlgorithm(
     selector: selectorItem,
     rank: 10
   });
+  // console.log('Register Algorithm is activated');
 }
 
 export function activateGetCapabilities(app: JupyterFrontEnd, 
@@ -174,7 +177,7 @@ export function activatePublishAlgorithm(app: JupyterFrontEnd,
     }
   });
   palette.addItem({command: publishAlgorithm_command, category: 'DPS/MAS'});
-  console.log('HySDS Publish Algorithm is activated!');
+  // console.log('HySDS Publish Algorithm is activated!');
 }
 export function activateDescribe(app: JupyterFrontEnd, 
                         palette: ICommandPalette, 
@@ -212,7 +215,7 @@ export function activateExecute(app: JupyterFrontEnd,
     }
   });
   palette.addItem({command: executeJob_command, category: 'DPS/MAS'});
-  console.log('HySDS Execute Job is activated!');
+  // console.log('HySDS Execute Job is activated!');
 }
 export function activateGetStatus(app: JupyterFrontEnd, 
                         palette: ICommandPalette, 

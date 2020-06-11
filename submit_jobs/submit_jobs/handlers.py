@@ -1221,7 +1221,8 @@ class DefaultValuesHandler(IPythonHandler):
 		# ==================================
 		# Part 2: Extract Required Register Parameters
 		# ==================================
-		proj_path = '/projects/'+params['code_path']
+		# full path provided by ts from PageConfig
+		proj_path = os.path.expanduser(params['code_path'])
 		proj_path = '/'.join(proj_path.split('/')[:-1])
 		os.chdir(proj_path)
 		repo_url = subprocess.check_output("git remote get-url origin", shell=True).decode('utf-8').strip()
