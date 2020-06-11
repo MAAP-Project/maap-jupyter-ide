@@ -4,7 +4,7 @@ import { popupResultText } from './widgets';
 import { getUserInfo } from "./getKeycloak";
 import { request, RequestResult } from './request';
 
-export function getUsernamePassword(state: IStateDB, profileId:string, callback) {
+export function getUsernameToken(state: IStateDB, profileId:string, callback) {
   let uname:string = 'anonymous';
   let ticket:string = '';
   if (["https://che-k8s.maap.xyz","https://ade.maap-project.org"].includes(document.location.origin)) {

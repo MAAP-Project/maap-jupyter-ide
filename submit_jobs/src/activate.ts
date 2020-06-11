@@ -8,7 +8,7 @@ import { Menu } from '@phosphor/widgets';
 import { InputWidget, RegisterWidget, popupText } from './widgets';
 import { ProjectSelector } from './selector';
 import { popup, popupResult } from './dialogs';
-import { getUsernamePassword, noInputRequest, inputRequest, algorithmExists } from './funcs';
+import { getUsernameToken, noInputRequest, inputRequest, algorithmExists } from './funcs';
 import * as data from './fields.json';
 
 const registerFields = data.register;
@@ -155,7 +155,7 @@ export function activateList(app: JupyterFrontEnd,
     label: 'List Algorithms',
     isEnabled: () => true,
     execute: args => {
-      getUsernamePassword(state,profileId,function(uname:string,ticket:string) {
+      getUsernameToken(state,profileId,function(uname:string,ticket:string) {
         inputRequest('listAlgorithms', 'List Algorithms',{'username':uname,'proxy-ticket':ticket});
       });
     }
@@ -171,7 +171,7 @@ export function activatePublishAlgorithm(app: JupyterFrontEnd,
     label: 'Publish Algorithm',
     isEnabled: () => true,
     execute: args => {
-      getUsernamePassword(state,profileId,function(uname:string,ticket:string) {
+      getUsernameToken(state,profileId,function(uname:string,ticket:string) {
         popupResult(new ProjectSelector('publishAlgorithm',publishAlgorithmFields,uname,ticket),"Select an Algorithm");
       })
     }
@@ -225,7 +225,7 @@ export function activateGetStatus(app: JupyterFrontEnd,
     label: 'Get DPS Job Status',
     isEnabled: () => true,
     execute: args => {
-      getUsernamePassword(state,profileId,function(uname:string,ticket:string) {
+      getUsernameToken(state,profileId,function(uname:string,ticket:string) {
         popup(new InputWidget('getStatus',getStatusFields,uname,ticket,{}));
       });
     }
@@ -241,7 +241,7 @@ export function activateGetMetrics(app: JupyterFrontEnd,
     label: 'Get DPS Job Metrics',
     isEnabled: () => true,
     execute: args => {
-      getUsernamePassword(state,profileId,function(uname:string,ticket:string) {
+      getUsernameToken(state,profileId,function(uname:string,ticket:string) {
         popup(new InputWidget('getMetrics',getMetricsFields,uname,ticket,{}));
       });
     }
@@ -257,7 +257,7 @@ export function activateGetResult(app: JupyterFrontEnd,
     label: 'Get DPS Job Result',
     isEnabled: () => true,
     execute: args => {
-      getUsernamePassword(state,profileId,function(uname:string,ticket:string) {
+      getUsernameToken(state,profileId,function(uname:string,ticket:string) {
         popup(new InputWidget('getResult',getResultFields,uname,ticket,{}));
       });
     }
@@ -273,7 +273,7 @@ export function activateDismiss(app: JupyterFrontEnd,
     label: 'Dismiss DPS Job',
     isEnabled: () => true,
     execute: args => {
-      getUsernamePassword(state,profileId,function(uname:string,ticket:string) {
+      getUsernameToken(state,profileId,function(uname:string,ticket:string) {
         popup(new InputWidget('dismiss',dismissFields,uname,ticket,{}));
       });
     }
@@ -289,7 +289,7 @@ export function activateDelete(app: JupyterFrontEnd,
     label: 'Delete DPS Job',
     isEnabled: () => true,
     execute: args => {
-      getUsernamePassword(state,profileId,function(uname:string,ticket:string) {
+      getUsernameToken(state,profileId,function(uname:string,ticket:string) {
         popup(new InputWidget('delete',deleteFields,uname,ticket,{}));
       });
     }
@@ -305,7 +305,7 @@ export function activateDeleteAlgorithm(app: JupyterFrontEnd,
     label: 'Delete Algorithm',
     isEnabled: () => true,
     execute: args => {
-      getUsernamePassword(state,profileId,function(uname:string,ticket:string) {
+      getUsernameToken(state,profileId,function(uname:string,ticket:string) {
         popup(new ProjectSelector('deleteAlgorithm',deleteAlgorithmFields,uname,ticket));
       });
     }
