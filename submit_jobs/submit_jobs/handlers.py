@@ -1231,6 +1231,7 @@ class DefaultValuesHandler(IPythonHandler):
 		try:
 			repo_url = subprocess.check_output("git remote get-url origin", shell=True).decode('utf-8').strip()
 			logger.debug('repo url is {}'.format(repo_url))
+		#return error messsage if unable to get required values for registering
 		except:
 			self.finish({"status_code": 412, "reason":"Path provided was not a git repository. \n{}".format(proj_path)})
 			return
