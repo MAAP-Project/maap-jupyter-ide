@@ -123,7 +123,7 @@ class RegisterAlgorithmHandler(IPythonHandler):
 
 		# only description and inputs are allowed to be empty
 		for f in ['algo_name','version','environment','run_command','repository_url','docker_url']:
-			if config[f] == '' or config[f] == None:
+			if config[f] == '':
 				self.finish({"status_code": 412, "result": "Error: Register field {} cannot be empty".format(f)})
 				return
 
@@ -151,21 +151,19 @@ class RegisterAlgorithmHandler(IPythonHandler):
 			os.chdir(proj_path)
 
 			# get git status
-			try:
-				git_status_out = subprocess.check_output("git status --branch --porcelain", shell=True).decode("utf-8")
-				logger.debug(git_status_out)
+			git_status_out = subprocess.check_output("git status --branch --porcelain", shell=True).decode("utf-8")
+			logger.debug(git_status_out)
 
 			# is there a git repo?
-			except:
-				# subprocess could also error out (nonzero exit code)
-				self.finish({"status_code": 412, "result": "Error: \nThe code you want to register is not saved in a git repository."})
+			if 'not a git repository' in git_status_out:
+				self.finish({"status_code": 412, "result": "Error: \n{}".format(git_status_out)})
 				return
 
 			git_status = git_status_out.splitlines()[1:]
 			git_status = [e.strip() for e in git_status]
 
-			# filter for unsaved python, julia, matlab shell files
-			unsaved = list(filter(lambda e: ( (e.split('.')[-1] in ['ipynb','py','sh','jl','r','m','mat']) and (e[0] in ['M','?']) ), git_status))
+			# filter for unsaved python files
+			unsaved = list(filter(lambda e: ( (e.split('.')[-1] in ['ipynb','py','sh','jl']) and (e[0] in ['M','?']) ), git_status))
 			if len(unsaved) != 0:
 				self.finish({"status_code": 412, "result": "Error: Notebook(s) and/or script(s) have not been committed\n{}".format('\n'.join(unsaved))})
 				return
@@ -1228,18 +1226,14 @@ class DefaultValuesHandler(IPythonHandler):
 		proj_path = '/'.join(proj_path.split('/')[:-1])
 		os.chdir(proj_path)
 
-		# try to get git remote url
+		# get git remote url (req)
+		repo_url = ''
 		try:
 			repo_url = subprocess.check_output("git remote get-url origin", shell=True).decode('utf-8').strip()
-			logger.debug(repo_url)
-			print('reop url is {}'.format(repo_url))
-
-		# is there a git repo?
+			logger.debug('repo url is {}'.format(repo_url))
 		except:
-			# subprocess could also error out (nonzero exit code)
-			self.finish({"status_code": 412, "result": "Error: \nThe code you want to register is not saved in a git repository."})
+			self.finish({"status_code": 412, "reason":"Path provided was not a git repository. \n{}".format(proj_path)})
 			return
-
 
 		vals = {}
 		code_path = params['code_path']
@@ -1254,7 +1248,14 @@ class DefaultValuesHandler(IPythonHandler):
 		vals['repository_url'] = repo_url
 		# vals['environment'] = os.environ['ENVIRONMENT']
 		vals['environment'] = "ubuntu"
-		vals['docker_url'] = os.environ['DOCKERIMAGE_PATH']
+
+		vals['docker_url'] = ''
+		try:
+			vals['docker_url'] = os.environ['DOCKERIMAGE_PATH']
+		except:
+			self.finish({"status_code":400, "reason":"Environment base image could not be found. \nAre you registering from within the Che environment?"})
+			return
+
 		vals['run_cmd'] = params['code_path']
 
 		config_path = proj_path+"/algorithm_config.yaml"
@@ -1282,7 +1283,7 @@ class DefaultValuesHandler(IPythonHandler):
 		logger.debug(settings)
 
 		# outputs: algo_name, version, environment, repository_url, dockerfile_path
-		self.finish({"status_code": 200, "result": "Got default values.", "default_values":settings, "config_path":config_path, "previous_config":prev_config})
+		self.finish({"status_code": 200, "default_values":settings, "config_path":config_path, "previous_config":prev_config})
 
 class ListJobsHandler(IPythonHandler):
 	# inputs: username
@@ -1335,7 +1336,8 @@ class ListJobsHandler(IPythonHandler):
 				try:
 					# parse out JobID from response
 					resp = json.loads(r.text)
-					jobs = [parse_job(job) for job in resp['jobs']] 					# parse inputs from string to dict
+					jobs = resp['jobs']											# save joblist
+					jobs = [parse_job(job) for job in jobs] 					# parse inputs from string to dict
 					# logger.debug('parsing jobs list')
 					# logger.debug(jobs)
 					jobs = sorted(jobs, key=lambda j: j['timestamp'],reverse=True) 	# sort list of jobs by timestamp (most recent)
@@ -1372,7 +1374,7 @@ class ListJobsHandler(IPythonHandler):
 					# print("success!")
 					self.finish({"status_code": r.status_code, "result": jobs, "table":result,"jobs": jobs_dict, "displays": details})
 				except:
-					self.finish({"status_code": r.status_code, "result": r.text, "table":result,"jobs": jobs, "displays": details})
+					self.finish({"status_code": r.status_code, "result": jobs, "table":result,"jobs": jobs, "displays": details, "resp":r.text})
 			# if no job id provided
 			elif r.status_code in [404]:
 				# print('404?')
