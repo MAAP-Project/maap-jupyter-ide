@@ -39,7 +39,6 @@ def load_jupyter_server_extension(nb_server_app):
     #https://ade.maap-project.org/serverlx80f9ci-ws-jupyter/server-3100/
 
     web_app.add_handlers(host_pattern, [(url_path_join(base_url, 'pull_projects/list'), ListProjectsHandler)])
-    web_app.add_handlers(host_pattern, [(url_path_join(base_url, 'pull_projects/listFiles'), ListFilesHandler)])
     web_app.add_handlers(host_pattern, [(url_path_join(base_url, 'pull_projects/getProject'), GetProjectHandler)])
     web_app.add_handlers(host_pattern, [(url_path_join(base_url, 'pull_projects/getAllProjects'), GetAllProjectsHandler)])
 
