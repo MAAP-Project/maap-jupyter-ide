@@ -8,8 +8,6 @@ import {IFileBrowserFactory} from "@jupyterlab/filebrowser";
 import {Widget} from "@phosphor/widgets";
 
 import { SshWidget, InstallSshWidget, UserInfoWidget } from './widgets'
-// const bucket_name = 'maap-mount-dev';
-const bucket_name = 'maap-dev-dataset';
 
 export function popup(b:Widget,title:string): void {
   showDialog({
@@ -104,7 +102,6 @@ function mountUserFolder() : void {
     let username = profile['cas:username']
     var getUrl = new URL(PageConfig.getBaseUrl() + 'show_ssh_info/mountBucket');
     getUrl.searchParams.append('username',username);
-    getUrl.searchParams.append('bucket',bucket_name);
     request('get', getUrl.href).then((res: RequestResult) => {
       if (res.ok) {
         let data:any = JSON.parse(res.data);
@@ -127,7 +124,6 @@ function mountOrgFolders() : void {
   // do something
   let token = getToken();
   var getUrl = new URL(PageConfig.getBaseUrl() + 'show_ssh_info/getOrgs');
-  getUrl.searchParams.append('bucket',bucket_name);
   getUrl.searchParams.append('token',token);
   request('get', getUrl.href).then((res: RequestResult) => {
     if (res.ok) {
@@ -145,12 +141,11 @@ function mountOrgFolders() : void {
 }
 
 export
-function getPresignedUrl(bucket:string,key:string): Promise<string> {
+function getPresignedUrl(key:string): Promise<string> {
   return new Promise<string>(async (resolve, reject) => {
     let presignedUrl = '';
 
     var getUrl = new URL(PageConfig.getBaseUrl() + 'show_ssh_info/getSigneds3Url');
-    getUrl.searchParams.append('bucket',bucket);
     getUrl.searchParams.append('key',key);
     request('get', getUrl.href).then((res: RequestResult) => {
       if (res.ok) {
@@ -197,7 +192,7 @@ export function activateGetPresignedUrl(
       }
 
       let path = item.path;
-      getPresignedUrl(bucket_name,path).then((url) => {
+      getPresignedUrl(path).then((url) => {
         let display = url;
         if (url.substring(0,5) == 'https'){
           display = '<a href='+url+' target="_blank" style="border-bottom: 1px solid #0000ff; color: #0000ff;">'+url+'</a>';

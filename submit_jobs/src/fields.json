@@ -1,17 +1,17 @@
 {
 	"register": ["algo_name","version","description","run_command","inputs"],
-	"deleteAlgorithm": ["algo_id","version"],
+	"deleteAlgorithm": ["algo_id","version","proxy-ticket"],
 	"publishAlgorithm": ["algo_id","version","proxy-ticket"],
 	"getCapabilities": [],
 	"listAlgorithms": [],
 	"describeProcess": ["algo_id","version","proxy-ticket"],
 	"executeInputs": ["algo_id","version"],
-	"execute" : ["identifier","algo_id","version","inputs"],
-	"getStatus": ["job_id"],
-	"getMetrics": ["job_id"],
-	"getResult": ["job_id"],
-	"dismiss": ["job_id"],
-	"delete": ["job_id"],
+	"execute" : ["identifier","algo_id","version","inputs","proxy-ticket"],
+	"getStatus": ["job_id","proxy-ticket"],
+	"getMetrics": ["job_id","proxy-ticket"],
+	"getResult": ["job_id","proxy-ticket"],
+	"dismiss": ["job_id","proxy-ticket"],
+	"delete": ["job_id","proxy-ticket"],
 	"defaultValues": ["code_path"],
-	"listJobs": ["username"]
+	"listJobs": ["username","proxy-ticket"]
 }

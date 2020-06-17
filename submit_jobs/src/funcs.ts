@@ -1,14 +1,44 @@
-import { PageConfig } from '@jupyterlab/coreutils'
+import { PageConfig, IStateDB } from '@jupyterlab/coreutils'
 import { INotification } from 'jupyterlab_toastify';
-import { request, RequestResult } from './request';
 import { popupResultText } from './widgets';
+import { getUserInfo } from "./getKeycloak";
+import { request, RequestResult } from './request';
 
-export function getAlgorithms() {
+export function getUsernameToken(state: IStateDB, profileId:string, callback) {
+  let uname:string = 'anonymous';
+  let ticket:string = '';
+  if (["https://che-k8s.maap.xyz","https://ade.maap-project.org"].includes(document.location.origin)) {
+    getUserInfo(function(profile: any) {
+      if (profile['cas:username'] === undefined) {
+        INotification.error("Get profile failed.");
+      } else {
+        uname = profile['cas:username'];
+        ticket = profile['cas:proxyGrantingTicket'];
+        INotification.success("Got profile.");
+      }
+    });
+  } else {
+    state.fetch(profileId).then((profile) => {
+      let profileObj = JSON.parse(JSON.stringify(profile));
+      INotification.success("Got profile.");
+      uname = profileObj.preferred_username;
+      ticket = profileObj.proxyGrantingTicket;
+      callback(uname,ticket);
+    }).catch((error) => {
+      INotification.error("Get profile failed.");
+    });
+  }
+}
+
+export function getAlgorithms(ticket?:string) {
   return new Promise<{[k:string]:Array<string>}>((resolve, reject) => {
     var algoSet: { [key: string]: Array<string>} = {}
 
     // get list of projects to give dropdown menu
     var settingsAPIUrl = new URL(PageConfig.getBaseUrl() + 'hysds/listAlgorithms');
+    if (! ticket == undefined) {
+      settingsAPIUrl.searchParams.append('proxy-ticket',ticket);
+    }
     console.log(settingsAPIUrl.href);
     request('get',settingsAPIUrl.href).then((res: RequestResult) => {
       if (res.ok) {
@@ -81,11 +111,12 @@ export function noInputRequest(endpt:string,title:string) {
   inputRequest(endpt,title,{});
 }
 
-export function algorithmExists(name:string, ver:string, env:string) {
+export function algorithmExists(name:string,ver:string,env:string,ticket:string) {
   var requestUrl = new URL(PageConfig.getBaseUrl() + 'hysds/' + 'describeProcess');
   // add params
   requestUrl.searchParams.append('algo_name', name+'_'+env);
   requestUrl.searchParams.append('version', ver);
+  requestUrl.searchParams.append('proxy-ticket', ticket);
   console.log(requestUrl.href);
 
   // send request

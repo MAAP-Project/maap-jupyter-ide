@@ -993,11 +993,7 @@ class DescribeProcessHandler(IPythonHandler):
 			except:
 				complete = False
 
-		if all(e == '' for e in list(params.values())):
-			complete = False
-
 		# print(params)
-		print(complete)
 		logging.debug('params are')
 		logging.debug(params)
 
@@ -1007,6 +1003,13 @@ class DescribeProcessHandler(IPythonHandler):
 		headers = {'Content-Type':'application/json'}
 		if 'proxy-ticket' in params.keys():
 			headers['proxy-ticket'] = params.get('proxy-ticket')
+
+		params.pop('proxy-ticket')
+		if all(e == '' for e in list(params.values())):
+			complete = False
+
+		logging.debug(list(params.values()))
+		logging.debug(complete)
 
 		# return all algorithms if malformed request
 		if complete:
@@ -1220,7 +1223,8 @@ class DefaultValuesHandler(IPythonHandler):
 		# ==================================
 		# Part 2: Extract Required Register Parameters
 		# ==================================
-		proj_path = '/projects/'+params['code_path']
+		# full path provided by ts from PageConfig
+		proj_path = os.path.expanduser(params['code_path'])
 		proj_path = '/'.join(proj_path.split('/')[:-1])
 		os.chdir(proj_path)
 

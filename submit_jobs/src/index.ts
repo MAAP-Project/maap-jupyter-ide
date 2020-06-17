@@ -1,5 +1,6 @@
 import { JupyterFrontEndPlugin } from "@jupyterlab/application";
 import { ICommandPalette } from '@jupyterlab/apputils';
+import { IStateDB } from '@jupyterlab/coreutils';
 import { IFileBrowserFactory } from "@jupyterlab/filebrowser";
 import { ILauncher } from '@jupyterlab/launcher';
 import { IMainMenu } from '@jupyterlab/mainmenu';
@@ -16,7 +17,7 @@ const extensionCapabilities: JupyterFrontEndPlugin<void> = {
 const extensionDescribe: JupyterFrontEndPlugin<void> = {
   id: 'dps-job-describe',
   autoStart: true,
-  requires: [ICommandPalette],
+  requires: [ICommandPalette, IStateDB],
   optional: [ILauncher],
   activate: activateDescribe
 };
@@ -24,14 +25,14 @@ const extensionDescribe: JupyterFrontEndPlugin<void> = {
 const extensionList: JupyterFrontEndPlugin<void> = {
   id: 'dps-job-list',
   autoStart: true,
-  requires: [ICommandPalette],
+  requires: [ICommandPalette, IStateDB],
   optional: [ILauncher],
-  activate: activateList
+  activate: activateList,
 };
 
 const extensionRegisterAlgorithm: JupyterFrontEndPlugin<void> = {
-  id: 'mas-register2',
-  requires: [ICommandPalette, IFileBrowserFactory],
+  id: 'mas-algo-register',
+  requires: [ICommandPalette, IStateDB, IFileBrowserFactory],
   autoStart: true,
   activate: activateRegisterAlgorithm
 };
@@ -39,7 +40,7 @@ const extensionRegisterAlgorithm: JupyterFrontEndPlugin<void> = {
 const extensionDeleteAlgorithm: JupyterFrontEndPlugin<void> = {
   id: 'mas-algo-delete',
   autoStart: true,
-  requires: [ICommandPalette],
+  requires: [ICommandPalette, IStateDB],
   optional: [ILauncher],
   activate: activateDeleteAlgorithm
 };
@@ -47,7 +48,7 @@ const extensionDeleteAlgorithm: JupyterFrontEndPlugin<void> = {
 const extensionPublishAlgorithm: JupyterFrontEndPlugin<void> = {
   id: 'mas-algo-publish',
   autoStart: true,
-  requires: [ICommandPalette],
+  requires: [ICommandPalette, IStateDB],
   optional: [ILauncher],
   activate: activatePublishAlgorithm
 };
@@ -55,7 +56,7 @@ const extensionPublishAlgorithm: JupyterFrontEndPlugin<void> = {
 const extensionExecute: JupyterFrontEndPlugin<void> = {
   id: 'dps-job-execute',
   autoStart: true,
-  requires: [ICommandPalette],
+  requires: [ICommandPalette, IStateDB],
   optional: [ILauncher],
   activate: activateExecute
 };
@@ -63,7 +64,7 @@ const extensionExecute: JupyterFrontEndPlugin<void> = {
 const extensionStatus: JupyterFrontEndPlugin<void> = {
   id: 'dps-job-status',
   autoStart: true,
-  requires: [ICommandPalette],
+  requires: [ICommandPalette, IStateDB],
   optional: [ILauncher],
   activate: activateGetStatus
 };
@@ -71,7 +72,7 @@ const extensionStatus: JupyterFrontEndPlugin<void> = {
 const extensionMetrics: JupyterFrontEndPlugin<void> = {
   id: 'dps-job-metrics',
   autoStart: true,
-  requires: [ICommandPalette],
+  requires: [ICommandPalette, IStateDB],
   optional: [ILauncher],
   activate: activateGetMetrics
 };
@@ -79,7 +80,7 @@ const extensionMetrics: JupyterFrontEndPlugin<void> = {
 const extensionResult: JupyterFrontEndPlugin<void> = {
   id: 'dps-job-result',
   autoStart: true,
-  requires: [ICommandPalette],
+  requires: [ICommandPalette, IStateDB],
   optional: [ILauncher],
   activate: activateGetResult
 };
@@ -87,7 +88,7 @@ const extensionResult: JupyterFrontEndPlugin<void> = {
 const extensionDismiss: JupyterFrontEndPlugin<void> = {
   id: 'dps-job-dismiss',
   autoStart: true,
-  requires: [ICommandPalette],
+  requires: [ICommandPalette, IStateDB],
   optional: [ILauncher],
   activate: activateDismiss
 };
@@ -95,7 +96,7 @@ const extensionDismiss: JupyterFrontEndPlugin<void> = {
 const extensionDelete: JupyterFrontEndPlugin<void> = {
   id: 'dps-job-delete',
   autoStart: true,
-  requires: [ICommandPalette],
+  requires: [ICommandPalette, IStateDB],
   optional: [ILauncher],
   activate: activateDelete
 };
