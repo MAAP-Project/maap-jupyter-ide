@@ -324,8 +324,14 @@ export class InputWidget extends Widget {
             let json_response:any = res.json();
             // console.log(json_response);
             me._responseText = me._responseText + '\n' + json_response['result'];
+            if (json_response['status_code'] != 200) {
+              INotification.error(me._responseText);
+            }
           } else {
-            me._responseText = "Error Sending Request.";
+            let json_response:any = res.json();
+            // console.log(json_response);
+            me._responseText = "Error Sending Request:\n" + json_response['result'];
+            INotification.error(me._responseText);
           }
           console.log("updating");
           me.updateSearchResults();
@@ -368,13 +374,13 @@ export class RegisterWidget extends InputWidget {
       subtxt.style.flexDirection = 'column';
       subtxt.innerHTML = subtext;
       this.node.appendChild(subtxt);
-      this.node.appendChild(document.createElement("BR"));
+      this.node.appendChild(document.createElement('BR'));
     }
 
     for (var field of this.fields) {
       // textarea for inputs field in register
-      if (field == "inputs") {
-        var fieldLabel = document.createElement("Label");
+      if (field == 'inputs') {
+        var fieldLabel = document.createElement('Label');
         fieldLabel.innerHTML = field;
         this.node.appendChild(fieldLabel);
 
@@ -399,7 +405,7 @@ export class RegisterWidget extends InputWidget {
         this.node.appendChild(fieldInputs);
       
       } else {
-        var fieldLabel = document.createElement("Label");
+        var fieldLabel = document.createElement('Label');
         fieldLabel.innerHTML = field;
         this.node.appendChild(fieldLabel);
 
@@ -415,7 +421,7 @@ export class RegisterWidget extends InputWidget {
     }
 
     // BREAK
-    var x = document.createElement("BR");
+    var x = document.createElement('BR');
     this.node.appendChild(x)
 
     // footer text - edit config at path
@@ -457,7 +463,7 @@ export class WidgetResult extends Widget {
   // update panel text on resolution of result popup
   getValue() {
     console.log('checking popup resolution fn');
-    if (this.okfn != undefined) {
+    if (typeof this.okfn === "function") {
       console.log(this.okfn);
       try{
         this.okfn();
@@ -476,18 +482,18 @@ export function popupResultText(result:string,title:string,fn?:any,isXML?:boolea
   body.style.display = 'flex';
   body.style.flexDirection = 'column';
 
-  var textarea = document.createElement("div");
+  var textarea = document.createElement('div');
   textarea.id = 'result-text';
   textarea.style.display = 'flex';
   textarea.style.flexDirection = 'column';
   var format = require('xml-formatter');
 
   // console.log(result);
-  if ( isXML == undefined || (! isXML) ){ 
-    textarea.innerHTML = "<pre>" + result + "</pre>";
+  if ( isXML === undefined || (! isXML) ){ 
+    textarea.innerHTML = '<pre>' + result + '</pre>';
     // console.log(textarea);
   } else {
-    var xml = "<root><content><p>"+result+"</p></content></root>";
+    var xml = '<root><content><p>'+result+'</p></content></root>';
     var options = {indentation: '  ', stripComments: true, collapseContent: false};
     var formattedXML = format(xml,options); 
     textarea.innerHTML = formattedXML;
@@ -504,16 +510,16 @@ export function popupText(result:string,title:string,fn?:any) {
   body.style.display = 'flex';
   body.style.flexDirection = 'column';
 
-  var textarea = document.createElement("div");
+  var textarea = document.createElement('div');
   textarea.id = 'result-text';
   textarea.style.display = 'flex';
   textarea.style.flexDirection = 'column';
 
   // console.log(result);
-  textarea.innerHTML = "<pre>" + result + "</pre>";
+  textarea.innerHTML = '<pre>' + result + '</pre>';
   body.appendChild(textarea);
   // console.log(body);
-  if (fn == undefined) {
+  if (fn === undefined) {
     popupTitle(new Widget({node:body}),title);
   } else {
     popupTitle(new WidgetResult(body,fn),title);
