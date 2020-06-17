@@ -4,7 +4,7 @@ import { IStateDB } from '@jupyterlab/coreutils';
 import { IFileBrowserFactory } from "@jupyterlab/filebrowser";
 import { ILauncher } from '@jupyterlab/launcher';
 import { IMainMenu } from '@jupyterlab/mainmenu';
-import { activateGetCapabilities, activateDescribe, activateList, activateRegisterAlgorithm, activateDeleteAlgorithm, activatePublishAlgorithm, activateExecute, activateGetStatus, activateGetMetrics, activateGetResult, activateDismiss, activateDelete, activateMenuOptions } from './activate'
+import { activateGetCapabilities, activateDescribe, activateList, activateRegisterAlgorithm, activateDeleteAlgorithm, activatePublishAlgorithm, activateExecute, activateGetJobList, activateGetStatus, activateGetMetrics, activateGetResult, activateDismiss, activateDelete, activateMenuOptions } from './activate'
 
 const extensionCapabilities: JupyterFrontEndPlugin<void> = {
   id: 'dps-capabilities',
@@ -23,7 +23,7 @@ const extensionDescribe: JupyterFrontEndPlugin<void> = {
 };
 
 const extensionList: JupyterFrontEndPlugin<void> = {
-  id: 'dps-job-list',
+  id: 'mas-algo-list',
   autoStart: true,
   requires: [ICommandPalette, IStateDB],
   optional: [ILauncher],
@@ -59,6 +59,14 @@ const extensionExecute: JupyterFrontEndPlugin<void> = {
   requires: [ICommandPalette, IStateDB],
   optional: [ILauncher],
   activate: activateExecute
+};
+
+const extensionJobList: JupyterFrontEndPlugin<void> = {
+  id: 'dps-job-list',
+  autoStart: true,
+  requires: [ICommandPalette, IStateDB],
+  optional: [ILauncher],
+  activate: activateGetJobList
 };
 
 const extensionStatus: JupyterFrontEndPlugin<void> = {
@@ -109,4 +117,9 @@ const extensionDPSMASMenu: JupyterFrontEndPlugin<void> = {
 };
 
 
-export default [extensionCapabilities,extensionDescribe,extensionList,extensionRegisterAlgorithm,extensionDeleteAlgorithm,extensionPublishAlgorithm,extensionExecute,extensionStatus,extensionMetrics,extensionResult,extensionDismiss,extensionDelete,extensionDPSMASMenu];
+export default [
+  extensionCapabilities,
+  extensionDescribe, extensionList, extensionRegisterAlgorithm, extensionDeleteAlgorithm, extensionPublishAlgorithm,
+  extensionExecute, extensionJobList, extensionStatus, extensionMetrics, extensionResult, extensionDismiss, extensionDelete,
+  extensionDPSMASMenu
+];

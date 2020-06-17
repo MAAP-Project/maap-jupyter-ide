@@ -8,7 +8,7 @@ import { request, RequestResult } from './request';
 // -----------------------
 // HySDS endpoints that require user inputs
 // -----------------------
-const nonXML: string[] = ['deleteAlgorithm','listAlgorithms','registerAuto','getResult','executeInputs','getStatus','getMetrics','execute','describeProcess','getCapabilities','register', 'delete','dismiss'];
+const nonXML: string[] = ['register','execute','getStatus','getMetrics','getResult','dismiss','delete'];
 const notImplemented: string[] = [];
 
 export class InputWidget extends Widget {
@@ -107,7 +107,7 @@ export class InputWidget extends Widget {
         } else {
           fieldName = field[0];
         }
-        if (fieldName != 'inputs' && fieldName != 'proxy-ticket') {
+        if (fieldName != 'inputs' && fieldName != 'proxy-ticket' && fieldName != 'username') {
           var fieldLabel = document.createElement("Label");
           fieldLabel.innerHTML = fieldName;
           this.node.appendChild(fieldLabel);
@@ -212,7 +212,7 @@ export class InputWidget extends Widget {
     return new Promise<Array<URL>>(async (resolve, reject) => {
       // create API call to server extension
       var urllst: Array<URL> = []
-      var getUrl = new URL(PageConfig.getBaseUrl() + 'hysds/'+this.req); // REMINDER: hack this url until fixed
+      var getUrl = new URL(PageConfig.getBaseUrl() + 'hysds/'+this.req);
 
       // filling out old fields, currently for algo info (id, version) in execute & describe & delete
       if (this._getInputs) {
@@ -223,6 +223,9 @@ export class InputWidget extends Widget {
           getUrl.searchParams.append(key.toLowerCase(), fieldText);
         }
       }
+
+      // always add username
+      getUrl.searchParams.append('username',this.username);
 
       // for calling execute after getting user inputs
       if (this.req == 'execute') {
@@ -269,15 +272,11 @@ export class InputWidget extends Widget {
 
           // just 1 job
           } else {
-            // add username
-            getUrl.searchParams.append('username',this.username);
             console.log(getUrl.href);
             urllst.push(getUrl);
             resolve(urllst);
           }
         } else {
-          // add username
-          getUrl.searchParams.append('username',this.username);
           console.log(getUrl.href);
           urllst.push(getUrl);
           resolve(urllst);
@@ -296,7 +295,7 @@ export class InputWidget extends Widget {
             getUrl.searchParams.append(field.toLowerCase(), fieldText);
           } else if (field == 'proxy-ticket') {
             getUrl.searchParams.append('proxy-ticket',this._ticket);
-          } else {
+          } else if (field != 'username') {
             var fieldElement:HTMLElement = document.getElementById(field.toLowerCase()+'-input');
             var fieldText = (<HTMLInputElement>fieldElement).value;
             getUrl.searchParams.append(field.toLowerCase(), fieldText);
