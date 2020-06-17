@@ -15,6 +15,7 @@ const registerFields = data.register;
 const describeProcessFields = data.describeProcess;
 const publishAlgorithmFields = data.publishAlgorithm;
 const executeInputsFields = data.executeInputs;
+// const listJobsFields = data.listJobs;
 const getStatusFields = data.getStatus;
 const getMetricsFields = data.getMetrics;
 const getResultFields = data.getResult;
@@ -28,6 +29,7 @@ const listAlgorithm_command = 'mas: algorithm-list';
 const publishAlgorithm_command = 'mas: algorithm-publish';
 const describeAlgorithm_command = 'mas: algorithm-describe';
 const executeJob_command = 'dps: job-execute';
+const listJob_command = 'dps: job-list';
 const statusJob_command = 'dps: job-status';
 const metricsJob_command = 'dps: job-metrics';
 const resultJob_command = 'dps: job-result';
@@ -74,6 +76,11 @@ export function activateRegisterAlgorithm(
         // send request to defaultvalueshandler
         let getValuesFn = function(resp:Object) {
           console.log('getValuesFn');
+          if (resp['status_code'] != 200) {
+            popupText(resp['reason'],resp['status_code']+" Error");
+            return;
+          }
+
           let configPath = resp['config_path'] as string;
           let defaultValues = resp['default_values'] as Object;
           let prevConfig = resp['previous_config'] as boolean;
@@ -156,7 +163,7 @@ export function activateList(app: JupyterFrontEnd,
     isEnabled: () => true,
     execute: args => {
       getUsernameToken(state,profileId,function(uname:string,ticket:string) {
-        inputRequest('listAlgorithms', 'List Algorithms',{'username':uname,'proxy-ticket':ticket});
+        inputRequest('listAlgorithms','List Algorithms',{'username':uname,'proxy-ticket':ticket});
       });
     }
   });
@@ -216,6 +223,23 @@ export function activateExecute(app: JupyterFrontEnd,
   });
   palette.addItem({command: executeJob_command, category: 'DPS/MAS'});
   // console.log('HySDS Execute Job is activated!');
+}
+export function activateGetJobList(app: JupyterFrontEnd, 
+                        palette: ICommandPalette, 
+                        state: IStateDB,
+                        restorer: ILauncher | null): void{  
+  app.commands.addCommand(listJob_command, {
+    label: 'Get DPS Job List',
+    isEnabled: () => true,
+    execute: args => {
+      getUsernameToken(state,profileId,function(uname:string,ticket:string) {
+        inputRequest('listJobs','List Submitted Jobs',{'username':uname,'proxy-ticket':ticket});
+        // popup(new InputWidget('listJobs',listJobsFields,uname,ticket,{}));
+      });
+    }
+  });
+  palette.addItem({command: statusJob_command, category: 'DPS/MAS'});
+  // console.log('HySDS Job List is activated!');
 }
 export function activateGetStatus(app: JupyterFrontEnd, 
                         palette: ICommandPalette, 
@@ -326,6 +350,7 @@ export function activateMenuOptions(app: JupyterFrontEnd, mainMenu: IMainMenu) {
     publishAlgorithm_command,
     describeAlgorithm_command,
     executeJob_command,
+    listJob_command,
     statusJob_command,
     metricsJob_command,
     resultJob_command,
