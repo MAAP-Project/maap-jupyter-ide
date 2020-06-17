@@ -57,59 +57,8 @@ class ListProjectsHandler(IPythonHandler):
         except:
             self.finish({"status_code": r.status_code, "result": r.reason})
 
-class ListFilesHandler(IPythonHandler):
-    def get(self):
-        # 'https://ade.maap-project.org/api/workspace/workspacetn41o4yl4a7kxclz'
-        workspace_id = os.environ['CHE_WORKSPACE_ID']
-        che_machine_token = os.environ['CHE_MACHINE_TOKEN']
-        url = '{base_url}/api/workspace/{workspace_id}'.format(base_url=CHE_BASE_URL,workspace_id=workspace_id)
-        # --------------------------------------------------
-        # TODO: FIGURE OUT AUTH KEY & verify
-        # --------------------------------------------------
-        headers = {
-            'Accept':'application/json',
-            'Authorization':'Bearer {token}'.format(token=che_machine_token)
-        }
-        r = requests.get(
-            url, 
-            headers=headers, 
-            verify=False
-        )
-
-        try:
-            resp = json.loads(r.text)               # JSON response to dict
-            projects = resp['config']['projects']   # gets list of projects, each is dict with project properties
-            files = []
-            for p in projects:
-                print(p['path'])
-                path = '/projects/'+p['path']
-                for fname in Path(path).glob('**/*.*py*'):
-                    fname = str(fname)
-                    l = len('/projects/')
-                    fname = fname[l:]
-                    # filter out ipynb checkpoints and py duplicates of ipynb
-                    if not fname.replace('.py','.ipynb') in files and not '/.ipynb_checkpoints' in fname:
-                        files.append(fname)
-
-            self.finish({"status_code": r.status_code, "project_files":files, "response": r.text})
-        except:
-            self.finish({"status_code": r.status_code, "result": r.reason, "response": r.text})
-
 class GetProjectHandler(IPythonHandler):
     def get(self, project_name=None, location=None, src_type=None):
-        # ws_agent_port = 3100
-        # project_name = "jupyterlab-logout"
-        # import_type = 'git'                                         # can be 'git' | 'svn' | 'zip'
-        # location = 'https://github.com/zgqallen/jupyterlab-logout'  # location where project can be downloaded from
-                
-        # che_machine_token = os.environ['CHE_MACHINE_TOKEN'] 
-        # headers = {
-        #     'Accept':'application/json',
-        #     'Authorization':'Bearer {token}'.format(token=che_machine_token)
-        # }
-        # url = "http://localhost:{ws_agent_port}/wsagent/ext/project/import/{project_name}".format(ws_agent_port=str(ws_agent_port), project_name=project_name)
-        # r = requests.post(url,headers=headers,data = {"location":"{location}".format(location=location), "type":"{import_type}".format(import_type=import_type)}, verify=False)
-
         try:
             # if called from the url
             if project_name == None and location == None and src_type == None:
@@ -188,17 +137,3 @@ class GetAllProjectsHandler(IPythonHandler):
 
         except:
             self.finish({"status": "project import failed"})
-
-# class PutProjectHandler(IPythonHandler):
-#     def put(self,project_name, location, src_type):
-#         # add the project in jupyter
-#         dl_loc = '/projects/'+project_name
-#         if src_type == 'git':
-#             Repo.clone_from(location,dl_loc)
-#         elif src_type == 'zip':
-#             with urllib.urlopen(location) as response, open(dl_loc+'.zip', 'w+') as out_file:
-#                 shutil.copyfileobj(response, out_file)
-        
-#         # do something with workspace tracking
-
-# class DeleteProjectHandler(IPythonHandler):

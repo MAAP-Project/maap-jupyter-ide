@@ -7,10 +7,5 @@
 	   version="2.0.0" response="document" mode="sync">
 	<ows:Identifier>job-{algo_id}:{version}</ows:Identifier>
 {other_inputs}
-	<wps:Input id="timestamp">
-		<wps:Data>
-			<wps:LiteralValue>{timestamp}</wps:LiteralValue>
-		</wps:Data>
-	</wps:Input>
 	<wps:Output id="result" transmission="value"/>
 </wps:Execute>

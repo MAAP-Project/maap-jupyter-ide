@@ -1,7 +1,8 @@
 import { Dialog, showDialog } from '@jupyterlab/apputils';
-import { PageConfig } from '@jupyterlab/coreutils'
+import { PageConfig, IStateDB } from '@jupyterlab/coreutils'
 import { Widget } from '@phosphor/widgets';
 import { INotification } from "jupyterlab_toastify";
+import { getUserInfo } from "./getKeycloak";
 import { request, RequestResult } from './request';
 import '../style/index.css';
 
@@ -9,6 +10,32 @@ export const jobCache_update_command = 'jobs: refresh';
 export const jobWidget_command = 'jobs: main-widget';
 export var JOBS: {[k:string]:string} = {};
 export var DISPLAYS: {[k:string]:string} = {};
+
+export function getUsernameToken(state: IStateDB, profileId:string, callback) {
+    let uname:string = 'anonymous';
+    let ticket:string = '';
+    if (["https://che-k8s.maap.xyz","https://ade.maap-project.org"].includes(document.location.origin)) {
+        getUserInfo(function(profile: any) {
+            if (profile['cas:username'] === undefined) {
+                INotification.error("Get profile failed.");
+            } else {
+                uname = profile['cas:username'];
+                ticket = profile['cas:proxyGrantingTicket'];
+                INotification.success("Got profile.");
+            }
+        });
+    } else {
+        state.fetch(profileId).then((profile) => {
+            let profileObj = JSON.parse(JSON.stringify(profile));
+            INotification.success("Got profile.");
+            uname = profileObj.preferred_username;
+            ticket = profileObj.proxyGrantingTicket;
+            callback(uname,ticket);
+        }).catch((error) => {
+            INotification.error("Get profile failed.");
+        });
+    }
+}
 
 // create job table with job ids, status, and algorithms
 export function getJobs(username: string, job_id: string, setJobId:any, callback:any,obj?:any) {
@@ -24,17 +51,22 @@ export function getJobs(username: string, job_id: string, setJobId:any, callback
       let json_response:any = res.json();
       // console.log(json_response['status_code']);
       INotification.success("Get user jobs success.");
+      console.log(json_response);
       if (json_response['status_code'] == 200){
-        let table = json_response['table'];
-        JOBS = json_response['jobs'];
+        let resp = JSON.parse(json_response['result']);
+        let table = resp['table'];
+        JOBS = resp['jobs'];
         // later get user to pick the job
-        // this._displays = json_response['displays'];
-        DISPLAYS = json_response['displays'];
+        // this._displays = resp['displays'];
+        DISPLAYS = resp['displays'];
+
+        console.log(JOBS);
+        console.log(DISPLAYS);
 
         // catch case if user has no jobs
         let num_jobs = Object.keys(JOBS).length;
         if (num_jobs > 0 && job_id == '') {
-          job_id = json_response['result'][0]['job_id'];
+          job_id = JOBS[0];
           setJobId(job_id);
         }
         callback(obj, table);

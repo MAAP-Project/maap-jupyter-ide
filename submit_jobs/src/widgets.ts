@@ -1,7 +1,7 @@
 import { Widget } from '@phosphor/widgets';
 import { PageConfig } from '@jupyterlab/coreutils'
-import { INotification } from 'jupyterlab_toastify';
-import { getUserInfo } from "./getKeycloak";
+// import { INotification } from 'jupyterlab_toastify';
+// import { getUserInfo } from "./getKeycloak";
 import { popupTitle, popupResult } from './dialogs';
 import { request, RequestResult } from './request';
 
@@ -9,7 +9,6 @@ import { request, RequestResult } from './request';
 // HySDS endpoints that require user inputs
 // -----------------------
 const nonXML: string[] = ['deleteAlgorithm','listAlgorithms','registerAuto','getResult','executeInputs','getStatus','getMetrics','execute','describeProcess','getCapabilities','register', 'delete','dismiss'];
-// const autoUpdate: string[] = ['execute','delete','dismiss'];
 const notImplemented: string[] = [];
 
 export class InputWidget extends Widget {
@@ -20,34 +19,23 @@ export class InputWidget extends Widget {
   public predefinedFields: Object;        // store predefined fields (default values)
   public readonly fields: string[];       // user inputs to fill out
   public username: string;                // for execute & listing jobs in case of timeout
-  _responseText: string;
+  _ticket: string;                        // proxy ticket for authenticating user-specific actions
+  _responseText: string;                  // request response to display in popup or widget
   _getInputs: boolean;                    // for getting predefinedFields
   _ins_dict: {[k:string]:string};         // for execute
 
-  constructor(req:string, methodFields:string[],uname:string, defaultValues:Object,skipInputs?:boolean) {
+  constructor(req:string,methodFields:string[],uname:string,ticket:string,defaultValues:Object,skipInputs?:boolean) {
     let body = document.createElement('div');
     body.style.display = 'flex';
     body.style.flexDirection = 'column';
     super({node: body});
 
-    // set username on start
-    // callback should finish before users manage to do anything
-    // now profile timing out shouldn't be a problem
-    let me = this;
-    getUserInfo(function(profile: any) {
-      if (profile['cas:username'] === undefined) {
-        INotification.error("Get username failed.");
-        me.username = 'anonymous';
-      } else {
-        me.username = profile['cas:username'];
-        INotification.success("Got username.");
-      }
-    });
-
     // Default text
     this.req = req;
     this.predefinedFields = defaultValues;
     this.fields = methodFields;
+    this.username = uname;
+    this._ticket = ticket;
     this._responseText = "";
     this._getInputs = false;
     this._ins_dict = {};
@@ -222,16 +210,15 @@ export class InputWidget extends Widget {
   _buildRequestUrl() {
     var me:InputWidget = this;
     return new Promise<Array<URL>>(async (resolve, reject) => {
-      // var skip = false;
       // create API call to server extension
       var urllst: Array<URL> = []
       var getUrl = new URL(PageConfig.getBaseUrl() + 'hysds/'+this.req); // REMINDER: hack this url until fixed
 
       // filling out old fields, currently for algo info (id, version) in execute & describe & delete
       if (this._getInputs) {
-        console.log('get predefined fields');
+        // console.log('get predefined fields');
         for (let key in this.predefinedFields) {
-          console.log(key);
+          // console.log(key);
           var fieldText = (this.predefinedFields[key] as string).toLowerCase();
           getUrl.searchParams.append(key.toLowerCase(), fieldText);
         }
@@ -284,7 +271,6 @@ export class InputWidget extends Widget {
           } else {
             // add username
             getUrl.searchParams.append('username',this.username);
-            console.log('added username');
             console.log(getUrl.href);
             urllst.push(getUrl);
             resolve(urllst);
@@ -292,7 +278,6 @@ export class InputWidget extends Widget {
         } else {
           // add username
           getUrl.searchParams.append('username',this.username);
-          console.log('added username');
           console.log(getUrl.href);
           urllst.push(getUrl);
           resolve(urllst);
@@ -305,13 +290,15 @@ export class InputWidget extends Widget {
       // for all other requests
       } else {
         for (var field of this.fields) {
-          if (field == "inputs") {
-            var fieldText = (<HTMLTextAreaElement>document.getElementById(field.toLowerCase()+'-input')).value;
-            // if (fieldText != "") { getUrl.searchParams.append(field.toLowerCase(), fieldText); }
+          if (field == 'inputs') {
+            var fieldElement:HTMLElement = document.getElementById(field.toLowerCase()+'-input');
+            var fieldText = (<HTMLTextAreaElement>fieldElement).value;
             getUrl.searchParams.append(field.toLowerCase(), fieldText);
+          } else if (field == 'proxy-ticket') {
+            getUrl.searchParams.append('proxy-ticket',this._ticket);
           } else {
-            var fieldText = (<HTMLInputElement>document.getElementById(field.toLowerCase()+'-input')).value;
-            // if (fieldText != "") { getUrl.searchParams.append(field.toLowerCase(), fieldText); }
+            var fieldElement:HTMLElement = document.getElementById(field.toLowerCase()+'-input');
+            var fieldText = (<HTMLInputElement>fieldElement).value;
             getUrl.searchParams.append(field.toLowerCase(), fieldText);
           }
         }
@@ -368,10 +355,9 @@ export class InputWidget extends Widget {
 
 export class RegisterWidget extends InputWidget {
   configPath: string;
-  // nbPath: string;
 
-  constructor(methodFields:string[],uname:string,defaultValues:Object,subtext?:string,configPath?:string) {
-    super('register', methodFields,uname,defaultValues,true);
+  constructor(methodFields:string[],uname:string,ticket:string,defaultValues:Object,subtext?:string,configPath?:string) {
+    super('register', methodFields,uname,ticket,defaultValues,true);
     this.configPath = configPath;
 
 
@@ -453,32 +439,7 @@ export class RegisterWidget extends InputWidget {
       // create API call to server extension
       var urllst: Array<URL> = []
       var getUrl = new URL(PageConfig.getBaseUrl() + 'hysds/'+this.req);
-
-      // console.log(this.predefinedFields);
-      // // default values not exposed to user set here,  along with algo name and version
-      // for (let key in this.predefinedFields) {
-      //   console.log(key);
-      //   console.log(this.predefinedFields[key]);
-      //   if (! (key in Object.keys(this.fields))) {
-      //     var fieldText = JSON.stringify(this.predefinedFields[key]);
-      //     getUrl.searchParams.append(key.toLowerCase(), fieldText);
-      //   }
-      // }
-      // console.log('old fields done');
-      // console.log(getUrl.href);
-
-      // // add user-defined fields
-      // for (var field of this.fields) {
-      //   console.log(field);
-      //   let fieldText = (<HTMLInputElement>document.getElementById(field.toLowerCase()+'-input')).value;
-      //   // if (fieldText != "") { getUrl.searchParams.append(field.toLowerCase(), fieldText); }
-      //   console.log(field+' input is '+fieldText);
-      //   getUrl.searchParams.append(field.toLowerCase(), fieldText);
-      //   console.log(getUrl.href);
-      // }
       getUrl.searchParams.append('config_path',this.configPath);
-      // getUrl.searchParams.append('nb_path',this.nbPath);
-
       console.log(getUrl.href);
       console.log('done setting url');
       urllst.push(getUrl);
