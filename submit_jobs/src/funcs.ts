@@ -14,6 +14,7 @@ export function getUsernameToken(state: IStateDB, profileId:string, callback) {
       } else {
         uname = profile['cas:username'];
         ticket = profile['cas:proxyGrantingTicket'];
+        callback(uname,ticket);
         INotification.success("Got profile.");
       }
     });
