@@ -29,6 +29,12 @@ jobs:
     - name: Trigger GitLab CI
       env:
         GITLAB_CI_TRIGGER_URL: ${{ secrets.GITLAB_CI_TRIGGER_URL }}
+        GITLAB_CI_TRIGGER_TOKEN: ${{ secrets.GITLAB_CI_TRIGGER_TOKEN }}
       run: |
         echo Running on ref ${GITHUB_REF##*/}
         echo Trigger CI pipeline
+        curl -X POST \
+           -F token=${GITLAB_CI_TRIGGER_TOKEN} \
+           -F "ref=master" \
+           -F "variables[BRANCH]=${GITHUB_REF##*/}" \
+           ${GITLAB_CI_TRIGGER_URL}
