@@ -1,5 +1,6 @@
 import { JupyterFrontEndPlugin } from '@jupyterlab/application';
 import { ICommandPalette } from '@jupyterlab/apputils';
+import { IStateDB } from '@jupyterlab/coreutils';
 import { IMainMenu } from '@jupyterlab/mainmenu';
 import { activateJobPanel, activateJobWidget, activateMenuOptions } from './activate';
 
@@ -9,14 +10,14 @@ import { activateJobPanel, activateJobWidget, activateMenuOptions } from './acti
 const cacheExtension: JupyterFrontEndPlugin<void> = {
   id: 'job-cache-panel',
   autoStart:true,
-  requires: [ICommandPalette,IMainMenu],
+  requires: [ICommandPalette,IStateDB,IMainMenu],
   activate: activateJobPanel
 };
 
 const bigJobsPanel: JupyterFrontEndPlugin<void> = {
   id: 'jobs-widget',
   autoStart: true,
-  requires: [ICommandPalette, IMainMenu],
+  requires: [ICommandPalette, IStateDB],
   activate: activateJobWidget
 };
 

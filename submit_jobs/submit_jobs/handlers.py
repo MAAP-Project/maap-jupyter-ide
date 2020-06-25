@@ -993,11 +993,7 @@ class DescribeProcessHandler(IPythonHandler):
 			except:
 				complete = False
 
-		if all(e == '' for e in list(params.values())):
-			complete = False
-
 		# print(params)
-		print(complete)
 		logging.debug('params are')
 		logging.debug(params)
 
@@ -1007,6 +1003,13 @@ class DescribeProcessHandler(IPythonHandler):
 		headers = {'Content-Type':'application/json'}
 		if 'proxy-ticket' in params.keys():
 			headers['proxy-ticket'] = params.get('proxy-ticket')
+
+		params.pop('proxy-ticket')
+		if all(e == '' for e in list(params.values())):
+			complete = False
+
+		logging.debug(list(params.values()))
+		logging.debug(complete)
 
 		# return all algorithms if malformed request
 		if complete:
@@ -1220,22 +1223,20 @@ class DefaultValuesHandler(IPythonHandler):
 		# ==================================
 		# Part 2: Extract Required Register Parameters
 		# ==================================
-		proj_path = '/projects/'+params['code_path']
+		# full path provided by ts from PageConfig
+		proj_path = os.path.expanduser(params['code_path'])
 		proj_path = '/'.join(proj_path.split('/')[:-1])
 		os.chdir(proj_path)
 
-		# try to get git remote url
+		# get git remote url (req)
+		repo_url = ''
 		try:
 			repo_url = subprocess.check_output("git remote get-url origin", shell=True).decode('utf-8').strip()
-			logger.debug(repo_url)
-			print('reop url is {}'.format(repo_url))
-
-		# is there a git repo?
+			logger.debug('repo url is {}'.format(repo_url))
+		#return error messsage if unable to get required values for registering
 		except:
-			# subprocess could also error out (nonzero exit code)
-			self.finish({"status_code": 412, "result": "Error: \nThe code you want to register is not saved in a git repository."})
+			self.finish({"status_code": 412, "reason":"Path provided was not a git repository. \n{}".format(proj_path)})
 			return
-
 
 		vals = {}
 		code_path = params['code_path']
@@ -1250,7 +1251,14 @@ class DefaultValuesHandler(IPythonHandler):
 		vals['repository_url'] = repo_url
 		# vals['environment'] = os.environ['ENVIRONMENT']
 		vals['environment'] = "ubuntu"
-		vals['docker_url'] = os.environ['DOCKERIMAGE_PATH']
+
+		vals['docker_url'] = ''
+		try:
+			vals['docker_url'] = os.environ['DOCKERIMAGE_PATH']
+		except:
+			self.finish({"status_code":400, "reason":"Environment base image could not be found. \nAre you registering from within the Che environment?"})
+			return
+
 		vals['run_cmd'] = params['code_path']
 
 		config_path = proj_path+"/algorithm_config.yaml"
@@ -1331,7 +1339,8 @@ class ListJobsHandler(IPythonHandler):
 				try:
 					# parse out JobID from response
 					resp = json.loads(r.text)
-					jobs = [parse_job(job) for job in resp['jobs']] 					# parse inputs from string to dict
+					jobs = resp['jobs']											# save joblist
+					jobs = [parse_job(job) for job in jobs] 					# parse inputs from string to dict
 					# logger.debug('parsing jobs list')
 					# logger.debug(jobs)
 					jobs = sorted(jobs, key=lambda j: j['timestamp'],reverse=True) 	# sort list of jobs by timestamp (most recent)
@@ -1368,7 +1377,7 @@ class ListJobsHandler(IPythonHandler):
 					# print("success!")
 					self.finish({"status_code": r.status_code, "result": jobs, "table":result,"jobs": jobs_dict, "displays": details})
 				except:
-					self.finish({"status_code": r.status_code, "result": r.text, "table":result,"jobs": jobs, "displays": details})
+					self.finish({"status_code": r.status_code, "result": jobs, "table":result,"jobs": jobs, "displays": details, "resp":r.text})
 			# if no job id provided
 			elif r.status_code in [404]:
 				# print('404?')
