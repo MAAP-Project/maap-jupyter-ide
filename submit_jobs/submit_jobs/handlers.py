@@ -123,7 +123,7 @@ class RegisterAlgorithmHandler(IPythonHandler):
 
 		# only description and inputs are allowed to be empty
 		for f in ['algo_name','version','environment','run_command','repository_url','docker_url']:
-			if config[f] == '':
+			if config[f] == '' or config[f] == None:
 				self.finish({"status_code": 412, "result": "Error: Register field {} cannot be empty".format(f)})
 				return
 
@@ -151,19 +151,21 @@ class RegisterAlgorithmHandler(IPythonHandler):
 			os.chdir(proj_path)
 
 			# get git status
-			git_status_out = subprocess.check_output("git status --branch --porcelain", shell=True).decode("utf-8")
-			logger.debug(git_status_out)
+			try:
+				git_status_out = subprocess.check_output("git status --branch --porcelain", shell=True).decode("utf-8")
+				logger.debug(git_status_out)
 
 			# is there a git repo?
-			if 'not a git repository' in git_status_out:
-				self.finish({"status_code": 412, "result": "Error: \n{}".format(git_status_out)})
+			except:
+				# subprocess could also error out (nonzero exit code)
+				self.finish({"status_code": 412, "result": "Error: \nThe code you want to register is not saved in a git repository."})
 				return
 
 			git_status = git_status_out.splitlines()[1:]
 			git_status = [e.strip() for e in git_status]
 
-			# filter for unsaved python files
-			unsaved = list(filter(lambda e: ( (e.split('.')[-1] in ['ipynb','py','sh','jl']) and (e[0] in ['M','?']) ), git_status))
+			# filter for unsaved python, julia, matlab shell files
+			unsaved = list(filter(lambda e: ( (e.split('.')[-1] in ['ipynb','py','sh','jl','r','m','mat']) and (e[0] in ['M','?']) ), git_status))
 			if len(unsaved) != 0:
 				self.finish({"status_code": 412, "result": "Error: Notebook(s) and/or script(s) have not been committed\n{}".format('\n'.join(unsaved))})
 				return
@@ -1284,7 +1286,7 @@ class DefaultValuesHandler(IPythonHandler):
 		logger.debug(settings)
 
 		# outputs: algo_name, version, environment, repository_url, dockerfile_path
-		self.finish({"status_code": 200, "default_values":settings, "config_path":config_path, "previous_config":prev_config})
+		self.finish({"status_code": 200, "result": "Got default values.", "default_values":settings, "config_path":config_path, "previous_config":prev_config})
 
 class ListJobsHandler(IPythonHandler):
 	# inputs: username
