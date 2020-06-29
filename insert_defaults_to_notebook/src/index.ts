@@ -1,9 +1,9 @@
 import { JupyterFrontEnd, JupyterFrontEndPlugin } from '@jupyterlab/application';
-import { IDisposable, DisposableDelegate } from '@phosphor/disposable';
+import { IDisposable, DisposableDelegate } from '@lumino/disposable';
 import { ToolbarButton } from '@jupyterlab/apputils';
 import { DocumentRegistry } from '@jupyterlab/docregistry';
 import { NotebookActions, NotebookPanel, INotebookModel } from '@jupyterlab/notebook';
-import { ElementExt } from '@phosphor/domutils';
+import { ElementExt } from '@lumino/domutils';
 import { INotification } from "jupyterlab_toastify";
 import '../style/index.css';
 
@@ -46,7 +46,7 @@ class ButtonExtension implements DocumentRegistry.IWidgetExtension<NotebookPanel
 
     let button = new ToolbarButton({
       className: 'myButton',
-      iconClassName: 'jp-MaapIcon foo jp-Icon jp-Icon-16 jp-ToolbarButtonComponent-icon',
+      icon: 'jp-MaapIcon foo jp-Icon jp-Icon-16 jp-ToolbarButtonComponent-icon',
       onClick: callback,
       tooltip: 'Import MAAP Libraries'
     });
