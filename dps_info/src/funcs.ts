@@ -51,17 +51,16 @@ export function getJobs(username: string, job_id: string, setJobId:any, callback
       let json_response:any = res.json();
       // console.log(json_response['status_code']);
       INotification.success("Get user jobs success.");
-      console.log(json_response);
+      // console.log(json_response);
       if (json_response['status_code'] == 200){
-        let resp = JSON.parse(json_response['result']);
-        let table = resp['table'];
-        JOBS = resp['jobs'];
+        // let resp = json_response['result'];
+        let table = json_response['table'];
+        JOBS = json_response['jobs'];
         // later get user to pick the job
-        // this._displays = resp['displays'];
-        DISPLAYS = resp['displays'];
+        DISPLAYS = json_response['displays'];
 
-        console.log(JOBS);
-        console.log(DISPLAYS);
+        // console.log(JOBS);
+        // console.log(DISPLAYS);
 
         // catch case if user has no jobs
         let num_jobs = Object.keys(JOBS).length;

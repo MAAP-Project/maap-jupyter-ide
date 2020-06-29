@@ -36,8 +36,8 @@ export class JobWidget extends Widget {
     this.addClass(CONTENT_CLASS);
     this.addClass(WIDGET_CLASS);
     this._username = uname;
-    this._algorithm = 'dps_plot';   // FOR TESTING
-    this._version = 'master';       // FOR TESTING
+    this._algorithm = '';   // FOR TESTING
+    this._version = '';       // FOR TESTING
     this._job_id = '';
 
     this._widget_table_name = 'widget-job-cache-display';
@@ -223,9 +223,15 @@ export class JobWidget extends Widget {
         let algo_set = json_response['algo_set'];
         for (var algo in algo_set) {
           for (var version of algo_set[algo]) {
+            // if algo/version not set, set it to 1st algo/version
+            if (this._algorithm === '' || this._version === '') {
+              this._algorithm = algo; 
+              this._version = version
+            }
             insertAlgoRow(algo,version);
           }
         }
+        this._populateOverviewCol();
       }
     });
 
@@ -431,19 +437,22 @@ export class JobWidget extends Widget {
   }
 
   _populateOverviewCol() {
-    let pre = <HTMLPreElement> document.getElementById('algo-describe-pre');
-    // request to get algo description
-    var requestUrl = new URL(PageConfig.getBaseUrl() + 'hysds/describeProcess');
-    requestUrl.searchParams.append('algo_id', this._algorithm);
-    requestUrl.searchParams.append('version', this._version);
-    console.log(requestUrl.href);
-    request('get',requestUrl.href).then((res: RequestResult) => {
-      if (res.ok) {
-        var json_response:any = res.json();
-        let describe = json_response['result'];
-        pre.innerText = describe;
-      }
-    });
+    // don't send request if algo/version is empty
+    if (this._algorithm !== '' || this._version !== '') {
+      let pre = <HTMLPreElement> document.getElementById('algo-describe-pre');
+      // request to get algo description
+      var requestUrl = new URL(PageConfig.getBaseUrl() + 'hysds/describeProcess');
+      requestUrl.searchParams.append('algo_id', this._algorithm);
+      requestUrl.searchParams.append('version', this._version);
+      console.log(requestUrl.href);
+      request('get',requestUrl.href).then((res: RequestResult) => {
+        if (res.ok) {
+          var json_response:any = res.json();
+          let describe = json_response['result'];
+          pre.innerText = describe;
+        }
+      });
+    }
   }
 
   // JOB INFO TAB ==============================================
@@ -663,10 +672,10 @@ export class JobTable extends Widget {
   }
 
   _updateDisplay(): void {
-    console.log("getting jobs list");
+    // console.log("getting jobs list");
     let me = this;
     getJobs(this._username,this._job_id, function(job_id){
-      console.log('setting job id');
+      console.log('set job id '+job_id);
       me._job_id = job_id;
     },this._getJobInfo, me);
   }
