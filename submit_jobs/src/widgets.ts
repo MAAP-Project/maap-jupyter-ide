@@ -1,6 +1,6 @@
 import { Widget } from '@phosphor/widgets';
 import { PageConfig } from '@jupyterlab/coreutils'
-// import { INotification } from 'jupyterlab_toastify';
+import { INotification } from 'jupyterlab_toastify';
 // import { getUserInfo } from "./getKeycloak";
 import { popupTitle, popupResult } from './dialogs';
 import { request, RequestResult } from './request';

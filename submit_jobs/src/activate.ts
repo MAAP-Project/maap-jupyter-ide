@@ -5,7 +5,6 @@ import { ILauncher } from '@jupyterlab/launcher';
 import { IFileBrowserFactory } from "@jupyterlab/filebrowser";
 import { IMainMenu } from '@jupyterlab/mainmenu';
 import { Menu } from '@phosphor/widgets';
-import { INotification } from 'jupyterlab_toastify';
 import { InputWidget, RegisterWidget, popupText } from './widgets';
 import { ProjectSelector } from './selector';
 import { popup, popupResult } from './dialogs';
