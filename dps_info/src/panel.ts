@@ -1,4 +1,4 @@
-import { Panel } from '@phosphor/widgets';
+import { Panel } from '@lumino/widgets';
 
 export const WIDGET_CLASS = 'jp-Widget';
 export const CONTENT_CLASS = 'jp-Inspector-content';
