@@ -30,15 +30,17 @@
     "watch": "tsc -w"
   },
   "dependencies": {
-    "@jupyterlab/application": "^1.0.1",
-    "@jupyterlab/apputils": "^1.0.1",
-    "@jupyterlab/docmanager": "^1.0.1",
-    "@jupyterlab/mainmenu": "^1.0.1",
-    "@jupyterlab/notebook": "^1.0.1",
-    "@types/jquery": "^3.3.30",
-    "@types/node": "^13.11.1",
-    "jquery": "^3.4.1",
-    "jupyterlab_toastify": "^2.3.0"
+    "@jupyterlab/application": "^2.1.2",
+    "@jupyterlab/apputils": "^2.1.1",
+    "@jupyterlab/docmanager": "^2.1.2",
+    "@jupyterlab/mainmenu": "^2.1.1",
+    "@jupyterlab/notebook": "^2.1.2",
+    "@lumino/coreutils": "^1.5.2",
+    "@lumino/widgets": "^1.13.2",
+    "@types/jquery": "^3.5.0",
+    "@types/node": "^14.0.14",
+    "jquery": "^3.5.1",
+    "jupyterlab_toastify": "^4.0.0"
   },
   "devDependencies": {
     "rimraf": "^2.6.1",
