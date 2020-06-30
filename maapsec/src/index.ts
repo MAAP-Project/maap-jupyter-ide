@@ -2,7 +2,7 @@ import { ICommandPalette } from '@jupyterlab/apputils';
 import { JupyterFrontEndPlugin, JupyterFrontEnd } from '@jupyterlab/application';
 import { ILauncher } from '@jupyterlab/launcher';
 import { IMainMenu } from '@jupyterlab/mainmenu';
-import { IStateDB } from '@jupyterlab/coreutils';
+import { IStateDB } from '@jupyterlab/statedb';
 import { activateMenuOptions, activateLogin, IMaapProfile }  from './activate'
 
 const extensionList: JupyterFrontEndPlugin<IMaapProfile> = {
