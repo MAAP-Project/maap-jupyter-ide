@@ -1,4 +1,4 @@
-import { Widget } from '@phosphor/widgets';
+import { Widget } from '@lumino/widgets';
 import { PageConfig } from '@jupyterlab/coreutils'
 import { INotification } from 'jupyterlab_toastify';
 // import { getUserInfo } from "./getKeycloak";

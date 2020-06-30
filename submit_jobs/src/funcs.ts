@@ -1,4 +1,5 @@
-import { PageConfig, IStateDB } from '@jupyterlab/coreutils'
+import { PageConfig } from '@jupyterlab/coreutils'
+import { IStateDB } from '@jupyterlab/statedb';
 import { INotification } from 'jupyterlab_toastify';
 import { popupResultText } from './widgets';
 import { getUserInfo } from "./getKeycloak";
