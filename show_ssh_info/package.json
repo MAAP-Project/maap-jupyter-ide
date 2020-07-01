@@ -38,7 +38,7 @@
     "@jupyterlab/launcher": "^2.1.1",
     "@jupyterlab/mainmenu": "^2.1.1",
     "@lumino/widgets": "^1.13.2",
-    "jupyterlab_toastify": "^4.0.0"
+    "jupyterlab_toastify": "^2.3.2"
   },
   "devDependencies": {
     "rimraf": "^2.6.1",
