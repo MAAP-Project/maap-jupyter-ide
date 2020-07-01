@@ -1,7 +1,5 @@
 import { PageConfig } from '@jupyterlab/coreutils'
-import { Widget } from '@phosphor/widgets';
-// import { INotification } from "jupyterlab_toastify";
-// import { getUserInfo } from "./getKeycloak";
+import { Widget } from '@lumino/widgets';
 import { request, RequestResult } from './request';
 import { WIDGET_CLASS, CONTENT_CLASS } from './panel';
 import { getJobs, getJobMetrics, getJobResults, updateResultsTable, onRowClick, deleteDismissJob, DISPLAYS } from './funcs';

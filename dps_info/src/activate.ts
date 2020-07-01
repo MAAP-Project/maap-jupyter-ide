@@ -1,8 +1,8 @@
 import { JupyterFrontEnd } from '@jupyterlab/application';
 import { MainAreaWidget, ICommandPalette } from '@jupyterlab/apputils';
-import { IStateDB } from '@jupyterlab/coreutils';
+import { IStateDB } from '@jupyterlab/statedb';
 import { IMainMenu } from '@jupyterlab/mainmenu';
-import { Menu } from '@phosphor/widgets';
+import { Menu } from '@lumino/widgets';
 import { ADEPanel } from './panel';
 import { JobWidget, JobTable } from './jobinfo';
 import { getUsernameToken } from './funcs';

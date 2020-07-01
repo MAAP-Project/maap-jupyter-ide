@@ -1,6 +1,7 @@
 import { Dialog, showDialog } from '@jupyterlab/apputils';
-import { PageConfig, IStateDB } from '@jupyterlab/coreutils'
-import { Widget } from '@phosphor/widgets';
+import { PageConfig } from '@jupyterlab/coreutils';
+import { IStateDB } from '@jupyterlab/statedb';
+import { Widget } from '@lumino/widgets';
 import { INotification } from "jupyterlab_toastify";
 import { getUserInfo } from "./getKeycloak";
 import { request, RequestResult } from './request';

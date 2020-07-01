@@ -1,10 +1,11 @@
 import { JupyterFrontEnd } from '@jupyterlab/application';
 import { ICommandPalette } from '@jupyterlab/apputils';
-import { PageConfig, IStateDB } from '@jupyterlab/coreutils';
+import { PageConfig } from '@jupyterlab/coreutils';
+import { IStateDB } from '@jupyterlab/statedb';
 import { ILauncher } from '@jupyterlab/launcher';
 import { IFileBrowserFactory } from "@jupyterlab/filebrowser";
 import { IMainMenu } from '@jupyterlab/mainmenu';
-import { Menu } from '@phosphor/widgets';
+import { Menu } from '@lumino/widgets';
 import { InputWidget, RegisterWidget, popupText } from './widgets';
 import { ProjectSelector } from './selector';
 import { popup, popupResult } from './dialogs';
