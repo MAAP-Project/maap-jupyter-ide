@@ -34,7 +34,7 @@
     "@jupyterlab/apputils": "^2.1.1",
     "@jupyterlab/docregistry": "^2.1.2",
     "@jupyterlab/notebook": "^2.1.2",
-    "jupyterlab_toastify": "^2.3.2",
+    "jupyterlab_toastify": "^3.0.0",
     "react": "^16.9.0"
   },
   "devDependencies": {
