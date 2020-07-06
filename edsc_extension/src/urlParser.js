@@ -1,3 +1,13 @@
+/**
+ *
+ * Url Decoder copied from earthdata search source code
+ * https://github.com/nasa/earthdata-search/blob/master/static/src/js/util/url/url.js#L78
+ *
+ * June 30, 2020 - https://github.com/nasa/earthdata-search/releases/tag/v1.123.14
+ *
+ */
+
+
 import qs from 'qs'
 
 import { decodeFeatures, encodeFeatures } from './encodersDecoders'

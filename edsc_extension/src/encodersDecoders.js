@@ -1,4 +1,14 @@
 /**
+ *
+ * All encoders and decoders copied from earthdata search source code.
+ * They can all be found in this directory: https://github.com/nasa/earthdata-search/tree/master/static/src/js/util/url
+ *
+ * June 30, 2020 - https://github.com/nasa/earthdata-search/releases/tag/v1.123.14
+ *
+ * */
+
+
+/**
  * Decodes a string parameter (returns the same value)
  * @param {string} string
  */
