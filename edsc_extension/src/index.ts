@@ -22,6 +22,7 @@ import '../style/index.css';
 import { IFrameWidget } from './widgets';
 import { setResultsLimit, displaySearchParams } from './popups'
 import globals = require("./globals");
+import { decodeUrlParams } from "./urlParser";
 
 const SEARCH_CLIENT_URL = document.location.origin + ':3052/search';
 console.log(SEARCH_CLIENT_URL);
@@ -63,6 +64,9 @@ function activate(app: JupyterFrontEnd,
     globals.params = event.data;
     console.log("at event listen: ", event.data);
   });
+
+  // console.log(decodeUrlParams('?p=collectionId!collectionId&pg[1][ca]=12345!56789'));
+  // globals.params = decodeUrlParams('?p=collectionId!collectionId&pg[1][ca]=12345!56789');
 
   //
   // Get the current cell selected in a notebook

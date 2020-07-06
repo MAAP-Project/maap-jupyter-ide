@@ -38,7 +38,8 @@
     "@types/jquery": "^3.3.30",
     "@types/node": "^13.11.1",
     "jquery": "^3.4.1",
-    "jupyterlab_toastify": "^2.3.0"
+    "jupyterlab_toastify": "^2.3.0",
+    "qs": "^6.9.4"
   },
   "devDependencies": {
     "rimraf": "^2.6.1",
