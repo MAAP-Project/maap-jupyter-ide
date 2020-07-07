@@ -1002,7 +1002,9 @@ class DescribeProcessHandler(IPythonHandler):
 		# ==================================
 		headers = {'Content-Type':'application/json'}
 		if 'proxy-ticket' in params.keys():
-			headers['proxy-ticket'] = params.get('proxy-ticket')
+			ticket = params.get('proxy-ticket')
+			if not ticket == 'undefined':
+				headers['proxy-ticket'] = ticket
 
 		params.pop('proxy-ticket')
 		if all(e == '' for e in list(params.values())):
@@ -1048,7 +1050,7 @@ class DescribeProcessHandler(IPythonHandler):
 								if tag1 != 'Identifier':
 									result += '\t{tag1}:\t{txt1}\n'.format(tag1=tag1,txt1=txt1)
 									if tag1 == 'Title:':
-										algo_lst.append(txt1);
+										algo_lst.append(txt1)
 							result += '\n'
 
 						elif tag == 'Title':

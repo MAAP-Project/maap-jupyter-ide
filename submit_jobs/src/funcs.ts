@@ -14,7 +14,7 @@ export function getUsernameToken(state: IStateDB, profileId:string, callback) {
         INotification.error("Get profile failed.");
       } else {
         uname = profile['cas:username'];
-        ticket = profile['cas:proxyGrantingTicket'];
+        ticket = profile['proxyGrantingTicket'];
         callback(uname,ticket);
         INotification.success("Got profile.");
       }
@@ -38,7 +38,7 @@ export function getAlgorithms(ticket?:string) {
 
     // get list of projects to give dropdown menu
     var settingsAPIUrl = new URL(PageConfig.getBaseUrl() + 'hysds/listAlgorithms');
-    if (! ticket == undefined) {
+    if (! ticket === undefined) {
       settingsAPIUrl.searchParams.append('proxy-ticket',ticket);
     }
     console.log(settingsAPIUrl.href);

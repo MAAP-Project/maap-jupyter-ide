@@ -28,7 +28,7 @@ export class ProjectSelector extends Widget {
     this._dropdown.id = "project-dropdown";
     this._dropdown.setAttribute("style", "font-size:20px;");
 
-    if (type == 'register') {
+    if (type === 'register') {
       this.getProjects().then((projectList) => {
         // console.log(projectList);
         var opt:HTMLOptionElement;
