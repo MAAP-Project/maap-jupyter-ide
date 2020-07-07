@@ -1,58 +1,51 @@
 # pull_projects
 
-Since _Che_ doesn't automatically import projects from the workspace setup into the JupyterLab containers, this extension accomplishes that.
-
+## Overview
+Since _Che_ doesn't automatically import projects from the workspace setup into the JupyterLab containers, this extension accomplishes that.  Currently, if a user has any projects added to the workspace, the extension is set up to automatically pull in all projects.<br>
 
 Features: 
-- Clone user's gitlab project's into their workspace (uses gitlab token from keycloak to clone private repos)
-
-
+- Clone user's gitlab project's into their workspace (uses gitlab token from keycloak to clone private repos)<br>
 
 There are 3 API endpoints for handling projects listed under _Che_ with the JupyterLab workspace.
 
-1. ListAllProjects
+1. `pull_projects/list`
 	- registered on the Command Palette
-	- endpoint `pull_projects/list`
 	- creates a small popup Dialog with unformatted dictionary of project info
 		- to be improved
-2. ListFiles
+2. `pull_projects/getProject`
 	- NOT on Command Palette
-	- endpoint `pull_projects/listFiles`
-	- helper for Job Registration under `submit_jobs` extension to get available files within the workspace's projects
-2. GetProject
-	- NOT on Command Palette
-	- endpoint `pull_projects/getProject`
 	- takes parameters `location` (e.g. git URL) and `src_type` (e.g. `git`)
 		- currently only supports git URLs and links to ZIPs
-3. GetAllProjects
+3. `pull_projects/getAllProjects`
 	- registered on the Command Palette
-	- endpoint `pull_projects/getAllProjects`
 	- creates a small popup Dialog with result of the project import (`project import done` or `project import failed`)
 
+## Requirements
+* JupyterLab >= 2.1.4
+* nodejs >= 10.13.0
+* see `package.json` for package dependencies
+
+### Build & Install Lab Extension
+```bash
+cd maap-jupyter-ide/pull_projects
+npm install
+npm run build
+jupyter labextension install pull_projects
+```
+
+### Build & Install Server Extension
+```bash
+cd maap-jupyter-ide/pull_projects
+pip install -e .
+jupyter serverextension enable --py pull_projects --sys-prefix
+```
+
+### Uninstall
+```bash
+jupyter labextension uninstall pull_projects
+jupyter serverextension disable --py pull_projects --sys-prefix
+```
 
 ## Development
 
-#### Lab extension
-For a development install (requires npm version 4 or later), do the following in the repository directory:
-
-```bash
-npm install
-npm run build
-jupyter labextension link .
-```
-
-To rebuild the package and the JupyterLab app:
-
-```bash
-npm run build
-jupyter labextension link .
-```
-
-
-#### Server extension
-
-```bash
-pip install -e .
-jupyter serverextension enable --py pull_projects --sys-prefix
-
-```
+Contacts: Elizabeth Yam (JPL), Maya Debellis (JPL)
