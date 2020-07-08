@@ -55,31 +55,25 @@ function activate(app: JupyterFrontEnd,
   let instanceTracker = new WidgetTracker<IFrameWidget>({ namespace });
 
 
-
   //
-  // Listen for messages being sent by the iframe - this will be all of the parameter
-  // objects from the EDSC instance
+  // Listen for messages being sent by the iframe - parse the url and set as parameters for search
   //
   window.addEventListener("message", (event: MessageEvent) => {
-    globals.params = event.data;
-    console.log("at event listen: ", event.data);
+    globals.params = decodeUrlParams(event.data);
+    console.log("message from iframe", event.data);
   });
 
-  // console.log(decodeUrlParams('?p=collectionId!collectionId&pg[1][ca]=12345!56789'));
-  // globals.params = decodeUrlParams('?p=collectionId!collectionId&pg[1][ca]=12345!56789');
 
   //
   // Get the current cell selected in a notebook
   //
   function getCurrent(args: ReadonlyJSONObject): NotebookPanel | null {
-    console.log(args);
     const widget = tracker.currentWidget;
     const activate = args['activate'] !== false;
 
     if (activate && widget) {
       app.shell.activateById(widget.id);
     }
-
     return widget;
   }
 
@@ -87,14 +81,12 @@ function activate(app: JupyterFrontEnd,
   // PASTE SEARCH INTO A NOTEBOOK
   function pasteSearch(args: any, result_type: any) {
     const current = getCurrent(args);
-    console.log(result_type);
 
     // If no search is selected, send an error
     if (Object.keys(globals.params).length == 0) {
         INotification.error("Error: No Search Selected.");
         return;
     }
-
 
     // Paste Search Query
     if (result_type == "query") {
@@ -110,18 +102,15 @@ function activate(app: JupyterFrontEnd,
         xhr.onload = function() {
           if (xhr.status == 200) {
               let response: any = $.parseJSON(xhr.response);
-              console.log(response);
               response_text = response.query_string;
               if (response_text == "") {
                   response_text = "No results found.";
               }
-              console.log(response_text);
               if (current) {
                   NotebookActions.insertBelow(current.content);
                   NotebookActions.paste(current.content);
                   current.content.mode = 'edit';
                   current.content.activeCell.model.value.text = response_text;
-                  console.log("inserted text");
               }
           }
           else {
@@ -131,7 +120,7 @@ function activate(app: JupyterFrontEnd,
         };
 
         xhr.onerror = function() {
-          console.log("Error making call to get query");
+          console.error("Error making call to get query");
         };
 
         xhr.open("GET", getUrl.href, true);
@@ -159,13 +148,11 @@ function activate(app: JupyterFrontEnd,
                   response_text = "No results found.";
               }
               url_response = response_text;
-              console.log(response_text);
               if (current) {
                   NotebookActions.insertBelow(current.content);
                   NotebookActions.paste(current.content);
                   current.content.mode = 'edit';
                   current.content.activeCell.model.value.text = url_response;
-                  console.log("inserted text");
               }
           }
           else {
@@ -194,9 +181,6 @@ function activate(app: JupyterFrontEnd,
     label: 'Open EarthData Search',
     isEnabled: () => true,
     execute: args => {
-
-      console.log(widget);
-
       // Only allow user to have one EDSC window
       if (widget == undefined) {
           widget = new IFrameWidget(SEARCH_CLIENT_URL);
@@ -209,7 +193,6 @@ function activate(app: JupyterFrontEnd,
       }
 
       if (!instanceTracker.has(widget)) {
-          console.log("in has widget");
         // Track the state of the widget for later restoration
         instanceTracker.add(widget);
       }
