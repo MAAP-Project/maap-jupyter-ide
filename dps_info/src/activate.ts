@@ -4,7 +4,7 @@ import { IStateDB } from '@jupyterlab/statedb';
 import { IMainMenu } from '@jupyterlab/mainmenu';
 import { Menu } from '@lumino/widgets';
 import { ADEPanel } from './panel';
-import { JobWidget, JobTable } from './jobinfo';
+import { JobWidget, JobPanel } from './jobinfo';
 import { getUsernameToken } from './funcs';
 import '../style/index.css';
 
@@ -18,7 +18,7 @@ export const jobWidget_update_command = 'jobs: main-widget-update';
 export function activateJobPanel(app: JupyterFrontEnd, palette: ICommandPalette, state: IStateDB, mainMenu: IMainMenu): void{
   // need username to create job table
   getUsernameToken(state, profileId, function(uname,token) {
-    var jobsTable = new JobTable(uname);
+    var jobsTable = new JobPanel(uname);
     jobsTable.update()
     var jobsPanel = new ADEPanel(jobsTable);
 

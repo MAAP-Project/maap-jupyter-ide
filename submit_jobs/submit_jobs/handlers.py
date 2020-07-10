@@ -1377,9 +1377,9 @@ class ListJobsHandler(IPythonHandler):
 					logging.debug(jobs_dict)
 
 					# print("success!")
-					self.finish({"status_code": r.status_code, "result": jobs, "table":result,"jobs": jobs_dict, "displays": details})
+					self.finish({"status_code": r.status_code, "result": result, "table": result, "jobs": jobs_dict, "displays": details})
 				except:
-					self.finish({"status_code": r.status_code, "result": jobs, "table":result,"jobs": jobs, "displays": details, "resp":r.text})
+					self.finish({"status_code": r.status_code, "result": jobs, "table": result, "jobs": jobs, "displays": details, "resp": r.text})
 			# if no job id provided
 			elif r.status_code in [404]:
 				# print('404?')

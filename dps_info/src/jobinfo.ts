@@ -87,7 +87,7 @@ export class JobWidget extends Widget {
     this._updateResultsCol();
     this._updateMetricsRow();
 
-    if (document.getElementById(this._widget_table_name) != null) {
+    if (document.getElementById(this._widget_table_name) !== null) {
       getJobs(this._username,this._job_id,function(job_id:string){me._job_id=job_id;},function(me:JobWidget, table:string){
         (<HTMLTextAreaElement>document.getElementById(me._widget_table_name)).innerHTML = table;
         // set widget job table clickable rows
@@ -111,7 +111,7 @@ export class JobWidget extends Widget {
       },me);
       div.appendChild(textarea);
       let jw_div = document.getElementById('job-widget');
-      if (jw_div != null){
+      if (jw_div !== null){
         jw_div.appendChild(document.createElement('hr'));
         let h = document.createElement('h3');
         h.innerText = 'Submitted Jobs';
@@ -160,7 +160,7 @@ export class JobWidget extends Widget {
     if (listCell != null) {
 
       // one-time create algo list header
-      if (document.getElementById('algo-list-header') == null) {
+      if (document.getElementById('algo-list-header') === null) {
         let list_title = document.createElement('h3');
         list_title.id = 'algo-list-header';
         list_title.innerText = "Algorithm List";
@@ -169,7 +169,7 @@ export class JobWidget extends Widget {
 
       // populate algo list
       let algolist = <HTMLTableElement> document.getElementById(this._algo_list_id);
-      if (document.getElementById('algo-list-div') != null){
+      if (document.getElementById('algo-list-div') !== null){
         algolist.innerHTML = '';
         <HTMLTableSectionElement> algolist.createTHead();
         <HTMLTableSectionElement> algolist.createTBody();
@@ -250,15 +250,15 @@ export class JobWidget extends Widget {
 
   _updateExecuteCol() {
     let executeCell = <HTMLTableCellElement> document.getElementById('cell-execute');
-    if (executeCell != null) {
-      if (document.getElementById('execute-header') == null) {
+    if (executeCell !== null) {
+      if (document.getElementById('execute-header') === null) {
         let execute_title = document.createElement('h3');
         execute_title.id = 'execute-header';
         execute_title.innerText = "Execute Job";
         executeCell.appendChild(execute_title);
       }
 
-      if (document.getElementById('execute-algoname') == null) {
+      if (document.getElementById('execute-algoname') === null) {
         let execute_algoname = document.createElement('p');
         execute_algoname.id = 'execute-algoname';
         execute_algoname.innerHTML = '<b>Algorithm: </b>    '+this._algorithm+':'+this._version;
@@ -269,7 +269,7 @@ export class JobWidget extends Widget {
         execute_algoname.innerHTML = '<b>Algorithm: </b>    '+this._algorithm+':'+this._version;
       }
 
-      if (document.getElementById('execute-subheader') == null) {
+      if (document.getElementById('execute-subheader') === null) {
         let execute_subtitle = document.createElement('h4');
         execute_subtitle.id = 'execute-subheader';
         execute_subtitle.innerText = "Inputs";
@@ -277,7 +277,7 @@ export class JobWidget extends Widget {
       }
 
       // create params table if not exists
-      if (document.getElementById('execute-params-div') == null) {
+      if (document.getElementById('execute-params-div') === null) {
         let paramdiv = document.createElement('div');
         paramdiv.id = 'execute-params-div'
         executeCell.appendChild(paramdiv);
@@ -353,7 +353,7 @@ export class JobWidget extends Widget {
           inp.id = (i+'-input');
           inp.classList.add(i);
           // pre-populate username field
-          if (i == 'username') {
+          if (i === 'username') {
             inp.value = this._username;
             // username field is readonly and grey background
             inp.readOnly = true;
@@ -409,15 +409,15 @@ export class JobWidget extends Widget {
 
   _updateOverviewCol() {
     let overviewCell = <HTMLTableCellElement> document.getElementById('cell-overview');
-    if (overviewCell != null) {
-      if (document.getElementById('algo-describe-header') == null) {
+    if (overviewCell !== null) {
+      if (document.getElementById('algo-describe-header') === null) {
         let overview_title = document.createElement('h3');
         overview_title.id = 'algo-describe-header';
         overview_title.innerText = "Algorithm Overview";
         overviewCell.appendChild(overview_title);
       }
 
-      if (document.getElementById('algo-describe-div') == null) {
+      if (document.getElementById('algo-describe-div') === null) {
         let prediv = document.createElement('div');
         prediv.id = 'algo-describe-div';
         overviewCell.appendChild(prediv);
@@ -492,10 +492,13 @@ export class JobWidget extends Widget {
   }
 
   _updateInfoCol() {
+    console.log(Object.keys(this));
+    console.log(JSON.stringify(this));
+    console.log(this.getJobId());
     let infoCell = document.getElementById('cell-jobinfo');
-    if (infoCell != null) {
+    if (infoCell !== null) {
       let infoHead = document.getElementById('info-name');
-      if (infoHead == null) {
+      if (infoHead === null) {
         infoHead = document.createElement('h3');
         infoHead.innerText = 'Job Information';
         infoHead.id = 'info-name';
@@ -503,11 +506,12 @@ export class JobWidget extends Widget {
       }
 
       let pre = document.getElementById('info-pre');
-      if (pre != null) {
+      if (pre !== null) {
         pre.innerHTML = DISPLAYS[this._job_id];
       } else {
         pre = document.createElement('pre');
         pre.id = 'info-pre';
+        console.log('check '+this._job_id);
         pre.innerHTML = DISPLAYS[this._job_id];
         infoCell.appendChild(pre);
         
@@ -535,7 +539,7 @@ export class JobWidget extends Widget {
 
       // Dismiss Job Button
       let dismissBtn = <HTMLButtonElement>document.getElementById('job-dismiss-button-widget');
-      if (dismissBtn != null ){
+      if (dismissBtn !== null ){
         // set dismiss fn
         deleteDismissJob(dismissBtn,this._job_id,'dismiss');
       } else {
@@ -551,10 +555,10 @@ export class JobWidget extends Widget {
 
   _updateResultsCol() {
     let resultsCell = document.getElementById('cell-jobresults');
-    if (resultsCell != null) {
+    if (resultsCell !== null) {
       // section header
       let resultsHead = document.getElementById('results-name');
-      if (resultsHead == null){
+      if (resultsHead === null){
         resultsHead = document.createElement('h3');
         resultsHead.id = 'results-name';
         resultsHead.innerText = 'Job Results';
@@ -563,7 +567,7 @@ export class JobWidget extends Widget {
 
       // results table
       let resultsTableDiv = <HTMLDivElement>document.getElementById('results-table-div');
-      if (resultsTableDiv != null) {
+      if (resultsTableDiv !== null) {
         getJobResults(this._job_id, function(results:string) {
           updateResultsTable(resultsTableDiv,'widget-result-table',results);
         });
@@ -586,10 +590,10 @@ export class JobWidget extends Widget {
 
   _updateMetricsRow() {
     let metricsCell = document.getElementById('cell-jobmetrics');
-    if (metricsCell != null) {
+    if (metricsCell !== null) {
       // section header
       let metricsHead = document.getElementById('metrics-name');
-      if (metricsHead == null){
+      if (metricsHead === null){
         metricsHead = document.createElement('h3');
         metricsHead.id = 'metrics-name';
         metricsHead.innerText = 'Job Metrics';
@@ -598,7 +602,7 @@ export class JobWidget extends Widget {
 
       // metrics table
       let metricsTableDiv = <HTMLDivElement>document.getElementById('metrics-table-div');
-      if (metricsTableDiv != null) {
+      if (metricsTableDiv !== null) {
         getJobMetrics(this._job_id, function(metrics:string) {
           // console.log('got metrics');
           // console.log(metrics);
@@ -649,9 +653,15 @@ export class JobWidget extends Widget {
     document.getElementById(section).style.display = "block";
     evt.currentTarget.className += " active";
   }
+
+  
+  public getJobId() : string {
+    return this._job_id
+  }
+  
 }
 
-export class JobTable extends Widget {
+export class JobPanel extends Widget {
   _username: string;
   _job_id: string;
   _results: string;
@@ -675,16 +685,17 @@ export class JobTable extends Widget {
     getJobs(this._username,this._job_id, function(job_id){
       console.log('set job id '+job_id);
       me._job_id = job_id;
+      console.log(me._job_id);
     },this._getJobInfo, me);
   }
 
   // front-end side of display jobs table and job info
-  _getJobInfo(me: JobTable, table:string) {
+  _getJobInfo(me: JobPanel, table:string) {
     // --------------------
     // job table
     // --------------------
     // set table, from response
-    if (document.getElementById('job-cache-display') != null) {
+    if (document.getElementById('job-cache-display') !== null) {
       (<HTMLTextAreaElement>document.getElementById('job-cache-display')).innerHTML = table;
     } else {
       // create div for table if table doesn't already exist
@@ -708,7 +719,7 @@ export class JobTable extends Widget {
     // --------------------
     if (document.getElementById('job-refresh-button') == null) {
       let div = (<HTMLDivElement>document.getElementById('jobs-div'));
-      if (div != null) {
+      if (div !== null) {
         let refreshBtn = document.createElement('button');
         refreshBtn.id = 'job-refresh-button';
         refreshBtn.className = 'jupyter-button';
@@ -722,7 +733,7 @@ export class JobTable extends Widget {
 
     // set display in 2nd callback after making table rows clickable
     // update/populate jobs table, add delete & dismiss buttons
-    let setDisplays = function(me:JobTable){
+    let setDisplays = function(me:JobPanel){
       // create div for job info section
       // parent for everything, created in table response
       let div2 = (<HTMLDivElement>document.getElementById('jobs-div'));
@@ -746,7 +757,7 @@ export class JobTable extends Widget {
         // --------------------
         // set description from response
         let disp = '';
-        if (me._job_id != ''){
+        if (me._job_id !== '' && me._job_id !== undefined){
           disp = DISPLAYS[me._job_id];
         }
 
@@ -815,12 +826,12 @@ export class JobTable extends Widget {
   }
 
   // get job result for display
-  _getJobResult(me:JobTable) {
+  _getJobResult(me:JobPanel) {
     getJobResults(me._job_id,function(results:string) {me.convertResultToDisplay(me,results)});
   }
 
   // front-end side of display job result table
-  convertResultToDisplay(me:JobTable, results: string) {
+  convertResultToDisplay(me:JobPanel, results: string) {
     me._results = results;
     let outerDiv = (<HTMLDivElement>document.getElementById('jobs-div'));
     if (outerDiv != null) {
