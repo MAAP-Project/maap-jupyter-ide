@@ -40,7 +40,7 @@ export function activateJobPanel(app: JupyterFrontEnd, palette: ICommandPalette,
       }
     });
     palette.addItem({command: jobCache_update_command, category: 'DPS/MAS'});
-    // console.log('HySDS JobList panel is activated!');
+    console.log('HySDS JobList panel is activated!');
   });
 }
 
@@ -102,7 +102,7 @@ export function activateJobWidget(app: JupyterFrontEnd, palette: ICommandPalette
     //   command: jobWidget_command,
     //   name: () => 'jobs'
     // });
-    // console.log('HySDS Mainarea Job Widget is activated!');
+    console.log('HySDS Mainarea Job Widget is activated!');
   });
 }
 

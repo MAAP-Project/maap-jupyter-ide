@@ -63,6 +63,7 @@ class ButtonExtension implements DocumentRegistry.IWidgetExtension<NotebookPanel
  */
 function activate(app: JupyterFrontEnd) {
   app.docRegistry.addWidgetExtension('Notebook', new ButtonExtension());
+  console.log("insert defaults to notebook extension activated");
 };
 
 
