@@ -17,6 +17,7 @@ This extension is dependent upon being run inside the Eclipse Che environment an
 
 ## Requirements
 * JupyterLab >= 2.1.4
+* jupyterlab_toastify = 2.3.0
 * nodejs >= 10.13.0
 * [s3fs-fuse](https://github.com/s3fs-fuse/s3fs-fuse)
     * corresponding dependencies and s3 configurations/permissions
@@ -26,14 +27,19 @@ This extension is dependent upon being run inside the Eclipse Che environment an
 * see `package.json` for package dependencies
 
 ### Build & Install Lab Extension
+Make sure you have jupyterlab_toastify installed (see repo README).
+
 ```bash
 cd maap-jupyter-ide/show_ssh_info
 npm install
 npm run build
-jupyter labextension install show_ssh_info
+jupyter labextension link .
 ```
 
 ### Build & Install Server Extension
+If connecting to AWS S3, install `boto3` and `s3fs-fuse` if it is not already in your environment.
+Make sure your machine has the right IAM role to access the S3 bucket, or `s3fs-fuse` knows where to find the necessary keys for access.
+
 ```bash
 pip install -e .
 jupyter serverextension enable --py show_ssh_info --sys-prefix

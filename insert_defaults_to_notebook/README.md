@@ -13,7 +13,7 @@ Add a button to the Jupyter Notebook toolbar. When clicked it will insert the de
 cd maap-jupyter-ide/insert_defaults_to_notebook
 npm install
 npm run build
-jupyter labextension install insert_defaults_to_notebook
+jupyter labextension link .
 ```
 
 ### Uninstall

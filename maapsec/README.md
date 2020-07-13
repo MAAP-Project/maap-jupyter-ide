@@ -7,15 +7,17 @@ Login to MAAP CAS and access user's MAAP profile information.
 ## Requirements
 * JupyterLab >= 2.1.4
 * nodejs >= 10.13.0
-* jupyterlab_toastify = 3.0.0
+* jupyterlab_toastify = 2.3.0
 * see `package.json` for package dependencies
 
 ### Build & Install Lab Extension
+Make sure you have jupyterlab_toastify installed (see repo README).
+
 ```bash
 cd maap-jupyter-ide/maapsec
 npm install
 npm run build
-jupyter labextension install maapsec
+jupyter labextension link .
 ```
 
 ### Build & Install Server Extension

@@ -30,7 +30,7 @@ There are 3 API endpoints for handling projects listed under _Che_ with the Jupy
 cd maap-jupyter-ide/pull_projects
 npm install
 npm run build
-jupyter labextension install pull_projects
+jupyter labextension link .
 ```
 
 ### Build & Install Server Extension
@@ -41,7 +41,7 @@ jupyter serverextension enable --py pull_projects --sys-prefix
 ```
 
 ### Uninstall
-```bash
+```bashpull_projects
 jupyter labextension uninstall pull_projects
 jupyter serverextension disable --py pull_projects --sys-prefix
 ```

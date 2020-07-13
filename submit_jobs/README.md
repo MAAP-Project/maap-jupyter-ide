@@ -60,18 +60,23 @@ This connects the JupyterLab UI with the HySDS/DPS backend.  There will be 10 AP
 ## Requirements
 * JupyterLab >= 2.1.4
 * nodejs >= 10.13.0
-* jupyterlab_toastify = 3.0.0
+* jupyterlab_toastify = 2.3.0
+* `pyyaml` library
 * see `package.json` for package dependencies
 
 ### Build & Install Lab Extension
+Make sure you have jupyterlab_toastify installed (see repo README).
+
 ```bash
 cd maap-jupyter-ide/submit_jobs
 npm install
 npm run build
-jupyter labextension install submit_jobs
+jupyter labextension link .
 ```
 
 ### Build & Install Server Extension
+Install `pyyaml` if it is not in your environment.
+
 ```bash
 cd maap-jupyter-ide/submit_jobs
 pip install -e .

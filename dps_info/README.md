@@ -11,17 +11,19 @@ These extensions are accessible via the “DPS UI” menu in Jupyter.
 
 ## Requirements
 * JupyterLab >= 2.1.4
-* jupyterlab_toastify = 3.0.0
+* jupyterlab_toastify = 2.3.0
 * nodejs >= 10.13.0
 * depends on `submit_jobs` extension
 * see `package.json` for package dependencies
 
 ### Build & Install Lab Extension
+Make sure you have jupyterlab_toastify installed (see repo README).
+
 ```bash
 cd maap-jupyter-ide/dps_info
 npm install
 npm run build
-jupyter labextension install dps_info
+jupyter labextension link .
 ```
 
 ### Uninstall

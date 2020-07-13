@@ -14,7 +14,7 @@ in a separate browser window. This form allows users to fill out metadata info a
 cd maap-jupyter-ide/user_meta_form
 npm install
 npm run build
-jupyter labextension install user_meta_form
+jupyter labextension link .
 ```
 
 ### Uninstall

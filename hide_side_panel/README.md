@@ -14,7 +14,12 @@ Hide or show the che side panel from the Jupyter IDE - this extension is only re
 cd maap-jupyter-ide/hide_side_panel
 npm install
 npm run build
-jupyter labextension install hide_side_panel
+jupyter labextension link .
+```
+
+### Uninstall
+```bash
+jupyter labextension uninstall hide_side_panel
 ```
 
 Contact: Maya Debellis (JPL)

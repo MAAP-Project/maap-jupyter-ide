@@ -8,20 +8,25 @@ This extension uses an iframe in the main area of Jupyter to display the MAAP in
 ## Requirements
 * JupyterLab >= 2.1.4
 * nodejs >= 10.13.0
-* jupyterlab_toastify = 3.0.0
+* jupyterlab_toastify = 2.3.0
 * requires a connection to the MAAP CMR instance
+* `maap-py` library https://github.com/MAAP-Project/maap-py
 * see `package.json` for package dependencies
 
 
 ### Build & Install Lab Extension
+Make sure you have jupyterlab_toastify installed (see repo README).
+
 ```bash
 cd maap-jupyter-ide/edsc_extension
 npm install
 npm run build
-jupyter labextension install edsc_extension
+jupyter labextension link .
 ```
 
 ### Build & Install Server Extension
+Make sure you have jupyterlab_toastify installed (see repo README).
+
 ```bash
 cd maap-jupyter-ide/edsc_extension
 pip install -e .
@@ -29,6 +34,8 @@ jupyter serverextension enable --py edsc_extension --sys-prefix
 ```
 
 ### Uninstall
+Make sure you have the `maap-py` library installed
+
 ```bash
 jupyter labextension uninstall edsc_extension
 jupyter serverextension disable --py edsc_extension --sys-prefix
