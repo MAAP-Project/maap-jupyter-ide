@@ -46,7 +46,7 @@ class ButtonExtension implements DocumentRegistry.IWidgetExtension<NotebookPanel
 
     let button = new ToolbarButton({
       className: 'myButton',
-      icon: 'jp-MaapIcon foo jp-Icon jp-Icon-16 jp-ToolbarButtonComponent-icon',
+      iconClass: 'jp-MaapIcon foo jp-Icon jp-Icon-16 jp-ToolbarButtonComponent-icon',
       onClick: callback,
       tooltip: 'Import MAAP Libraries'
     });
