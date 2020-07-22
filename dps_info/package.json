@@ -1,8 +1,17 @@
 {
-  "private": true,
   "name": "dps_info",
-  "version": "0.0.1",
-  "description": "more user-friendly UI for interacting with HySDS/DPS/MAS",
+  "version": "0.1.0",
+  "description": "GUI for interacting with DPS",
+  "keywords": [
+    "jupyter",
+    "jupyterlab",
+    "jupyterlab-extension"
+  ],
+  "homepage": "https://github.com/MAAP-Project/maap-jupyter-ide/tree/master/dps_info",
+  "bugs": {
+    "url": "https://github.com/MAAP-Project/maap-jupyter-ide/tree/master/dps_info/issues"
+  },
+  "license": "BSD-3-Clause",
   "author": "Elizabeth Yam",
   "files": [
     "lib/**/*.{d.ts,eot,gif,html,jpg,js,js.map,json,png,svg,woff2,ttf}",
@@ -10,38 +19,31 @@
   ],
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
-  "keywords": [
-    "jupyter",
-    "jupyterlab",
-    "jupyterlab-extension"
-  ],
-  "jupyterlab": {
-    "extension": true
+  "style": "style/index.css",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/MAAP-Project/maap-jupyter-ide/tree/master/dps_info.git"
   },
   "scripts": {
     "build": "tsc",
-    "clean": "rimraf lib",
-    "prepare": "npm run clean && npm run build",
+    "clean": "rimraf lib tsconfig.tsbuildinfo",
+    "prepare": "jlpm run clean && jlpm run build",
     "watch": "tsc -w"
   },
   "dependencies": {
-    "@jupyterlab/application": "^2.1.2",
-    "@jupyterlab/apputils": "^2.1.1",
-    "@jupyterlab/coreutils": "^4.1.0",
-    "@jupyterlab/filebrowser": "^2.1.2",
-    "@jupyterlab/launcher": "^2.1.1",
-    "@jupyterlab/mainmenu": "^2.1.1",
-    "@jupyterlab/statedb": "^2.1.0",
-    "@lumino/widgets": "^1.13.2",
-    "@types/jquery": "^3.5.0",
-    "@types/node": "^14.0.14",
-    "crypto": "^1.0.1",
-    "jupyterlab_toastify": "^3.0.0",
-    "require": "^2.4.20",
-    "xml-formatter": "^2.1.1"
+    "@jupyterlab/application": "^2.0.0",
+    "@jupyterlab/mainmenu": "^2.2.0",
+    "@types/node": "^14.0.24",
+    "jupyterlab_toastify": "^3.0.0"
   },
   "devDependencies": {
-    "rimraf": "^2.6.3",
-    "typescript": "^3.5.3"
+    "rimraf": "^2.6.1",
+    "typescript": "~3.7.0"
+  },
+  "sideEffects": [
+    "style/*.css"
+  ],
+  "jupyterlab": {
+    "extension": true
   }
 }
