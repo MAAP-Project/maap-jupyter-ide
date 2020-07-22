@@ -329,12 +329,19 @@ class PublishAlgorithmHandler(IPythonHandler):
 		# ==================================
 		# Part 1: Parse Required Arguments
 		# ==================================
+		complete = True
 		fields = getFields('publishAlgorithm')
 
 		params = {}
 		for f in fields:
-			arg = self.get_argument(f.lower(), '').strip()
-			params[f] = arg
+			try:
+				arg = self.get_argument(f.lower(), '').strip()
+				params[f] = arg
+			except:
+				complete = False
+
+		if all(e == '' for e in list(params.values())):
+			complete = False
 
 		logging.debug('params are')
 		logging.debug(params)
@@ -868,7 +875,7 @@ class DismissHandler(IPythonHandler):
 			# ==================================
 			# if no job id provided
 			if params['job_id'] == '':
-				result = 'Exception: {}\nMessage: {}\n(Did you provide a valid JobID?)\n'.format(rt[0].attrib['exceptionCode'], rt[0][0].text)
+				result = 'Exception: \nMessage: {}\nEmpty JobID provided.\n'
 				result += '\nThe provided parameters were:\n'
 				for f in fields:
 					result += '\t{}: {}\n'.format(f,params[f])
@@ -951,7 +958,7 @@ class DeleteHandler(IPythonHandler):
 			# ==================================
 			# if no job id provided
 			if params['job_id'] == '':
-				result = 'Exception: {}\nMessage: {}\n(Did you provide a valid JobID?)\n'.format(rt[0].attrib['exceptionCode'], rt[0][0].text)
+				result = 'Exception: \nMessage: {}\nEmpty JobID provided.\n'
 				result += '\nThe provided parameters were:\n'
 				for f in fields:
 					result += '\t{}: {}\n'.format(f,params[f])
@@ -1379,12 +1386,13 @@ class ListJobsHandler(IPythonHandler):
 					# print("success!")
 					self.finish({"status_code": r.status_code, "result": result, "table": result, "jobs": jobs_dict, "displays": details})
 				except:
-					self.finish({"status_code": r.status_code, "result": jobs, "table": result, "jobs": jobs, "displays": details, "resp": r.text})
+					result = '<br>'.join(jobs)
+					self.finish({"status_code": r.status_code, "result": result, "table": result, "jobs": jobs, "displays": details, "resp": r.text})
 			# if no job id provided
 			elif r.status_code in [404]:
 				# print('404?')
 				# if bad job id, show provided parameters
-				result = 'Exception: {}\nMessage: {}\n(Did you provide a valid JobID?)\n'.format(rt[0].attrib['exceptionCode'], rt[0][0].text)
+				result = 'Exception: \nMessage: {}\nInvalid username provided.\n'
 				result += '\nThe provided parameters were:\n'
 				for f in fields:
 					result += '\t{}: {}\n'.format(f,params[f])
