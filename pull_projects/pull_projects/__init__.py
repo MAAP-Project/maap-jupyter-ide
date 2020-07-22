@@ -3,7 +3,7 @@ import os
 import os.path
 from notebook.utils import url_path_join
 
-from .handlers import ListProjectsHandler, GetProjectHandler, GetAllProjectsHandler, ListFilesHandler
+from .handlers import ListProjectsHandler, GetProjectHandler, GetAllProjectsHandler
 
 def _jupyter_labextension_paths():
     return [{

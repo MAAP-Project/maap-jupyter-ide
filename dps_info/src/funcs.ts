@@ -1,6 +1,7 @@
 import { Dialog, showDialog } from '@jupyterlab/apputils';
-import { PageConfig, IStateDB } from '@jupyterlab/coreutils'
-import { Widget } from '@phosphor/widgets';
+import { PageConfig } from '@jupyterlab/coreutils';
+import { IStateDB } from '@jupyterlab/statedb';
+import { Widget } from '@lumino/widgets';
 import { INotification } from "jupyterlab_toastify";
 import { getUserInfo } from "./getKeycloak";
 import { request, RequestResult } from './request';
@@ -51,17 +52,16 @@ export function getJobs(username: string, job_id: string, setJobId:any, callback
       let json_response:any = res.json();
       // console.log(json_response['status_code']);
       INotification.success("Get user jobs success.");
-      console.log(json_response);
+      // console.log(json_response);
       if (json_response['status_code'] == 200){
-        let resp = JSON.parse(json_response['result']);
-        let table = resp['table'];
-        JOBS = resp['jobs'];
+        // let resp = json_response['result'];
+        let table = json_response['table'];
+        JOBS = json_response['jobs'];
         // later get user to pick the job
-        // this._displays = resp['displays'];
-        DISPLAYS = resp['displays'];
+        DISPLAYS = json_response['displays'];
 
-        console.log(JOBS);
-        console.log(DISPLAYS);
+        // console.log(JOBS);
+        // console.log(DISPLAYS);
 
         // catch case if user has no jobs
         let num_jobs = Object.keys(JOBS).length;
@@ -85,7 +85,7 @@ export function getJobs(username: string, job_id: string, setJobId:any, callback
 export function getJobMetrics(job_id: string, callback?: any) {
   let metrics:string = '';
   var metricsUrl = new URL(PageConfig.getBaseUrl() + 'hysds/getMetrics');
-  if (job_id != '' && JOBS[job_id]['status'] == 'job-completed') {
+  if (job_id !== '' && job_id !== undefined && JOBS[job_id]['status'] === 'job-completed') {
     metricsUrl.searchParams.append('job_id',job_id);
     console.log(metricsUrl.href);
 
@@ -108,7 +108,12 @@ export function getJobMetrics(job_id: string, callback?: any) {
       callback(metrics);
     })
   } else {
-    let results = '<p>Job '+job_id+' <br>not complete</p>';
+    let results = '';
+    if (job_id === undefined) {
+      results = '<p> Job ID is undefined.';
+    } else {
+      results = '<p>Job '+job_id+' <br>not complete</p>';
+    }
     callback(results);
   }
 }
@@ -117,7 +122,7 @@ export function getJobMetrics(job_id: string, callback?: any) {
 export function getJobResults(job_id: string, callback?: any) {
   let results:string = '';
   var resultUrl = new URL(PageConfig.getBaseUrl() + 'hysds/getResult');
-  if (job_id != '' && JOBS[job_id]['status'] == 'job-completed') {
+  if (job_id !== '' && job_id !== undefined && JOBS[job_id]['status'] === 'job-completed') {
     resultUrl.searchParams.append('job_id',job_id);
     console.log(resultUrl.href);
 
@@ -142,7 +147,11 @@ export function getJobResults(job_id: string, callback?: any) {
       callback(results);
     });
   } else {
-    results = '<p>Job '+job_id+' <br>not complete</p>';
+    if (job_id === undefined) {
+      results = '<p> Job ID is undefined.';
+    } else {
+      results = '<p>Job '+job_id+' <br>not complete</p>';
+    }
     // let outerDiv = (<HTMLDivElement>document.getElementById('jobs-div'));
     callback(results);
   }
@@ -150,14 +159,14 @@ export function getJobResults(job_id: string, callback?: any) {
 
 // converts results into display table and appends to provided div element
 export function updateResultsTable(outerDiv: HTMLDivElement, tableName: string, results: string) {
-  if (outerDiv == null) {
+  if (outerDiv === null) {
     outerDiv = document.createElement('div');
     outerDiv.setAttribute('id', tableName+'-div');
     outerDiv.setAttribute('resize','none');
     outerDiv.setAttribute('class','jp-JSONEditor-host');
     outerDiv.setAttribute('style','border-style:none; overflow: auto');
   }
-  if (document.getElementById(tableName) != null) {
+  if (document.getElementById(tableName) !== null) {
       (<HTMLTextAreaElement>document.getElementById(tableName)).innerHTML = results;
   } else {
     var display = document.createElement("table");
@@ -174,7 +183,7 @@ export function onRowClick(tableId:string, callback:any) {
   if (document.getElementById(tableId) != undefined) {
     let table = document.getElementById(tableId),
         rows = table.getElementsByTagName('tr'),
-        i;
+        i:number;
     for (i = 1; i < rows.length; i++) {
       rows[i].onclick = function(row:HTMLTableRowElement) {
         return function() {
@@ -187,7 +196,7 @@ export function onRowClick(tableId:string, callback:any) {
 
 export function deleteDismissJob(btn: HTMLButtonElement, job_id: string, fn: string) {
   let title:string = '';
-  if (fn == 'delete') {
+  if (fn === 'delete') {
     title = 'Delete Job';
   } else {
     title = 'Dismiss Job';

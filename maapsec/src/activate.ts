@@ -1,11 +1,11 @@
 import { JupyterFrontEnd } from '@jupyterlab/application';
 import { ICommandPalette } from '@jupyterlab/apputils';
-import { IStateDB } from '@jupyterlab/coreutils';
+import { IStateDB } from '@jupyterlab/statedb';
 import { IMainMenu } from '@jupyterlab/mainmenu';
-import { Menu } from '@phosphor/widgets';
+import { Menu } from '@lumino/widgets';
 import { maapLogin } from './funcs';
 import { RequestResult } from './request';
-import { Token } from '@phosphor/coreutils';
+import { Token } from '@lumino/coreutils';
 
 const id = 'maapsec-extension:IMaapProfile';
 

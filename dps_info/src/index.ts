@@ -1,6 +1,6 @@
 import { JupyterFrontEndPlugin } from '@jupyterlab/application';
 import { ICommandPalette } from '@jupyterlab/apputils';
-import { IStateDB } from '@jupyterlab/coreutils';
+import { IStateDB } from '@jupyterlab/statedb';
 import { IMainMenu } from '@jupyterlab/mainmenu';
 import { activateJobPanel, activateJobWidget, activateMenuOptions } from './activate';
 
