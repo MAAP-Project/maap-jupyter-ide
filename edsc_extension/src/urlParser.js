@@ -46,7 +46,7 @@ const urlDefs = {
     granuleDataFormatFacets: { shortKey: 'gdf', encode: encodeFacets, decode: decodeFacets },
     gridName: { shortKey: 's2n', encode: encodeString, decode: decodeString },
     gridCoords: { shortKey: 's2c', encode: encodeGridCoords, decode: decodeGridCoords },
-    shapefileId: { shortKey: 'sf', encode: encodeString, decode: encodeString },
+    shapefileId: { shortKey: 'sf', encode: encodeString, decode: decodeString },
     tagKey: { shortKey: 'tag_key', encode: encodeString, decode: decodeString },
     hasGranulesOrCwic: { shortKey: 'ac', encode: encodeHasGranulesOrCwic, decode: decodeHasGranulesOrCwic },
     autocompleteSelected: { shortKey: 'as', encode: encodeAutocomplete, decode: decodeAutocomplete }
@@ -135,6 +135,16 @@ export const decodeUrlParams = (paramString) => {
 
     const autocompleteSelected = decodeHelp(params, 'autocompleteSelected')
 
+    // Fetch collections in the project
+    const { collectionIds = [] } = project || {}
+
+    // Create a unique list of collections to fetch and remove any empty values [.filter(Boolean)]
+    const uniqueCollectionList = [...new Set([
+        ...collectionIds,
+        focusedCollection
+    ])].filter(Boolean)
+    console.log(project, uniqueCollectionList);
+
     return {
         advancedSearch,
         autocompleteSelected,
@@ -144,9 +154,77 @@ export const decodeUrlParams = (paramString) => {
         focusedCollection,
         focusedGranule,
         map,
-        project,
+        conceptId: uniqueCollectionList,
         query,
         shapefile,
         timeline
     }
 }
+
+// export const updateStore = ({
+//                                 advancedSearch,
+//                                 autocompleteSelected,
+//                                 cmrFacets,
+//                                 collections,
+//                                 featureFacets,
+//                                 focusedCollection,
+//                                 focusedGranule,
+//                                 map,
+//                                 project,
+//                                 query,
+//                                 shapefile,
+//                                 timeline
+//                             }, newPathname) =>  {
+//
+//     // If the newPathname is not equal to the current pathname, restore the data from the url
+//     // if (loadFromUrl || (newPathname && newPathname !== pathname)) {
+//     //     dispatch(restoreFromUrl({
+//     //         advancedSearch,
+//     //         autocompleteSelected,
+//     //         cmrFacets,
+//     //         collections,
+//     //         featureFacets,
+//     //         focusedCollection,
+//     //         focusedGranule,
+//     //         map,
+//     //         project,
+//     //         query,
+//     //         shapefile,
+//     //         timeline
+//     //     }))
+//
+//         let requestAddedGranules = true
+//
+//         // If we are moving to a /search path, fetch collection results, this saves an extra request on the non-search pages.
+//         // Setting requestAddedGranules forces all page types other than search to request only the added granules if they exist, in all
+//         // other cases, getGranules will be requested using the granule search query params.
+//         // if ((pathname.includes('/search') && !newPathname) || (newPathname && newPathname.includes('/search'))) {
+//         //     requestAddedGranules = false
+//         //     dispatch(actions.getCollections())
+//         //     dispatch(actions.getFocusedCollection())
+//         // }
+//
+//         // Fetch collections in the project
+//         const { collectionIds = [] } = project || {}
+//
+//         // Create a unique list of collections to fetch and remove any empty values [.filter(Boolean)]
+//         const uniqueCollectionList = [...new Set([
+//             ...collectionIds,
+//             focusedCollection
+//         ])].filter(Boolean)
+//
+//         if (uniqueCollectionList.length > 0) {
+//             try {
+//                 await dispatch(actions.getProjectCollections(uniqueCollectionList))
+//                 dispatch(actions.fetchAccessMethods(uniqueCollectionList))
+//                 dispatch(actions.getGranules(uniqueCollectionList, {
+//                     requestAddedGranules
+//                 }))
+//             } catch (e) {
+//                 parseError(e)
+//             }
+//         }
+//
+//         dispatch(actions.getTimeline())
+//     }
+// }

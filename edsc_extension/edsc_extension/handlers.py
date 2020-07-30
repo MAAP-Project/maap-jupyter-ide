@@ -3,8 +3,8 @@ import sys
 import nbformat
 from notebook.base.handlers import IPythonHandler
 import subprocess
-sys.path.append('./edsc_extension/maap-py')
-print(subprocess.check_output('pwd',shell=True))
+# sys.path.append('/Users/mdebelli/MAAP/maap-py')
+# print(subprocess.check_output('pwd',shell=True))
 #from maap import maap.MAAP as MAAP
 import maap
 from maap.maap import MAAP
@@ -13,7 +13,7 @@ from maap.maap import MAAP
 #PATH_TO_MAAP_CFG = './maap-py/maap.cfg'
 
 # In Docker Image Che Config
-PATH_TO_MAAP_CFG = '/edsc_extension/maap-py/maap.cfg'
+# PATH_TO_MAAP_CFG = '/edsc_extension/maap-py/maap.cfg'
 
 class GetGranulesHandler(IPythonHandler):
     def printUrls(self, granules):
@@ -27,11 +27,11 @@ class GetGranulesHandler(IPythonHandler):
     def get(self):
 
         maap = MAAP()
-        json_obj = self.get_argument('json_obj', '')
+        cmr_query = self.get_argument('cmr_query', '')
         limit = str(self.get_argument('limit', ''))
-        print("json obj", json_obj)
+        print("cmr_query", cmr_query)
 
-        query_string = maap.getCallFromEarthdataQuery(json_obj, limit=limit)
+        query_string = maap.getCallFromCmrUri(cmr_query, limit=limit)
         granules = eval(query_string)
         query_result = self.printUrls(granules)
         try:
@@ -44,11 +44,11 @@ class GetGranulesHandler(IPythonHandler):
 class GetQueryHandler(IPythonHandler):
     def get(self):
         maap = MAAP()
-        json_obj = self.get_argument('json_obj', '')
+        cmr_query = self.get_argument('cmr_query', '')
         limit = str(self.get_argument('limit', ''))
-        print("json obj", json_obj)
+        print("cmr_query", cmr_query)
 
-        query_string = maap.getCallFromEarthdataQuery(json_obj, limit=limit)
+        query_string = maap.getCallFromCmrUri(cmr_query, limit=limit)
         print("Response is: ", query_string)
         self.finish({"query_string": query_string})
 

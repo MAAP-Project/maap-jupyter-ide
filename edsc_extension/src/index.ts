@@ -23,9 +23,15 @@ import { IFrameWidget } from './widgets';
 import { setResultsLimit, displaySearchParams } from './popups'
 import globals = require("./globals");
 import { decodeUrlParams } from "./urlParser";
+import {buildCmrQuery} from "./buildCmrQuery";
 
-const SEARCH_CLIENT_URL = document.location.origin + ':3052/search';
-console.log(SEARCH_CLIENT_URL);
+let SEARCH_CLIENT_URL = '';
+if (document.location.hostname === 'localhost') {
+    SEARCH_CLIENT_URL = 'https://che-k8s.maap.xyz:3052/search'
+} else {
+    SEARCH_CLIENT_URL = document.location.origin + ':3052/search';
+}
+console.log("EDSC instance is", SEARCH_CLIENT_URL);
 
 ///////////////////////////////////////////////////////////////
 //
@@ -59,8 +65,13 @@ function activate(app: JupyterFrontEnd,
   // Listen for messages being sent by the iframe - parse the url and set as parameters for search
   //
   window.addEventListener("message", (event: MessageEvent) => {
-    globals.params = decodeUrlParams(event.data);
-    console.log("message from iframe", event.data);
+      // if the message sent is the edsc url
+      if (typeof event.data === "string"){
+          const queryString = '?' + event.data.split('?')[1];
+          const decodedUrlObj = decodeUrlParams(queryString);
+          globals.query = "https://fake.com/?" + buildCmrQuery(decodedUrlObj);
+          console.log(globals.query);
+      }
   });
 
 
@@ -92,7 +103,7 @@ function activate(app: JupyterFrontEnd,
     if (result_type == "query") {
 
         var getUrl = new URL(PageConfig.getBaseUrl() + 'edsc/getQuery');
-        getUrl.searchParams.append("json_obj", JSON.stringify(globals.params));
+        getUrl.searchParams.append("cmr_query", globals.query);
         getUrl.searchParams.append("limit", globals.limit);
 
         // Make call to back end
@@ -131,7 +142,7 @@ function activate(app: JupyterFrontEnd,
     } else {
 
       var getUrl = new URL(PageConfig.getBaseUrl() + 'edsc/getGranules');
-      getUrl.searchParams.append("json_obj", JSON.stringify(globals.params));
+      getUrl.searchParams.append("cmr_query", globals.query);
       getUrl.searchParams.append("limit", globals.limit);
 
 
