@@ -18,11 +18,13 @@ export class JobTable extends Widget {
     _job_id: string;
     _table: string;
     _results: string;
+    _metrics: string;
 
     JOBS: {[k:string]:string};
     DISPLAYS: {[k:string]:string};
 
     _resultsTableName: string;
+    _metricsTableName: string;
 
     constructor(uname:string) {
         super();
@@ -30,9 +32,11 @@ export class JobTable extends Widget {
         this._job_id = '';
         this._table = '';
         this._results = '';
+        this._metrics = '';
 
         this.addClass(CONTENT_CLASS);
-        this._resultsTableName = 'job-result-display'
+        this._resultsTableName = 'job-result-display';
+        this._metricsTableName = 'job-metrics-display';
 
         let br = document.createElement('br');
         this.node.appendChild(br);
@@ -43,92 +47,7 @@ export class JobTable extends Widget {
         div.appendChild(p);
         this.node.appendChild(div);
 
-        this._updateJobTable.bind(this);
-        this._getJobList.bind(this);
-        this._updateJobInfo.bind(this);
-        this._getJobResult.bind(this);
         this._setRowClick.bind(this);
-    }
-
-    update() {
-        // pull new jobs list
-        this._getJobList(this);
-        // potentially update job details & results
-        this._getJobResult();
-    }
-
-    async _getJobList(me:JobTable) {
-        // console.log(this._username);
-        const res:RequestResult = await getJobs(me._username);
-        if(res.ok){
-            let json_response:any = res.json();
-            INotification.success("Get user jobs success.");
-            // console.log(json_response);
-            if (json_response['status_code'] === 200){
-                // let resp = json_response['result'];
-                me._table = json_response['table'];
-                JOBS = json_response['jobs'];
-                DISPLAYS = json_response['displays'];
-
-                // catch case if user has no jobs
-                let num_jobs = Object.keys(JOBS).length;
-                if (num_jobs > 0) {
-                    // if job_id not set, pick 1st one
-                    if (me._job_id === undefined || me._job_id === '') {
-                        me._job_id = Object.keys(JOBS)[0];
-                    }
-                    me._updateJobTable(me);
-                    me._setRowClick('job-cache-display', function(){me._updateJobDisplay()});
-                }
-            } else {
-                console.log('unable to get user job list');
-                INotification.error("Get user jobs failed.");
-            }
-        } else {
-            console.log('unable to get user job list');
-            INotification.error("Get user jobs failed.");
-        }
-    }
-
-    _updateJobTable(me:JobTable): void {
-        let table:string = me._table;
-        // console.log(table);
-        if (document.getElementById('job-cache-display') !== null) {
-            (document.getElementById('job-cache-display') as HTMLTextAreaElement).innerHTML = table;
-        } else {
-            // create div for table if table doesn't already exist
-            var div = document.createElement('div');
-            div.setAttribute('id', 'job-table');
-            div.setAttribute('resize','none');
-            div.setAttribute('class','jp-JSONEditor-host');
-            div.setAttribute('style','border-style:none;')
-
-            // jobs table
-            let textarea = document.createElement("table");
-            textarea.id = 'job-cache-display';
-            textarea.innerHTML = table;
-            textarea.className = 'jp-JSONEditor-host';
-            div.appendChild(textarea);
-            this.node.appendChild(div);
-        }
-
-        let updateJobList = this._getJobList;
-        // --------------------
-        // refresh button
-        // --------------------
-        if (document.getElementById('job-refresh-button') === null) {
-            let div = (document.getElementById('jobs-div') as HTMLDivElement);
-            if (div !== null) {
-                let refreshBtn = document.createElement('button');
-                refreshBtn.id = 'job-refresh-button';
-                refreshBtn.className = 'jupyter-button';
-                refreshBtn.innerHTML = 'Refresh Job List';
-                refreshBtn.addEventListener('click', function() {updateJobList(me)}, false);
-                let br = document.createElement('br');
-                div.appendChild(br);
-                div.appendChild(refreshBtn);
-            }
-        }
     }
 
     _updateJobInfo() {
@@ -177,34 +96,78 @@ export class JobTable extends Widget {
         }
     }
 
-    async _getJobResult() {
-        if (this._job_id === undefined || this._job_id === '') {
-            this._results = '<p> Job ID not selected.</p>';
-            console.log('job id undefined/empty');
-        } else if (JOBS[this._job_id]['status'] !== 'job-completed') {
-            this._results = '<p> Job '+this._job_id+' not complete</p>';
-            console.log('job not complete');
+    _updateJobTable(me:JobTable): void {
+        let table:string = me._table;
+        // console.log(table);
+        if (document.getElementById('job-cache-display') !== null) {
+            (document.getElementById('job-cache-display') as HTMLTextAreaElement).innerHTML = table;
         } else {
-            console.log('looking up job results');
-            const res:RequestResult = await getResults(this._job_id,this._username);
-            // console.log(res);
-            if (res.ok) {
-                let json_response:any = res.json();
-                
-                if (json_response['status_code'] === 200) {
-                    INotification.success("Get user job result success.");
-                    this._results = json_response['results'];
-                } else {
-                    console.log('get user job result != 200');
-                    INotification.error("Get user job result failed.");
-                    this._results = '<p> Retrieving '+this._job_id+' result got'+json_response['status_code']+'</p>';
-                }
-            } else {
-                console.log('unable to get user job result');
-                INotification.error("Get user job result failed.");
+            // create div for table if table doesn't already exist
+            var div = document.createElement('div');
+            div.setAttribute('id', 'job-table');
+            div.setAttribute('resize','none');
+            div.setAttribute('class','jp-JSONEditor-host');
+            div.setAttribute('style','border-style:none;')
+
+            // jobs table
+            let textarea = document.createElement("table");
+            textarea.id = 'job-cache-display';
+            textarea.innerHTML = table;
+            textarea.className = 'jp-JSONEditor-host';
+            div.appendChild(textarea);
+            this.node.appendChild(div);
+        }
+
+        let updateJobList = this._getJobList;
+        // --------------------
+        // refresh button
+        // --------------------
+        if (document.getElementById('job-refresh-button') === null) {
+            let div = (document.getElementById('jobs-div') as HTMLDivElement);
+            if (div !== null) {
+                let refreshBtn = document.createElement('button');
+                refreshBtn.id = 'job-refresh-button';
+                refreshBtn.className = 'jupyter-button';
+                refreshBtn.innerHTML = 'Refresh Job List';
+                refreshBtn.addEventListener('click', function() {updateJobList(me)}, false);
+                let br = document.createElement('br');
+                div.appendChild(br);
+                div.appendChild(refreshBtn);
             }
         }
-        this._updateJobResult();
+    }
+
+    async _getJobList(me:JobTable) {
+        // console.log(this._username);
+        const res:RequestResult = await getJobs(me._username);
+        if(res.ok){
+            let json_response:any = res.json();
+            INotification.success("Get user jobs success.");
+            // console.log(json_response);
+            if (json_response['status_code'] === 200){
+                // let resp = json_response['result'];
+                me._table = json_response['result'];
+                JOBS = json_response['jobs'];
+                DISPLAYS = json_response['displays'];
+
+                // catch case if user has no jobs
+                let num_jobs = Object.keys(JOBS).length;
+                if (num_jobs > 0) {
+                    // if job_id not set, pick 1st one
+                    if (me._job_id === undefined || me._job_id === '') {
+                        me._job_id = Object.keys(JOBS)[0];
+                    }
+                    me._updateJobTable(me);
+                    me._setRowClick('job-cache-display', function(){me._updateJobDisplay()});
+                }
+            } else {
+                console.log('unable to get user job list');
+                INotification.error("Get user jobs failed.");
+            }
+        } else {
+            console.log('unable to get user job list');
+            INotification.error("Get user jobs failed.");
+        }
     }
 
     _updateJobResult() {
@@ -245,15 +208,122 @@ export class JobTable extends Widget {
         }
     }
 
+    async _getJobResult() {
+        if (this._job_id === undefined || this._job_id === '') {
+            this._results = '<p> Job ID not selected.</p>';
+            console.log('job id undefined/empty');
+        } else if (JOBS[this._job_id]['status'] !== 'job-completed') {
+            this._results = '<p> Job '+this._job_id+' not complete</p>';
+            console.log('job not complete');
+        } else {
+            console.log('looking up job results');
+            const res:RequestResult = await getResults(this._job_id,this._username);
+            // console.log(res);
+            if (res.ok) {
+                let json_response:any = res.json();
+                
+                if (json_response['status_code'] === 200) {
+                    INotification.success("Get user job result success.");
+                    this._results = json_response['results'];
+                } else {
+                    console.log('get user job result != 200');
+                    INotification.error("Get user job result failed.");
+                    this._results = '<p> Retrieving '+this._job_id+' result got'+json_response['status_code']+'</p>';
+                }
+            } else {
+                console.log('unable to get user job result');
+                INotification.error("Get user job result failed.");
+            }
+        }
+        this._updateJobResult();
+    }
+
+    _updateJobMetrics() {
+        // todo
+        let outerDiv = (document.getElementById('jobs-div') as HTMLDivElement);
+        // section header formatting
+        if (outerDiv === null) {
+            outerDiv = document.createElement('div');
+            outerDiv.setAttribute('id', this._metricsTableName+'-div');
+            outerDiv.setAttribute('resize','none');
+            outerDiv.setAttribute('class','jp-JSONEditor-host');
+            outerDiv.setAttribute('style','border-style:none; overflow: auto');
+        }
+        // 1-time add line break and section header for job result
+        if (document.getElementById('job-metrics-head') == null) {
+            // line break
+            let line = document.createElement('hr');
+            outerDiv.appendChild(line);
+
+            // display header
+            let detailHeader = document.createElement('h4');
+            detailHeader.setAttribute('id','job-metrics-head');
+            detailHeader.setAttribute('style','margin:0px');
+            detailHeader.innerText = 'Job Metrics';
+            outerDiv.appendChild(detailHeader);
+        }
+
+        // update table
+        if (document.getElementById(this._metricsTableName) !== null) {
+            (document.getElementById(this._metricsTableName) as HTMLTextAreaElement).innerHTML = this._metrics;
+        } else {
+          let display = document.createElement("table");
+          display.id = this._metricsTableName;
+          display.innerHTML = this._metrics;
+          display.setAttribute('class','jp-JSONEditor-host');
+          display.setAttribute('style','border-style:none; font-size:11px');
+          outerDiv.appendChild(display);
+        }
+    }
+
+    async _getJobMetrics() {
+        if (this._job_id === undefined || this._job_id === '') {
+            this._metrics = '<p> Job ID not selected.</p>';
+            console.log('job id undefined/empty');
+        } else if (JOBS[this._job_id]['status'] !== 'job-completed') {
+            this._metrics = '<p> Job '+this._job_id+' not complete</p>';
+            console.log('job not complete');
+        } else {
+            console.log('looking up job metrics');
+            const res:RequestResult = await getMetrics(this._job_id,this._username);
+            // console.log(res);
+            if (res.ok) {
+                let json_response:any = res.json();
+                
+                if (json_response['status_code'] === 200) {
+                    INotification.success("Get user job metrics success.");
+                    this._results = json_response['results'];
+                } else {
+                    console.log('get user job result != 200');
+                    INotification.error("Get user job metrics failed.");
+                    this._results = '<p> Retrieving '+this._job_id+' metrics got'+json_response['status_code']+'</p>';
+                }
+            } else {
+                console.log('unable to get user job metrics');
+                INotification.error("Get user job metrics failed.");
+            }
+        }
+        this._updateJobMetrics();
+    }
+
     _updateJobDisplay() {
         this._updateJobInfo();
         this._getJobResult();
+        this._getJobMetrics();
+    }
+
+    update() {
+        // pull new jobs list
+        this._getJobList(this);
+        // potentially update job details & results
+        this._getJobResult();
+        this._getJobMetrics();
     }
 
     // set clickable rows
-    _setRowClick(div_name:string, setDisplays:any) {
+    _setRowClick(tableId:string, setDisplays:any) {
         let me = this;
-        onRowClick(div_name, function(row:HTMLTableRowElement){
+        onRowClick(tableId, function(row:HTMLTableRowElement){
             let job_id = row.getElementsByTagName('td')[0].innerHTML;
             console.log('set new job id '+job_id);
             me._job_id = job_id;
@@ -272,7 +342,7 @@ export class JobWidget extends Widget {
     _job_id: string;
     _widget_div: HTMLDivElement;
     
-    // _table: string;
+    _table: string;
     _results: string;
     _metrics: string;
 
@@ -294,6 +364,10 @@ export class JobWidget extends Widget {
         this._execute_params_id = 'execute-params-table';
         this._resultsTableName = 'widget-job-result-table';
         this._metricsTableName = 'widget-metrics-table';
+
+        this._table = '';
+        this._results = '';
+        this._metrics = '';
         
         this.addClass(CONTENT_CLASS);
         this.addClass(WIDGET_CLASS);
@@ -1011,59 +1085,48 @@ export class JobWidget extends Widget {
 
     // OTHER.     ==============================================
 
-    async update() {
-        // update tabs content
-        this._updateRunJobs();
-        this._updateJobInfo();
-        // this._getJobList().then(() => this._updateJobInfo());
-
-        // jobtable below
-        let textarea:HTMLTextAreaElement = document.getElementById(this._widget_table_name) as HTMLTextAreaElement;
+    _updateJobTable(me:JobWidget) {
+        let table:string = me._table
+        let textarea:HTMLTextAreaElement = document.getElementById('widget-job-table') as HTMLTextAreaElement;
         if (textarea) {
-            // update job table content
-            const res:RequestResult = await getJobs(this._username);
-            if(res.ok){
-                let json_response:any = res.json();
-                INotification.success("Get user jobs success.");
-                if (json_response['status_code'] === 200){
-                    textarea.innerHTML = json_response['table'];
-                    JOBS = json_response['jobs'];
-                    DISPLAYS = json_response['displays'];
-
-                    // catch case if user has no jobs
-                    let num_jobs = Object.keys(JOBS).length;
-                    if (num_jobs > 0) {
-                        // if job_id not set, pick 1st one
-                        if (this._job_id === undefined || this._job_id === '') {
-                            this._job_id = Object.keys(JOBS)[0];
-                        }
-                    }
-                } else {
-                    console.log('unable to get user job list');
-                    INotification.error("Get user jobs failed.");
-                }
-            } else {
-                console.log('unable to get user job list');
-                INotification.error("Get user jobs failed.");
-            }
+            textarea.innerHTML = table;
+            // textarea.id = me._widget_table_name;
         } else {
             // create div for jobid table if table doesn't already exist
             let div = document.createElement('div');
             div.setAttribute('id', 'widget-job-table');
             div.setAttribute('resize','none');
             div.setAttribute('class','jp-JSONEditor-host');
-            div.setAttribute('style','border-style:none;');
+            div.setAttribute('style','border-style:none; font-size:14px;');
 
+            // jobs table
             let textarea = document.createElement("table");
-            textarea.id = this._widget_table_name;
+            textarea.id = me._widget_table_name;
+            textarea.innerHTML = table;
 
-            // actually set job table content
-            const res:RequestResult = await getJobs(this._username);
+            div.appendChild(textarea);
+
+            // 1-time attach div to widget div
+            let jw_div = me._widget_div;
+            let h = document.getElementById('widget-job-table-header') as HTMLHeadingElement;
+            if (jw_div && !h){
+                jw_div.appendChild(document.createElement('hr'));
+                h = document.createElement('h3');
+                h.id = 'widget-job-table-header';
+                h.innerText = 'Submitted Jobs';
+                jw_div.appendChild(h);
+                jw_div.appendChild(div);
+            }
+        }
+    }
+
+    async _getJobList(me:JobWidget) {
+        const res:RequestResult = await getJobs(this._username);
             if(res.ok){
                 let json_response:any = res.json();
                 INotification.success("Get user jobs success.");
                 if (json_response['status_code'] === 200){
-                    textarea.innerHTML = json_response['table'];
+                    me._table = json_response['table'];
                     JOBS = json_response['jobs'];
                     DISPLAYS = json_response['displays'];
 
@@ -1074,6 +1137,8 @@ export class JobWidget extends Widget {
                         if (this._job_id === undefined || this._job_id === '') {
                             this._job_id = Object.keys(JOBS)[0];
                         }
+                        me._updateJobTable(me);
+                        me._setJobClick('widget-job-table', function(){me._updateJobInfo()})
                     }
                 } else {
                     console.log('unable to get user job list');
@@ -1083,19 +1148,16 @@ export class JobWidget extends Widget {
                 console.log('unable to get user job list');
                 INotification.error("Get user jobs failed.");
             }
+    }
 
-            div.appendChild(textarea);
+    update() {
+        // update tabs content
+        this._updateRunJobs();
+        this._updateJobInfo();
 
-            // attach div to widget div
-            let jw_div = this._widget_div;
-            if (jw_div !== null){
-                jw_div.appendChild(document.createElement('hr'));
-                let h = document.createElement('h3');
-                h.innerText = 'Submitted Jobs';
-                jw_div.appendChild(h);
-                jw_div.appendChild(div);
-            }
-        }
+        // jobtable below
+        this._getJobList(this);
+        
         console.log('update UI');
     }
 
@@ -1111,5 +1173,17 @@ export class JobWidget extends Widget {
         }
         document.getElementById(section).style.display = "block";
         evt.currentTarget.className += " active";
+    }
+
+    // set clickable rows
+    _setJobClick(tableId:string, setDisplays:any) {
+        let me = this;
+        onRowClick(tableId, function(row:HTMLTableRowElement){
+            let job_id = row.getElementsByTagName('td')[0].innerHTML;
+            console.log('widget set new job id '+job_id);
+            me._job_id = job_id;
+            setDisplays(me);
+            me._results = '';
+        });
     }
 }

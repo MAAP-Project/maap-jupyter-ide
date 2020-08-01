@@ -17,7 +17,6 @@ const extensionPanel: JupyterFrontEndPlugin<void> = {
     let jPanel = new JobTable('eyam');
     jPanel.id = 'job-cache-display';
 
-    jPanel.id = 'job-cache-display';
     jPanel.title.label = 'Jobs';
     jPanel.title.caption = 'Jobs sent to DPS';
     app.shell.add(jPanel, 'left', {rank: 300});
@@ -32,6 +31,7 @@ const extensionPanel: JupyterFrontEndPlugin<void> = {
 
     palette.addItem({command: jPanel_update_command, category: 'DPS/MAS'});
     console.log('JupyterLab extension dps_info jobs panel is activated!');
+    setTimeout(() => { jPanel.update(); }, 2000);
   }
 };
 
@@ -71,6 +71,7 @@ const extensionTabUI: JupyterFrontEndPlugin<void> = {
     
     palette.addItem({command: jWidget_command, category: 'DPS/MAS'});
     console.log('JupyterLab extension dps_info job widget ui is activated!'); 
+    setTimeout(() => { jobsWidget.content.update(); }, 2000);
   }
 }
 

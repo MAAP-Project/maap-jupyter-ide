@@ -75,9 +75,9 @@ export async function getMetrics(job_id: string, username:string): Promise<Reque
 
 // clickable table rows helper function
 export function onRowClick(tableId:string, callback:any) {
-    if (document.getElementById(tableId) !== undefined) {
-        let table = document.getElementById(tableId),
-            rows = table.getElementsByTagName('tr'),
+    let table = document.getElementById(tableId)
+    if (table) {
+        let rows = table.getElementsByTagName('tr'),
             i:number;
         for (i = 1; i < rows.length; i++) {
             rows[i].onclick = function(row:HTMLTableRowElement) {

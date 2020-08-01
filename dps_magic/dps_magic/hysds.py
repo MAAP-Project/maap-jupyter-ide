@@ -47,6 +47,7 @@ class HysdsMagic(Magics):
         lstt.append(['%list','list algorithms registered in MAS'])
         lstt.append(['%describe','describe the selected algorithm'])
         lstt.append(['%execute', 'submit a job to DPS using an algorithm registered in MAS'])
+        lstt.append(['%list_jobs','list all of a user\'s submitted jobs'])
         lstt.append(['%status','check the status of a submitted job'])
         lstt.append(['%metrics','get the metrics of a completed job'])
         lstt.append(['%result','get the results for a completed job'])
@@ -115,6 +116,29 @@ class HysdsMagic(Magics):
         else:
             print('unable to parse')
         return
+
+    @line_magic
+    def list_jobs(self, line):
+        logging.debug('line call is')
+        logging.debug(line)
+
+        if line.strip() in ['','h','help']:
+            list_job_help = 'Job List Help<br><br>List all the jobs a user has submitted to DPS.  You need to know your username.'
+            list_job_str = 'Example Job List Call:<br>    %list_jobs eyam'
+            self.html(list_job_help,list_job_str)
+            return
+
+        endpoint = '/hysds/listJobs'
+        call = '?username={}'.format(line.strip())
+
+        logging.debug("call is")
+        logging.debug(call)
+
+        url = self.lk + endpoint + call
+        r = requests.get(url)
+        resp = json.loads(r.text)
+        self.html(resp['result'])
+        return 
     
     @line_magic
     def status(self, line):
