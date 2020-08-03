@@ -1,28 +1,26 @@
 # insert_defaults_to_notebook
 
-Add a button to the notebook toolbar. When clicked it will insert the default libraries for MAAP
-as the top cell in user's notebook.
+## Overview
+Add a button to the Jupyter Notebook toolbar. When clicked it will insert the default libraries for MAAP as the top cell in user's notebook.
 
+## Requirements
+* JupyterLab >= 2.1.4
+* nodejs >= 10.13.0
+* see `package.json` for package dependencies
 
-## Prerequisites
-
-* JupyterLab
-
-
-## Development
-
-For a development install (requires npm version 4 or later), do the following in the repository directory:
-
+### Build & Install Lab Extension
 ```bash
+cd maap-jupyter-ide/insert_defaults_to_notebook
 npm install
 npm run build
 jupyter labextension link .
 ```
 
-To rebuild the package and the JupyterLab app:
-
+### Uninstall
 ```bash
-npm run build
-jupyter lab build
+jupyter labextension uninstall insert_defaults_to_notebook
 ```
 
+## Development
+
+Contact: Maya Debellis (JPL)

@@ -10,8 +10,8 @@ import { NotebookActions, NotebookPanel, INotebookTracker } from '@jupyterlab/no
 
 
 /** phosphor imports **/
-import { Menu } from '@phosphor/widgets';
-import { ReadonlyJSONObject } from '@phosphor/coreutils';
+import { Menu } from '@lumino/widgets';
+import { ReadonlyJSONObject } from '@lumino/coreutils';
 
 /** other external imports **/
 import { INotification } from "jupyterlab_toastify";

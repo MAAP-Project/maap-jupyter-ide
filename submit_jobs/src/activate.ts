@@ -1,11 +1,11 @@
 import { JupyterFrontEnd } from '@jupyterlab/application';
 import { ICommandPalette } from '@jupyterlab/apputils';
-import { PageConfig, IStateDB } from '@jupyterlab/coreutils';
+import { PageConfig } from '@jupyterlab/coreutils';
+import { IStateDB } from '@jupyterlab/statedb';
 import { ILauncher } from '@jupyterlab/launcher';
 import { IFileBrowserFactory } from "@jupyterlab/filebrowser";
 import { IMainMenu } from '@jupyterlab/mainmenu';
-import { Menu } from '@phosphor/widgets';
-import { INotification } from 'jupyterlab_toastify';
+import { Menu } from '@lumino/widgets';
 import { InputWidget, RegisterWidget, popupText } from './widgets';
 import { ProjectSelector } from './selector';
 import { popup, popupResult } from './dialogs';
@@ -195,10 +195,7 @@ export function activateDescribe(app: JupyterFrontEnd,
     label: 'Describe Algorithm',
     isEnabled: () => true,
     execute: args => {
-      state.fetch(profileId).then((profile) => {
-        let profileObj = JSON.parse(JSON.stringify(profile));
-        let uname:string = profileObj.preferred_username;
-        let ticket:string = profileObj.proxyGrantingTicket;
+      getUsernameToken(state,profileId,function(uname:string,ticket:string) {
         popupResult(new ProjectSelector('describeProcess',describeProcessFields,uname,ticket),"Select an Algorithm");
       });
     }
@@ -214,10 +211,7 @@ export function activateExecute(app: JupyterFrontEnd,
     label: 'Execute DPS Job',
     isEnabled: () => true,
     execute: args => {
-      state.fetch(profileId).then((profile) => {
-        let profileObj = JSON.parse(JSON.stringify(profile));
-        let uname:string = profileObj.preferred_username;
-        let ticket:string = profileObj.proxyGrantingTicket;
+      getUsernameToken(state,profileId,function(uname:string,ticket:string) {
         popupResult(new ProjectSelector('executeInputs',executeInputsFields,uname,ticket),"Select an Algorithm");
       });
     }
@@ -331,7 +325,7 @@ export function activateDeleteAlgorithm(app: JupyterFrontEnd,
     isEnabled: () => true,
     execute: args => {
       getUsernameToken(state,profileId,function(uname:string,ticket:string) {
-        popup(new ProjectSelector('deleteAlgorithm',deleteAlgorithmFields,uname,ticket));
+        popupResult(new ProjectSelector('deleteAlgorithm',deleteAlgorithmFields,uname,ticket),"Select an Algorithm to Delete");
       });
     }
   });
