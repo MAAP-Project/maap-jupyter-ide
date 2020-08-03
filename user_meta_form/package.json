@@ -22,14 +22,18 @@
     "watch": "tsc -w"
   },
   "dependencies": {
-    "@jupyterlab/application": "^1.0.2",
-    "@jupyterlab/apputils": "^1.0.2",
-    "@jupyterlab/coreutils": "^3.0.0",
-    "@phosphor/widgets": "^1.8.1"
+    "@jupyterlab/application": "^2.1.2",
+    "@jupyterlab/apputils": "^2.1.1",
+    "@jupyterlab/coreutils": "^4.1.0",
+    "@lumino/widgets": "^1.13.2",
+    "@types/node": "^14.0.14",
+    "bufferutil": "^4.0.1",
+    "crypto": "^1.0.1",
+    "utf-8-validate": "^5.0.2"
   },
   "devDependencies": {
-    "rimraf": "^2.6.1",
-    "typescript": "~3.5.2"
+    "rimraf": "^2.6.3",
+    "typescript": "~3.5.3"
   },
   "sideEffects": [
     "style/*.css"

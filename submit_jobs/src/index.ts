@@ -1,6 +1,6 @@
 import { JupyterFrontEndPlugin } from "@jupyterlab/application";
 import { ICommandPalette } from '@jupyterlab/apputils';
-import { IStateDB } from '@jupyterlab/coreutils';
+import { IStateDB } from '@jupyterlab/statedb';
 import { IFileBrowserFactory } from "@jupyterlab/filebrowser";
 import { ILauncher } from '@jupyterlab/launcher';
 import { IMainMenu } from '@jupyterlab/mainmenu';

@@ -5,7 +5,7 @@ import {getToken, getUserInfo} from "./getKeycloak";
 import {INotification} from "jupyterlab_toastify";
 import {JupyterFrontEnd} from "@jupyterlab/application";
 import {IFileBrowserFactory} from "@jupyterlab/filebrowser";
-import {Widget} from "@phosphor/widgets";
+import {Widget} from "@lumino/widgets";
 
 import { SshWidget, InstallSshWidget, UserInfoWidget } from './widgets'
 
