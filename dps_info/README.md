@@ -1,8 +1,8 @@
 # dps_info
 
-![Github Actions Status](https://github.com/MAAP-Project/maap-jupyter-ide/tree/master/dps_info/workflows/Build/badge.svg)
+![Github Actions Status](https://github.com/MAAP-Project/maap-jupyter-ide/workflows/Build/badge.svg)
 
-GUI component for interfacing with DPS jobs
+A GUI for displaying DPS information and interacting with the DPS backend
 
 
 ## Requirements
