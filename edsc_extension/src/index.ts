@@ -23,7 +23,12 @@ import { IFrameWidget } from './widgets';
 import { setResultsLimit, displaySearchParams } from './popups'
 import globals = require("./globals");
 import { decodeUrlParams } from "./urlParser";
-import {buildCmrQuery} from "./buildCmrQuery";
+import { buildCmrQuery } from "./buildCmrQuery";
+import { granulePermittedCmrKeys,
+        granuleNonIndexedKeys,
+        collectionPermittedCmrKeys,
+        collectionNonIndexedKeys } from "./searchKeys";
+
 
 let SEARCH_CLIENT_URL = '';
 if (document.location.hostname === 'localhost') {
@@ -67,10 +72,13 @@ function activate(app: JupyterFrontEnd,
   window.addEventListener("message", (event: MessageEvent) => {
       // if the message sent is the edsc url
       if (typeof event.data === "string"){
+          globals.edscUrl = event.data;
           const queryString = '?' + event.data.split('?')[1];
           const decodedUrlObj = decodeUrlParams(queryString);
-          globals.query = "https://fake.com/?" + buildCmrQuery(decodedUrlObj);
-          console.log(globals.query);
+          globals.granuleQuery = "https://fake.com/?" + buildCmrQuery(decodedUrlObj, granulePermittedCmrKeys, granuleNonIndexedKeys);
+          globals.collectionQuery = "https://fake.com/?" + buildCmrQuery(decodedUrlObj, collectionPermittedCmrKeys, collectionNonIndexedKeys);
+          console.log("Granule", globals.granuleQuery);
+          console.log("Collection", globals.collectionQuery);
       }
   });
 
@@ -103,7 +111,7 @@ function activate(app: JupyterFrontEnd,
     if (result_type == "query") {
 
         var getUrl = new URL(PageConfig.getBaseUrl() + 'edsc/getQuery');
-        getUrl.searchParams.append("cmr_query", globals.query);
+        getUrl.searchParams.append("cmr_query", globals.granuleQuery);
         getUrl.searchParams.append("limit", globals.limit);
 
         // Make call to back end
@@ -142,7 +150,7 @@ function activate(app: JupyterFrontEnd,
     } else {
 
       var getUrl = new URL(PageConfig.getBaseUrl() + 'edsc/getGranules');
-      getUrl.searchParams.append("cmr_query", globals.query);
+      getUrl.searchParams.append("cmr_query", globals.granuleQuery);
       getUrl.searchParams.append("limit", globals.limit);
 
 

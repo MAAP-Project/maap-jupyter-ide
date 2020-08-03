@@ -1,38 +1,39 @@
 import { stringify } from 'qs';
 import { params } from "./globals";
+import { granulePermittedCmrKeys, granuleNonIndexedKeys} from "./searchKeys";
 
 // Whitelist parameters supplied by the request
-const permittedCmrKeys = [
-    'concept_id',
-    'bounding_box',
-    'circle',
-    'browse_only',
-    'cloud_cover',
-    'day_night_flag',
-    'echo_collection_id',
-    'equator_crossing_date',
-    'equator_crossing_longitude',
-    'exclude',
-    'line',
-    'online_only',
-    'options',
-    'orbit_number',
-    'page_num',
-    'page_size',
-    'point',
-    'polygon',
-    'readable_granule_name',
-    'sort_key',
-    'temporal',
-    'two_d_coordinate_system'
-]
-
-const nonIndexedKeys = [
-    'concept_id',
-    'exclude',
-    'readable_granule_name',
-    'sort_key'
-]
+// const permittedCmrKeys = [
+//     'concept_id',
+//     'bounding_box',
+//     'circle',
+//     'browse_only',
+//     'cloud_cover',
+//     'day_night_flag',
+//     'echo_collection_id',
+//     'equator_crossing_date',
+//     'equator_crossing_longitude',
+//     'exclude',
+//     'line',
+//     'online_only',
+//     'options',
+//     'orbit_number',
+//     'page_num',
+//     'page_size',
+//     'point',
+//     'polygon',
+//     'readable_granule_name',
+//     'sort_key',
+//     'temporal',
+//     'two_d_coordinate_system'
+// ]
+//
+// const nonIndexedKeys = [
+//     'concept_id',
+//     'exclude',
+//     'readable_granule_name',
+//     'sort_key'
+// ]
 
 /*
 * Source: https://stackoverflow.com/questions/30970286/convert-javascript-object-camelcase-keys-to-underscore-case
@@ -63,7 +64,7 @@ function camelCaseKeysToUnderscore(obj){
     return obj;
 }
 
-export const buildCmrQuery = (urlParams) => {
+export const buildCmrQuery = (urlParams, nonIndexedKeys, permittedCmrKeys) => {
     return buildParams({
         body: camelCaseKeysToUnderscore(urlParams),
         nonIndexedKeys,
@@ -87,25 +88,22 @@ export const buildParams = (paramObj) => {
     // const params = body;
 
     // console.log(`Parameters received: ${Object.keys(params)}`)
-    console.log(body);
+    console.log("unfiltered", body);
     const obj = pick(body, permittedCmrKeys)
-    params = obj;
-    console.log("globals is", params);
-
-    // console.log(`Filtered parameters: ${Object.keys(obj)}`)
 
     // For JSON requests we want dont want to stringify the params returned
     if (stringifyResult) {
         // Transform the query string hash to an encoded url string
         const queryParams = prepKeysForCmr(obj, nonIndexedKeys)
 
-        // console.log('CMR Query', queryParams)
-
+        params = queryParams;
+        console.log ("filtered", params);
         return queryParams
     }
 
     // console.log('CMR Query', JSON.stringify(obj, null, 4))
-
+    params = obj;
+    console.log ("filtered", params);
     return obj
 }
 
