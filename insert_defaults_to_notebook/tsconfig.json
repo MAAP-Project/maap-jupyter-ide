@@ -11,6 +11,7 @@
     "strict": true,
     "strictNullChecks": false,
     "target": "es2015",
+    "esModuleInterop": true,
     "types": []
   },
   "include": ["src/*"]
