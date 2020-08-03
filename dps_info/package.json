@@ -33,6 +33,7 @@
   "dependencies": {
     "@jupyterlab/application": "^2.0.0",
     "@jupyterlab/mainmenu": "^2.2.0",
+    "@jupyterlab/statedb": "^2.2.0",
     "@types/node": "^14.0.24",
     "jupyterlab_toastify": "^3.0.0"
   },

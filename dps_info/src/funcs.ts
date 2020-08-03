@@ -1,6 +1,44 @@
 import { PageConfig } from '@jupyterlab/coreutils';
-// import { INotification } from 'jupyterlab_toastify';
+import { IStateDB } from '@jupyterlab/statedb';
+import { INotification } from 'jupyterlab_toastify';
+import { getUserInfo } from "./getKeycloak";
 import { request, RequestResult } from './request';
+
+export function getUsernameToken(state: IStateDB, profileId:string) {
+    let uname:string = 'anonymous';
+    let ticket:string = '';
+    let result:string[] = [uname, ticket];
+    return new Promise<string[]> ((resolve,reject) => {
+        if (["https://che-k8s.maap.xyz","https://ade.maap-project.org"].includes(document.location.origin)) {
+            getUserInfo(function(profile: any) {
+                if (profile['cas:username'] === undefined) {
+                    INotification.error("Get profile failed.");
+                    resolve(result);
+                } else {
+                    uname = profile['cas:username'];
+                    ticket = profile['proxyGrantingTicket'];
+                    result[0] = uname;
+                    result[1] = ticket;
+                    INotification.success("Got profile.");
+                    resolve(result);
+                }
+            });
+        } else {
+            state.fetch(profileId).then((profile) => {
+                let profileObj = JSON.parse(JSON.stringify(profile));
+                INotification.success("Got profile.");
+                uname = profileObj.preferred_username;
+                ticket = profileObj.proxyGrantingTicket;
+                result[0] = uname;
+                result[1] = ticket;
+                resolve(result);
+            }).catch((error) => {
+                INotification.error("Get profile failed.");
+                resolve(result);
+            });
+        }
+    });
+  }
 
 export async function DPSCall(endpoint:string, keywords:string[], kwargs:{[k:string]:string}) {
     let requestUrl = new URL(PageConfig.getBaseUrl() + 'hysds/' + endpoint);
