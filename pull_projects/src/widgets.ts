@@ -1,4 +1,4 @@
-import {Widget} from "@phosphor/widgets";
+import {Widget} from "@lumino/widgets";
 import {getUserInfo} from "./getKeycloak";
 import {request, RequestResult} from "./request";
 import {PageConfig} from "@jupyterlab/coreutils";

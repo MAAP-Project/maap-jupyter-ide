@@ -3,11 +3,50 @@
 This repo includes JupyterLab extensions that have been built for the MAAP project (https://che-k8s.maap.xyz/)
 
 In order to use each of these extensions they must be installed and enabled in your environment. Instructions for each extension can be 
-found in the respective folder. 
+found in the respective folder. Make sure each extension's dependencies are installed first.
 
-These extensions have been developed for `Jupyter 4.4.0` and `Jupyter Lab 1.0.2`.
+These extensions have been developed for `Jupyter 4.4.0` and `Jupyter Lab 2.1.4`.
 
-#### Getting Started on Your Extension
+## Environment Setup for MAAP Extensions
+All the MAAP Jupyter extensions share some common dependencies.
+
+### Environment Setup and Dependencies
+``` bash
+conda install conda=4.7.12 jupyterlab=2.1.4 nodejs=10.13.0 gitpython=3.0.2
+jupyter labextension install jupyterlab_toastify@2.3.0 --no-build
+npm i jupyterlab_toastify@2.3.0
+pip install plotly==4.0.0
+jupyter labextension install @jupyterlab/plotly-extension@1.0.0
+jupyter labextension install @jupyter-widgets/jupyterlab-manager@1.0
+```
+
+## Extension Installation Order
+There is no strict order to install the extensions in, but since some extensions depend on others, those dependencies should be installed first.  For each of the following extensions (in recommended order), the sub-bullet points will indicate if it requires installing another extension listed above it first.  
+
+**Note:** Extensions marked as _Che-only_ don't make sense to install locally, since they only work in the context of the Che UI and/or containerized contexts, and require use of the Che API.
+
+* `hide_side_panel` _(Che-only)_
+* `ipycmc`
+* `pull_projects` _(Che-only)_
+* `show_ssh_info`
+    * ssh features _(Che-only)_
+    * s3 features work locally
+        * requires `s3fs-fuse` util and AWS keys/role, `boto3` Python library installed (see extension README)
+* `edsc_extension`
+    * requires `maap-py` library (see extension README)
+* `maapsec`
+* `submit_jobs`
+    * requires `maapsec`
+* `dps_magic`
+     * requires `maapsec`, `submit_jobs`, `show_ssh_info`
+* `dps_info`
+     * requires `maapsec`, `submit_jobs`
+* `insert_defaults_to_notebook`
+     * requires `maap-py` library (see extension README)
+* `user_meta_form`
+
+## Development
+### Getting Started on Your Extension
 To build additional extensions for the project, it is recommended to start from 
 a [cookie-cutter](https://github.com/jupyterlab/extension-cookiecutter-ts) or off a previously built extension.
 
@@ -27,7 +66,8 @@ Some Jupyter Extensions/Resources we have found helpful:
 In JupyterLab's update to the stable 1.0 version, they have also updated and added lots of documentation on extension 
 development. I recommend taking a look at [this](https://jupyterlab.readthedocs.io/en/stable/developer/extension_dev.html).
 
-#### Deploying Extensions as Part of Eclipse Che
+## Deploying Extensions as Part of Eclipse Che
+### Dockerizing
 Our development process involves building and running an extension locally in jupyterlab using a conda env before 
 installing it on the che server. To enable an extension in Che, it must be included in the base docker image/stack that a 
 Che workspace is launched with. The dockerfile that extensions are included in is the `Dockerfile` and the highest level
@@ -64,7 +104,15 @@ fetch the new image. (found in the stack's `Recipe` or `Raw Configuration`)
 - Any change pushed to `microk8s.docker push localhost:32000/che-jupyter-lab-ide ` will affect the default stacks
 on all user accounts. If you are testing something, you can create your own image and your own stack to play around with.
 
-##### Che Stack Raw Configuration
+
+### Che Stacks
+To make your custom docker image available to users in Che, you need to make a new stack that creates workspaces using your image and make it available to users.
+Below is an example stack configuration using our locally built dockerized juptyer image with MAAP extensions installed.  
+
+Make sure to replace the image name in `workspaceConfig.environments.default.recipe.image` with the location of your image.
+In order for SSH-ing into the workspace to be possible, the `org.eclipse.che.exec` and `org.eclipse.che.ssh` installers must be enabled under `workspaceConfig.environments.default.machines.ws/jupyter.installers`.
+
+#### Che Stack Raw Configuration
 ```
 {
   "scope": "general",
