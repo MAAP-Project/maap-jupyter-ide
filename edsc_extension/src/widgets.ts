@@ -65,6 +65,7 @@ class ParamsPopupWidget extends Widget {
     body.style.display = 'flex';
     body.style.flexDirection = 'column';
     body.innerHTML = "<pre>Granule search: " + JSON.stringify(globals.granuleParams, null, " ") + "</pre><br>"
+        + "<pre>Collection search: " + JSON.stringify(globals.collectionParams, null, " ") + "</pre><br>"
         + "<pre>Results Limit: " + globals.limit + "</pre>";
 
     super({ node: body });

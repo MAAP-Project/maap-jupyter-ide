@@ -46,9 +46,10 @@ class GetQueryHandler(IPythonHandler):
         maap = MAAP()
         cmr_query = self.get_argument('cmr_query', '')
         limit = str(self.get_argument('limit', ''))
+        query_type = self.get_argument('query_type', 'granule')
         print("cmr_query", cmr_query)
 
-        query_string = maap.getCallFromCmrUri(cmr_query, limit=limit)
+        query_string = maap.getCallFromCmrUri(cmr_query, limit=limit, search=query_type)
         print("Response is: ", query_string)
         self.finish({"query_string": query_string})
 

@@ -143,7 +143,7 @@ export const decodeUrlParams = (paramString) => {
         ...collectionIds,
         focusedCollection
     ])].filter(Boolean)
-    console.log(project, uniqueCollectionList);
+    // console.log(project, uniqueCollectionList);
 
     return {
         advancedSearch,

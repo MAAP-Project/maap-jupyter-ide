@@ -98,7 +98,7 @@ function activate(app: JupyterFrontEnd,
 
 
   // PASTE SEARCH INTO A NOTEBOOK
-  function pasteSearch(args: any, result_type: any) {
+  function pasteSearch(args: any, result_type: any, query_type='granule') {
     const current = getCurrent(args);
 
     // If no search is selected, send an error
@@ -111,7 +111,13 @@ function activate(app: JupyterFrontEnd,
     if (result_type == "query") {
 
         var getUrl = new URL(PageConfig.getBaseUrl() + 'edsc/getQuery');
-        getUrl.searchParams.append("cmr_query", globals.granuleQuery);
+        if (query_type === 'granule') {
+            getUrl.searchParams.append("cmr_query", globals.granuleQuery);
+            getUrl.searchParams.append("query_type", 'granule');
+        } else {
+            getUrl.searchParams.append("cmr_query", globals.collectionQuery);
+            getUrl.searchParams.append("query_type", 'collection');
+        }
         getUrl.searchParams.append("limit", globals.limit);
 
         // Make call to back end
@@ -229,19 +235,29 @@ function activate(app: JupyterFrontEnd,
   });
   palette.addItem({command: display_params_command, category: 'Search'});
 
-  const paste_query_command = 'search:pasteQuery';
-  app.commands.addCommand(paste_query_command, {
-    label: 'Paste Search Query',
+  const paste_collection_query_command = 'search:pasteCollectionQuery';
+  app.commands.addCommand(paste_collection_query_command, {
+    label: 'Paste Collection Search Query',
     isEnabled: () => true,
     execute: args => {
-      pasteSearch(args, "query")
+        pasteSearch(args, "query", "collection")
     }
   });
-  palette.addItem({command: paste_query_command, category: 'Search'});
+  palette.addItem({command: paste_collection_query_command, category: 'Search'});
+
+  const paste_granule_query_command = 'search:pasteGranuleQuery';
+  app.commands.addCommand(paste_granule_query_command, {
+    label: 'Paste Granule Search Query',
+    isEnabled: () => true,
+    execute: args => {
+      pasteSearch(args, "query", "granule")
+    }
+  });
+  palette.addItem({command: paste_granule_query_command, category: 'Search'});
 
   const paste_results_command = 'search:pasteResults';
   app.commands.addCommand(paste_results_command, {
-    label: 'Paste Search Results',
+    label: 'Paste Granule Search Results',
     isEnabled: () => true,
     execute: args => {
       pasteSearch(args, "results")
@@ -267,7 +283,8 @@ function activate(app: JupyterFrontEnd,
   [
     open_command,
     display_params_command,
-    paste_query_command,
+    paste_collection_query_command,
+    paste_granule_query_command,
     paste_results_command,
     set_limit_command
   ].forEach(command => {

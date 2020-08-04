@@ -23,12 +23,12 @@ export const buildParams = (paramObj) => {
         stringifyResult = true
     } = paramObj;
 
-    console.log("unfiltered", body);
-    const obj = pick(body, permittedCmrKeys)
 
+    const obj = pick(body, permittedCmrKeys)
     granule ? granuleParams = obj : collectionParams = obj;
-    // params = obj;
-    console.log("filtered", obj)
+
+    // console.log("unfiltered", body);
+    // console.log("filtered", obj)
 
     // For JSON requests we want dont want to stringify the params returned
     if (stringifyResult) {
@@ -62,7 +62,6 @@ export const pick = (providedObj = {}, keys) => {
         let val;
         if (key === 'exclude') {
             val = getObject(obj, "excluded_granule_ids");
-            console.log("key is exclude! val is", val);
         } else {
             val = getObject(obj, key);
         }
