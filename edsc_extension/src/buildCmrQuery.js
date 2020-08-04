@@ -1,74 +1,12 @@
 import { stringify } from 'qs';
-import { params } from "./globals";
-import { granulePermittedCmrKeys, granuleNonIndexedKeys} from "./searchKeys";
+import { granuleParams, collectionParams } from "./globals";
 
-// Whitelist parameters supplied by the request
-// const permittedCmrKeys = [
-//     'concept_id',
-//     'bounding_box',
-//     'circle',
-//     'browse_only',
-//     'cloud_cover',
-//     'day_night_flag',
-//     'echo_collection_id',
-//     'equator_crossing_date',
-//     'equator_crossing_longitude',
-//     'exclude',
-//     'line',
-//     'online_only',
-//     'options',
-//     'orbit_number',
-//     'page_num',
-//     'page_size',
-//     'point',
-//     'polygon',
-//     'readable_granule_name',
-//     'sort_key',
-//     'temporal',
-//     'two_d_coordinate_system'
-// ]
-//
-// const nonIndexedKeys = [
-//     'concept_id',
-//     'exclude',
-//     'readable_granule_name',
-//     'sort_key'
-// ]
-
-/*
-* Source: https://stackoverflow.com/questions/30970286/convert-javascript-object-camelcase-keys-to-underscore-case
-* */
-function camelCaseKeysToUnderscore(obj){
-    if (typeof(obj) != "object") return obj;
-
-    for(let oldName in obj){
-
-        // Camel to underscore
-        let newName = oldName.replace(/([A-Z])/g, function($1){return "_"+$1.toLowerCase();});
-
-        // Only process if names are different
-        if (newName != oldName) {
-            // Check for the old property name to avoid a ReferenceError in strict mode.
-            if (obj.hasOwnProperty(oldName)) {
-                obj[newName] = obj[oldName];
-                delete obj[oldName];
-            }
-        }
-
-        // Recursion
-        if (typeof(obj[newName]) == "object") {
-            obj[newName] = camelCaseKeysToUnderscore(obj[newName]);
-        }
-
-    }
-    return obj;
-}
-
-export const buildCmrQuery = (urlParams, nonIndexedKeys, permittedCmrKeys) => {
+export const buildCmrQuery = (urlParams, nonIndexedKeys, permittedCmrKeys, granule=true) => {
     return buildParams({
         body: camelCaseKeysToUnderscore(urlParams),
         nonIndexedKeys,
-        permittedCmrKeys
+        permittedCmrKeys,
+        granule
     });
 }
 
@@ -81,29 +19,24 @@ export const buildParams = (paramObj) => {
         body,
         nonIndexedKeys,
         permittedCmrKeys,
+        granule,
         stringifyResult = true
     } = paramObj;
 
-    // const { params = {} } = JSON.parse(body)
-    // const params = body;
-
-    // console.log(`Parameters received: ${Object.keys(params)}`)
     console.log("unfiltered", body);
     const obj = pick(body, permittedCmrKeys)
+
+    granule ? granuleParams = obj : collectionParams = obj;
+    // params = obj;
+    console.log("filtered", obj)
 
     // For JSON requests we want dont want to stringify the params returned
     if (stringifyResult) {
         // Transform the query string hash to an encoded url string
         const queryParams = prepKeysForCmr(obj, nonIndexedKeys)
-
-        params = queryParams;
-        console.log ("filtered", params);
         return queryParams
     }
 
-    // console.log('CMR Query', JSON.stringify(obj, null, 4))
-    params = obj;
-    console.log ("filtered", params);
     return obj
 }
 
@@ -126,7 +59,13 @@ export const pick = (providedObj = {}, keys) => {
 
     let filteredObj = {};
     keys.forEach((key) => {
-        const val = getObject(obj, key);
+        let val;
+        if (key === 'exclude') {
+            val = getObject(obj, "excluded_granule_ids");
+            console.log("key is exclude! val is", val);
+        } else {
+            val = getObject(obj, key);
+        }
         if (val) {
             filteredObj[key] = val;
         }
@@ -186,4 +125,33 @@ export const prepKeysForCmr = (queryParams, nonIndexedKeys = []) => {
         stringify(indexedAttrs),
         stringify(nonIndexedAttrs, { indices: false, arrayFormat: 'brackets' })
     ].filter(Boolean).join('&')
+}
+
+/*
+* Source: https://stackoverflow.com/questions/30970286/convert-javascript-object-camelcase-keys-to-underscore-case
+* */
+function camelCaseKeysToUnderscore(obj){
+    if (typeof(obj) != "object") return obj;
+
+    for(let oldName in obj){
+
+        // Camel to underscore
+        let newName = oldName.replace(/([A-Z])/g, function($1){return "_"+$1.toLowerCase();});
+
+        // Only process if names are different
+        if (newName != oldName) {
+            // Check for the old property name to avoid a ReferenceError in strict mode.
+            if (obj.hasOwnProperty(oldName)) {
+                obj[newName] = obj[oldName];
+                delete obj[oldName];
+            }
+        }
+
+        // Recursion
+        if (typeof(obj[newName]) == "object") {
+            obj[newName] = camelCaseKeysToUnderscore(obj[newName]);
+        }
+
+    }
+    return obj;
 }

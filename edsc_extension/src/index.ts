@@ -75,10 +75,10 @@ function activate(app: JupyterFrontEnd,
           globals.edscUrl = event.data;
           const queryString = '?' + event.data.split('?')[1];
           const decodedUrlObj = decodeUrlParams(queryString);
-          globals.granuleQuery = "https://fake.com/?" + buildCmrQuery(decodedUrlObj, granulePermittedCmrKeys, granuleNonIndexedKeys);
-          globals.collectionQuery = "https://fake.com/?" + buildCmrQuery(decodedUrlObj, collectionPermittedCmrKeys, collectionNonIndexedKeys);
-          console.log("Granule", globals.granuleQuery);
-          console.log("Collection", globals.collectionQuery);
+          globals.granuleQuery = "https://fake.com/?" + buildCmrQuery(decodedUrlObj, granulePermittedCmrKeys, granuleNonIndexedKeys, );
+          globals.collectionQuery = "https://fake.com/?" + buildCmrQuery(decodedUrlObj, collectionPermittedCmrKeys, collectionNonIndexedKeys, false);
+          // console.log("Granule", globals.granuleQuery);
+          // console.log("Collection", globals.collectionQuery);
       }
   });
 
@@ -102,7 +102,7 @@ function activate(app: JupyterFrontEnd,
     const current = getCurrent(args);
 
     // If no search is selected, send an error
-    if (Object.keys(globals.params).length == 0) {
+    if (Object.keys(globals.granuleParams).length == 0) {
         INotification.error("Error: No Search Selected.");
         return;
     }
@@ -129,7 +129,8 @@ function activate(app: JupyterFrontEnd,
                   NotebookActions.insertBelow(current.content);
                   NotebookActions.paste(current.content);
                   current.content.mode = 'edit';
-                  current.content.activeCell.model.value.text = response_text;
+                  const insert_text = "# generated from this EDSC search: " + globals.edscUrl + "\n" + response_text;
+                  current.content.activeCell.model.value.text = insert_text;
               }
           }
           else {
@@ -153,10 +154,8 @@ function activate(app: JupyterFrontEnd,
       getUrl.searchParams.append("cmr_query", globals.granuleQuery);
       getUrl.searchParams.append("limit", globals.limit);
 
-
       // Make call to back end
       var xhr = new XMLHttpRequest();
-
       let url_response:any = [];
 
       xhr.onload = function() {
@@ -171,7 +170,8 @@ function activate(app: JupyterFrontEnd,
                   NotebookActions.insertBelow(current.content);
                   NotebookActions.paste(current.content);
                   current.content.mode = 'edit';
-                  current.content.activeCell.model.value.text = url_response;
+                  const insert_text = "# generated from this EDSC search: " + globals.edscUrl + "\n" + url_response;
+                  current.content.activeCell.model.value.text = insert_text;
               }
           }
           else {
