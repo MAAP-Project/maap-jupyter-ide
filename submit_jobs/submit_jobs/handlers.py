@@ -329,12 +329,19 @@ class PublishAlgorithmHandler(IPythonHandler):
 		# ==================================
 		# Part 1: Parse Required Arguments
 		# ==================================
+		complete = True
 		fields = getFields('publishAlgorithm')
 
 		params = {}
 		for f in fields:
-			arg = self.get_argument(f.lower(), '').strip()
-			params[f] = arg
+			try:
+				arg = self.get_argument(f.lower(), '').strip()
+				params[f] = arg
+			except:
+				complete = False
+
+		if all(e == '' for e in list(params.values())):
+			complete = False
 
 		logging.debug('params are')
 		logging.debug(params)
@@ -703,14 +710,14 @@ class GetMetricsHandler(IPythonHandler):
 					result += '</table>'
 					logging.debug(result)
 					# print("success!")
-					self.finish({"status_code": r.status_code, "result": result, "metrics":r.text})
+					self.finish({"status_code": r.status_code, "results": result, "metrics":r.text})
 				except:
-					self.finish({"status_code": r.status_code, "result": r.text, "metrics":{}})
+					self.finish({"status_code": r.status_code, "results": r.text, "metrics":{}})
 			else:
-				self.finish({"status_code": r.status_code, "result": r.reason, "metrics":{}})
+				self.finish({"status_code": r.status_code, "results": r.reason, "metrics":{}})
 
 		except:
-			self.finish({"status_code": 400, "result": "Bad Request","metrics":{}})
+			self.finish({"status_code": 400, "results": "Bad Request","metrics":{}})
 
 class GetResultHandler(IPythonHandler):
 	def get(self):
@@ -868,7 +875,7 @@ class DismissHandler(IPythonHandler):
 			# ==================================
 			# if no job id provided
 			if params['job_id'] == '':
-				result = 'Exception: {}\nMessage: {}\n(Did you provide a valid JobID?)\n'.format(rt[0].attrib['exceptionCode'], rt[0][0].text)
+				result = 'Exception: \nMessage: {}\nEmpty JobID provided.\n'
 				result += '\nThe provided parameters were:\n'
 				for f in fields:
 					result += '\t{}: {}\n'.format(f,params[f])
@@ -951,7 +958,7 @@ class DeleteHandler(IPythonHandler):
 			# ==================================
 			# if no job id provided
 			if params['job_id'] == '':
-				result = 'Exception: {}\nMessage: {}\n(Did you provide a valid JobID?)\n'.format(rt[0].attrib['exceptionCode'], rt[0][0].text)
+				result = 'Exception: \nMessage: {}\nEmpty JobID provided.\n'
 				result += '\nThe provided parameters were:\n'
 				for f in fields:
 					result += '\t{}: {}\n'.format(f,params[f])
@@ -1337,7 +1344,7 @@ class ListJobsHandler(IPythonHandler):
 			if r.status_code == 200:
 				jobs = []
 				details = {}
-				result = ""
+				table = ""
 				try:
 					# parse out JobID from response
 					resp = json.loads(r.text)
@@ -1347,29 +1354,32 @@ class ListJobsHandler(IPythonHandler):
 					# logger.debug(jobs)
 					jobs = sorted(jobs, key=lambda j: j['timestamp'],reverse=True) 	# sort list of jobs by timestamp (most recent)
 
-					result += '<div id="jobs-div" style="height:100%; width:340px">'
-					result += '<div id = "job-table" style="overflow:auto; height:45%; width: 335px">'
-					result += '<table id="job-cache-display" style="font-size:11px;">'
-					result += '<col width=33%>'
-					result += '<col width=33%>'
-					result += '<col width=33%>'
-					result += '<thead><tr>'
-					result += '<th>Job Id</th>'
-					result += '<th>Status</th>'
-					result += '<th>Algorithm</th>'
-					result += '</tr></thead>'
-					result += '<tbody>'
+					table += '<table id="job-cache-display">'
+					table += '<col width=33%>'
+					table += '<col width=33%>'
+					table += '<col width=33%>'
+					table += '<thead><tr>'
+					table += '<th>Job Id</th>'
+					table += '<th>Status</th>'
+					table += '<th>Algorithm</th>'
+					table += '</tr></thead>'
+					table += '<tbody>'
 					
 					for job in jobs:
 						job['detailed'] = detailed_display(job)
-						result += '<tr><td>{}</td><td>{}</td><td>{}</td></tr>'.format(job['job_id'],job['status'],job['algo_id'])
+						table += '<tr><td>{}</td><td>{}</td><td>{}</td></tr>'.format(job['job_id'],job['status'],job['algo_id'])
 						details[job['job_id']] = detailed_display(job)
 
-					result += '</tbody>'
-					result += '</table>'
+					table += '</tbody>'
+					table += '</table>'
+
+
+					result = '<div id = "jobs-div" style="height:100%; width:340px">'
+					result += '<div id = "job-table" style="overflow:auto; max-height:45%; width: 335px; font-size:11px;">'
+					result += table
 					result += '</div>'
 					result += '</div>'
-					logging.debug(result)
+					logging.debug(table)
 					
 					# convert jobs list to dict, keyed by id
 					job_ids = [e['job_id'] for e in jobs]
@@ -1377,19 +1387,20 @@ class ListJobsHandler(IPythonHandler):
 					logging.debug(jobs_dict)
 
 					# print("success!")
-					self.finish({"status_code": r.status_code, "result": result, "table": result, "jobs": jobs_dict, "displays": details})
+					self.finish({"status_code": r.status_code, "result": result, "table": table, "jobs": jobs_dict, "displays": details})
 				except:
-					self.finish({"status_code": r.status_code, "result": jobs, "table": result, "jobs": jobs, "displays": details, "resp": r.text})
+					table = '<br>'.join(jobs)
+					self.finish({"status_code": r.status_code, "result": table, "table": table, "jobs": jobs, "displays": details, "resp": r.text})
 			# if no job id provided
 			elif r.status_code in [404]:
 				# print('404?')
 				# if bad job id, show provided parameters
-				result = 'Exception: {}\nMessage: {}\n(Did you provide a valid JobID?)\n'.format(rt[0].attrib['exceptionCode'], rt[0][0].text)
-				result += '\nThe provided parameters were:\n'
+				table = 'Exception: \nMessage: {}\nInvalid username provided.\n'
+				table += '\nThe provided parameters were:\n'
 				for f in fields:
-					result += '\t{}: {}\n'.format(f,params[f])
-				result += '\n'
-				self.finish({"status_code": 404, "result": result})
+					table += '\t{}: {}\n'.format(f,params[f])
+				table += '\n'
+				self.finish({"status_code": 404, "result": table})
 			else:
 				self.finish({"status_code": r.status_code, "result": r.reason})
 		except:

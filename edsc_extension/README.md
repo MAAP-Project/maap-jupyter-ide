@@ -25,7 +25,7 @@ jupyter labextension link .
 ```
 
 ### Build & Install Server Extension
-Make sure you have jupyterlab_toastify installed (see repo README).
+Make sure you have the `maap-py` library installed.
 
 ```bash
 cd maap-jupyter-ide/edsc_extension
@@ -34,7 +34,6 @@ jupyter serverextension enable --py edsc_extension --sys-prefix
 ```
 
 ### Uninstall
-Make sure you have the `maap-py` library installed
 
 ```bash
 jupyter labextension uninstall edsc_extension
@@ -42,6 +41,6 @@ jupyter serverextension disable --py edsc_extension --sys-prefix
 ```
 
 ## Development
-* dependent on a connetion to the MAAP CMR isntance
+* dependent on a connetion to the MAAP CMR instance
 
 Contact: Maya Debellis (JPL)

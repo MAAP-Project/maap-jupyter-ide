@@ -20,6 +20,31 @@ jupyter labextension install @jupyterlab/plotly-extension@1.0.0
 jupyter labextension install @jupyter-widgets/jupyterlab-manager@1.0
 ```
 
+## Extension Installation Order
+There is no strict order to install the extensions in, but since some extensions depend on others, those dependencies should be installed first.  For each of the following extensions (in recommended order), the sub-bullet points will indicate if it requires installing another extension listed above it first.  
+
+**Note:** Extensions marked as _Che-only_ don't make sense to install locally, since they only work in the context of the Che UI and/or containerized contexts, and require use of the Che API.
+
+* `hide_side_panel` _(Che-only)_
+* `ipycmc`
+* `pull_projects` _(Che-only)_
+* `show_ssh_info`
+    * ssh features _(Che-only)_
+    * s3 features work locally
+        * requires `s3fs-fuse` util and AWS keys/role, `boto3` Python library installed (see extension README)
+* `edsc_extension`
+    * requires `maap-py` library (see extension README)
+* `maapsec`
+* `submit_jobs`
+    * requires `maapsec`
+* `dps_magic`
+     * requires `maapsec`, `submit_jobs`, `show_ssh_info`
+* `dps_info`
+     * requires `maapsec`, `submit_jobs`
+* `insert_defaults_to_notebook`
+     * requires `maap-py` library (see extension README)
+* `user_meta_form`
+
 ## Development
 ### Getting Started on Your Extension
 To build additional extensions for the project, it is recommended to start from 
