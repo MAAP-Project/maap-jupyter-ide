@@ -11,13 +11,15 @@ These extensions have been developed for `Jupyter 4.4.0` and `Jupyter Lab 2.1.4`
 All the MAAP Jupyter extensions share some common dependencies.
 
 ### Environment Setup and Dependencies
+Create a new Conda environment and install common dependencies and versions:
 ``` bash
+conda create --name maap-ade
+conda activate maap-ade
 conda install conda=4.7.12 jupyterlab=2.1.4 nodejs=10.13.0 gitpython=3.0.2
-jupyter labextension install jupyterlab_toastify@2.3.0 --no-build
-npm i jupyterlab_toastify@2.3.0
+jupyter labextension install jupyterlab_toastify@3.3.0 --no-build
+npm i jupyterlab_toastify@3.3.0
 pip install plotly==4.0.0
-jupyter labextension install @jupyterlab/plotly-extension@1.0.0
-jupyter labextension install @jupyter-widgets/jupyterlab-manager@1.0
+jupyter labextension install @jupyter-widgets/jupyterlab-manager@2.0
 ```
 
 ## Extension Installation Order
