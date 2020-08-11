@@ -22,6 +22,12 @@ import '../style/index.css';
 import { IFrameWidget } from './widgets';
 import { setResultsLimit, displaySearchParams } from './popups'
 import globals = require("./globals");
+import { decodeUrlParams } from "./urlParser";
+import { buildCmrQuery } from "./buildCmrQuery";
+import { granulePermittedCmrKeys,
+        granuleNonIndexedKeys,
+        collectionPermittedCmrKeys,
+        collectionNonIndexedKeys } from "./searchKeys";
 
 let SEARCH_CLIENT_URL = '';
 if (document.location.hostname === 'localhost') {
@@ -29,7 +35,7 @@ if (document.location.hostname === 'localhost') {
 } else {
     SEARCH_CLIENT_URL = document.location.origin + ':3052/search';
 }
-console.log(SEARCH_CLIENT_URL);
+console.log("EDSC instance is", SEARCH_CLIENT_URL);
 
 ///////////////////////////////////////////////////////////////
 //
@@ -59,49 +65,58 @@ function activate(app: JupyterFrontEnd,
   let instanceTracker = new WidgetTracker<IFrameWidget>({ namespace });
 
 
-
   //
-  // Listen for messages being sent by the iframe - this will be all of the parameter
-  // objects from the EDSC instance
+  // Listen for messages being sent by the iframe - parse the url and set as parameters for search
   //
   window.addEventListener("message", (event: MessageEvent) => {
-    globals.params = event.data;
-    console.log("at event listen: ", event.data);
+      // if the message sent is the edsc url
+      if (typeof event.data === "string"){
+          globals.edscUrl = event.data;
+          const queryString = '?' + event.data.split('?')[1];
+          const decodedUrlObj = decodeUrlParams(queryString);
+          globals.granuleQuery = "https://fake.com/?" + buildCmrQuery(decodedUrlObj, granulePermittedCmrKeys, granuleNonIndexedKeys, );
+          globals.collectionQuery = "https://fake.com/?" + buildCmrQuery(decodedUrlObj, collectionPermittedCmrKeys, collectionNonIndexedKeys, false);
+          // console.log("Granule", globals.granuleQuery);
+          // console.log("Collection", globals.collectionQuery);
+      }
   });
+
 
   //
   // Get the current cell selected in a notebook
   //
   function getCurrent(args: ReadonlyJSONObject): NotebookPanel | null {
-    console.log(args);
     const widget = tracker.currentWidget;
     const activate = args['activate'] !== false;
 
     if (activate && widget) {
       app.shell.activateById(widget.id);
     }
-
     return widget;
   }
 
 
   // PASTE SEARCH INTO A NOTEBOOK
-  function pasteSearch(args: any, result_type: any) {
+  function pasteSearch(args: any, result_type: any, query_type='granule') {
     const current = getCurrent(args);
-    console.log(result_type);
 
     // If no search is selected, send an error
-    if (Object.keys(globals.params).length == 0) {
+    if (Object.keys(globals.granuleParams).length == 0) {
         INotification.error("Error: No Search Selected.");
         return;
     }
-
 
     // Paste Search Query
     if (result_type == "query") {
 
         var getUrl = new URL(PageConfig.getBaseUrl() + 'edsc/getQuery');
-        getUrl.searchParams.append("json_obj", JSON.stringify(globals.params));
+        if (query_type === 'granule') {
+            getUrl.searchParams.append("cmr_query", globals.granuleQuery);
+            getUrl.searchParams.append("query_type", 'granule');
+        } else {
+            getUrl.searchParams.append("cmr_query", globals.collectionQuery);
+            getUrl.searchParams.append("query_type", 'collection');
+        }
         getUrl.searchParams.append("limit", globals.limit);
 
         // Make call to back end
@@ -111,18 +126,16 @@ function activate(app: JupyterFrontEnd,
         xhr.onload = function() {
           if (xhr.status == 200) {
               let response: any = $.parseJSON(xhr.response);
-              console.log(response);
               response_text = response.query_string;
               if (response_text == "") {
                   response_text = "No results found.";
               }
-              console.log(response_text);
               if (current) {
                   NotebookActions.insertBelow(current.content);
                   NotebookActions.paste(current.content);
                   current.content.mode = 'edit';
-                  current.content.activeCell.model.value.text = response_text;
-                  console.log("inserted text");
+                  const insert_text = "# generated from this EDSC search: " + globals.edscUrl + "\n" + response_text;
+                  current.content.activeCell.model.value.text = insert_text;
               }
           }
           else {
@@ -132,7 +145,7 @@ function activate(app: JupyterFrontEnd,
         };
 
         xhr.onerror = function() {
-          console.log("Error making call to get query");
+          console.error("Error making call to get query");
         };
 
         xhr.open("GET", getUrl.href, true);
@@ -143,13 +156,11 @@ function activate(app: JupyterFrontEnd,
     } else {
 
       var getUrl = new URL(PageConfig.getBaseUrl() + 'edsc/getGranules');
-      getUrl.searchParams.append("json_obj", JSON.stringify(globals.params));
+      getUrl.searchParams.append("cmr_query", globals.granuleQuery);
       getUrl.searchParams.append("limit", globals.limit);
-
 
       // Make call to back end
       var xhr = new XMLHttpRequest();
-
       let url_response:any = [];
 
       xhr.onload = function() {
@@ -160,13 +171,12 @@ function activate(app: JupyterFrontEnd,
                   response_text = "No results found.";
               }
               url_response = response_text;
-              console.log(response_text);
               if (current) {
                   NotebookActions.insertBelow(current.content);
                   NotebookActions.paste(current.content);
                   current.content.mode = 'edit';
-                  current.content.activeCell.model.value.text = url_response;
-                  console.log("inserted text");
+                  const insert_text = "# generated from this EDSC search: " + globals.edscUrl + "\n" + url_response;
+                  current.content.activeCell.model.value.text = insert_text;
               }
           }
           else {
@@ -195,9 +205,6 @@ function activate(app: JupyterFrontEnd,
     label: 'Open EarthData Search',
     isEnabled: () => true,
     execute: args => {
-
-      console.log(widget);
-
       // Only allow user to have one EDSC window
       if (widget == undefined) {
           widget = new IFrameWidget(SEARCH_CLIENT_URL);
@@ -210,7 +217,6 @@ function activate(app: JupyterFrontEnd,
       }
 
       if (!instanceTracker.has(widget)) {
-          console.log("in has widget");
         // Track the state of the widget for later restoration
         instanceTracker.add(widget);
       }
@@ -228,19 +234,29 @@ function activate(app: JupyterFrontEnd,
   });
   palette.addItem({command: display_params_command, category: 'Search'});
 
-  const paste_query_command = 'search:pasteQuery';
-  app.commands.addCommand(paste_query_command, {
-    label: 'Paste Search Query',
+  const paste_collection_query_command = 'search:pasteCollectionQuery';
+  app.commands.addCommand(paste_collection_query_command, {
+    label: 'Paste Collection Search Query',
     isEnabled: () => true,
     execute: args => {
-      pasteSearch(args, "query")
+        pasteSearch(args, "query", "collection")
     }
   });
-  palette.addItem({command: paste_query_command, category: 'Search'});
+  palette.addItem({command: paste_collection_query_command, category: 'Search'});
+
+  const paste_granule_query_command = 'search:pasteGranuleQuery';
+  app.commands.addCommand(paste_granule_query_command, {
+    label: 'Paste Granule Search Query',
+    isEnabled: () => true,
+    execute: args => {
+      pasteSearch(args, "query", "granule")
+    }
+  });
+  palette.addItem({command: paste_granule_query_command, category: 'Search'});
 
   const paste_results_command = 'search:pasteResults';
   app.commands.addCommand(paste_results_command, {
-    label: 'Paste Search Results',
+    label: 'Paste Granule Search Results',
     isEnabled: () => true,
     execute: args => {
       pasteSearch(args, "results")
@@ -266,7 +282,8 @@ function activate(app: JupyterFrontEnd,
   [
     open_command,
     display_params_command,
-    paste_query_command,
+    paste_collection_query_command,
+    paste_granule_query_command,
     paste_results_command,
     set_limit_command
   ].forEach(command => {
