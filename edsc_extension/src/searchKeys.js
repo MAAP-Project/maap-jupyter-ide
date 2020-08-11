@@ -1,4 +1,7 @@
-// Whitelist parameters supplied by the request
+/**
+ * Whitelist parameters supplied by the request
+ * Modified from https://github.com/nasa/earthdata-search/blob/f09ff3bfd40420322f005654bc349374aab1fe57/static/src/js/util/request/granuleRequest.js
+ */
 export const granulePermittedCmrKeys = [
     'concept_id',
     'bounding_box',

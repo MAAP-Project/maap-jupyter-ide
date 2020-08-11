@@ -11,6 +11,7 @@ export const buildCmrQuery = (urlParams, nonIndexedKeys, permittedCmrKeys, granu
 }
 
 /**
+ * Apapted from source: https://github.com/nasa/earthdata-search/blob/f09ff3bfd40420322f005654bc349374aab1fe57/serverless/src/util/cmr/buildParams.js
  * Builds a URL used to perform a search request
  * @param {object} paramObj Parameters needed to build a search request URL
  */
@@ -41,6 +42,7 @@ export const buildParams = (paramObj) => {
 }
 
 /**
+ * Adapted from source https://github.com/nasa/earthdata-search/blob/f09ff3bfd40420322f005654bc349374aab1fe57/serverless/src/util/pick.js
  * Select only desired keys from a provided object.
  * @param {object} providedObj - An object containing any keys.
  * @param {array} keys - An array of strings that represent the keys to be picked.
@@ -106,6 +108,7 @@ function getObject(theObject, key) {
 }
 
 /**
+ * Adapted from source https://github.com/nasa/earthdata-search/blob/f09ff3bfd40420322f005654bc349374aab1fe57/sharedUtils/prepKeysForCmr.js
  * Create a query string containing both indexed and non-indexed keys.
  * @param {object} queryParams - An object containing all queryParams.
  * @param {array} nonIndexedKeys - An array of strings that represent the keys which should not be indexed.

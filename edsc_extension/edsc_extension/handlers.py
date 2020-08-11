@@ -3,17 +3,9 @@ import sys
 import nbformat
 from notebook.base.handlers import IPythonHandler
 import subprocess
-# sys.path.append('/Users/mdebelli/MAAP/maap-py')
-# print(subprocess.check_output('pwd',shell=True))
-#from maap import maap.MAAP as MAAP
 import maap
 from maap.maap import MAAP
 
-# In local Config
-#PATH_TO_MAAP_CFG = './maap-py/maap.cfg'
-
-# In Docker Image Che Config
-# PATH_TO_MAAP_CFG = '/edsc_extension/maap-py/maap.cfg'
 
 class GetGranulesHandler(IPythonHandler):
     def printUrls(self, granules):
