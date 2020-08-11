@@ -29,7 +29,6 @@ import { granulePermittedCmrKeys,
         collectionPermittedCmrKeys,
         collectionNonIndexedKeys } from "./searchKeys";
 
-
 let SEARCH_CLIENT_URL = '';
 if (document.location.hostname === 'localhost') {
     SEARCH_CLIENT_URL = 'https://che-k8s.maap.xyz:3052/search'
