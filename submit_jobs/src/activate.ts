@@ -70,6 +70,7 @@ export function activateRegisterAlgorithm(
       console.log(path);
 
       state.fetch(profileId).then((profile) => {
+        console.log(profile);
         let profileObj = JSON.parse(JSON.stringify(profile));
         let uname:string = profileObj.preferred_username;
         let ticket:string = profileObj.proxyGrantingTicket;
