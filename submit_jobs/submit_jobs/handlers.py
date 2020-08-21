@@ -710,14 +710,14 @@ class GetMetricsHandler(IPythonHandler):
 					result += '</table>'
 					logging.debug(result)
 					# print("success!")
-					self.finish({"status_code": r.status_code, "result": result, "metrics":r.text})
+					self.finish({"status_code": r.status_code, "results": result, "metrics":r.text})
 				except:
-					self.finish({"status_code": r.status_code, "result": r.text, "metrics":{}})
+					self.finish({"status_code": r.status_code, "results": r.text, "metrics":{}})
 			else:
-				self.finish({"status_code": r.status_code, "result": r.reason, "metrics":{}})
+				self.finish({"status_code": r.status_code, "results": r.reason, "metrics":{}})
 
 		except:
-			self.finish({"status_code": 400, "result": "Bad Request","metrics":{}})
+			self.finish({"status_code": 400, "results": "Bad Request","metrics":{}})
 
 class GetResultHandler(IPythonHandler):
 	def get(self):
