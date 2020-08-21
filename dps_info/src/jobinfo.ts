@@ -239,7 +239,6 @@ export class JobTable extends Widget {
     }
 
     _updateJobMetrics() {
-        console.log(this._metrics);
         let outerDiv = (document.getElementById('jobs-div') as HTMLDivElement);
         // section header formatting
         if (outerDiv === null) {
@@ -286,10 +285,10 @@ export class JobTable extends Widget {
         } else {
             console.log('looking up job metrics');
             const res:RequestResult = await getMetrics(this._job_id,this._username);
-            console.log(res);
+            // console.log(res);
             if (res.ok) {
                 let json_response:any = res.json();
-                console.log(json_response);
+                
                 if (json_response['status_code'] === 200) {
                     INotification.success("Get user job metrics success.");
                     this._metrics = json_response['result'];
