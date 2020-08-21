@@ -96,7 +96,11 @@ export function inputRequest(endpt:string,title:string,inputs:{[k:string]:string
       // console.log(fn);
       if (fn == undefined) {
         console.log('fn undefined');
-        popupResultText(json_response['result'],title);
+        if (endpt === 'listJobs') {
+            popupResultText(Object.keys(json_response['jobs']).join('<br>'),title);
+        } else {
+            popupResultText(json_response['result'],title);
+        }
       } else {
         console.log('fn defined');
         fn(json_response);
