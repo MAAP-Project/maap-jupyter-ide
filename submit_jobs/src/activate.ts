@@ -69,11 +69,7 @@ export function activateRegisterAlgorithm(
       let path = PageConfig.getOption('serverRoot') + '/' + item.path;
       console.log(path);
 
-      state.fetch(profileId).then((profile) => {
-        let profileObj = JSON.parse(JSON.stringify(profile));
-        let uname:string = profileObj.preferred_username;
-        let ticket:string = profileObj.proxyGrantingTicket;
-
+      getUsernameToken(state,profileId,function(uname:string,ticket:string) {
         // send request to defaultvalueshandler
         let getValuesFn = function(resp:Object) {
           console.log('getValuesFn');

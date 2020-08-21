@@ -89,7 +89,7 @@ export class JobTable extends Widget {
                 display.readOnly = true;
                 display.cols = 30;
                 display.innerHTML = disp;
-                display.setAttribute('style', 'margin: 0px; height:17%; width: 98%; border: none; resize: none');
+                display.setAttribute('style', 'margin: 0px; height:17%; width: 105%; border: none; resize: none; font-size: 11px');
                 display.className = 'jp-JSONEditor-host';
                 div2.appendChild(display);
             }
@@ -224,7 +224,7 @@ export class JobTable extends Widget {
                 
                 if (json_response['status_code'] === 200) {
                     INotification.success("Get user job result success.");
-                    this._results = json_response['results'];
+                    this._results = json_response['result'];
                 } else {
                     console.log('get user job result != 200');
                     INotification.error("Get user job result failed.");
@@ -239,7 +239,6 @@ export class JobTable extends Widget {
     }
 
     _updateJobMetrics() {
-        // todo
         let outerDiv = (document.getElementById('jobs-div') as HTMLDivElement);
         // section header formatting
         if (outerDiv === null) {
@@ -292,7 +291,7 @@ export class JobTable extends Widget {
                 
                 if (json_response['status_code'] === 200) {
                     INotification.success("Get user job metrics success.");
-                    this._results = json_response['results'];
+                    this._metrics = json_response['result'];
                 } else {
                     console.log('get user job result != 200');
                     INotification.error("Get user job metrics failed.");
@@ -914,7 +913,7 @@ export class JobWidget extends Widget {
                 
                 if (json_response['status_code'] === 200) {
                     INotification.success("Get user job result success.");
-                    this._results = json_response['results'];
+                    this._results = json_response['result'];
                 } else {
                     console.log('get user job result != 200');
                     INotification.error("Get user job result failed.");
@@ -989,7 +988,7 @@ export class JobWidget extends Widget {
                 
                 if (json_response['status_code'] === 200) {
                     INotification.success("Get user job metrics success.");
-                    this._metrics = json_response['results'];
+                    this._metrics = json_response['result'];
                 } else {
                     console.log('get user job metrics != 200');
                     INotification.error("Get user job metrics failed.");
