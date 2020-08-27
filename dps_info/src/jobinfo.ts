@@ -74,22 +74,30 @@ export class JobTable extends Widget {
             // --------------------
             // set description from response
             let disp = '';
-            if (this._job_id !== undefined || this._job_id !== ''){
+            if (Object.keys(DISPLAYS).length === 0){
+                disp = 'No job history.'
+            } else if (this._job_id === undefined || this._job_id === ''){
+                disp = 'Job ID not selected.';
+            } else {
                 disp = DISPLAYS[this._job_id];
+                // console.log(disp);
             }
     
+            console.log(disp);
             if (document.getElementById('job-detail-display') != null) {
                 // console.log(this._job_id);
-                (document.getElementById('job-detail-display') as HTMLTextAreaElement).innerHTML = disp;
+                (document.getElementById('job-detail-display') as HTMLDivElement).innerHTML = disp;
             } else {
                 // create textarea if it doesn't already exist
                 // detailed info on one job
-                let display:HTMLTextAreaElement = document.createElement("textarea");
+                // <div contenteditable="true"></div>
+                let display:HTMLDivElement = document.createElement("div");
                 display.id = 'job-detail-display';
-                display.readOnly = true;
-                display.cols = 30;
+                // display.readOnly = true;
+                // display.cols = 30;
                 display.innerHTML = disp;
-                display.setAttribute('style', 'margin: 0px; height:17%; width: 105%; border: none; resize: none; font-size: 11px');
+                // display.setAttribute('contenteditable', 'true');
+                display.setAttribute('style', 'margin: 0px; height:17%; width: 105%; border: none; resize: none; font-size: 11px;');
                 display.className = 'jp-JSONEditor-host';
                 div2.appendChild(display);
             }
@@ -146,7 +154,7 @@ export class JobTable extends Widget {
             // console.log(json_response);
             if (json_response['status_code'] === 200){
                 // let resp = json_response['result'];
-                me._table = json_response['result'];
+                me._table = json_response['results'];
                 JOBS = json_response['jobs'];
                 DISPLAYS = json_response['displays'];
 
@@ -159,6 +167,8 @@ export class JobTable extends Widget {
                     }
                     me._updateJobTable(me);
                     me._setRowClick('job-cache-display', function(){me._updateJobDisplay()});
+                } else {
+                    me._updateJobTable(me);
                 }
             } else {
                 console.log('unable to get user job list');
@@ -224,7 +234,7 @@ export class JobTable extends Widget {
                 
                 if (json_response['status_code'] === 200) {
                     INotification.success("Get user job result success.");
-                    this._results = json_response['result'];
+                    this._results = json_response['results'];
                 } else {
                     console.log('get user job result != 200');
                     INotification.error("Get user job result failed.");
@@ -239,6 +249,7 @@ export class JobTable extends Widget {
     }
 
     _updateJobMetrics() {
+        // todo
         let outerDiv = (document.getElementById('jobs-div') as HTMLDivElement);
         // section header formatting
         if (outerDiv === null) {
@@ -291,7 +302,8 @@ export class JobTable extends Widget {
                 
                 if (json_response['status_code'] === 200) {
                     INotification.success("Get user job metrics success.");
-                    this._metrics = json_response['result'];
+                    this._metrics = json_response['results'];
+                    console.log(this._metrics);
                 } else {
                     console.log('get user job result != 200');
                     INotification.error("Get user job metrics failed.");
@@ -323,7 +335,7 @@ export class JobTable extends Widget {
     _setRowClick(tableId:string, setDisplays:any) {
         let me = this;
         onRowClick(tableId, function(row:HTMLTableRowElement){
-            let job_id = row.getElementsByTagName('td')[0].innerHTML;
+            let job_id = row.getElementsByTagName('td')[0].innerText;
             console.log('set new job id '+job_id);
             me._job_id = job_id;
             setDisplays(me);
@@ -443,7 +455,7 @@ export class JobWidget extends Widget {
                     // new table row per algo
                     let arow:HTMLTableRowElement = algoList.insertRow() as HTMLTableRowElement;
                     let acell = arow.insertCell();
-                    acell.innerHTML = algo+':'+version;
+                    acell.innerHTML = '<u>'+algo+':'+version+'</u>';
                     arow.onclick = function() {
                         me._algorithm = algo;
                         me._version = version;
@@ -744,6 +756,7 @@ export class JobWidget extends Widget {
             let executeCell = rrow.insertCell();
             executeCell.setAttribute('id','cell-execute');
             executeCell.setAttribute('valign','top');
+            executeCell.setAttribute('style','max-width:475px');
 
             let overviewCell = rrow.insertCell();
             overviewCell.setAttribute('id','cell-overview');
@@ -906,14 +919,15 @@ export class JobWidget extends Widget {
             console.log('job not complete');
         } else {
             console.log('looking up job results');
+            let me = this;
             const res:RequestResult = await getResults(this._job_id,this._username);
             // console.log(res);
             if (res.ok) {
                 let json_response:any = res.json();
-                
+                // console.log(json_response);
                 if (json_response['status_code'] === 200) {
                     INotification.success("Get user job result success.");
-                    this._results = json_response['result'];
+                    me._results = json_response['results'];
                 } else {
                     console.log('get user job result != 200');
                     INotification.error("Get user job result failed.");
@@ -988,7 +1002,7 @@ export class JobWidget extends Widget {
                 
                 if (json_response['status_code'] === 200) {
                     INotification.success("Get user job metrics success.");
-                    this._metrics = json_response['result'];
+                    this._metrics = json_response['results'];
                 } else {
                     console.log('get user job metrics != 200');
                     INotification.error("Get user job metrics failed.");
@@ -1057,20 +1071,19 @@ export class JobWidget extends Widget {
             let infoCell = rrow.insertCell();
             infoCell.setAttribute('id','cell-jobinfo');
             infoCell.setAttribute('valign','top');
-            infoCell.setAttribute('style','min-width:360px');
+            infoCell.setAttribute('style','min-width:360px; max-width:475px');
 
             let resultsCell = rrow.insertCell();
             resultsCell.setAttribute('id','cell-jobresults');
             resultsCell.setAttribute('valign','top');
-            resultsCell.setAttribute('style','min-width:360px');
+            resultsCell.setAttribute('style','min-width:360px; max-width:475px');
 
             // rrow = infoTable.insertRow() as HTMLTableRowElement;
 
             let metricsCell = rrow.insertCell();
             metricsCell.setAttribute('id','cell-jobmetrics');
             metricsCell.setAttribute('valign','top');
-            metricsCell.setAttribute('style','min-width:720px');
-            metricsCell.setAttribute('colspan','2');
+            metricsCell.setAttribute('style','min-width:360px');
 
             infoDiv.appendChild(infoTable);
             this._widget_div.appendChild(infoDiv);
@@ -1138,6 +1151,8 @@ export class JobWidget extends Widget {
                         }
                         me._updateJobTable(me);
                         me._setJobClick('widget-job-table', function(){me._updateJobInfo()})
+                    } else {
+                        me._updateJobTable(me);
                     }
                 } else {
                     console.log('unable to get user job list');
@@ -1178,7 +1193,7 @@ export class JobWidget extends Widget {
     _setJobClick(tableId:string, setDisplays:any) {
         let me = this;
         onRowClick(tableId, function(row:HTMLTableRowElement){
-            let job_id = row.getElementsByTagName('td')[0].innerHTML;
+            let job_id = row.getElementsByTagName('td')[0].innerText;
             console.log('widget set new job id '+job_id);
             me._job_id = job_id;
             setDisplays(me);
