@@ -9,7 +9,7 @@ export function getUsernameToken(state: IStateDB, profileId:string) {
     let ticket:string = '';
     let result:string[] = [uname, ticket];
     return new Promise<string[]> ((resolve,reject) => {
-        if (["https://che-k8s.maap.xyz","https://ade.maap-project.org"].includes(document.location.origin)) {
+        if (["https://che-k8s.maap.xyz","https://ade.maap-project.org","https://ade.uat.maap-project.org"].includes(document.location.origin)) {
             getUserInfo(function(profile: any) {
                 if (profile['cas:username'] === undefined) {
                     INotification.error("Get profile failed.");

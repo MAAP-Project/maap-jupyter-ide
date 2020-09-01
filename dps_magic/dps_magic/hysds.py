@@ -10,8 +10,15 @@ logger = logging.getLogger()
 
 # set base url based on ops/dev environment
 CHE_BASE_URL = "https://che-k8s.maap.xyz"
+DPS_BUCKET_NAME = "maap-dev-dataset"
+
 if 'ENVIRONMENT' in os.environ.keys() and os.environ['ENVIRONMENT'] == 'OPS':
     CHE_BASE_URL = "https://ade.maap-project.org"
+    DPS_BUCKET_NAME = "maap-ops-dataset"
+
+if 'ENVIRONMENT' in os.environ.keys() and os.environ['ENVIRONMENT'] == 'UAT':
+    CHE_BASE_URL = "https://ade.uat.maap-project.org"
+    DPS_BUCKET_NAME = "maap-uat-dataset"
 
 
 @magics_class
@@ -24,7 +31,7 @@ class HysdsMagic(Magics):
         # self.JUPYTER_SERVER_URL = CHE_BASE_URL+PREVIEW_URL
         self.lk = CHE_BASE_URL+PREVIEW_URL
         # self.lk = 'http://localhost:8888'
-        self.bucket = 'maap-mount-dev'
+        self.bucket = DPS_BUCKET_NAME
 
     def html(self,txt1,txt2=None):
         if txt2 == None:
