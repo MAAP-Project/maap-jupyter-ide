@@ -19,6 +19,10 @@ if 'ENVIRONMENT' in os.environ.keys() and os.environ['ENVIRONMENT'] == 'OPS':
     CHE_BASE_URL = "https://ade.maap-project.org"
     DPS_BUCKET_NAME = "maap-ops-dataset"
 
+if 'ENVIRONMENT' in os.environ.keys() and os.environ['ENVIRONMENT'] == 'UAT':
+    CHE_BASE_URL = "https://ade.uat.maap-project.org"
+    DPS_BUCKET_NAME = "maap-uat-dataset"
+
 
 class InjectKeyHandler(IPythonHandler):
     def get(self):
@@ -159,8 +163,6 @@ class InstallHandler(IPythonHandler):
 
         # Update workspace config with new installers
         workspace_config['config']['environments']["default"]["machines"]["ws/jupyter"]['installers'] = installers
-
-        put_url = 'https://ade.maap-project.org/api/workspace/' + os.environ.get('CHE_WORKSPACE_ID')
 
         r = requests.put(
             url,

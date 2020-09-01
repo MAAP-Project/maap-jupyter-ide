@@ -8,7 +8,7 @@ import { request, RequestResult } from './request';
 export function getUsernameToken(state: IStateDB, profileId:string, callback) {
   let uname:string = 'anonymous';
   let ticket:string = '';
-  if (["https://che-k8s.maap.xyz","https://ade.maap-project.org"].includes(document.location.origin)) {
+  if (["https://che-k8s.maap.xyz","https://ade.maap-project.org","https://ade.uat.maap-project.org"].includes(document.location.origin)) {
     getUserInfo(function(profile: any) {
       if (profile['cas:username'] === undefined) {
         INotification.error("Get profile failed.");

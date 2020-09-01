@@ -24,8 +24,12 @@ sys.path.append(WORKDIR)
 
 # set base url based on ops/dev environment
 BASE_URL = "https://api.maap.xyz/api"
+
 if 'ENVIRONMENT' in os.environ.keys() and os.environ['ENVIRONMENT'] == 'OPS':
     BASE_URL = "https://api.maap-project.org/api"
+
+if 'ENVIRONMENT' in os.environ.keys() and os.environ['ENVIRONMENT'] == 'UAT':
+    BASE_URL = "https://api.uat.maap-project.org/api"
 
 
 # helper to parse out algorithm parameters for execute, describe

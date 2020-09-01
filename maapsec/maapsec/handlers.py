@@ -18,8 +18,12 @@ logger.setLevel(logging.DEBUG)
 
 # set base url based on ops/dev environment
 AUTH_SERVER = "https://auth.nasa.maap.xyz/cas"
+
 if 'ENVIRONMENT' in os.environ.keys() and os.environ['ENVIRONMENT'] == 'OPS':
     AUTH_SERVER = "https://auth.maap-project.org/cas"
+
+if 'ENVIRONMENT' in os.environ.keys() and os.environ['ENVIRONMENT'] == 'UAT':
+    AUTH_SERVER = "https://auth.uat.maap-project.org"
 
 
 class MaapLoginHandler(IPythonHandler):

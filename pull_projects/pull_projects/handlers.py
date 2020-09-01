@@ -13,13 +13,15 @@ import urllib
 
 # set base url based on ops/dev environment
 GITLAB_REPO = "repo.nasa.maap.xyz"
+CHE_BASE_URL = "https://che-k8s.maap.xyz"
+
 if 'ENVIRONMENT' in os.environ.keys() and os.environ['ENVIRONMENT'] == 'OPS':
     GITLAB_REPO = "mas.maap-project.org"
-
-CHE_BASE_URL = "https://che-k8s.maap.xyz"
-if 'ENVIRONMENT' in os.environ.keys() and os.environ['ENVIRONMENT'] == 'OPS':
     CHE_BASE_URL = "https://ade.maap-project.org"
 
+if 'ENVIRONMENT' in os.environ.keys() and os.environ['ENVIRONMENT'] == 'UAT':
+    GITLAB_REPO = "mas.uat.maap-project.org"
+    CHE_BASE_URL = "https://ade.uat.maap-project.org"
 
 # Set selected ADE Docker Image 
 class ListProjectsHandler(IPythonHandler):
