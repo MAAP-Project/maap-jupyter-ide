@@ -11,25 +11,20 @@ from git import Repo
 import shutil
 import urllib
 
-# set base url based on ops/dev environment
-GITLAB_REPO = "repo.nasa.maap.xyz"
-CHE_BASE_URL = "https://che-k8s.maap.xyz"
+def maap_ade_url(request):
+	return 'https://{}'.format(request.headers['Maap_ade_server'])
 
-if 'ENVIRONMENT' in os.environ.keys() and os.environ['ENVIRONMENT'] == 'OPS':
-    GITLAB_REPO = "mas.maap-project.org"
-    CHE_BASE_URL = "https://ade.maap-project.org"
-
-if 'ENVIRONMENT' in os.environ.keys() and os.environ['ENVIRONMENT'] == 'UAT':
-    GITLAB_REPO = "mas.uat.maap-project.org"
-    CHE_BASE_URL = "https://ade.uat.maap-project.org"
+def maap_mas_server(request):
+	return request.headers['Maap_mas_server']
 
 # Set selected ADE Docker Image 
 class ListProjectsHandler(IPythonHandler):
     def get(self):
         # 'https://ade.maap-project.org/api/workspace/workspacetn41o4yl4a7kxclz'
-        workspace_id = os.environ['CHE_WORKSPACE_ID']
-        che_machine_token = os.environ['CHE_MACHINE_TOKEN']
-        url = '{base_url}/api/workspace/{workspace_id}'.format(base_url=CHE_BASE_URL,workspace_id=workspace_id)
+        workspace_id = os.environ['CHE_WORKSPACE_ID'] if 'CHE_WORKSPACE_ID' in os.environ else ''
+        che_machine_token = os.environ['CHE_MACHINE_TOKEN'] if 'CHE_MACHINE_TOKEN' in os.environ else ''
+
+        url = '{base_url}/api/workspace/{workspace_id}'.format(base_url=maap_ade_url(self.request),workspace_id=workspace_id)
         # --------------------------------------------------
         # TODO: FIGURE OUT AUTH KEY & verify
         # --------------------------------------------------
@@ -85,9 +80,11 @@ class GetAllProjectsHandler(IPythonHandler):
         # --------------------------------------------------
         # get list of projects      
         # --------------------------------------------------
-        workspace_id = os.environ['CHE_WORKSPACE_ID']
-        che_machine_token = os.environ['CHE_MACHINE_TOKEN']
-        url = '{base_url}/api/workspace/{workspace_id}'.format(base_url=CHE_BASE_URL,workspace_id=workspace_id)
+
+        workspace_id = os.environ['CHE_WORKSPACE_ID'] if 'CHE_WORKSPACE_ID' in os.environ else ''
+        che_machine_token = os.environ['CHE_MACHINE_TOKEN'] if 'CHE_MACHINE_TOKEN' in os.environ else ''
+
+        url = '{base_url}/api/workspace/{workspace_id}'.format(base_url=maap_ade_url(self.request),workspace_id=workspace_id)
         # --------------------------------------------------
         # TODO: FIGURE OUT AUTH KEY & verify
         # --------------------------------------------------
@@ -119,15 +116,15 @@ class GetAllProjectsHandler(IPythonHandler):
 
                         # Check if is stored on our gitlab (repo.nasa.maap.xyz) if so, use the users authentication
                         # token to allow for the downloads of private repositories
-                        if GITLAB_REPO in location:
+                        if maap_mas_server(self.request) in location:
 
                             # If it is, get the authentication token and add to the location path
                             gitlab_token = self.get_argument('gitlab_token', '')
                             if gitlab_token == '':
                                 self.finish({"status": "project import failed. no gitlab token"})
 
-                            repo_path_on_gitlab = location.split(GITLAB_REPO)[-1]
-                            location = "https://oauth2:" + gitlab_token + "@" + GITLAB_REPO + repo_path_on_gitlab
+                            repo_path_on_gitlab = location.split(maap_mas_server(self.request))[-1]
+                            location = "https://oauth2:" + gitlab_token + "@" + maap_mas_server(self.request) + repo_path_on_gitlab
 
                         Repo.clone_from(location,dl_loc)
                 elif src_type == 'zip':
