@@ -62,7 +62,7 @@ cd maap-jupyter-ide/dps_magic
 npm install
 npm run build
 pip install .
-jupyter nbextension install --symlink --py --dps_magic --sys-prefix
+jupyter nbextension install --symlink --py dps_magic --sys-prefix
 jupyter nbextension enable --py dps_magic --sys-prefix
 ```
 
