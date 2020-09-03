@@ -109,7 +109,7 @@ export function activateRegisterAlgorithm(
           // check if algorithm already exists
           // ok -> call registeralgorithmhandler
           // cancel -> edit template at algorithm_config.yaml (config_path)
-          algorithmExists(defaultValues['algo_name'],defaultValues['version'],defaultValues['environment'],ticket).then((algoExists) => {
+          algorithmExists(state, defaultValues['algo_name'],defaultValues['version'],defaultValues['environment'],ticket).then((algoExists) => {
             console.log('algo Exists');
             console.log(algoExists);
             if (algoExists != undefined && algoExists) {
@@ -120,7 +120,7 @@ export function activateRegisterAlgorithm(
             }
           });
         };
-        inputRequest('defaultValues','Register Algorithm',{'code_path':path},getValuesFn);
+        inputRequest(state, 'defaultValues','Register Algorithm',{'code_path':path},getValuesFn);
       });
     },
     isVisible: () =>
@@ -140,12 +140,13 @@ export function activateRegisterAlgorithm(
 
 export function activateGetCapabilities(app: JupyterFrontEnd, 
                         palette: ICommandPalette, 
+                        state: IStateDB,
                         restorer: ILauncher | null): void{
   app.commands.addCommand(capabilities_command, {
     label: 'Get Capabilities',
     isEnabled: () => true,
     execute: args => {
-      noInputRequest('getCapabilities','Capabilities');
+      noInputRequest(state, 'getCapabilities','Capabilities');     
     }
   });
   palette.addItem({command: capabilities_command, category: 'DPS/MAS'});
@@ -160,7 +161,7 @@ export function activateList(app: JupyterFrontEnd,
     isEnabled: () => true,
     execute: args => {
       getUsernameToken(state,profileId,function(uname:string,ticket:string) {
-        inputRequest('listAlgorithms','List Algorithms',{'username':uname,'proxy-ticket':ticket});
+        inputRequest(state, 'listAlgorithms','List Algorithms',{'username':uname,'proxy-ticket':ticket});
       });
     }
   });
@@ -176,7 +177,7 @@ export function activatePublishAlgorithm(app: JupyterFrontEnd,
     isEnabled: () => true,
     execute: args => {
       getUsernameToken(state,profileId,function(uname:string,ticket:string) {
-        popupResult(new ProjectSelector('publishAlgorithm',publishAlgorithmFields,uname,ticket),"Select an Algorithm");
+        popupResult(new ProjectSelector('publishAlgorithm', publishAlgorithmFields, uname, ticket, state),"Select an Algorithm");
       })
     }
   });
@@ -192,7 +193,7 @@ export function activateDescribe(app: JupyterFrontEnd,
     isEnabled: () => true,
     execute: args => {
       getUsernameToken(state,profileId,function(uname:string,ticket:string) {
-        popupResult(new ProjectSelector('describeProcess',describeProcessFields,uname,ticket),"Select an Algorithm");
+        popupResult(new ProjectSelector('describeProcess', describeProcessFields, uname, ticket, state),"Select an Algorithm");
       });
     }
   });
@@ -208,7 +209,7 @@ export function activateExecute(app: JupyterFrontEnd,
     isEnabled: () => true,
     execute: args => {
       getUsernameToken(state,profileId,function(uname:string,ticket:string) {
-        popupResult(new ProjectSelector('executeInputs',executeInputsFields,uname,ticket),"Select an Algorithm");
+        popupResult(new ProjectSelector('executeInputs', executeInputsFields, uname, ticket, state),"Select an Algorithm");
       });
     }
   });
@@ -224,7 +225,7 @@ export function activateGetJobList(app: JupyterFrontEnd,
     isEnabled: () => true,
     execute: args => {
       getUsernameToken(state,profileId,function(uname:string,ticket:string) {
-        inputRequest('listJobs','List Submitted Jobs',{'username':uname,'proxy-ticket':ticket});
+        inputRequest(state, 'listJobs','List Submitted Jobs',{'username':uname,'proxy-ticket':ticket});
         // popup(new InputWidget('listJobs',listJobsFields,uname,ticket,{}));
       });
     }
@@ -321,7 +322,7 @@ export function activateDeleteAlgorithm(app: JupyterFrontEnd,
     isEnabled: () => true,
     execute: args => {
       getUsernameToken(state,profileId,function(uname:string,ticket:string) {
-        popupResult(new ProjectSelector('deleteAlgorithm',deleteAlgorithmFields,uname,ticket),"Select an Algorithm to Delete");
+        popupResult(new ProjectSelector('deleteAlgorithm', deleteAlgorithmFields, uname, ticket, state),"Select an Algorithm to Delete");
       });
     }
   });
