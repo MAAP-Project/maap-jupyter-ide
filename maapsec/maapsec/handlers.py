@@ -8,7 +8,6 @@ from pathlib import Path
 import requests
 import json
 import urllib
-#import xml.etree.ElementTree as ET
 from xml.etree.ElementTree import fromstring, ElementTree
 
 import logging
@@ -16,24 +15,24 @@ import logging
 logger = logging.getLogger()
 logger.setLevel(logging.DEBUG)
 
-# set base url based on ops/dev environment
-AUTH_SERVER = "https://auth.nasa.maap.xyz/cas"
+class MaapEnvironmentSetup(IPythonHandler):
+    def get(self, **params):  
+        config_helper = ConfigHelper()
+        env = config_helper.get_maap_config(self.request.host)
 
-if 'ENVIRONMENT' in os.environ.keys() and os.environ['ENVIRONMENT'] == 'OPS':
-    AUTH_SERVER = "https://auth.maap-project.org/cas"
-
-if 'ENVIRONMENT' in os.environ.keys() and os.environ['ENVIRONMENT'] == 'UAT':
-    AUTH_SERVER = "https://auth.uat.maap-project.org"
-
+        self.finish(env)
 
 class MaapLoginHandler(IPythonHandler):
     def get(self, **params):
-        try: 
+        try:    
             param_ticket = self.request.query_arguments['ticket'][0].decode('UTF-8')     
             param_service = self.request.query_arguments['service'][0].decode('UTF-8') 
+            config_helper = ConfigHelper()
+            env = config_helper.get_maap_config(self.request.host)
+            auth_server = 'https://{auth_host}/cas'.format(auth_host=env['auth_server'])
 
             url = '{base_url}/p3/serviceValidate?ticket={ticket}&service={service}&pgtUrl={base_url}&state='.format(
-                base_url=AUTH_SERVER, ticket=param_ticket, service=param_service)
+                base_url=auth_server, ticket=param_ticket, service=param_service)
 
             logger.debug('auth url: ' + url)
 
@@ -45,7 +44,7 @@ class MaapLoginHandler(IPythonHandler):
             logger.debug('auth response:')
             logger.debug(auth_response)
 
-            xmldump = auth_response.text.strip()#.decode('utf8', 'ignore')
+            xmldump = auth_response.text.strip()
             
             logger.debug('xmldump:')
             logger.debug(xmldump)
@@ -76,4 +75,23 @@ class MaapLoginHandler(IPythonHandler):
             return attributes["cas:" + attribute_key]
         else:
             return ''
-    
+
+class ConfigHelper(object):
+    def get_maap_config(self, host):
+        path_to_json = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'maap_environments.json')
+
+        with open(path_to_json) as f:
+            data = json.load(f)
+
+        env = self._get_environment(host, data)
+
+        return env
+
+    def _get_environment(self, host, envs):
+
+        match = next((x for x in envs if host in x['ade_server']), None)
+
+        if match is None:
+            return next((x for x in envs if x['environment'] == "ops"), None)
+        else:
+            return match
