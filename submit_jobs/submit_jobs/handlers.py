@@ -132,7 +132,7 @@ class RegisterAlgorithmHandler(IPythonHandler):
 
 		# check if repo is hosted on a MAAP GitLab instance
 		if (not ('repo.nasa.maap') in config['repository_url']) and (not ('mas.maap-project') in config['repository_url']):
-			self.finish({"status_code": 412, "result": "Error: Your git repo is not from a supported host (repo.nasa.maap.xyz or mas.maap-project.org)"})
+			self.finish({"status_code": 412, "result": "Error: Your git repo is not from a supported host (e.g. mas.maap-project.org)"})
 			return
 
 		# ==================================

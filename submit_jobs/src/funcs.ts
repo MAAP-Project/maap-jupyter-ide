@@ -7,10 +7,12 @@ import { request, RequestResult, DEFAULT_REQUEST_OPTIONS } from './request';
 
 const idMaapEnvironment = 'maapsec-extension:IMaapEnvironment';
 
-export function getUsernameToken(state: IStateDB, profileId:string, callback) {
+export async function getUsernameToken(state: IStateDB, profileId:string, callback) {
   let uname:string = 'anonymous';
   let ticket:string = '';
-  if (["https://che-k8s.maap.xyz","https://ade.maap-project.org","https://ade.uat.maap-project.org"].includes(document.location.origin)) {
+  const opts = await getRequestOptions(state);
+  
+  if ("https://" + opts.headers['Maap_ade_server'] === document.location.origin) {
     getUserInfo(function(profile: any) {
       if (profile['cas:username'] === undefined) {
         INotification.error("Get profile failed.");
