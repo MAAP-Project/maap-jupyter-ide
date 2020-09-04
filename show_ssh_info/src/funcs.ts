@@ -1,13 +1,16 @@
-import {request, RequestResult} from "./request";
 import {PageConfig} from "@jupyterlab/coreutils";
 import {Dialog, ICommandPalette, showDialog} from "@jupyterlab/apputils";
 import {getToken, getUserInfo} from "./getKeycloak";
 import {INotification} from "jupyterlab_toastify";
 import {JupyterFrontEnd} from "@jupyterlab/application";
 import {IFileBrowserFactory} from "@jupyterlab/filebrowser";
+import { IStateDB } from '@jupyterlab/statedb';
 import {Widget} from "@lumino/widgets";
+import { request, RequestResult, DEFAULT_REQUEST_OPTIONS } from './request';
 
 import { SshWidget, InstallSshWidget, UserInfoWidget } from './widgets'
+
+const idMaapEnvironment = 'maapsec-extension:IMaapEnvironment';
 
 export function popup(b:Widget,title:string): void {
   showDialog({
@@ -18,12 +21,13 @@ export function popup(b:Widget,title:string): void {
   });
 }
 
-export
-function checkSSH(): void {
+export async function checkSSH(state: IStateDB) {
     //
     // Check if SSH and Exec Installers have been activated
     //
-    request('get', PageConfig.getBaseUrl() + "show_ssh_info/checkInstallers")
+    const opts = await getRequestOptions(state);
+
+    request('get', PageConfig.getBaseUrl() + "show_ssh_info/checkInstallers", {}, {}, opts)
         .then((res: RequestResult) => {
             if(res.ok){
                 let json_results:any = res.json();
@@ -68,8 +72,7 @@ function checkSSH(): void {
         });
 }
 
-export
-function checkUserInfo(): void {
+export function checkUserInfo(): void {
   getUserInfo(function(profile: any) {
     // console.log(profile);
     if (profile['cas:username'] === undefined) {
@@ -90,8 +93,9 @@ function checkUserInfo(): void {
   });
 }
 
-export
-function mountUserFolder() : void {
+export async function mountUserFolder(state: IStateDB) {
+  const opts = await getRequestOptions(state);
+
   getUserInfo(function(profile: any) {
     // get username from keycloak
     if (profile['cas:username'] === undefined) {
@@ -102,7 +106,8 @@ function mountUserFolder() : void {
     let username = profile['cas:username']
     var getUrl = new URL(PageConfig.getBaseUrl() + 'show_ssh_info/mountBucket');
     getUrl.searchParams.append('username',username);
-    request('get', getUrl.href).then((res: RequestResult) => {
+
+    request('get', getUrl.href, {}, {}, opts).then((res: RequestResult) => {
       if (res.ok) {
         let data:any = JSON.parse(res.data);
         if (data.status_code == 200) {
@@ -119,13 +124,13 @@ function mountUserFolder() : void {
   });
 }
 
-export
-function mountOrgFolders() : void {
+export async function mountOrgFolders(state: IStateDB) {
   // do something
   let token = getToken();
   var getUrl = new URL(PageConfig.getBaseUrl() + 'show_ssh_info/getOrgs');
   getUrl.searchParams.append('token',token);
-  request('get', getUrl.href).then((res: RequestResult) => {
+  const opts = await getRequestOptions(state);
+  request('get', getUrl.href, {}, {}, opts).then((res: RequestResult) => {
     if (res.ok) {
       let data:any = JSON.parse(res.data);
       if (data.status_code == 200) {
@@ -140,14 +145,14 @@ function mountOrgFolders() : void {
   });
 }
 
-export
-function getPresignedUrl(key:string): Promise<string> {
+export async function getPresignedUrl(state: IStateDB, key:string): Promise<string> {
+  const opts = await getRequestOptions(state);
   return new Promise<string>(async (resolve, reject) => {
     let presignedUrl = '';
 
     var getUrl = new URL(PageConfig.getBaseUrl() + 'show_ssh_info/getSigneds3Url');
     getUrl.searchParams.append('key',key);
-    request('get', getUrl.href).then((res: RequestResult) => {
+    request('get', getUrl.href, {}, {}, opts).then((res: RequestResult) => {
       if (res.ok) {
         let data:any = JSON.parse(res.data);
         console.log(data)
@@ -172,6 +177,7 @@ export function activateGetPresignedUrl(
   app: JupyterFrontEnd,
   palette: ICommandPalette,
   factory: IFileBrowserFactory,
+  state: IStateDB
 ): void {
   const { commands } = app;
   const { tracker } = factory;
@@ -192,7 +198,7 @@ export function activateGetPresignedUrl(
       }
 
       let path = item.path;
-      getPresignedUrl(path).then((url) => {
+      getPresignedUrl(state, path).then((url) => {
         let display = url;
         if (url.substring(0,5) == 'https'){
           display = '<a href='+url+' target="_blank" style="border-bottom: 1px solid #0000ff; color: #0000ff;">'+url+'</a>';
@@ -235,4 +241,24 @@ export function activateGetPresignedUrl(
   // if (palette) {
   //   palette.addItem({command:open_command, category: 'User'});
   // }
+}
+
+async function getRequestOptions(state: IStateDB) {
+  return state.fetch(idMaapEnvironment).then((maapEnv) => {
+    let maapEnvObj = JSON.parse(JSON.stringify(maapEnv));
+    let opts = DEFAULT_REQUEST_OPTIONS;
+
+    opts.headers.maap_env = maapEnvObj.environment;
+    opts.headers.maap_ade_server = maapEnvObj.ade_server;
+    opts.headers.maap_api_server = maapEnvObj.api_server;
+    opts.headers.maap_auth_server = maapEnvObj.auth_server;
+    opts.headers.maap_mas_server = maapEnvObj.mas_server;
+
+    return opts;
+
+  }).catch((error) => {
+      console.error('Error retrieving MAAP environment from maapsec extension!');
+      console.error(error);
+      return DEFAULT_REQUEST_OPTIONS;
+  });
 }
