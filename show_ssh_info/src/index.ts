@@ -2,6 +2,7 @@ import { ICommandPalette } from '@jupyterlab/apputils';
 import { JupyterFrontEnd, JupyterFrontEndPlugin } from '@jupyterlab/application';
 import { IFileBrowserFactory } from '@jupyterlab/filebrowser';
 import { ILauncher } from '@jupyterlab/launcher';
+import { IStateDB } from '@jupyterlab/statedb';
 
 import { checkUserInfo, mountUserFolder, checkSSH, activateGetPresignedUrl, mountOrgFolders} from './funcs'
 import { InjectSSH } from './widgets'
@@ -17,12 +18,13 @@ import '../style/index.css';
 const extensionSsh: JupyterFrontEndPlugin<void> = {
   id: 'display_ssh_info',
   autoStart: true,
-  requires: [ICommandPalette],
+  requires: [ICommandPalette, IStateDB],
   optional: [ILauncher],
   activate: activateSSH
 };
 
 function activateSSH(app: JupyterFrontEnd,
+  state: IStateDB,
   palette: ICommandPalette) {
 
       new InjectSSH();
@@ -34,7 +36,7 @@ function activateSSH(app: JupyterFrontEnd,
         label: 'Display SSH Info',
         isEnabled: () => true,
         execute: args => {
-          checkSSH();
+          checkSSH(state);
         }
       });
       palette.addItem({command: open_command, category: 'SSH'});
@@ -78,20 +80,20 @@ const extensionUser: JupyterFrontEndPlugin<void> = {
 const extensionMount: JupyterFrontEndPlugin<void> = {
   id: 'mount-s3-folder',
   autoStart: true,
-  requires: [ICommandPalette],
+  requires: [ICommandPalette, IStateDB],
   optional: [],
-  activate: (app: JupyterFrontEnd, palette: ICommandPalette) => {
+  activate: (app: JupyterFrontEnd, state: IStateDB, palette: ICommandPalette) => {
     const open_command = 'sshinfo:mount';
 
     app.commands.addCommand(open_command, {
       label: 'User Workspace Mount',
       isEnabled: () => true,
       execute: args => {
-        mountUserFolder();
+        mountUserFolder(state);
       }
     });
     palette.addItem({command:open_command,category:'User'});
-    mountUserFolder(); // automatically mount user folder on load
+    mountUserFolder(state); // automatically mount user folder on load
   }
 };
 
@@ -102,19 +104,19 @@ const extensionMount: JupyterFrontEndPlugin<void> = {
 ///////////////////////////////////////////////////////////////
 const extensionMountOrgBuckets: JupyterFrontEndPlugin<void> = {
   id: 'mount-che-org-buckets',
-  requires: [ICommandPalette],
+  requires: [ICommandPalette, IStateDB],
   autoStart: true,
-  activate: (app: JupyterFrontEnd, palette: ICommandPalette) => {
+  activate: (app: JupyterFrontEnd, state: IStateDB, palette: ICommandPalette) => {
     const open_command = 'sshinfo:orgs';
     app.commands.addCommand(open_command, {
       label: 'Che Org Workspace Mount',
       isEnabled: () => true,
       execute: args => {
-        mountOrgFolders();
+        mountOrgFolders(state);
       }
     });
     palette.addItem({command:open_command,category:'User'});
-    mountOrgFolders();
+    mountOrgFolders(state);
   }
 };
 
@@ -126,7 +128,7 @@ const extensionMountOrgBuckets: JupyterFrontEndPlugin<void> = {
 ///////////////////////////////////////////////////////////////
 const extensionPreSigneds3Url: JupyterFrontEndPlugin<void> = {
   id: 'share-s3-url',
-  requires: [ICommandPalette, IFileBrowserFactory],
+  requires: [ICommandPalette, IFileBrowserFactory, IStateDB],
   autoStart: true,
   activate: activateGetPresignedUrl
 };

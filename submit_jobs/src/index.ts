@@ -9,7 +9,7 @@ import { activateGetCapabilities, activateDescribe, activateList, activateRegist
 const extensionCapabilities: JupyterFrontEndPlugin<void> = {
   id: 'dps-capabilities',
   autoStart: true,
-  requires: [ICommandPalette],
+  requires: [ICommandPalette, IStateDB],
   optional: [ILauncher],
   activate: activateGetCapabilities
 };

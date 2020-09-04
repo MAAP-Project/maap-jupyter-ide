@@ -11,14 +11,11 @@ import logging
 logger = logging.getLogger()
 logger.setLevel(logging.DEBUG)
 
-# set base url based on ops/dev environment
-CHE_BASE_URL = "https://che-k8s.maap.xyz"
-DPS_BUCKET_NAME = "maap-dev-dataset"
+def maap_ade_url(request):
+	return 'https://{}'.format(request.headers['Maap_ade_server'])
 
-if 'ENVIRONMENT' in os.environ.keys() and os.environ['ENVIRONMENT'] == 'OPS':
-    CHE_BASE_URL = "https://ade.maap-project.org"
-    DPS_BUCKET_NAME = "maap-ops-dataset"
-
+def dps_bucket_name(request):
+	return 'maap-{}-dataset'.format(request.headers['Maap_env'])
 
 class InjectKeyHandler(IPythonHandler):
     def get(self):
@@ -110,7 +107,7 @@ class CheckInstallersHandler(IPythonHandler):
         # self.finish({'status': True})
 
         che_machine_token = os.environ['CHE_MACHINE_TOKEN']
-        url = '{}/api/workspace/{}'.format(CHE_BASE_URL,os.environ.get('CHE_WORKSPACE_ID'))
+        url = '{}/api/workspace/{}'.format(maap_ade_url(self.request), os.environ.get('CHE_WORKSPACE_ID'))
         # --------------------------------------------------
         # TODO: FIGURE OUT AUTH KEY & verify
         # --------------------------------------------------
@@ -140,7 +137,7 @@ class InstallHandler(IPythonHandler):
     def get(self):
 
         che_machine_token = os.environ['CHE_MACHINE_TOKEN']
-        url = '{}/api/workspace/{}'.format(CHE_BASE_URL,os.environ.get('CHE_WORKSPACE_ID'))
+        url = '{}/api/workspace/{}'.format(maap_ade_url(self.request), os.environ.get('CHE_WORKSPACE_ID'))
         # --------------------------------------------------
         # TODO: FIGURE OUT AUTH KEY & verify
         # --------------------------------------------------
@@ -160,8 +157,6 @@ class InstallHandler(IPythonHandler):
         # Update workspace config with new installers
         workspace_config['config']['environments']["default"]["machines"]["ws/jupyter"]['installers'] = installers
 
-        put_url = 'https://ade.maap-project.org/api/workspace/' + os.environ.get('CHE_WORKSPACE_ID')
-
         r = requests.put(
             url,
             headers=headers,
@@ -178,7 +173,7 @@ class MountBucketHandler(IPythonHandler):
         try:
             # get bucket name and username
             username = self.get_argument('username','')
-            bucket = DPS_BUCKET_NAME
+            bucket = dps_bucket_name(self.request)
             logging.debug('username is '+username)
             logging.debug('bucket is '+bucket)
 
@@ -256,8 +251,8 @@ class MountOrgBucketsHandler(IPythonHandler):
         # Send request to Che API for list of user's orgs
         # ts pass keycloak token from window
         token = self.get_argument('token','')
-        bucket = DPS_BUCKET_NAME
-        url = '{}/api/organization'.format(CHE_BASE_URL)
+        bucket = dps_bucket_name(self.request)
+        url = '{}/api/organization'.format(maap_ade_url(self.request))
         headers = {
             'Accept':'application/json',
             'Authorization':'Bearer {token}'.format(token=token)
@@ -351,7 +346,7 @@ class MountOrgBucketsHandler(IPythonHandler):
 class Presigneds3UrlHandler(IPythonHandler):
     def get(self):
         # get arguments
-        bucket = DPS_BUCKET_NAME
+        bucket = dps_bucket_name(self.request)
         key = self.get_argument('key','')
         logging.debug('bucket is '+bucket)
         logging.debug('key is '+key)

@@ -3,13 +3,14 @@ import { ICommandPalette } from '@jupyterlab/apputils';
 import { IStateDB } from '@jupyterlab/statedb';
 import { IMainMenu } from '@jupyterlab/mainmenu';
 import { Menu } from '@lumino/widgets';
-import { maapLogin } from './funcs';
+import { maapLogin, loadMaapEnvironment } from './funcs';
 import { RequestResult } from './request';
 import { Token } from '@lumino/coreutils';
 
-const id = 'maapsec-extension:IMaapProfile';
+const idMaapProfile = 'maapsec-extension:IMaapProfile';
+const IMaapProfile = new Token<IMaapProfile>(idMaapProfile);
 
-const IMaapProfile = new Token<IMaapProfile>(id);
+const idMaapEnvironment = 'maapsec-extension:IMaapEnvironment';
 
 export interface IMaapProfile {
   proxyTicket: string;
@@ -34,23 +35,37 @@ export function activateLogin(app: JupyterFrontEnd,
   const maapProfile = new MaapProfile();
   var lbl = 'Login';
 
+  loadMaapEnvironment()
+  .then((env_result: RequestResult) => {
+    console.log('saving maap environment');
+    console.log(env_result);
+    _state.save(idMaapEnvironment, env_result);
+  });
+
   app.commands.addCommand(login_command, {
     label: lbl,
     isEnabled: () => true,
     execute: args => {
-
-      var url = 'https://auth.nasa.maap.xyz/cas/login?service=' + encodeURIComponent(window.location.href.split('?')[0]);
-      var title = 'MAAP Login';
-      const w = 800;
-      const h = 750;
-
-      var left = (screen.width/2)-(w/2);
-      var top = (screen.height/2)-(h/2);
       
-      loginWindow =  window.open(url, title, 'toolbar=no, location=no, directories=no, status=no, menubar=no, scrollbars=no, resizable=no, copyhistory=no, width='+w+', height='+h+', top='+top+', left='+left);
+      state.fetch(idMaapEnvironment).then((maapEnv) => {
+          let maapEnvObj = JSON.parse(JSON.stringify(maapEnv));
+          var url = 'https://' + maapEnvObj.auth_server + '/cas/login?service=' + encodeURIComponent(window.location.href.split('?')[0]);
+          var title = 'MAAP Login';
+          const w = 800;
+          const h = 750;
+    
+          var left = (screen.width/2)-(w/2);
+          var top = (screen.height/2)-(h/2);
+          
+          loginWindow =  window.open(url, title, 'toolbar=no, location=no, directories=no, status=no, menubar=no, scrollbars=no, resizable=no, copyhistory=no, width='+w+', height='+h+', top='+top+', left='+left);
+    
+          if (window.focus) loginWindow.focus();
+          window.addEventListener('message', handleMessageDispatch);
 
-      if (window.focus) loginWindow.focus();
-      window.addEventListener('message', handleMessageDispatch);
+      }).catch((error) => {
+          console.error('Error retrieving MAAP environment from maapsec extension!');
+          console.error(error);
+      });
     }
   });
 
@@ -59,7 +74,7 @@ export function activateLogin(app: JupyterFrontEnd,
 
   // Load the saved plugin state and apply it once the app
   // has finished restoring its former layout.
-  Promise.all([state.fetch(id), app.restored])
+  Promise.all([state.fetch(idMaapProfile), app.restored])
     .then(([saved]) => { 
       console.log('saved profile');
       console.log(saved);
@@ -77,7 +92,7 @@ function handleMessageDispatch(ev) {
   maapLogin(encodeURIComponent(window.location.href.split('?')[0]), sTicket)
     .then((login_result: RequestResult) => {
       console.log(login_result);
-      _state.save(id, login_result);
+      _state.save(idMaapProfile, login_result);
   });
 }
 

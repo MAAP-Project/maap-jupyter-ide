@@ -3,12 +3,16 @@ import { IStateDB } from '@jupyterlab/statedb';
 import { INotification } from 'jupyterlab_toastify';
 import { popupResultText } from './widgets';
 import { getUserInfo } from "./getKeycloak";
-import { request, RequestResult } from './request';
+import { request, RequestResult, DEFAULT_REQUEST_OPTIONS } from './request';
 
-export function getUsernameToken(state: IStateDB, profileId:string, callback) {
+const idMaapEnvironment = 'maapsec-extension:IMaapEnvironment';
+
+export async function getUsernameToken(state: IStateDB, profileId:string, callback) {
   let uname:string = 'anonymous';
   let ticket:string = '';
-  if (["https://che-k8s.maap.xyz","https://ade.maap-project.org"].includes(document.location.origin)) {
+  const opts = await getRequestOptions(state);
+
+  if ("https://" + opts.headers['Maap_ade_server'] === document.location.origin) {
     getUserInfo(function(profile: any) {
       if (profile['cas:username'] === undefined) {
         INotification.error("Get profile failed.");
@@ -32,7 +36,10 @@ export function getUsernameToken(state: IStateDB, profileId:string, callback) {
   }
 }
 
-export function getAlgorithms(ticket?:string) {
+export async function getAlgorithms(state: IStateDB, ticket?:string) {
+
+  const opts = await getRequestOptions(state);
+
   return new Promise<{[k:string]:Array<string>}>((resolve, reject) => {
     var algoSet: { [key: string]: Array<string>} = {}
 
@@ -42,7 +49,7 @@ export function getAlgorithms(ticket?:string) {
       settingsAPIUrl.searchParams.append('proxy-ticket',ticket);
     }
     console.log(settingsAPIUrl.href);
-    request('get',settingsAPIUrl.href).then((res: RequestResult) => {
+    request('get',settingsAPIUrl.href, {}, {}, opts).then((res: RequestResult) => {
       if (res.ok) {
         var json_response:any = res.json();
         var algos = json_response['algo_set'];
@@ -55,7 +62,8 @@ export function getAlgorithms(ticket?:string) {
   });
 }
 
-export function getDefaultValues(code_path) {
+export async function getDefaultValues(code_path) {
+
   return new Promise<{[k:string]:string}>((resolve, reject) => {
     var defaultValues:{[k:string]:string}  = {}
 
@@ -77,7 +85,7 @@ export function getDefaultValues(code_path) {
 }
 
 // HySDS endpoints that require inputs
-export function inputRequest(endpt:string,title:string,inputs:{[k:string]:string},fn?:any) {
+export async function inputRequest(state: IStateDB, endpt:string,title:string,inputs:{[k:string]:string},fn?:any) {
   var requestUrl = new URL(PageConfig.getBaseUrl() + 'hysds/' + endpt);
   // add params
   for (let key in inputs) {
@@ -88,8 +96,10 @@ export function inputRequest(endpt:string,title:string,inputs:{[k:string]:string
   }
   console.log(requestUrl.href);
 
+  const opts = await getRequestOptions(state);
+
   // send request
-  request('get',requestUrl.href).then((res: RequestResult) => {
+  request('get',requestUrl.href, {}, {}, opts).then((res: RequestResult) => {
     if (res.ok) {
       var json_response:any = res.json();
       // console.log(json_response['result']);
@@ -113,11 +123,11 @@ export function inputRequest(endpt:string,title:string,inputs:{[k:string]:string
 }
 
 // HySDS endpoints that don't require any inputs
-export function noInputRequest(endpt:string,title:string) {
-  inputRequest(endpt,title,{});
+export function noInputRequest(state: IStateDB, endpt:string,title:string) {
+    inputRequest(state, endpt,title,{});
 }
 
-export function algorithmExists(name:string,ver:string,env:string,ticket:string) {
+export async function algorithmExists(state: IStateDB, name:string,ver:string,env:string,ticket:string) {
   var requestUrl = new URL(PageConfig.getBaseUrl() + 'hysds/' + 'describeProcess');
   // add params
   requestUrl.searchParams.append('algo_name', name+'_'+env);
@@ -125,8 +135,10 @@ export function algorithmExists(name:string,ver:string,env:string,ticket:string)
   requestUrl.searchParams.append('proxy-ticket', ticket);
   console.log(requestUrl.href);
 
+  const opts = await getRequestOptions(state);
+
   // send request
-  return request('get',requestUrl.href).then((res: RequestResult) => {
+  return request('get',requestUrl.href, {}, {}, opts).then((res: RequestResult) => {
     if (res.ok) {
       var json_response:any = res.json();
       console.log(json_response);
@@ -140,5 +152,25 @@ export function algorithmExists(name:string,ver:string,env:string,ticket:string)
       return false;
     }
   }); 
+}
+
+async function getRequestOptions(state: IStateDB) {
+  return state.fetch(idMaapEnvironment).then((maapEnv) => {
+    let maapEnvObj = JSON.parse(JSON.stringify(maapEnv));
+    let opts = DEFAULT_REQUEST_OPTIONS;
+
+    opts.headers.maap_env = maapEnvObj.environment;
+    opts.headers.maap_ade_server = maapEnvObj.ade_server;
+    opts.headers.maap_api_server = maapEnvObj.api_server;
+    opts.headers.maap_auth_server = maapEnvObj.auth_server;
+    opts.headers.maap_mas_server = maapEnvObj.mas_server;
+
+    return opts;
+
+  }).catch((error) => {
+      console.error('Error retrieving MAAP environment from maapsec extension!');
+      console.error(error);
+      return DEFAULT_REQUEST_OPTIONS;
+  });
 }
 
