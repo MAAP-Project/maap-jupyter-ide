@@ -11,7 +11,7 @@ export async function getUsernameToken(state: IStateDB, profileId:string, callba
   let uname:string = 'anonymous';
   let ticket:string = '';
   const opts = await getRequestOptions(state);
-  
+
   if ("https://" + opts.headers['Maap_ade_server'] === document.location.origin) {
     getUserInfo(function(profile: any) {
       if (profile['cas:username'] === undefined) {
@@ -62,9 +62,7 @@ export async function getAlgorithms(state: IStateDB, ticket?:string) {
   });
 }
 
-export async function getDefaultValues(state: IStateDB, code_path) {
-
-  const opts = await getRequestOptions(state);
+export async function getDefaultValues(code_path) {
 
   return new Promise<{[k:string]:string}>((resolve, reject) => {
     var defaultValues:{[k:string]:string}  = {}
@@ -73,7 +71,7 @@ export async function getDefaultValues(state: IStateDB, code_path) {
     var valuesUrl = new URL(PageConfig.getBaseUrl() + 'hysds/defaultValues');
     valuesUrl.searchParams.append('code_path', code_path);
     console.log(valuesUrl.href);
-    request('get',valuesUrl.href, {}, {}, opts).then((res: RequestResult) => {
+    request('get',valuesUrl.href).then((res: RequestResult) => {
       if (res.ok) {
         var json_response:any = res.json();
         var values = json_response['default_values'];
