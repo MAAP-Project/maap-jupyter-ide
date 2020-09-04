@@ -114,7 +114,7 @@ class GetAllProjectsHandler(IPythonHandler):
                 if src_type == 'git':
                     if not os.path.exists('/projects'+path):
 
-                        # Check if is stored on our gitlab (repo.nasa.maap.xyz) if so, use the users authentication
+                        # Check if is stored on our gitlab (e.g. mas.maap-project.org) if so, use the users authentication
                         # token to allow for the downloads of private repositories
                         if maap_mas_server(self.request) in location:
 
