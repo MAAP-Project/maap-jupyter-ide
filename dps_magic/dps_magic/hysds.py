@@ -8,30 +8,18 @@ from IPython.display import display, HTML
 logger = logging.getLogger()
 # logger.setLevel(logging.DEBUG)
 
-# set base url based on ops/dev environment
-CHE_BASE_URL = "https://che-k8s.maap.xyz"
-DPS_BUCKET_NAME = "maap-dev-dataset"
-
-if 'ENVIRONMENT' in os.environ.keys() and os.environ['ENVIRONMENT'] == 'OPS':
-    CHE_BASE_URL = "https://ade.maap-project.org"
-    DPS_BUCKET_NAME = "maap-ops-dataset"
-
-if 'ENVIRONMENT' in os.environ.keys() and os.environ['ENVIRONMENT'] == 'UAT':
-    CHE_BASE_URL = "https://ade.uat.maap-project.org"
-    DPS_BUCKET_NAME = "maap-uat-dataset"
-
-
 @magics_class
 class HysdsMagic(Magics):
-    # '{workspace_id}'.format(workspace_id=workspace_id)
 
     def __init__(self):
         super(HysdsMagic, self).__init__()
-        PREVIEW_URL = os.environ['PREVIEW_URL']
-        # self.JUPYTER_SERVER_URL = CHE_BASE_URL+PREVIEW_URL
-        self.lk = CHE_BASE_URL+PREVIEW_URL
-        # self.lk = 'http://localhost:8888'
-        self.bucket = DPS_BUCKET_NAME
+        PREVIEW_URL = os.environ['PREVIEW_URL'] if 'PREVIEW_URL' in os.environ else ''
+
+        self.config_helper = ConfigHelper()
+        self.env = self.config_helper.get_maap_config()
+
+        self.lk = 'https://{}{}'.format(self.env['ade_server'], PREVIEW_URL) 
+        self.bucket = 'maap-{}-dataset'.format(self.env['environment']) 
 
     def html(self,txt1,txt2=None):
         if txt2 == None:
@@ -394,3 +382,25 @@ class HysdsMagic(Magics):
         resp = json.loads(r.text)
         self.html(resp['url'])
         return
+
+class ConfigHelper(object):
+    def get_maap_config(self):
+        # Reaching into the maapsec extension here because this is a server-only extension with no reference to the statedb
+        path_to_json = os.path.join(os.path.dirname(os.path.abspath(__file__)), '../../maapsec', 'maap_environments.json')
+
+        with open(path_to_json) as f:
+            data = json.load(f)
+
+        env = self._get_environment(data)
+
+        return env
+
+    def _get_environment(self, envs):
+        CHE_API = os.environ['CHE_API'].replace('/api', '') if 'CHE_API' in os.environ else 'NON-ADE-HOST'
+
+        match = next((x for x in envs if CHE_API in x['ade_server']), None)
+
+        if match is None:
+            return next((x for x in envs if x['default_host'] == True), None)
+        else:
+            return match
