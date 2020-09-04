@@ -14,10 +14,17 @@ export const DEFAULT_REQUEST_OPTIONS = {
   ignoreCache: false,
   headers: {
     Accept: 'application/json, text/javascript, text/plain',
+    maap_env: '',
+    maap_ade_server: '',
+    maap_api_server: '',
+    maap_auth_server: '',
+    maap_mas_server: '',
   },
-  // default max duration for a request
+  // default max duration for a request in ms
+  // currently set to 120s = 2min
   timeout: 5000,
 };
+
 
 export interface RequestResult {
   ok: boolean;
