@@ -4,20 +4,23 @@
         "ade_server": "che-k8s.maap.xyz",
         "api_server": "api.maap.xyz",
         "auth_server": "auth.nasa.maap.xyz",
-        "mas_server": "repo.nasa.maap.xyz"
+        "mas_server": "repo.nasa.maap.xyz",
+        "default_host": true
     },
     {
         "environment": "uat",
         "ade_server": "ade.uat.maap-project.org",
         "api_server": "api.uat.maap-project.org",
         "auth_server": "auth.uat.maap-project.org",
-        "mas_server": "mas.uat.maap-project.org"
+        "mas_server": "mas.uat.maap-project.org",
+        "default_host": false
     },
     {
         "environment": "ops",
         "ade_server": "ade.maap-project.org",
         "api_server": "api.maap-project.org",
         "auth_server": "auth.maap-project.org",
-        "mas_server": "mas.maap-project.org"
+        "mas_server": "mas.maap-project.org",
+        "default_host": false
     }
 ]

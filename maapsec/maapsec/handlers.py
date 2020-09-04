@@ -92,6 +92,6 @@ class ConfigHelper(object):
         match = next((x for x in envs if host in x['ade_server']), None)
 
         if match is None:
-            return next((x for x in envs if x['environment'] == "ops"), None)
+            return next((x for x in envs if x['default_host'] == True), None)
         else:
             return match
