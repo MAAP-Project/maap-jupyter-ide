@@ -167,7 +167,7 @@ export class ProjectSelector extends Widget {
       }
 
     } else if (this.type == 'register') {
-      getDefaultValues(this._state, opt).then((defaultValues) => {
+      getDefaultValues(opt).then((defaultValues) => {
         console.log(defaultValues);
         console.log('create register');
         let w = new RegisterWidget(this._fields,this._username,this._ticket,defaultValues);
