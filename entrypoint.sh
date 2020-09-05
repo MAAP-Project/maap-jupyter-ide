@@ -21,6 +21,8 @@ perl -pi -e "s|web_app.settings\['base_url'\]|'/'|g" /maap-jupyter-ide/edsc_exte
 perl -pi -e "s|web_app.settings\[\"base_url\"\]|'/'|g" /maap-jupyter-ide/jupyterlab-git/jupyterlab_git/handlers.py
 perl -pi -e "s|web_app.settings\['base_url'\]|'/'|g" /maap-jupyter-ide/submit_jobs/submit_jobs/__init__.py
 perl -pi -e "s|web_app.settings\['base_url'\]|'/'|g" /maap-jupyter-ide/ipycmc/ipycmc/nbextension/__init__.py
+perl -pi -e "s|web_app.settings\['base_url'\]|'/'|g" /maap-jupyter-ide/maapsec/maapsec/__init__.py
+
 
 # Dump all env variables into file so they exist still though SSH
 env | grep _ >> /etc/environment
