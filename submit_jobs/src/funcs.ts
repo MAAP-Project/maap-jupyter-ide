@@ -12,7 +12,7 @@ export async function getUsernameToken(state: IStateDB, profileId:string, callba
   let ticket:string = '';
   const opts = await getRequestOptions(state);
 
-  if ("https://" + opts.headers['Maap_ade_server'] === document.location.origin) {
+  if ("https://" + opts.headers['maap_ade_server'] === document.location.origin) {
     getUserInfo(function(profile: any) {
       if (profile['cas:username'] === undefined) {
         INotification.error("Get profile failed.");
