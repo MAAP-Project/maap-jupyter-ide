@@ -3,8 +3,6 @@ import requests
 from requests import get
 from notebook.base.handlers import IPythonHandler
 import subprocess
-import boto3
-from botocore.exceptions import ClientError
 import json
 import logging
 
@@ -13,6 +11,9 @@ logger.setLevel(logging.DEBUG)
 
 def maap_ade_url(request):
 	return 'https://{}'.format(request.headers['Maap_ade_server'])
+
+def maap_api_url(request):
+	return 'https://{}'.format(request.headers['Maap_api_server'])
 
 def dps_bucket_name(request):
 	return 'maap-{}-dataset'.format(request.headers['Maap_env'])
@@ -348,46 +349,21 @@ class Presigneds3UrlHandler(IPythonHandler):
         # get arguments
         bucket = dps_bucket_name(self.request)
         key = self.get_argument('key','')
+        proxyTicket = self.get_argument('proxy-ticket','')
         logging.debug('bucket is '+bucket)
         logging.debug('key is '+key)
 
-        # expiration = '300' # 5 min in seconds
         expiration = '43200' # 12 hrs in seconds
         logging.debug('expiration is {} seconds'+expiration)
-        keys = subprocess.check_output('cat /.passwd-s3fs',shell=True).decode('utf-8').strip().split(':')
 
-        # check if provided key exists
-        try:
-            s3 = boto3.resource('s3',
-                aws_access_key_id=keys[0],
-                aws_secret_access_key=keys[1]
-            )
-            s3.Object(bucket,key).load()
-            logging.debug('key {} exists in bucket {}'.format(key,bucket))
-        # return with error if provided key doesn't exist
-        except ClientError as e:
-            if e.response['Error']['Code'] == "404":
-                logging.debug('s3 object {} does not exist in bucket {}'.format(key,bucket))
-                self.finish({"status_code":404, "message":"404 s3 object {} does not exist in bucket {}".format(key,bucket), "url":""})
-            else:
-                logging.error(e)
-                self.finish(json.dumps({"status_code":500, "message":e, "url":""}))
+        url = '{}/api/members/self/presignedUrlS3/{}/{}?exp={}'.format(maap_api_url(self.request), bucket, key, expiration)
+        
+        headers = {'Accept': 'application/json', 'proxy-ticket': proxyTicket}
+        r = requests.get(
+            url,
+            headers=headers,
+            verify=False
+        )
 
-        # continue if provided key exists
-        # create s3 client for creating url
-        try:
-            s3_client = boto3.client('s3',
-                aws_access_key_id=keys[0],
-                aws_secret_access_key=keys[1]
-            )
-            resp = s3_client.generate_presigned_url(
-                'get_object',
-                Params={'Bucket': bucket,'Key': key},
-                ExpiresIn=expiration
-            )
-            logging.debug('link is '+resp)
-        except ClientError as e:
-            logging.error(e)
-            self.finish(json.dumps({"status_code":500, "message":e, "url":""}))
-
-        self.finish({"status_code":200, "message": "success", "url":resp})
+        resp = json.loads(r.text)   
+        self.finish({"status_code":200, "message": "success", "url":resp['url']})

@@ -10,6 +10,7 @@ import { request, RequestResult, DEFAULT_REQUEST_OPTIONS } from './request';
 
 import { SshWidget, InstallSshWidget, UserInfoWidget } from './widgets'
 
+const profileId = 'maapsec-extension:IMaapProfile';
 const idMaapEnvironment = 'maapsec-extension:IMaapEnvironment';
 
 export function popup(b:Widget,title:string): void {
@@ -146,12 +147,15 @@ export async function mountOrgFolders(state: IStateDB) {
 }
 
 export async function getPresignedUrl(state: IStateDB, key:string): Promise<string> {
+  const profile = await getUsernameToken(state);  
   const opts = await getRequestOptions(state);
+
   return new Promise<string>(async (resolve, reject) => {
     let presignedUrl = '';
 
     var getUrl = new URL(PageConfig.getBaseUrl() + 'show_ssh_info/getSigneds3Url');
     getUrl.searchParams.append('key',key);
+    getUrl.searchParams.append('proxy-ticket', profile.ticket);
     request('get', getUrl.href, {}, {}, opts).then((res: RequestResult) => {
       if (res.ok) {
         let data:any = JSON.parse(res.data);
@@ -198,6 +202,7 @@ export function activateGetPresignedUrl(
       }
 
       let path = item.path;
+
       getPresignedUrl(state, path).then((url) => {
         let display = url;
         if (url.substring(0,5) == 'https'){
@@ -261,4 +266,27 @@ async function getRequestOptions(state: IStateDB) {
       console.error(error);
       return DEFAULT_REQUEST_OPTIONS;
   });
+}
+
+export async function getUsernameToken(state: IStateDB) {
+  let defResult = {uname: 'anonymous', ticket: ''}
+  const opts = await getRequestOptions(state);
+
+  if ("https://" + opts.headers['Maap_ade_server'] === document.location.origin) {
+    return getUserInfo(function(profile: any) {
+      if (profile['cas:username'] === undefined) {
+        INotification.error("Get profile failed.");
+        return defResult
+      } else {
+        return {uname: profile['cas:username'], ticket: profile['proxyGrantingTicket']}
+      }
+    });
+  } else {
+    return state.fetch(profileId).then((profile) => {
+      let profileObj = JSON.parse(JSON.stringify(profile));
+      return {uname: profileObj.preferred_username, ticket: profileObj.proxyGrantingTicket}
+    }).catch((error) => {
+      return defResult
+    });
+  }
 }
