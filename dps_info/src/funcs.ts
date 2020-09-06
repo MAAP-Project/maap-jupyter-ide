@@ -4,16 +4,23 @@ import { INotification } from 'jupyterlab_toastify';
 import { getUserInfo } from "./getKeycloak";
 import { request, RequestResult } from './request';
 
-let maapEnvironment = {}
+let ade_server = '';
+var valuesUrl = new URL(PageConfig.getBaseUrl() + 'maapsec/environment');
+
+request('get', valuesUrl.href).then((res: RequestResult) => {
+  if (res.ok) {
+    let environment = JSON.parse(res.data);
+    ade_server = environment['ade_server'];
+  }
+});
 
 export async function getUsernameToken(state: IStateDB, profileId:string) {
     let uname:string = 'anonymous';
     let ticket:string = '';
     let result:string[] = [uname, ticket];
-    const opts = maapEnvironment ? maapEnvironment : await loadMaapEnvironment();
 
     return new Promise<string[]> ((resolve,reject) => {
-        if ("https://" + opts.headers['maap_ade_server'] === document.location.origin) {
+        if ("https://" + ade_server === document.location.origin) {
             getUserInfo(function(profile: any) {
                 if (profile['cas:username'] === undefined) {
                     INotification.error("Get profile failed.");
@@ -123,22 +130,3 @@ export function onRowClick(tableId:string, callback:any) {
         }
     }
 }
-
-export async function loadMaapEnvironment(): Promise<any> {
-    return new Promise<RequestResult>((resolve, reject) => {
-      
-      var valuesUrl = new URL(PageConfig.getBaseUrl() + 'maapsec/environment');
-  
-      request('get', valuesUrl.href).then((res: RequestResult) => {
-        console.log('maapsec environment response');
-        console.log(res);
-        if (res.ok) {
-          let environment = JSON.parse(res.data);
-          resolve(environment);
-        } else {
-          resolve(null);
-        }
-      });
-    });
-  }
-  
