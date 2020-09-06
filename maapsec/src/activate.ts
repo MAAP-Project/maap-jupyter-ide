@@ -10,7 +10,7 @@ import { Token } from '@lumino/coreutils';
 const idMaapProfile = 'maapsec-extension:IMaapProfile';
 const IMaapProfile = new Token<IMaapProfile>(idMaapProfile);
 
-const idMaapEnvironment = 'maapsec-extension:IMaapEnvironment';
+let maapEnvironment = {};
 
 export interface IMaapProfile {
   proxyTicket: string;
@@ -35,37 +35,26 @@ export function activateLogin(app: JupyterFrontEnd,
   const maapProfile = new MaapProfile();
   var lbl = 'Login';
 
-  loadMaapEnvironment()
-  .then((env_result: RequestResult) => {
-    console.log('saving maap environment');
-    console.log(env_result);
-    _state.save(idMaapEnvironment, env_result);
+  loadMaapEnvironment().then((env_result: RequestResult) => {
+    maapEnvironment = env_result;
   });
 
   app.commands.addCommand(login_command, {
     label: lbl,
     isEnabled: () => true,
     execute: args => {
-      
-      state.fetch(idMaapEnvironment).then((maapEnv) => {
-          let maapEnvObj = JSON.parse(JSON.stringify(maapEnv));
-          var url = 'https://' + maapEnvObj.auth_server + '/cas/login?service=' + encodeURIComponent(window.location.href.split('?')[0]);
-          var title = 'MAAP Login';
-          const w = 800;
-          const h = 750;
-    
-          var left = (screen.width/2)-(w/2);
-          var top = (screen.height/2)-(h/2);
-          
-          loginWindow =  window.open(url, title, 'toolbar=no, location=no, directories=no, status=no, menubar=no, scrollbars=no, resizable=no, copyhistory=no, width='+w+', height='+h+', top='+top+', left='+left);
-    
-          if (window.focus) loginWindow.focus();
-          window.addEventListener('message', handleMessageDispatch);
-
-      }).catch((error) => {
-          console.error('Error retrieving MAAP environment from maapsec extension!');
-          console.error(error);
-      });
+        var url = 'https://' + maapEnvironment['auth_server'] + '/cas/login?service=' + encodeURIComponent(window.location.href.split('?')[0]);
+        var title = 'MAAP Login';
+        const w = 800;
+        const h = 750;
+  
+        var left = (screen.width/2)-(w/2);
+        var top = (screen.height/2)-(h/2);
+        
+        loginWindow =  window.open(url, title, 'toolbar=no, location=no, directories=no, status=no, menubar=no, scrollbars=no, resizable=no, copyhistory=no, width='+w+', height='+h+', top='+top+', left='+left);
+  
+        if (window.focus) loginWindow.focus();
+        window.addEventListener('message', handleMessageDispatch);
     }
   });
 
