@@ -386,7 +386,7 @@ class HysdsMagic(Magics):
 class ConfigHelper(object):
     def get_maap_config(self):
         # Reaching into the maapsec extension here because this is a server-only extension with no reference to the statedb
-        path_to_json = os.path.join(os.path.dirname(os.path.abspath(__file__)), '../../maapsec', 'maap_environments.json')
+        path_to_json = os.path.join(os.path.dirname(os.path.abspath(__file__)), '../..', 'maap_environments.json')
 
         with open(path_to_json) as f:
             data = json.load(f)

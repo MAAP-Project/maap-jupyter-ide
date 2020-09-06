@@ -9,7 +9,6 @@ import { InjectSSH } from './widgets'
 import { updateKeycloakToken } from "./getKeycloak";
 import '../style/index.css';
 
-
 ///////////////////////////////////////////////////////////////
 //
 // Display/inject ssh info extension
@@ -18,7 +17,7 @@ import '../style/index.css';
 const extensionSsh: JupyterFrontEndPlugin<void> = {
   id: 'display_ssh_info',
   autoStart: true,
-  requires: [ICommandPalette, IStateDB],
+  requires: [ICommandPalette],
   optional: [ILauncher],
   activate: activateSSH
 };
@@ -36,7 +35,7 @@ function activateSSH(app: JupyterFrontEnd,
         label: 'Display SSH Info',
         isEnabled: () => true,
         execute: args => {
-          checkSSH(state);
+          checkSSH();
         }
       });
       palette.addItem({command: open_command, category: 'SSH'});
