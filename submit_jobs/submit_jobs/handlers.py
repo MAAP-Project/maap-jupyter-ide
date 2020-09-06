@@ -10,6 +10,7 @@ import sys
 import os
 import logging
 import yaml
+import functools
 from .fields import getFields
 
 logger = logging.getLogger()
@@ -69,9 +70,6 @@ def parse_job(job):
 	ts = '0' if ts == [] else ts[0]['value']
 	return {'job_id':job_id, 'status':status, 'algo_id':algo_id, 'inputs':inputs, 'timestamp':ts}
 
-def maap_api_url(request):
-	return 'https://{}/api'.format(request.headers['Maap_api_server'])
-
 # helper to parse listed job's detailed info in HTML
 def detailed_display(job):
 	job_id = job['job_id']
@@ -83,6 +81,21 @@ def detailed_display(job):
 	for i in inputs:
 		result +='	{}: {}\n'.format(i['name'],i['value'])
 	return result
+
+@functools.lru_cache(maxsize=128)
+def get_maap_config(host):
+    path_to_json = os.path.join(os.path.dirname(os.path.abspath(__file__)), '../..', 'maap_environments.json')
+
+    with open(path_to_json) as f:
+        data = json.load(f)
+
+    match = next((x for x in data if host in x['ade_server']), None)
+    maap_config = next((x for x in data if x['default_host'] == True), None) if match is None else match
+    
+    return maap_config
+
+def maap_api_url(host):
+	return 'https://{}/api'.format(get_maap_config(host)['api_server'])
 
 # currently allows repos from both repo.nasa.maap and mas.maap-project
 class RegisterAlgorithmHandler(IPythonHandler):
@@ -174,7 +187,7 @@ class RegisterAlgorithmHandler(IPythonHandler):
 		# Part 3: Build & Send Request
 		# ==================================
 		json_in_file = WORKDIR+"/submit_jobs/register_inputs.json"
-		url = maap_api_url(self.request) + '/mas/algorithm'
+		url = maap_api_url(self.request.host) + '/mas/algorithm'
 		headers = {'Content-Type':'application/json'}
 
 		if 'proxy-ticket' in params.keys():
@@ -264,14 +277,14 @@ class DeleteAlgorithmHandler(IPythonHandler):
 		logging.debug(headers)
 
 		if complete:
-			url = maap_api_url(self.request) + '/mas/algorithm/{algo_id}:{version}'.format(**params) 
+			url = maap_api_url(self.request.host) + '/mas/algorithm/{algo_id}:{version}'.format(**params) 
 			logging.debug('request sent to {}'.format(url))
 			r = requests.delete(
 				url,
 				headers=headers
 			)
 		else:
-			url = maap_api_url(self.request) +'/mas/algorithm'
+			url = maap_api_url(self.request.host) +'/mas/algorithm'
 			logging.debug('request sent to {}'.format(url))
 			r = requests.get(
 				url,
@@ -352,7 +365,7 @@ class PublishAlgorithmHandler(IPythonHandler):
 		logging.debug('headers:')
 		logging.debug(headers)
 
-		url = maap_api_url(self.request) +'/mas/publish' 
+		url = maap_api_url(self.request.host) +'/mas/publish' 
 		body = {'algo_id': params['algo_id'], 'version': params['version']}
 		logging.debug('request sent to {}'.format(url))
 		r = requests.post(
@@ -408,7 +421,7 @@ class GetCapabilitiesHandler(IPythonHandler):
 		# ==================================
 		# Part 1: Build & Send Request
 		# ==================================
-		url = maap_api_url(self.request) +'/dps/job'
+		url = maap_api_url(self.request.host) +'/dps/job'
 		headers = {'Content-Type':'application/json'}
 		logging.debug('request sent to {}'.format(url))
 		logging.debug('headers:')
@@ -504,7 +517,7 @@ class ExecuteHandler(IPythonHandler):
 		# ==================================
 		req_xml = ''
 		ins_xml = ''
-		url = maap_api_url(self.request) +'/dps/job'
+		url = maap_api_url(self.request.host) +'/dps/job'
 		headers = {'Content-Type':'application/xml'}
 		logging.debug('request sent to {}'.format(url))
 		logging.debug('headers:')
@@ -599,7 +612,7 @@ class GetStatusHandler(IPythonHandler):
 		# ==================================
 		# Part 2: Build & Send Request
 		# ==================================
-		url = maap_api_url(self.request) +'/dps/job/{job_id}/status'.format(**params)
+		url = maap_api_url(self.request.host) +'/dps/job/{job_id}/status'.format(**params)
 		headers = {'Content-Type':'application/xml'}
 		logging.debug('request sent to {}'.format(url))
 		logging.debug('headers:')
@@ -670,7 +683,7 @@ class GetMetricsHandler(IPythonHandler):
 		# ==================================
 		# Part 2: Build & Send Request
 		# ==================================
-		url = maap_api_url(self.request) +'/dps/job/{job_id}/metrics'.format(**params)
+		url = maap_api_url(self.request.host) +'/dps/job/{job_id}/metrics'.format(**params)
 		headers = {'Content-Type':'application/xml'}
 		logging.debug('request sent to {}'.format(url))
 		logging.debug('headers:')
@@ -736,7 +749,7 @@ class GetResultHandler(IPythonHandler):
 		# ==================================
 		# Part 2: Build & Send Request
 		# ==================================
-		url = maap_api_url(self.request) +'/dps/job/{job_id}'.format(**params)
+		url = maap_api_url(self.request.host) +'/dps/job/{job_id}'.format(**params)
 		headers = {'Content-Type':'application/xml'}
 		logging.debug('request sent to {}'.format(url))
 		logging.debug('headers:')
@@ -848,7 +861,7 @@ class DismissHandler(IPythonHandler):
 		# ==================================
 		# Part 2: Build & Send Request
 		# ==================================
-		url = maap_api_url(self.request) +'/dps/job/revoke/{job_id}'.format(**params)
+		url = maap_api_url(self.request.host) +'/dps/job/revoke/{job_id}'.format(**params)
 		headers = {'Content-Type':'application/xml'}
 		logging.debug('request sent to {}'.format(url))
 		logging.debug('headers:')
@@ -931,7 +944,7 @@ class DeleteHandler(IPythonHandler):
 		# ==================================
 		# Part 2: Build & Send Request
 		# ==================================
-		url = maap_api_url(self.request) +'/dps/job/{job_id}'.format(**params)
+		url = maap_api_url(self.request.host) +'/dps/job/{job_id}'.format(**params)
 		headers = {'Content-Type':'application/xml'}
 		logging.debug('request sent to {}'.format(url))
 		logging.debug('headers:')
@@ -1017,9 +1030,9 @@ class DescribeProcessHandler(IPythonHandler):
 
 		# return all algorithms if malformed request
 		if complete:
-			url = maap_api_url(self.request) +'/mas/algorithm/{algo_id}:{version}'.format(**params)
+			url = maap_api_url(self.request.host) +'/mas/algorithm/{algo_id}:{version}'.format(**params)
 		else:
-			url = maap_api_url(self.request) +'/mas/algorithm'
+			url = maap_api_url(self.request.host) +'/mas/algorithm'
 
 		logging.debug('request sent to {}'.format(url))
 		logging.debug('headers:')
@@ -1137,9 +1150,9 @@ class ExecuteInputsHandler(IPythonHandler):
 
 		# return all algorithms if malformed request
 		if complete:
-			url = maap_api_url(self.request) +'/mas/algorithm/{algo_id}:{version}'.format(**params2) 
+			url = maap_api_url(self.request.host) +'/mas/algorithm/{algo_id}:{version}'.format(**params2) 
 		else:
-			url = maap_api_url(self.request) +'/mas/algorithm'
+			url = maap_api_url(self.request.host) +'/mas/algorithm'
 
 		logging.debug('request sent to {}'.format(url))
 		logging.debug('headers:')
@@ -1313,7 +1326,7 @@ class ListJobsHandler(IPythonHandler):
 		# ==================================
 		# Part 2: Build & Send Request
 		# ==================================
-		url = maap_api_url(self.request) +'/dps/job/{username}/list'.format(**params)
+		url = maap_api_url(self.request.host) +'/dps/job/{username}/list'.format(**params)
 		headers = {'Content-Type':'application/xml'}
 
 		if 'proxy-ticket' in params.keys():

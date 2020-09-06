@@ -1,8 +1,6 @@
 import { ICommandPalette } from '@jupyterlab/apputils';
 import { JupyterFrontEnd, JupyterFrontEndPlugin } from '@jupyterlab/application';
 import { ILauncher } from '@jupyterlab/launcher';
-import { IStateDB } from '@jupyterlab/statedb';
-
 import { ProjectsPull, ProjectsList } from './widgets'
 import { popup } from './popup'
 
@@ -15,14 +13,13 @@ import { popup } from './popup'
 const pull_extension: JupyterFrontEndPlugin<void> = {
   id: 'pull_projects',
   autoStart: true,
-  requires: [ICommandPalette, IStateDB],
+  requires: [ICommandPalette],
   optional: [ILauncher],
   activate: activate_pull
 };
 
 function activate_pull(app: JupyterFrontEnd,
                   palette: ICommandPalette,
-                  state: IStateDB,
                   launcher: ILauncher | null) {
 
    // Add an application command
@@ -32,14 +29,14 @@ function activate_pull(app: JupyterFrontEnd,
     label: 'Pull All Projects',
     isEnabled: () => true,
     execute: args => {
-      new ProjectsPull(state);
+      new ProjectsPull();
     }
   });
 
   palette.addItem({command: open_command, category: 'Projects'});
 
   console.log('JupyterFrontEnd pull is activated! Auto-pulling projects.');
-  new ProjectsPull(state);
+  new ProjectsPull();
   // console.log('Autopulled projects');
 };
 
@@ -52,14 +49,13 @@ function activate_pull(app: JupyterFrontEnd,
 const list_extension: JupyterFrontEndPlugin<void> = {
   id: 'list_projects',
   autoStart: true,
-  requires: [ICommandPalette, IStateDB],
+  requires: [ICommandPalette],
   optional: [ILauncher],
   activate: activate_list
 };
 
 function activate_list(app: JupyterFrontEnd,
                   palette: ICommandPalette,
-                  state: IStateDB,
                   launcher: ILauncher | null) {
 
    // Add an application command
@@ -69,7 +65,7 @@ function activate_list(app: JupyterFrontEnd,
     label: 'List All Projects',
     isEnabled: () => true,
     execute: args => {
-      popup(new ProjectsList(state), "List All Projects");
+      popup(new ProjectsList(), "List All Projects");
     }
   });
 

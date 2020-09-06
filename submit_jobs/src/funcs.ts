@@ -3,16 +3,14 @@ import { IStateDB } from '@jupyterlab/statedb';
 import { INotification } from 'jupyterlab_toastify';
 import { popupResultText } from './widgets';
 import { getUserInfo } from "./getKeycloak";
-import { request, RequestResult, DEFAULT_REQUEST_OPTIONS } from './request';
-
-const idMaapEnvironment = 'maapsec-extension:IMaapEnvironment';
+import { request, RequestResult } from './request';
 
 export async function getUsernameToken(state: IStateDB, profileId:string, callback) {
   let uname:string = 'anonymous';
   let ticket:string = '';
-  const opts = await getRequestOptions(state);
+  const environment = await loadMaapEnvironment();
 
-  if ("https://" + opts.headers['maap_ade_server'] === document.location.origin) {
+  if ("https://" + environment['ade_server'] === document.location.origin) {
     getUserInfo(function(profile: any) {
       if (profile['cas:username'] === undefined) {
         INotification.error("Get profile failed.");
@@ -38,8 +36,6 @@ export async function getUsernameToken(state: IStateDB, profileId:string, callba
 
 export async function getAlgorithms(state: IStateDB, ticket?:string) {
 
-  const opts = await getRequestOptions(state);
-
   return new Promise<{[k:string]:Array<string>}>((resolve, reject) => {
     var algoSet: { [key: string]: Array<string>} = {}
 
@@ -49,7 +45,7 @@ export async function getAlgorithms(state: IStateDB, ticket?:string) {
       settingsAPIUrl.searchParams.append('proxy-ticket',ticket);
     }
     console.log(settingsAPIUrl.href);
-    request('get',settingsAPIUrl.href, {}, {}, opts).then((res: RequestResult) => {
+    request('get',settingsAPIUrl.href).then((res: RequestResult) => {
       if (res.ok) {
         var json_response:any = res.json();
         var algos = json_response['algo_set'];
@@ -96,10 +92,8 @@ export async function inputRequest(state: IStateDB, endpt:string,title:string,in
   }
   console.log(requestUrl.href);
 
-  const opts = await getRequestOptions(state);
-
   // send request
-  request('get',requestUrl.href, {}, {}, opts).then((res: RequestResult) => {
+  request('get',requestUrl.href).then((res: RequestResult) => {
     if (res.ok) {
       var json_response:any = res.json();
       // console.log(json_response['result']);
@@ -135,10 +129,8 @@ export async function algorithmExists(state: IStateDB, name:string,ver:string,en
   requestUrl.searchParams.append('proxy-ticket', ticket);
   console.log(requestUrl.href);
 
-  const opts = await getRequestOptions(state);
-
   // send request
-  return request('get',requestUrl.href, {}, {}, opts).then((res: RequestResult) => {
+  return request('get',requestUrl.href).then((res: RequestResult) => {
     if (res.ok) {
       var json_response:any = res.json();
       console.log(json_response);
@@ -154,23 +146,21 @@ export async function algorithmExists(state: IStateDB, name:string,ver:string,en
   }); 
 }
 
-async function getRequestOptions(state: IStateDB) {
-  return state.fetch(idMaapEnvironment).then((maapEnv) => {
-    let maapEnvObj = JSON.parse(JSON.stringify(maapEnv));
-    let opts = DEFAULT_REQUEST_OPTIONS;
+export async function loadMaapEnvironment(): Promise<any> {
+  return new Promise<RequestResult>((resolve, reject) => {
+    
+    var valuesUrl = new URL(PageConfig.getBaseUrl() + 'maapsec/environment');
 
-    opts.headers.maap_env = maapEnvObj.environment;
-    opts.headers.maap_ade_server = maapEnvObj.ade_server;
-    opts.headers.maap_api_server = maapEnvObj.api_server;
-    opts.headers.maap_auth_server = maapEnvObj.auth_server;
-    opts.headers.maap_mas_server = maapEnvObj.mas_server;
-
-    return opts;
-
-  }).catch((error) => {
-      console.error('Error retrieving MAAP environment from maapsec extension!');
-      console.error(error);
-      return DEFAULT_REQUEST_OPTIONS;
+    request('get', valuesUrl.href).then((res: RequestResult) => {
+      console.log('maapsec environment response');
+      console.log(res);
+      if (res.ok) {
+        let environment = JSON.parse(res.data);
+        resolve(environment);
+      } else {
+        resolve(null);
+      }
+    });
   });
 }
 
