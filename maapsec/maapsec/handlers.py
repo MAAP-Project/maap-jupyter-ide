@@ -1,7 +1,7 @@
 import os.path
 import sys
 from notebook.base.handlers import IPythonHandler
-
+import functools
 import os
 import glob
 from pathlib import Path
@@ -15,11 +15,23 @@ import logging
 logger = logging.getLogger()
 logger.setLevel(logging.DEBUG)
 
-class MaapEnvironmentSetup(IPythonHandler):
-    def get(self, **params):  
-        config_helper = ConfigHelper()
-        env = config_helper.get_maap_config(self.request.host)
 
+@functools.lru_cache(maxsize=128)
+def get_maap_config(host):
+    path_to_json = os.path.join(os.path.dirname(os.path.abspath(__file__)), '../..', 'maap_environments.json')
+
+    with open(path_to_json) as f:
+        data = json.load(f)
+
+    match = next((x for x in data if host in x['ade_server']), None)
+    maap_config = next((x for x in data if x['default_host'] == True), None) if match is None else match
+    
+    return maap_config
+    
+
+class MaapEnvironmentHandler(IPythonHandler):
+    def get(self, **params):  
+        env = get_maap_config(self.request.host)
         self.finish(env)
 
 class MaapLoginHandler(IPythonHandler):
@@ -27,8 +39,7 @@ class MaapLoginHandler(IPythonHandler):
         try:    
             param_ticket = self.request.query_arguments['ticket'][0].decode('UTF-8')     
             param_service = self.request.query_arguments['service'][0].decode('UTF-8') 
-            config_helper = ConfigHelper()
-            env = config_helper.get_maap_config(self.request.host)
+            env = get_maap_config(self.request.host)
             auth_server = 'https://{auth_host}/cas'.format(auth_host=env['auth_server'])
 
             url = '{base_url}/p3/serviceValidate?ticket={ticket}&service={service}&pgtUrl={base_url}&state='.format(
@@ -75,23 +86,3 @@ class MaapLoginHandler(IPythonHandler):
             return attributes["cas:" + attribute_key]
         else:
             return ''
-
-class ConfigHelper(object):
-    def get_maap_config(self, host):
-        path_to_json = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'maap_environments.json')
-
-        with open(path_to_json) as f:
-            data = json.load(f)
-
-        env = self._get_environment(host, data)
-
-        return env
-
-    def _get_environment(self, host, envs):
-
-        match = next((x for x in envs if host in x['ade_server']), None)
-
-        if match is None:
-            return next((x for x in envs if x['default_host'] == True), None)
-        else:
-            return match

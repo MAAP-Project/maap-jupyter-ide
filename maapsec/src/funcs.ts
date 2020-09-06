@@ -6,7 +6,7 @@ export function loadMaapEnvironment() {
       
       var valuesUrl = new URL(PageConfig.getBaseUrl() + 'maapsec/environment');
 
-      request('get',valuesUrl.href).then((res: RequestResult) => {
+      request('get', valuesUrl.href).then((res: RequestResult) => {
         console.log('maapsec environment response');
         console.log(res);
         if (res.ok) {
