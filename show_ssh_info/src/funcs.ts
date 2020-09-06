@@ -241,29 +241,20 @@ export function activateGetPresignedUrl(
   // }
 }
 
-export async function loadMaapEnvironment(): Promise<any> {
-  return new Promise<RequestResult>((resolve, reject) => {
-    
-    var valuesUrl = new URL(PageConfig.getBaseUrl() + 'maapsec/environment');
+let ade_server = '';
+var valuesUrl = new URL(PageConfig.getBaseUrl() + 'maapsec/environment');
 
-    request('get', valuesUrl.href).then((res: RequestResult) => {
-      console.log('maapsec environment response');
-      console.log(res);
-      if (res.ok) {
-        let environment = JSON.parse(res.data);
-        resolve(environment);
-      } else {
-        resolve(null);
-      }
-    });
-  });
-}
+request('get', valuesUrl.href).then((res: RequestResult) => {
+  if (res.ok) {
+    let environment = JSON.parse(res.data);
+    ade_server = environment['ade_server'];
+  }
+});
 
 export async function getUsernameToken(state: IStateDB) {
   let defResult = {uname: 'anonymous', ticket: ''}
-  const environment = await loadMaapEnvironment();
 
-  if ("https://" + environment['ade_server'] === document.location.origin) {
+  if ("https://" + ade_server === document.location.origin) {
     return getUserInfo(function(profile: any) {
       if (profile['cas:username'] === undefined) {
         INotification.error("Get profile failed.");
