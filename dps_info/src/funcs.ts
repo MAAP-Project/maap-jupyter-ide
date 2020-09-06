@@ -2,15 +2,15 @@ import { PageConfig } from '@jupyterlab/coreutils';
 import { IStateDB } from '@jupyterlab/statedb';
 import { INotification } from 'jupyterlab_toastify';
 import { getUserInfo } from "./getKeycloak";
-import { request, RequestResult, DEFAULT_REQUEST_OPTIONS } from './request';
+import { request, RequestResult } from './request';
 
-const idMaapEnvironment = 'maapsec-extension:IMaapEnvironment';
+let maapEnvironment = {}
 
 export async function getUsernameToken(state: IStateDB, profileId:string) {
     let uname:string = 'anonymous';
     let ticket:string = '';
     let result:string[] = [uname, ticket];
-    const opts = await getRequestOptions(state);
+    const opts = maapEnvironment ? maapEnvironment : await loadMaapEnvironment();
 
     return new Promise<string[]> ((resolve,reject) => {
         if ("https://" + opts.headers['maap_ade_server'] === document.location.origin) {
@@ -50,9 +50,7 @@ export async function DPSCall(state: IStateDB, endpoint:string, keywords:string[
         requestUrl.searchParams.append(k,kwargs[k]);
     }
     console.log(requestUrl.href);
-
-    const opts = await getRequestOptions(state);
-    const res = await request('get', requestUrl.href, {}, {}, opts);
+    const res = await request('get', requestUrl.href);
     return res; 
 }
 
@@ -60,9 +58,7 @@ export async function getAlgoList(state: IStateDB, username:string): Promise<Req
     let requestUrl = new URL(PageConfig.getBaseUrl() + 'hysds/listAlgorithms');
     requestUrl.searchParams.append('username', username);
     console.log(requestUrl.href);
-
-    const opts = await getRequestOptions(state);
-    const res = await request('get', requestUrl.href, {}, {}, opts);
+    const res = await request('get', requestUrl.href);
     return res;
 }
 
@@ -72,9 +68,7 @@ export async function describeAlgo(state: IStateDB, algo:string, version:string,
     requestUrl.searchParams.append('version', version)
     requestUrl.searchParams.append('username', username);
     console.log(requestUrl.href);
-
-    const opts = await getRequestOptions(state);
-    const res = await request('get', requestUrl.href, {}, {}, opts);
+    const res = await request('get', requestUrl.href);
     return res;
 }
 
@@ -84,9 +78,7 @@ export async function executeInputs(state: IStateDB, algo:string, version:string
     requestUrl.searchParams.append('version', version)
     requestUrl.searchParams.append('username', username);
     console.log(requestUrl.href);
-
-    const opts = await getRequestOptions(state);
-    const res = await request('get', requestUrl.href, {}, {}, opts);
+    const res = await request('get', requestUrl.href);
     return res;
 }
 
@@ -94,9 +86,7 @@ export async function getJobs(state: IStateDB, username:string): Promise<Request
     let requestUrl = new URL(PageConfig.getBaseUrl() + 'hysds/listJobs');
     requestUrl.searchParams.append('username', username);
     console.log(requestUrl.href);
-
-    const opts = await getRequestOptions(state);
-    const res = await request('get', requestUrl.href, {}, {}, opts);
+    const res = await request('get', requestUrl.href);
     return res;
 }
 
@@ -105,9 +95,7 @@ export async function getResults(state: IStateDB, job_id: string, username:strin
     requestUrl.searchParams.append('username', username);
     requestUrl.searchParams.append('job_id', job_id);
     console.log(requestUrl.href);
-
-    const opts = await getRequestOptions(state);
-    const res = await request('get', requestUrl.href, {}, {}, opts);
+    const res = await request('get', requestUrl.href);
     return res;
 }
 
@@ -116,9 +104,7 @@ export async function getMetrics(state: IStateDB, job_id: string, username:strin
     requestUrl.searchParams.append('username', username);
     requestUrl.searchParams.append('job_id', job_id);
     console.log(requestUrl.href);
-
-    const opts = await getRequestOptions(state);
-    const res = await request('get', requestUrl.href, {}, {}, opts);
+    const res = await request('get', requestUrl.href);
     return res;
 }
 
@@ -138,22 +124,21 @@ export function onRowClick(tableId:string, callback:any) {
     }
 }
 
-async function getRequestOptions(state: IStateDB) {
-    return state.fetch(idMaapEnvironment).then((maapEnv) => {
-      let maapEnvObj = JSON.parse(JSON.stringify(maapEnv));
-      let opts = DEFAULT_REQUEST_OPTIONS;
+export async function loadMaapEnvironment(): Promise<any> {
+    return new Promise<RequestResult>((resolve, reject) => {
+      
+      var valuesUrl = new URL(PageConfig.getBaseUrl() + 'maapsec/environment');
   
-      opts.headers.maap_env = maapEnvObj.environment;
-      opts.headers.maap_ade_server = maapEnvObj.ade_server;
-      opts.headers.maap_api_server = maapEnvObj.api_server;
-      opts.headers.maap_auth_server = maapEnvObj.auth_server;
-      opts.headers.maap_mas_server = maapEnvObj.mas_server;
-  
-      return opts;
-  
-    }).catch((error) => {
-        console.error('Error retrieving MAAP environment from maapsec extension!');
-        console.error(error);
-        return DEFAULT_REQUEST_OPTIONS;
+      request('get', valuesUrl.href).then((res: RequestResult) => {
+        console.log('maapsec environment response');
+        console.log(res);
+        if (res.ok) {
+          let environment = JSON.parse(res.data);
+          resolve(environment);
+        } else {
+          resolve(null);
+        }
+      });
     });
   }
+  

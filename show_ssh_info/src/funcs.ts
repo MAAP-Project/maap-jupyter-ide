@@ -6,12 +6,10 @@ import {JupyterFrontEnd} from "@jupyterlab/application";
 import {IFileBrowserFactory} from "@jupyterlab/filebrowser";
 import { IStateDB } from '@jupyterlab/statedb';
 import {Widget} from "@lumino/widgets";
-import { request, RequestResult, DEFAULT_REQUEST_OPTIONS } from './request';
-
+import { request, RequestResult } from './request';
 import { SshWidget, InstallSshWidget, UserInfoWidget } from './widgets'
 
 const profileId = 'maapsec-extension:IMaapProfile';
-const idMaapEnvironment = 'maapsec-extension:IMaapEnvironment';
 
 export function popup(b:Widget,title:string): void {
   showDialog({
@@ -22,13 +20,11 @@ export function popup(b:Widget,title:string): void {
   });
 }
 
-export async function checkSSH(state: IStateDB) {
+export async function checkSSH() {
     //
     // Check if SSH and Exec Installers have been activated
     //
-    const opts = await getRequestOptions(state);
-
-    request('get', PageConfig.getBaseUrl() + "show_ssh_info/checkInstallers", {}, {}, opts)
+    request('get', PageConfig.getBaseUrl() + "show_ssh_info/checkInstallers")
         .then((res: RequestResult) => {
             if(res.ok){
                 let json_results:any = res.json();
@@ -95,7 +91,6 @@ export function checkUserInfo(): void {
 }
 
 export async function mountUserFolder(state: IStateDB) {
-  const opts = await getRequestOptions(state);
 
   getUserInfo(function(profile: any) {
     // get username from keycloak
@@ -108,7 +103,7 @@ export async function mountUserFolder(state: IStateDB) {
     var getUrl = new URL(PageConfig.getBaseUrl() + 'show_ssh_info/mountBucket');
     getUrl.searchParams.append('username',username);
 
-    request('get', getUrl.href, {}, {}, opts).then((res: RequestResult) => {
+    request('get', getUrl.href).then((res: RequestResult) => {
       if (res.ok) {
         let data:any = JSON.parse(res.data);
         if (data.status_code == 200) {
@@ -130,8 +125,7 @@ export async function mountOrgFolders(state: IStateDB) {
   let token = getToken();
   var getUrl = new URL(PageConfig.getBaseUrl() + 'show_ssh_info/getOrgs');
   getUrl.searchParams.append('token',token);
-  const opts = await getRequestOptions(state);
-  request('get', getUrl.href, {}, {}, opts).then((res: RequestResult) => {
+  request('get', getUrl.href).then((res: RequestResult) => {
     if (res.ok) {
       let data:any = JSON.parse(res.data);
       if (data.status_code == 200) {
@@ -148,7 +142,6 @@ export async function mountOrgFolders(state: IStateDB) {
 
 export async function getPresignedUrl(state: IStateDB, key:string): Promise<string> {
   const profile = await getUsernameToken(state);  
-  const opts = await getRequestOptions(state);
 
   return new Promise<string>(async (resolve, reject) => {
     let presignedUrl = '';
@@ -156,7 +149,7 @@ export async function getPresignedUrl(state: IStateDB, key:string): Promise<stri
     var getUrl = new URL(PageConfig.getBaseUrl() + 'show_ssh_info/getSigneds3Url');
     getUrl.searchParams.append('key',key);
     getUrl.searchParams.append('proxy-ticket', profile.ticket);
-    request('get', getUrl.href, {}, {}, opts).then((res: RequestResult) => {
+    request('get', getUrl.href).then((res: RequestResult) => {
       if (res.ok) {
         let data:any = JSON.parse(res.data);
         console.log(data)
@@ -248,31 +241,29 @@ export function activateGetPresignedUrl(
   // }
 }
 
-async function getRequestOptions(state: IStateDB) {
-  return state.fetch(idMaapEnvironment).then((maapEnv) => {
-    let maapEnvObj = JSON.parse(JSON.stringify(maapEnv));
-    let opts = DEFAULT_REQUEST_OPTIONS;
+export async function loadMaapEnvironment(): Promise<any> {
+  return new Promise<RequestResult>((resolve, reject) => {
+    
+    var valuesUrl = new URL(PageConfig.getBaseUrl() + 'maapsec/environment');
 
-    opts.headers.maap_env = maapEnvObj.environment;
-    opts.headers.maap_ade_server = maapEnvObj.ade_server;
-    opts.headers.maap_api_server = maapEnvObj.api_server;
-    opts.headers.maap_auth_server = maapEnvObj.auth_server;
-    opts.headers.maap_mas_server = maapEnvObj.mas_server;
-
-    return opts;
-
-  }).catch((error) => {
-      console.error('Error retrieving MAAP environment from maapsec extension!');
-      console.error(error);
-      return DEFAULT_REQUEST_OPTIONS;
+    request('get', valuesUrl.href).then((res: RequestResult) => {
+      console.log('maapsec environment response');
+      console.log(res);
+      if (res.ok) {
+        let environment = JSON.parse(res.data);
+        resolve(environment);
+      } else {
+        resolve(null);
+      }
+    });
   });
 }
 
 export async function getUsernameToken(state: IStateDB) {
   let defResult = {uname: 'anonymous', ticket: ''}
-  const opts = await getRequestOptions(state);
+  const environment = await loadMaapEnvironment();
 
-  if ("https://" + opts.headers['maap_ade_server'] === document.location.origin) {
+  if ("https://" + environment['ade_server'] === document.location.origin) {
     return getUserInfo(function(profile: any) {
       if (profile['cas:username'] === undefined) {
         INotification.error("Get profile failed.");
