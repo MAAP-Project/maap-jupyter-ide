@@ -5,18 +5,31 @@ from notebook.base.handlers import IPythonHandler
 import subprocess
 import json
 import logging
+import functools
 
 logger = logging.getLogger()
 logger.setLevel(logging.DEBUG)
 
-def maap_ade_url(request):
-	return 'https://{}'.format(request.headers['Maap_ade_server'])
+@functools.lru_cache(maxsize=128)
+def get_maap_config(host):
+    path_to_json = os.path.join(os.path.dirname(os.path.abspath(__file__)), '../..', 'maap_environments.json')
 
-def maap_api_url(request):
-	return 'https://{}'.format(request.headers['Maap_api_server'])
+    with open(path_to_json) as f:
+        data = json.load(f)
 
-def dps_bucket_name(request):
-	return 'maap-{}-dataset'.format(request.headers['Maap_env'])
+    match = next((x for x in data if host in x['ade_server']), None)
+    maap_config = next((x for x in data if x['default_host'] == True), None) if match is None else match
+    
+    return maap_config
+
+def maap_ade_url(host):
+	return 'https://{}'.format(get_maap_config(host)['ade_server'])
+
+def maap_api_url(host):
+	return 'https://{}'.format(get_maap_config(host)['api_server'])
+
+def dps_bucket_name(host):
+	return 'maap-{}-dataset'.format(get_maap_config(host)['environment'])
 
 class InjectKeyHandler(IPythonHandler):
     def get(self):
@@ -108,7 +121,7 @@ class CheckInstallersHandler(IPythonHandler):
         # self.finish({'status': True})
 
         che_machine_token = os.environ['CHE_MACHINE_TOKEN']
-        url = '{}/api/workspace/{}'.format(maap_ade_url(self.request), os.environ.get('CHE_WORKSPACE_ID'))
+        url = '{}/api/workspace/{}'.format(maap_ade_url(self.request.host), os.environ.get('CHE_WORKSPACE_ID'))
         # --------------------------------------------------
         # TODO: FIGURE OUT AUTH KEY & verify
         # --------------------------------------------------
@@ -138,7 +151,7 @@ class InstallHandler(IPythonHandler):
     def get(self):
 
         che_machine_token = os.environ['CHE_MACHINE_TOKEN']
-        url = '{}/api/workspace/{}'.format(maap_ade_url(self.request), os.environ.get('CHE_WORKSPACE_ID'))
+        url = '{}/api/workspace/{}'.format(maap_ade_url(self.request.host), os.environ.get('CHE_WORKSPACE_ID'))
         # --------------------------------------------------
         # TODO: FIGURE OUT AUTH KEY & verify
         # --------------------------------------------------
@@ -174,7 +187,7 @@ class MountBucketHandler(IPythonHandler):
         try:
             # get bucket name and username
             username = self.get_argument('username','')
-            bucket = dps_bucket_name(self.request)
+            bucket = dps_bucket_name(self.request.host)
             logging.debug('username is '+username)
             logging.debug('bucket is '+bucket)
 
@@ -252,8 +265,8 @@ class MountOrgBucketsHandler(IPythonHandler):
         # Send request to Che API for list of user's orgs
         # ts pass keycloak token from window
         token = self.get_argument('token','')
-        bucket = dps_bucket_name(self.request)
-        url = '{}/api/organization'.format(maap_ade_url(self.request))
+        bucket = dps_bucket_name(self.request.host)
+        url = '{}/api/organization'.format(maap_ade_url(self.request.host))
         headers = {
             'Accept':'application/json',
             'Authorization':'Bearer {token}'.format(token=token)
@@ -347,7 +360,7 @@ class MountOrgBucketsHandler(IPythonHandler):
 class Presigneds3UrlHandler(IPythonHandler):
     def get(self):
         # get arguments
-        bucket = dps_bucket_name(self.request)
+        bucket = dps_bucket_name(self.request.host)
         key = self.get_argument('key','')
         proxyTicket = self.get_argument('proxy-ticket','')
         logging.debug('bucket is '+bucket)
@@ -356,7 +369,7 @@ class Presigneds3UrlHandler(IPythonHandler):
         expiration = '43200' # 12 hrs in seconds
         logging.debug('expiration is {} seconds'+expiration)
 
-        url = '{}/api/members/self/presignedUrlS3/{}/{}?exp={}'.format(maap_api_url(self.request), bucket, key, expiration)
+        url = '{}/api/members/self/presignedUrlS3/{}/{}?exp={}'.format(maap_api_url(self.request.host), bucket, key, expiration)
         
         headers = {'Accept': 'application/json', 'proxy-ticket': proxyTicket}
         r = requests.get(
