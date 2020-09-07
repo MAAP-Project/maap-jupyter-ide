@@ -1,6 +1,6 @@
 import {PageConfig} from "@jupyterlab/coreutils";
 import {Dialog, ICommandPalette, showDialog} from "@jupyterlab/apputils";
-import {getToken, getUserInfo} from "./getKeycloak";
+import {getToken, getUserInfo, getUserInfoAsyncWrapper} from "./getKeycloak";
 import {INotification} from "jupyterlab_toastify";
 import {JupyterFrontEnd} from "@jupyterlab/application";
 import {IFileBrowserFactory} from "@jupyterlab/filebrowser";
@@ -255,14 +255,15 @@ export async function getUsernameToken(state: IStateDB) {
   let defResult = {uname: 'anonymous', ticket: ''}
 
   if ("https://" + ade_server === document.location.origin) {
-    return getUserInfo(function(profile: any) {
-      if (profile['cas:username'] === undefined) {
-        INotification.error("Get profile failed.");
-        return defResult
-      } else {
-        return {uname: profile['cas:username'], ticket: profile['proxyGrantingTicket']}
-      }
-    });
+    let kcProfile = await getUserInfoAsyncWrapper();
+
+    if (kcProfile['cas:username'] === undefined) {
+      INotification.error("Get profile failed.");
+      return defResult
+    } else {
+      return {uname: kcProfile['cas:username'], ticket: kcProfile['proxyGrantingTicket']}
+    }
+
   } else {
     return state.fetch(profileId).then((profile) => {
       let profileObj = JSON.parse(JSON.stringify(profile));
