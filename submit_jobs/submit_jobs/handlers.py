@@ -1327,24 +1327,11 @@ class ListJobsHandler(IPythonHandler):
         logging.debug(params)
 
         # ==================================
-        # Part 2: Build & Send Request
+        # Part 2: Build & Send Request (outsourced to maap-py lib)
         # ==================================
-        url = maap_api_url(self.request.host) +'/dps/job/{username}/list'.format(**params)
-        headers = {'Content-Type':'application/xml'}
-
-        if 'proxy-ticket' in params.keys():
-            headers['proxy-ticket'] = params.get('proxy-ticket')
-
-        logging.debug('request sent to {}'.format(url))
-        logging.debug('headers:')
-        logging.debug(headers)
-
+        maap = MAAP()
         try:
-            r = requests.get(
-                url,
-                headers=headers
-            )
-
+            r = maap.listJobs(params['username'])
             # print(r.status_code)
             # print(r.text)
 
