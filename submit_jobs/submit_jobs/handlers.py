@@ -594,6 +594,8 @@ class ExecuteHandler(IPythonHandler):
             self.finish({"status_code": 400, "result": "Bad Request"})
 
 class GetStatusHandler(IPythonHandler):
+    # inputs: job_id
+    # outputs: job_status, result (dialog text of job_status)
     def get(self):
         # ==================================
         # Part 1: Parse Required Arguments
@@ -613,22 +615,11 @@ class GetStatusHandler(IPythonHandler):
         logging.debug(params)
 
         # ==================================
-        # Part 2: Build & Send Request
+        # Part 2: Build & Send Request (outsourced to maap-py lib)
         # ==================================
-        url = maap_api_url(self.request.host) +'/dps/job/{job_id}/status'.format(**params)
-        headers = {'Content-Type':'application/xml'}
-        logging.debug('request sent to {}'.format(url))
-        logging.debug('headers:')
-        logging.debug(headers)
-        # print(url)
-        # print(req_xml)
-
+        maap = MAAP()
         try:
-            r = requests.get(
-                url,
-                headers=headers
-            )
-
+            r = maap.getJobStatus(params['job_id'])
             # print(r.status_code)
             # print(r.text)
 
