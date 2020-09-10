@@ -361,21 +361,23 @@ class PublishAlgorithmHandler(IPythonHandler):
         # Part 2: Build & Send Request
         # ==================================
         # return all algorithms if malformed request
-        headers = {'Content-Type':'application/json'}
-        if 'proxy-ticket' in params.keys():
-            headers['proxy-ticket'] = params.get('proxy-ticket')
+        # headers = {'Content-Type':'application/json'}
+        # if 'proxy-ticket' in params.keys():
+            # headers['proxy-ticket'] = params.get('proxy-ticket')
 
-        logging.debug('headers:')
-        logging.debug(headers)
+        # logging.debug('headers:')
+        # logging.debug(headers)
 
-        url = maap_api_url(self.request.host) +'/mas/publish' 
-        body = {'algo_id': params['algo_id'], 'version': params['version']}
-        logging.debug('request sent to {}'.format(url))
-        r = requests.post(
-            url,
-            headers=headers,
-            data=body
-        )
+        # url = maap_api_url(self.request.host) +'/mas/publish' 
+        # body = {'algo_id': params['algo_id'], 'version': params['version']}
+        # logging.debug('request sent to {}'.format(url))
+        # r = requests.post(
+        #     url,
+        #     headers=headers,
+        #     data=body
+        # )
+        maap = MAAP()
+        r = maap.publishAlgorithm('{algo_id}:{version}'.format(**params))
 
         # print(url)
         # print(r.status_code)
