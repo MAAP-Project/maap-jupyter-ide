@@ -429,127 +429,25 @@ class GetCapabilitiesHandler(IPythonHandler):
             self.finish({"status_code": r.status_code, "result": r.reason})
 
 class ExecuteHandler(IPythonHandler):
+    def args_to_dict(self):
+        # convert args to dict
+        params = self.request.arguments
+        for k,v in params.items():
+            params[k] = v[0].decode("utf-8")
+        return params
+
     def get(self):
-        xml_file = WORKDIR+"/submit_jobs/execute.xml"
-        input_xml = WORKDIR+"/submit_jobs/execute_inputs.xml"
-        
-        # ==================================
-        # Part 1: Parse Required Arguments
-        # ==================================
-        fields = getFields('execute')
-        input_names = self.get_argument("inputs", '').split(',')[:-1]
-        if not 'username' in input_names:
-            input_names.append('username')
-
-        params = {}
-        for f in fields:
-            try:
-                arg = self.get_argument(f.lower(), '').strip()
-                params[f] = arg
-            except:
-                params[f] = ''
-
-        inputs = {}
-        for f in input_names:
-            try:
-                arg = self.get_argument(f.lower(), '').strip()
-                inputs[f] = arg
-            except:
-                inputs[f] = ''
-
-        logging.debug('fields are')
-        logging.debug(fields)
-
-        logging.debug('params are')
-        logging.debug(params)
-
-        logging.debug('inputs are')
-        logging.debug(inputs)
-
-        params['timestamp'] = str(datetime.datetime.today())
-        if 'username' in params.keys() and inputs['username'] =='':
-            inputs['username'] = 'anonymous'
-        # if inputs['localize_urls'] == '':
-        # 	inputs['localize_urls'] = []
-        # print(params)
-
-        # ==================================
-        # Part 2: Build & Send Request
-        # ==================================
-        req_xml = ''
-        ins_xml = ''
-        url = maap_api_url(self.request.host) +'/dps/job'
-        headers = {'Content-Type':'application/xml'}
-        logging.debug('request sent to {}'.format(url))
-        logging.debug('headers:')
-        logging.debug(headers)
-
-        other = ''
-        with open(input_xml) as xml:
-            ins_xml = xml.read()
-
-        # -------------------------------
-        # Insert XML for algorithm inputs
-        # -------------------------------
-        for i in range(len(input_names)):
-            name = input_names[i]
-            other += ins_xml.format(name=name).format(value=inputs[name])
-            other += '\n'
-
-        # print(other)
-        params['other_inputs'] = other
-
-        with open(xml_file) as xml:
-            req_xml = xml.read()
-
-        req_xml = req_xml.format(**params)
-
-        logging.debug('request is')
-        logging.debug(req_xml)
-
-        # -------------------------------
-        # Send Request
-        # -------------------------------
-        try:
-            r = requests.post(
-                url=url, 
-                data=req_xml, 
-                headers=headers
-            )
-            logging.debug('status code '+str(r.status_code))
-            logging.debug('response text\n'+r.text)
-
-            # ==================================
-            # Part 3: Check & Parse Response
-            # ==================================
-            # malformed request will still give 200
-            if r.status_code == 200:
-                try:
-                    # parse out JobID from response
-                    rt = ET.fromstring(r.text)
-
-                    # if bad request, show provided parameters
-                    if 'Exception' in r.text:
-                        result = 'Exception: {}\n'.format(rt[0].attrib['exceptionCode'])
-                        result += 'Bad Request\nThe provided parameters were:\n'
-                        for f in fields:
-                            result += '\t{}: {}\n'.format(f,params[f])
-                        result += '\n'
-                        self.finish({"status_code": 400, "result": result})
-
-                    else:
-                        job_id = rt[0].text
-                        # print(job_id)
-
-                        result = 'JobID is {}'.format(job_id)
-                        # print("success!")
-                        self.finish({"status_code": r.status_code, "result": result})
-                except:
-                    self.finish({"status_code": r.status_code, "result": r.text})
-            else:
-                self.finish({"status_code": r.status_code, "result": r.reason})
-        except:
-            self.finish({"status_code": 400, "result": "Bad Request"})
+        # outsourced to maap-py lib
+        kwargs = self.args_to_dict()
+        maap = MAAP()
+        resp = maap.submitJob(**kwargs)
+        if resp['status_cde'] == 200:
+            result = 'JobID is {}'.format(resp['job_id'])
+            self.finish({"status_code": resp['status_code'], "result": result})
+        elif resp['status_code'] == 400:
+            self.finish({"status_code": resp['status_code'], "result": resp['result']})
+        else:
+            self.finish({"status_code": resp['status_code'], "result": resp['status']})
 
 class GetStatusHandler(IPythonHandler):
     # inputs: job_id
