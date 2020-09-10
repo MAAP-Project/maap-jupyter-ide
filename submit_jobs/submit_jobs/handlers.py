@@ -996,6 +996,8 @@ class DeleteHandler(IPythonHandler):
             self.finish({"status_code": 400, "result": "Bad Request"})
 
 class DescribeProcessHandler(IPythonHandler):
+    # inputs: algo_id, version
+    # outputs: algo_lst, result (PRE HTML with algo details)
     def get(self):
         # ==================================
         # Part 1: Parse Required Arguments
@@ -1016,35 +1018,22 @@ class DescribeProcessHandler(IPythonHandler):
         logging.debug(params)
 
         # ==================================
-        # Part 2: Build & Send Request
+        # Part 2: Build & Send Request (outsourced to maap-py lib)
         # ==================================
-        headers = {'Content-Type':'application/json'}
-        if 'proxy-ticket' in params.keys():
-            ticket = params.get('proxy-ticket')
-            if not ticket == 'undefined':
-                headers['proxy-ticket'] = ticket
-
         params.pop('proxy-ticket')
         if all(e == '' for e in list(params.values())):
             complete = False
 
-        logging.debug(list(params.values()))
-        logging.debug(complete)
+        # logging.debug(list(params.values()))
+        # logging.debug(complete)
 
+        maap = MAAP()
         # return all algorithms if malformed request
         if complete:
-            url = maap_api_url(self.request.host) +'/mas/algorithm/{algo_id}:{version}'.format(**params)
+            r = maap.describeAlgorithm('{algo_id}:{version}'.format(**params))
         else:
-            url = maap_api_url(self.request.host) +'/mas/algorithm'
+            r = maap.listAlgorithms()
 
-        logging.debug('request sent to {}'.format(url))
-        logging.debug('headers:')
-        logging.debug(headers)
-
-        r = requests.get(
-            url,
-            headers=headers
-        )
         # print(r.status_code)
         # print(r.text)
 
