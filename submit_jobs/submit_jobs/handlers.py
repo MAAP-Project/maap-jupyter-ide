@@ -267,34 +267,19 @@ class DeleteAlgorithmHandler(IPythonHandler):
         if all(e == '' for e in list(params.values())):
             complete = False
 
-        print(complete)
+        # print(complete)
         logging.debug('params are')
         logging.debug(params)
 
         # ==================================
-        # Part 2: Build & Send Request
+        # Part 2: Build & Send Request (outsourced to maap-py lib)
         # ==================================
-        # return all algorithms if malformed request
-        headers = {'Content-Type':'application/json'}
-        logging.debug('headers:')
-        logging.debug(headers)
-
+        maap = MAAP()
         if complete:
-            url = maap_api_url(self.request.host) + '/mas/algorithm/{algo_id}:{version}'.format(**params) 
-            logging.debug('request sent to {}'.format(url))
-            r = requests.delete(
-                url,
-                headers=headers
-            )
+            r = maap.deleteAlgorithm('{algo_id}:{version}'.format(**params))
         else:
-            url = maap_api_url(self.request.host) +'/mas/algorithm'
-            logging.debug('request sent to {}'.format(url))
-            r = requests.get(
-                url,
-                headers=headers
-            )
+            r = maap.listAlgorithms()
 
-        # print(url)
         # print(r.status_code)
         # print(r.text)
 
@@ -333,14 +318,13 @@ class DeleteAlgorithmHandler(IPythonHandler):
             else:
                 self.finish({"status_code": r.status_code, "result": r.reason})
         else:
-            self.finish({"status_code": 400, "result": "Bad Request"})
+            self.finish({"status_code": r.status_code, "result": r.reason})
 
 class PublishAlgorithmHandler(IPythonHandler):
     def get(self):
         # ==================================
         # Part 1: Parse Required Arguments
         # ==================================
-        complete = True
         fields = getFields('publishAlgorithm')
 
         params = {}
@@ -351,35 +335,15 @@ class PublishAlgorithmHandler(IPythonHandler):
             except:
                 complete = False
 
-        if all(e == '' for e in list(params.values())):
-            complete = False
-
         logging.debug('params are')
         logging.debug(params)
 
         # ==================================
-        # Part 2: Build & Send Request
+        # Part 2: Build & Send Request (outsourced to maap-py lib)
         # ==================================
-        # return all algorithms if malformed request
-        # headers = {'Content-Type':'application/json'}
-        # if 'proxy-ticket' in params.keys():
-            # headers['proxy-ticket'] = params.get('proxy-ticket')
-
-        # logging.debug('headers:')
-        # logging.debug(headers)
-
-        # url = maap_api_url(self.request.host) +'/mas/publish' 
-        # body = {'algo_id': params['algo_id'], 'version': params['version']}
-        # logging.debug('request sent to {}'.format(url))
-        # r = requests.post(
-        #     url,
-        #     headers=headers,
-        #     data=body
-        # )
         maap = MAAP()
         r = maap.publishAlgorithm('{algo_id}:{version}'.format(**params))
 
-        # print(url)
         # print(r.status_code)
         # print(r.text)
 
