@@ -441,13 +441,15 @@ class ExecuteHandler(IPythonHandler):
         kwargs = self.args_to_dict()
         maap = MAAP()
         resp = maap.submitJob(**kwargs)
-        if resp['status_cde'] == 200:
+        logger.debug(resp)
+        status_code = resp['http_status_code']
+        if status_code == 200:
             result = 'JobID is {}'.format(resp['job_id'])
-            self.finish({"status_code": resp['status_code'], "result": result})
-        elif resp['status_code'] == 400:
-            self.finish({"status_code": resp['status_code'], "result": resp['result']})
+            self.finish({"status_code": status_code, "result": result})
+        elif status_code == 400:
+            self.finish({"status_code": status_code, "result": resp['result']})
         else:
-            self.finish({"status_code": resp['status_code'], "result": resp['status']})
+            self.finish({"status_code": status_code, "result": resp['status']})
 
 class GetStatusHandler(IPythonHandler):
     # inputs: job_id
