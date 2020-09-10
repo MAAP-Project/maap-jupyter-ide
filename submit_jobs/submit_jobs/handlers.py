@@ -838,20 +838,9 @@ class DismissHandler(IPythonHandler):
         # ==================================
         # Part 2: Build & Send Request
         # ==================================
-        url = maap_api_url(self.request.host) +'/dps/job/revoke/{job_id}'.format(**params)
-        headers = {'Content-Type':'application/xml'}
-        logging.debug('request sent to {}'.format(url))
-        logging.debug('headers:')
-        logging.debug(headers)
-        # print(url)
-        # print(req_xml)
-
+        maap = MAAP()
         try:
-            r = requests.delete(
-                url,
-                headers=headers
-            )
-
+            r = maap.dismissJob(params['job_id'])
             # print(r.status_code)
             # print(r.text)
 
@@ -921,22 +910,9 @@ class DeleteHandler(IPythonHandler):
         # ==================================
         # Part 2: Build & Send Request
         # ==================================
-        # url = maap_api_url(self.request.host) +'/dps/job/{job_id}'.format(**params)
-        # headers = {'Content-Type':'application/xml'}
-        # logging.debug('request sent to {}'.format(url))
-        # logging.debug('headers:')
-        # logging.debug(headers)
-        # print(url)
-        # print(req_xml)
-
         maap = MAAP()
         try:
             r = maap.deleteJob(params['job_id'])
-            # r = requests.delete(
-            #     url,
-            #     headers=headers
-            # )
-
             # print(r.status_code)
             # print(r.text)
 
