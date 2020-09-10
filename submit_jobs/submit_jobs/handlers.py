@@ -422,18 +422,10 @@ class GetCapabilitiesHandler(IPythonHandler):
     def get(self):
         # No Required Arguments
         # ==================================
-        # Part 1: Build & Send Request
+        # Part 1: Build & Send Request (outsourced to maap-py lib)
         # ==================================
-        url = maap_api_url(self.request.host) +'/dps/job'
-        headers = {'Content-Type':'application/json'}
-        logging.debug('request sent to {}'.format(url))
-        logging.debug('headers:')
-        logging.debug(headers)
-
-        r = requests.get(
-            url,
-            headers=headers
-        )
+        maap = MAAP()
+        r = maap.getCapabilities()
 
         # ==================================
         # Part 2: Check & Parse Response
@@ -836,7 +828,7 @@ class DismissHandler(IPythonHandler):
         logging.debug(params)
 
         # ==================================
-        # Part 2: Build & Send Request
+        # Part 2: Build & Send Request (outsourced to maap-py lib)
         # ==================================
         maap = MAAP()
         try:
@@ -908,7 +900,7 @@ class DeleteHandler(IPythonHandler):
         logging.debug(params)
 
         # ==================================
-        # Part 2: Build & Send Request
+        # Part 2: Build & Send Request (outsourced to maap-py lib)
         # ==================================
         maap = MAAP()
         try:
@@ -1083,7 +1075,7 @@ class ExecuteInputsHandler(IPythonHandler):
         logging.debug(params)
 
         # ==================================
-        # Part 2: Build & Send Request
+        # Part 2: Build & Send Request (outsourced to maap-py lib)
         # ==================================
         maap = MAAP()
         # return all algorithms if malformed request
