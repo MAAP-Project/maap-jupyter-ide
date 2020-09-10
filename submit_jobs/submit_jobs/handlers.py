@@ -1099,38 +1099,20 @@ class ExecuteInputsHandler(IPythonHandler):
         if all(e == '' for e in list(params.values())):
             complete = False
 
-        # print(params)
         params2 = copy.deepcopy(params)
         # params2.pop('identifier')
-        # print(params)
         logging.debug('params are')
         logging.debug(params)
 
         # ==================================
         # Part 2: Build & Send Request
         # ==================================
-        headers = {'Content-Type':'application/json'}
-
-        if 'proxy-ticket' in params.keys():
-            headers['proxy-ticket'] = params.get('proxy-ticket')
-
+        maap = MAAP()
         # return all algorithms if malformed request
         if complete:
-            url = maap_api_url(self.request.host) +'/mas/algorithm/{algo_id}:{version}'.format(**params2) 
+            r = maap.describeAlgorithm('{algo_id}:{version}'.format(**params))
         else:
-            url = maap_api_url(self.request.host) +'/mas/algorithm'
-
-        logging.debug('request sent to {}'.format(url))
-        logging.debug('headers:')
-        logging.debug(headers)
-        
-
-        r = requests.get(
-            url,
-            headers=headers
-        )
-        # print(r.status_code)
-        # print(r.text)
+            r = maap.listAlgorithms()
 
         # ==================================
         # Part 3: Check & Parse Response
@@ -1153,11 +1135,6 @@ class ExecuteInputsHandler(IPythonHandler):
                     for (identifier,typ) in ins_req:
                         result += '{identifier}:\t{typ}\n'.format(identifier=identifier,typ=typ)
                     # print(result)
-
-                    # if len(ins_req) > 0 and result.strip() == '':
-                    # 	result = 'Bad Request\nThe provided parameters were\n\talgo_id:{}\n\tversion:{}\n'.format(params['algo_id'],params['version'])
-                    # 	self.finish({"status_code": 400, "result": result})
-                    # 	return
 
                     logging.debug(params)
                     logging.debug(ins_req)
