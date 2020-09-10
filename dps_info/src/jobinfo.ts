@@ -142,7 +142,7 @@ export class JobTable extends Widget {
 
     async _getJobList(me:JobTable) {
         // console.log(this._username);
-        const res:RequestResult = await getJobs(this._state, me._username);
+        const res:RequestResult = await getJobs(me._state, me._username);
         if(res.ok){
             let json_response:any = res.json();
             INotification.success("Get user jobs success.");
