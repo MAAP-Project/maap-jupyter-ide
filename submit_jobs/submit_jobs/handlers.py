@@ -665,6 +665,8 @@ class GetStatusHandler(IPythonHandler):
             self.finish({"status_code": 400, "result": "Bad Request","job_status":''})
 
 class GetMetricsHandler(IPythonHandler):
+    # inputs: job_id
+    # outputs: result (HTML table with metric name & value), metrics (JSON object with k-v as metric-value)
     def get(self):
         # ==================================
         # Part 1: Parse Required Arguments
@@ -684,22 +686,11 @@ class GetMetricsHandler(IPythonHandler):
         logging.debug(params)
 
         # ==================================
-        # Part 2: Build & Send Request
+        # Part 2: Build & Send Request (outsourced to maap-py lib)
         # ==================================
-        url = maap_api_url(self.request.host) +'/dps/job/{job_id}/metrics'.format(**params)
-        headers = {'Content-Type':'application/xml'}
-        logging.debug('request sent to {}'.format(url))
-        logging.debug('headers:')
-        logging.debug(headers)
-        # print(url)
-        # print(req_xml)
-
+        maap = MAAP()
         try:
-            r = requests.get(
-                url,
-                headers=headers
-            )
-
+            r = maap.getJobMetrics(params['job_id'])
             # print(r.status_code)
             # print(r.text)
 
