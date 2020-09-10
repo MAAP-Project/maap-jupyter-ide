@@ -731,6 +731,8 @@ class GetMetricsHandler(IPythonHandler):
             self.finish({"status_code": 400, "result": "Bad Request", "metrics":{}})
 
 class GetResultHandler(IPythonHandler):
+    # inputs: job_id
+    # outputs: result (HTML table with product name & locations)
     def get(self):
         # ==================================
         # Part 1: Parse Required Arguments
@@ -750,21 +752,11 @@ class GetResultHandler(IPythonHandler):
         logging.debug(params)
 
         # ==================================
-        # Part 2: Build & Send Request
+        # Part 2: Build & Send Request (outsourced to maap-py lib)
         # ==================================
-        url = maap_api_url(self.request.host) +'/dps/job/{job_id}'.format(**params)
-        headers = {'Content-Type':'application/xml'}
-        logging.debug('request sent to {}'.format(url))
-        logging.debug('headers:')
-        logging.debug(headers)
-        # print(url)
-        # print(req_xml)
-
+        maap = MAAP()
         try:
-            r = requests.get(
-                url,
-                headers=headers
-            )
+            r = maap.getJobResult(params['job_id'])
             # print(r.status_code)
             # print(r.text)
 
@@ -805,14 +797,14 @@ class GetResultHandler(IPythonHandler):
                         p = getProds(prods) #(Output,['url1','url2'])
 
                         url_lst = p[1]
-                        
+
                         ## make the last link clickable
                         lnk = url_lst[-1]
-                        url_lst[-1] = '<a href="{}" target="_blank" style="border-bottom: 1px solid #0000ff; color: #0000ff;">{}</a>'.format(lnk,lnk)
-                        
+                        url_lst[-1] = '<a href="{}" target="_blank" style="border-bottom: 1px solid #0000ff; color: #0000ff;">{}</a>'.format(lnk, lnk)
+
                         urls_str = '•&nbsp'+('<br>•&nbsp;').join(url_lst)
-                        result += '<tr><td>{}: </td><td style="text-align:left">{}</td></tr>'.format('Locations',urls_str)
-                        
+                        result += '<tr><td>{}: </td><td style="text-align:left">{}</td></tr>'.format('Locations', urls_str)
+
                         result += '</tbody>'
                         result += '</table>'
                         logging.debug(result)
