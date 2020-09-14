@@ -980,7 +980,7 @@ class ExecuteInputsHandler(IPythonHandler):
             self.finish({"status_code": 400, "result": "Bad Request", "ins": [], "old":params})
 
 class DefaultValuesHandler(IPythonHandler):
-    # inputs: code_path
+    # inputs: code_path, username
     # outputs: repository_url, algo_name, version, run_command, docker_url, environment_name
     def get(self):
         # ==================================
@@ -1018,10 +1018,15 @@ class DefaultValuesHandler(IPythonHandler):
             return
 
         vals = {}
+        username = params['username']
         code_path = params['code_path']
         file_name = code_path.split('/')[-1]
         algo_name = file_name.replace('/',':').replace(' ', '_').replace('"','').replace("'",'')
         vals['algo_name'] = ('.').join(algo_name.split('.')[:-1])
+
+        # if tutorial repo, prepend demo-${username} to algo name
+        if repo_url == 'https://repo.nasa.maap.xyz/maap-devs/hello-world':
+            vals['algo_name'] = 'demo-{}-{}'.format(username,vals['algo_name'])
 
         # version is branch name
         branch_name = subprocess.check_output("git branch | grep '*' | awk '{print $2}'",shell=True).decode('utf-8').strip()
