@@ -120,7 +120,7 @@ export function activateRegisterAlgorithm(
             }
           });
         };
-        inputRequest(state, 'defaultValues','Register Algorithm',{'code_path':path},getValuesFn);
+        inputRequest(state, 'defaultValues','Register Algorithm',{'code_path':path,'username':uname},getValuesFn);
       });
     },
     isVisible: () =>

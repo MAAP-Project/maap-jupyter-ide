@@ -93,6 +93,7 @@ export async function getDefaultValues(code_path) {
 export async function inputRequest(state: IStateDB, endpt:string,title:string,inputs:{[k:string]:string},fn?:any) {
   var requestUrl = new URL(PageConfig.getBaseUrl() + 'hysds/' + endpt);
   // add params
+  console.log(inputs);
   for (let key in inputs) {
     var fieldValue = inputs[key];
     // if(key !== 'proxy-ticket')

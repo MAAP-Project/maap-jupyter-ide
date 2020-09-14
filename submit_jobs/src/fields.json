@@ -12,6 +12,6 @@
 	"getResult": ["job_id","proxy-ticket"],
 	"dismiss": ["job_id","proxy-ticket"],
 	"delete": ["job_id","proxy-ticket"],
-	"defaultValues": ["code_path"],
+	"defaultValues": ["code_path","username"],
 	"listJobs": ["username","proxy-ticket"]
 }
