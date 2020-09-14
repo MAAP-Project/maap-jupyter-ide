@@ -156,9 +156,7 @@ class RegisterAlgorithmHandler(IPythonHandler):
         # ==================================
         if params['config_path'] != '':
             # navigate to project directory
-            # proj_path = ('/').join(['/projects']+params['config_path'].split('/')[:-1])
             proj_path = ('/').join(params['config_path'].split('/')[:-1])
-            # proj_path = params['config_path']
             os.chdir(proj_path)
 
             # get git status
@@ -190,15 +188,6 @@ class RegisterAlgorithmHandler(IPythonHandler):
         # Part 3: Build & Send Request
         # ==================================
         json_in_file = WORKDIR+"/submit_jobs/register_inputs.json"
-        url = maap_api_url(self.request.host) + '/mas/algorithm'
-        headers = {'Content-Type':'application/json'}
-
-        if 'proxy-ticket' in params.keys():
-            headers['proxy-ticket'] = params.get('proxy-ticket')
-
-        logging.debug('request sent to {}'.format(url))
-        logging.debug('headers:')
-        logging.debug(headers)
 
         with open(json_in_file) as f:
             ins_json = f.read()
@@ -210,7 +199,7 @@ class RegisterAlgorithmHandler(IPythonHandler):
         ins = ''
         for name in inputs.keys():
             if len(name) > 0:
-                ins += ins_json.format(field_name=name,dl=inputs[name])
+                ins += ins_json.format(field_name=name, dl=inputs[name])
 
         # print(ins)
         # add inputs json to config for template substitution
@@ -220,19 +209,13 @@ class RegisterAlgorithmHandler(IPythonHandler):
             req_json = jso.read()
 
         req_json = req_json.format(**config)
-        logging.debug('request is')
-        logging.debug(req_json)
 
         # ==================================
         # Part 4: Check Response
         # ==================================
+        maap = MAAP()
         try:
-            r = requests.post(
-                url=url,
-                data=req_json,
-                headers=headers
-            )
-            print(r.text)
+            r = maap.registerAlgorithm(req_json)
             if r.status_code == 200:
                 try:
                     # MAAP API response
