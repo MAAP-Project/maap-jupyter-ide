@@ -8,6 +8,7 @@ import datetime
 import copy
 import sys
 import os
+import re
 import logging
 import yaml
 import functools
@@ -1025,7 +1026,9 @@ class DefaultValuesHandler(IPythonHandler):
         vals['algo_name'] = ('.').join(algo_name.split('.')[:-1])
 
         # if tutorial repo, prepend demo-${username} to algo name
-        if repo_url == 'https://repo.nasa.maap.xyz/maap-devs/hello-world':
+        p = re.compile('https:\/\/repo\.nasa\.maap\.xyz\/.*\/hello-world')
+        m = p.search(repo_url)
+        if m is not None:
             vals['algo_name'] = 'demo-{}-{}'.format(username,vals['algo_name'])
 
         # version is branch name
