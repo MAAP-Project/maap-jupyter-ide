@@ -103,12 +103,12 @@ def maap_api_url(host):
 
 # currently allows repos from both repo.nasa.maap and mas.maap-project
 class RegisterAlgorithmHandler(IPythonHandler):
-    def get(self,**params):
+    def get(self, **params):
         # ==================================
         # Part 1: Parse Required Arguments
         # ==================================
         # logging.debug('workdir is '+WORKDIR)
-        fields = ['config_path']
+        fields = ['config_path','memory']
         params = {}
         for f in fields:
             try:
@@ -125,6 +125,9 @@ class RegisterAlgorithmHandler(IPythonHandler):
         with open(params['config_path'], 'r') as stream:
             config = yaml.load(stream)
 
+        if 'memory' in params.keys():
+            config['memory'] = params['memory']
+
         logging.debug('fields')
         logging.debug(fields)
 
@@ -134,13 +137,13 @@ class RegisterAlgorithmHandler(IPythonHandler):
         json_file = WORKDIR+"/submit_jobs/register_url.json"
 
         # only description and inputs are allowed to be empty
-        for f in ['algo_name','version','environment','run_command','repository_url','docker_url']:
+        for f in ['algo_name','version','environment','run_command','repository_url','memory','docker_url']:
             if config[f] == '' or config[f] == None:
                 self.finish({"status_code": 412, "result": "Error: Register field {} cannot be empty".format(f)})
                 return
 
         if not 'inputs' in config.keys():
-            config['inputs']= {}
+            config['inputs'] = {}
 
         # replace spaces in algorithm name
         config['algo_name'] = config['algo_name'].replace(' ', '_')
@@ -1035,6 +1038,7 @@ class DefaultValuesHandler(IPythonHandler):
         branch_name = subprocess.check_output("git branch | grep '*' | awk '{print $2}'",shell=True).decode('utf-8').strip()
         # logging.debug('branch is {}'.format(branch_name))
         vals['version'] = branch_name
+        vals['description'] = ''
         vals['repository_url'] = repo_url
         # vals['environment'] = os.environ['ENVIRONMENT']
         vals['environment'] = "ubuntu"
@@ -1047,6 +1051,9 @@ class DefaultValuesHandler(IPythonHandler):
             return
 
         vals['run_cmd'] = params['code_path']
+
+        vals['disk_space'] = "10GB"
+        vals['memory'] = "15GB"
 
         config_path = proj_path+"/algorithm_config.yaml"
         prev_config = os.path.exists(config_path)
@@ -1170,3 +1177,19 @@ class ListJobsHandler(IPythonHandler):
                 self.finish({"status_code": r.status_code, "result": r.reason})
         except:
             self.finish({"status_code": 400, "result": "Bad Request"})
+
+class GetQueuesHandler(IPythonHandler):
+    def get(self):
+        url = maap_api_url(self.request.host) +'/mas/algorithm/resource'
+        headers = {'Content-Type':'application/json'}
+        logger.debug('request sent to {}'.format(url))	
+        logger.debug('headers:')	
+        logger.debug(headers)
+
+        r = requests.get(url)
+        try:
+            resp = json.loads(r.text)
+            result = [e[len('maap-worker-'):] for e in resp['queues'] if 'maap-worker' in e]
+            self.finish({"status_code": r.status_code, "result": result})
+        except:
+            self.finish({"status_code": r.status_code, "result": r.text})

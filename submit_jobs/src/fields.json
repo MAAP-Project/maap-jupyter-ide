@@ -1,5 +1,5 @@
 {
-	"register": ["algo_name","version","description","run_command","inputs"],
+	"register": ["algo_name","version","run_command","memory","inputs"],
 	"deleteAlgorithm": ["algo_id","version","proxy-ticket"],
 	"publishAlgorithm": ["algo_id","version","proxy-ticket"],
 	"getCapabilities": [],

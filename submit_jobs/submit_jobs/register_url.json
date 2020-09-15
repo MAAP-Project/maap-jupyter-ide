@@ -1,16 +1,18 @@
 {{ 
-	"script_command" : "{run_command}",
-	"algorithm_name" : "{algo_name}",
-	"code_version": "{version}",
-	"algorithm_description" : "{description}",
-	"environment_name": "{environment}",
-	"docker_container_url": "{docker_url}",
-	"repo_url" : "{repository_url}",
-	"algorithm_params" : [
-		{algo_inputs}
-		{{
-			"field": "timestamp",
-			"download": false
-		}}
-	]
+    "script_command" : "{run_command}",
+    "algorithm_name" : "{algo_name}",
+    "code_version": "{version}",
+    "algorithm_description" : "{description}",
+    "environment_name": "{environment}",
+    "docker_container_url": "{docker_url}",
+    "repo_url" : "{repository_url}",
+    "disk_space": "10GB",
+    "memory": "{memory}",
+    "algorithm_params" : [
+        {algo_inputs}
+        {{
+            "field": "timestamp",
+            "download": false
+        }}
+    ]
 }}

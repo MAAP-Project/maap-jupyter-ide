@@ -376,76 +376,106 @@ export class RegisterWidget extends InputWidget {
       this.node.appendChild(document.createElement('BR'));
     }
 
-    for (var field of this.fields) {
-      // textarea for inputs field in register
-      if (field == 'inputs') {
-        var fieldLabel = document.createElement('Label');
-        fieldLabel.innerHTML = field;
-        this.node.appendChild(fieldLabel);
+    for (let field of this.fields) {
+        // textarea for inputs field in register
+        if (field === 'inputs') {
+            let fieldLabel = document.createElement('Label');
+            fieldLabel.innerHTML = field;
+            this.node.appendChild(fieldLabel);
 
-        var fieldInputs = document.createElement('textarea');
-        fieldInputs.id = (field.toLowerCase() + '-input');
-        (<HTMLTextAreaElement>fieldInputs).cols = 40;
-        (<HTMLTextAreaElement>fieldInputs).rows = 6;
+            let fieldInputs = document.createElement('textarea');
+            fieldInputs.id = (field.toLowerCase() + '-input');
+            (<HTMLTextAreaElement>fieldInputs).cols = 40;
+            (<HTMLTextAreaElement>fieldInputs).rows = 6;
 
-        // show input names and dl
-        let ins = ''
-        for (var itm of (defaultValues['inputs'] as Array<{[k:string]:string}>)) {
-          ins = ins+itm['name'];
-          if (itm['download']) {
-            ins = ins+' (download)';
-          } else {
-            ins = ins+' (no download)';
-          }
-          ins = ins+'\n';
+            // show input names and dl
+            let ins = ''
+            for (let itm of (defaultValues['inputs'] as Array<{[k:string]:string}>)) {
+            ins = ins+itm['name'];
+            if (itm['download']) {
+                ins = ins+' (download)';
+            } else {
+                ins = ins+' (no download)';
+            }
+            ins = ins+'\n';
+            }
+            fieldInputs.value = ins;
+            fieldInputs.readOnly = true;
+            this.node.appendChild(fieldInputs);
+        
+        } else if (field === 'memory') {
+            let fieldLabel = document.createElement('Label');
+            fieldLabel.innerHTML = field;
+            this.node.appendChild(fieldLabel);
+
+            let fieldInputs = document.createElement("SELECT");
+            fieldInputs.id = "queues-dropdown";
+            fieldInputs.setAttribute("style", "font-size:14px;");
+
+            let getUrl = new URL(PageConfig.getBaseUrl() + 'hysds/getQueues')
+            request('get', getUrl.href).then((res) => {
+                let json_response:any = res.json();
+                console.log(json_response);
+                let qs = json_response['result'];
+                let opt:HTMLOptionElement;
+                for (let q of qs) {
+                    opt = <HTMLOptionElement>document.createElement("option");
+                    opt.setAttribute("id", q);
+                    opt.setAttribute("label", q);
+                    opt.appendChild(document.createTextNode(q));
+                    fieldInputs.appendChild(opt);
+                }
+                this.node.appendChild(fieldInputs);
+            });
+        } else {
+            let fieldLabel = document.createElement('Label');
+            fieldLabel.innerHTML = field;
+            this.node.appendChild(fieldLabel);
+
+            let fieldInput = document.createElement('input');
+            fieldInput.id = (field.toLowerCase() + '-input');
+            // set default values
+            if (field in defaultValues) {
+                fieldInput.value = defaultValues[field] as string;
+            }
+            fieldInput.readOnly = true;
+            this.node.appendChild(fieldInput);
         }
-        fieldInputs.value = ins;
-        fieldInputs.readOnly = true;
-        this.node.appendChild(fieldInputs);
-      
-      } else {
-        var fieldLabel = document.createElement('Label');
-        fieldLabel.innerHTML = field;
-        this.node.appendChild(fieldLabel);
-
-        var fieldInput = document.createElement('input');
-        fieldInput.id = (field.toLowerCase() + '-input');
-        // set default values
-        if (field in defaultValues) {
-          fieldInput.value = defaultValues[field] as string;
-        }
-        fieldInput.readOnly = true;
-        this.node.appendChild(fieldInput);
-      }
     }
 
-    // BREAK
-    var x = document.createElement('BR');
-    this.node.appendChild(x)
-
-    // footer text - edit config at path
-    let editFooter = document.createElement('p');
-    editFooter.id = 'configpath-subtext';
-    editFooter.style.display = 'flex';
-    editFooter.style.flexDirection = 'column';
-    editFooter.innerHTML = 'To modify the configuration, click "Cancel" and modify the values in '+configPath;
-    this.node.appendChild(editFooter);
+    setTimeout(() => {  
+        // BREAK
+        var x = document.createElement('BR');
+        this.node.appendChild(x)
+    
+        // footer text - edit config at path
+        let editFooter = document.createElement('p');
+        editFooter.id = 'configpath-subtext';
+        editFooter.style.display = 'flex';
+        editFooter.style.flexDirection = 'column';
+        editFooter.innerHTML = 'To modify the configuration, click "Cancel" and modify the values in '+configPath;
+        this.node.appendChild(editFooter);
+    }, 500);
   }
 
   _buildRequestUrl() {
     // var me:RegisterWidget = this;
     return new Promise<Array<URL>>((resolve, reject) => {
-      // create API call to server extension
-      var urllst: Array<URL> = []
-      var getUrl = new URL(PageConfig.getBaseUrl() + 'hysds/'+this.req);
-      getUrl.searchParams.append('config_path',this.configPath);
-      console.log(getUrl.href);
-      console.log('done setting url');
-      urllst.push(getUrl);
-      resolve(urllst);
-    });
-  }
-
+        // create API call to server extension
+        let urllst: Array<URL> = []
+        let getUrl = new URL(PageConfig.getBaseUrl() + 'hysds/'+this.req);
+        getUrl.searchParams.append('config_path', this.configPath);
+        // add selected queue option
+        let fieldElement:HTMLSelectElement = document.getElementById('queues-dropdown') as HTMLSelectElement;
+        console.log(fieldElement);
+        let opt:string = fieldElement.value;
+        getUrl.searchParams.append('memory', opt);
+        console.log(getUrl.href);
+        console.log('done setting url');
+        urllst.push(getUrl);
+        resolve(urllst);
+        });
+    }
 }
 
 export class WidgetResult extends Widget {
