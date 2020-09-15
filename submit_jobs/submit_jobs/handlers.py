@@ -156,9 +156,7 @@ class RegisterAlgorithmHandler(IPythonHandler):
         # ==================================
         if params['config_path'] != '':
             # navigate to project directory
-            # proj_path = ('/').join(['/projects']+params['config_path'].split('/')[:-1])
             proj_path = ('/').join(params['config_path'].split('/')[:-1])
-            # proj_path = params['config_path']
             os.chdir(proj_path)
 
             # get git status
@@ -190,15 +188,6 @@ class RegisterAlgorithmHandler(IPythonHandler):
         # Part 3: Build & Send Request
         # ==================================
         json_in_file = WORKDIR+"/submit_jobs/register_inputs.json"
-        url = maap_api_url(self.request.host) + '/mas/algorithm'
-        headers = {'Content-Type':'application/json'}
-
-        if 'proxy-ticket' in params.keys():
-            headers['proxy-ticket'] = params.get('proxy-ticket')
-
-        logging.debug('request sent to {}'.format(url))
-        logging.debug('headers:')
-        logging.debug(headers)
 
         with open(json_in_file) as f:
             ins_json = f.read()
@@ -210,7 +199,7 @@ class RegisterAlgorithmHandler(IPythonHandler):
         ins = ''
         for name in inputs.keys():
             if len(name) > 0:
-                ins += ins_json.format(field_name=name,dl=inputs[name])
+                ins += ins_json.format(field_name=name, dl=inputs[name])
 
         # print(ins)
         # add inputs json to config for template substitution
@@ -220,19 +209,13 @@ class RegisterAlgorithmHandler(IPythonHandler):
             req_json = jso.read()
 
         req_json = req_json.format(**config)
-        logging.debug('request is')
-        logging.debug(req_json)
 
         # ==================================
         # Part 4: Check Response
         # ==================================
+        maap = MAAP()
         try:
-            r = requests.post(
-                url=url,
-                data=req_json,
-                headers=headers
-            )
-            print(r.text)
+            r = maap.registerAlgorithm(req_json)
             if r.status_code == 200:
                 try:
                     # MAAP API response
@@ -267,34 +250,19 @@ class DeleteAlgorithmHandler(IPythonHandler):
         if all(e == '' for e in list(params.values())):
             complete = False
 
-        print(complete)
+        # print(complete)
         logging.debug('params are')
         logging.debug(params)
 
         # ==================================
-        # Part 2: Build & Send Request
+        # Part 2: Build & Send Request (outsourced to maap-py lib)
         # ==================================
-        # return all algorithms if malformed request
-        headers = {'Content-Type':'application/json'}
-        logging.debug('headers:')
-        logging.debug(headers)
-
+        maap = MAAP()
         if complete:
-            url = maap_api_url(self.request.host) + '/mas/algorithm/{algo_id}:{version}'.format(**params) 
-            logging.debug('request sent to {}'.format(url))
-            r = requests.delete(
-                url,
-                headers=headers
-            )
+            r = maap.deleteAlgorithm('{algo_id}:{version}'.format(**params))
         else:
-            url = maap_api_url(self.request.host) +'/mas/algorithm'
-            logging.debug('request sent to {}'.format(url))
-            r = requests.get(
-                url,
-                headers=headers
-            )
+            r = maap.listAlgorithms()
 
-        # print(url)
         # print(r.status_code)
         # print(r.text)
 
@@ -333,14 +301,13 @@ class DeleteAlgorithmHandler(IPythonHandler):
             else:
                 self.finish({"status_code": r.status_code, "result": r.reason})
         else:
-            self.finish({"status_code": 400, "result": "Bad Request"})
+            self.finish({"status_code": r.status_code, "result": r.reason})
 
 class PublishAlgorithmHandler(IPythonHandler):
     def get(self):
         # ==================================
         # Part 1: Parse Required Arguments
         # ==================================
-        complete = True
         fields = getFields('publishAlgorithm')
 
         params = {}
@@ -351,33 +318,15 @@ class PublishAlgorithmHandler(IPythonHandler):
             except:
                 complete = False
 
-        if all(e == '' for e in list(params.values())):
-            complete = False
-
         logging.debug('params are')
         logging.debug(params)
 
         # ==================================
-        # Part 2: Build & Send Request
+        # Part 2: Build & Send Request (outsourced to maap-py lib)
         # ==================================
-        # return all algorithms if malformed request
-        headers = {'Content-Type':'application/json'}
-        if 'proxy-ticket' in params.keys():
-            headers['proxy-ticket'] = params.get('proxy-ticket')
+        maap = MAAP()
+        r = maap.publishAlgorithm('{algo_id}:{version}'.format(**params))
 
-        logging.debug('headers:')
-        logging.debug(headers)
-
-        url = maap_api_url(self.request.host) +'/mas/publish' 
-        body = {'algo_id': params['algo_id'], 'version': params['version']}
-        logging.debug('request sent to {}'.format(url))
-        r = requests.post(
-            url,
-            headers=headers,
-            data=body
-        )
-
-        # print(url)
         # print(r.status_code)
         # print(r.text)
 
@@ -422,18 +371,10 @@ class GetCapabilitiesHandler(IPythonHandler):
     def get(self):
         # No Required Arguments
         # ==================================
-        # Part 1: Build & Send Request
+        # Part 1: Build & Send Request (outsourced to maap-py lib)
         # ==================================
-        url = maap_api_url(self.request.host) +'/dps/job'
-        headers = {'Content-Type':'application/json'}
-        logging.debug('request sent to {}'.format(url))
-        logging.debug('headers:')
-        logging.debug(headers)
-
-        r = requests.get(
-            url,
-            headers=headers
-        )
+        maap = MAAP()
+        r = maap.getCapabilities()
 
         # ==================================
         # Part 2: Check & Parse Response
@@ -471,129 +412,31 @@ class GetCapabilitiesHandler(IPythonHandler):
             self.finish({"status_code": r.status_code, "result": r.reason})
 
 class ExecuteHandler(IPythonHandler):
+    def args_to_dict(self):
+        # convert args to dict
+        params = self.request.arguments
+        for k,v in params.items():
+            params[k] = v[0].decode("utf-8")
+        return params
+
     def get(self):
-        xml_file = WORKDIR+"/submit_jobs/execute.xml"
-        input_xml = WORKDIR+"/submit_jobs/execute_inputs.xml"
-        
-        # ==================================
-        # Part 1: Parse Required Arguments
-        # ==================================
-        fields = getFields('execute')
-        input_names = self.get_argument("inputs", '').split(',')[:-1]
-        if not 'username' in input_names:
-            input_names.append('username')
-
-        params = {}
-        for f in fields:
-            try:
-                arg = self.get_argument(f.lower(), '').strip()
-                params[f] = arg
-            except:
-                params[f] = ''
-
-        inputs = {}
-        for f in input_names:
-            try:
-                arg = self.get_argument(f.lower(), '').strip()
-                inputs[f] = arg
-            except:
-                inputs[f] = ''
-
-        logging.debug('fields are')
-        logging.debug(fields)
-
-        logging.debug('params are')
-        logging.debug(params)
-
-        logging.debug('inputs are')
-        logging.debug(inputs)
-
-        params['timestamp'] = str(datetime.datetime.today())
-        if 'username' in params.keys() and inputs['username'] =='':
-            inputs['username'] = 'anonymous'
-        # if inputs['localize_urls'] == '':
-        # 	inputs['localize_urls'] = []
-        # print(params)
-
-        # ==================================
-        # Part 2: Build & Send Request
-        # ==================================
-        req_xml = ''
-        ins_xml = ''
-        url = maap_api_url(self.request.host) +'/dps/job'
-        headers = {'Content-Type':'application/xml'}
-        logging.debug('request sent to {}'.format(url))
-        logging.debug('headers:')
-        logging.debug(headers)
-
-        other = ''
-        with open(input_xml) as xml:
-            ins_xml = xml.read()
-
-        # -------------------------------
-        # Insert XML for algorithm inputs
-        # -------------------------------
-        for i in range(len(input_names)):
-            name = input_names[i]
-            other += ins_xml.format(name=name).format(value=inputs[name])
-            other += '\n'
-
-        # print(other)
-        params['other_inputs'] = other
-
-        with open(xml_file) as xml:
-            req_xml = xml.read()
-
-        req_xml = req_xml.format(**params)
-
-        logging.debug('request is')
-        logging.debug(req_xml)
-
-        # -------------------------------
-        # Send Request
-        # -------------------------------
-        try:
-            r = requests.post(
-                url=url, 
-                data=req_xml, 
-                headers=headers
-            )
-            logging.debug('status code '+str(r.status_code))
-            logging.debug('response text\n'+r.text)
-
-            # ==================================
-            # Part 3: Check & Parse Response
-            # ==================================
-            # malformed request will still give 200
-            if r.status_code == 200:
-                try:
-                    # parse out JobID from response
-                    rt = ET.fromstring(r.text)
-
-                    # if bad request, show provided parameters
-                    if 'Exception' in r.text:
-                        result = 'Exception: {}\n'.format(rt[0].attrib['exceptionCode'])
-                        result += 'Bad Request\nThe provided parameters were:\n'
-                        for f in fields:
-                            result += '\t{}: {}\n'.format(f,params[f])
-                        result += '\n'
-                        self.finish({"status_code": 400, "result": result})
-
-                    else:
-                        job_id = rt[0].text
-                        # print(job_id)
-
-                        result = 'JobID is {}'.format(job_id)
-                        # print("success!")
-                        self.finish({"status_code": r.status_code, "result": result})
-                except:
-                    self.finish({"status_code": r.status_code, "result": r.text})
-            else:
-                self.finish({"status_code": r.status_code, "result": r.reason})
-        except:
-            self.finish({"status_code": 400, "result": "Bad Request"})
+        # outsourced to maap-py lib
+        kwargs = self.args_to_dict()
+        maap = MAAP()
+        resp = maap.submitJob(**kwargs)
+        logger.debug(resp)
+        status_code = resp['http_status_code']
+        if status_code == 200:
+            result = 'JobID is {}'.format(resp['job_id'])
+            self.finish({"status_code": status_code, "result": result})
+        elif status_code == 400:
+            self.finish({"status_code": status_code, "result": resp['result']})
+        else:
+            self.finish({"status_code": status_code, "result": resp['status']})
 
 class GetStatusHandler(IPythonHandler):
+    # inputs: job_id
+    # outputs: job_status, result (dialog text of job_status)
     def get(self):
         # ==================================
         # Part 1: Parse Required Arguments
@@ -613,22 +456,11 @@ class GetStatusHandler(IPythonHandler):
         logging.debug(params)
 
         # ==================================
-        # Part 2: Build & Send Request
+        # Part 2: Build & Send Request (outsourced to maap-py lib)
         # ==================================
-        url = maap_api_url(self.request.host) +'/dps/job/{job_id}/status'.format(**params)
-        headers = {'Content-Type':'application/xml'}
-        logging.debug('request sent to {}'.format(url))
-        logging.debug('headers:')
-        logging.debug(headers)
-        # print(url)
-        # print(req_xml)
-
+        maap = MAAP()
         try:
-            r = requests.get(
-                url,
-                headers=headers
-            )
-
+            r = maap.getJobStatus(params['job_id'])
             # print(r.status_code)
             # print(r.text)
 
@@ -665,6 +497,8 @@ class GetStatusHandler(IPythonHandler):
             self.finish({"status_code": 400, "result": "Bad Request","job_status":''})
 
 class GetMetricsHandler(IPythonHandler):
+    # inputs: job_id
+    # outputs: result (HTML table with metric name & value), metrics (JSON object with k-v as metric-value)
     def get(self):
         # ==================================
         # Part 1: Parse Required Arguments
@@ -684,22 +518,11 @@ class GetMetricsHandler(IPythonHandler):
         logging.debug(params)
 
         # ==================================
-        # Part 2: Build & Send Request
+        # Part 2: Build & Send Request (outsourced to maap-py lib)
         # ==================================
-        url = maap_api_url(self.request.host) +'/dps/job/{job_id}/metrics'.format(**params)
-        headers = {'Content-Type':'application/xml'}
-        logging.debug('request sent to {}'.format(url))
-        logging.debug('headers:')
-        logging.debug(headers)
-        # print(url)
-        # print(req_xml)
-
+        maap = MAAP()
         try:
-            r = requests.get(
-                url,
-                headers=headers
-            )
-
+            r = maap.getJobMetrics(params['job_id'])
             # print(r.status_code)
             # print(r.text)
 
@@ -731,6 +554,8 @@ class GetMetricsHandler(IPythonHandler):
             self.finish({"status_code": 400, "result": "Bad Request", "metrics":{}})
 
 class GetResultHandler(IPythonHandler):
+    # inputs: job_id
+    # outputs: result (HTML table with product name & locations)
     def get(self):
         # ==================================
         # Part 1: Parse Required Arguments
@@ -750,21 +575,11 @@ class GetResultHandler(IPythonHandler):
         logging.debug(params)
 
         # ==================================
-        # Part 2: Build & Send Request
+        # Part 2: Build & Send Request (outsourced to maap-py lib)
         # ==================================
-        url = maap_api_url(self.request.host) +'/dps/job/{job_id}'.format(**params)
-        headers = {'Content-Type':'application/xml'}
-        logging.debug('request sent to {}'.format(url))
-        logging.debug('headers:')
-        logging.debug(headers)
-        # print(url)
-        # print(req_xml)
-
+        maap = MAAP()
         try:
-            r = requests.get(
-                url,
-                headers=headers
-            )
+            r = maap.getJobResult(params['job_id'])
             # print(r.status_code)
             # print(r.text)
 
@@ -805,14 +620,14 @@ class GetResultHandler(IPythonHandler):
                         p = getProds(prods) #(Output,['url1','url2'])
 
                         url_lst = p[1]
-                        
+
                         ## make the last link clickable
                         lnk = url_lst[-1]
-                        url_lst[-1] = '<a href="{}" target="_blank" style="border-bottom: 1px solid #0000ff; color: #0000ff;">{}</a>'.format(lnk,lnk)
-                        
+                        url_lst[-1] = '<a href="{}" target="_blank" style="border-bottom: 1px solid #0000ff; color: #0000ff;">{}</a>'.format(lnk, lnk)
+
                         urls_str = '•&nbsp'+('<br>•&nbsp;').join(url_lst)
-                        result += '<tr><td>{}: </td><td style="text-align:left">{}</td></tr>'.format('Locations',urls_str)
-                        
+                        result += '<tr><td>{}: </td><td style="text-align:left">{}</td></tr>'.format('Locations', urls_str)
+
                         result += '</tbody>'
                         result += '</table>'
                         logging.debug(result)
@@ -862,22 +677,11 @@ class DismissHandler(IPythonHandler):
         logging.debug(params)
 
         # ==================================
-        # Part 2: Build & Send Request
+        # Part 2: Build & Send Request (outsourced to maap-py lib)
         # ==================================
-        url = maap_api_url(self.request.host) +'/dps/job/revoke/{job_id}'.format(**params)
-        headers = {'Content-Type':'application/xml'}
-        logging.debug('request sent to {}'.format(url))
-        logging.debug('headers:')
-        logging.debug(headers)
-        # print(url)
-        # print(req_xml)
-
+        maap = MAAP()
         try:
-            r = requests.delete(
-                url,
-                headers=headers
-            )
-
+            r = maap.dismissJob(params['job_id'])
             # print(r.status_code)
             # print(r.text)
 
@@ -945,22 +749,11 @@ class DeleteHandler(IPythonHandler):
         logging.debug(params)
 
         # ==================================
-        # Part 2: Build & Send Request
+        # Part 2: Build & Send Request (outsourced to maap-py lib)
         # ==================================
-        url = maap_api_url(self.request.host) +'/dps/job/{job_id}'.format(**params)
-        headers = {'Content-Type':'application/xml'}
-        logging.debug('request sent to {}'.format(url))
-        logging.debug('headers:')
-        logging.debug(headers)
-        # print(url)
-        # print(req_xml)
-
+        maap = MAAP()
         try:
-            r = requests.delete(
-                url,
-                headers=headers
-            )
-
+            r = maap.deleteJob(params['job_id'])
             # print(r.status_code)
             # print(r.text)
 
@@ -996,6 +789,8 @@ class DeleteHandler(IPythonHandler):
             self.finish({"status_code": 400, "result": "Bad Request"})
 
 class DescribeProcessHandler(IPythonHandler):
+    # inputs: algo_id, version
+    # outputs: algo_lst, result (PRE HTML with algo details)
     def get(self):
         # ==================================
         # Part 1: Parse Required Arguments
@@ -1016,35 +811,22 @@ class DescribeProcessHandler(IPythonHandler):
         logging.debug(params)
 
         # ==================================
-        # Part 2: Build & Send Request
+        # Part 2: Build & Send Request (outsourced to maap-py lib)
         # ==================================
-        headers = {'Content-Type':'application/json'}
-        if 'proxy-ticket' in params.keys():
-            ticket = params.get('proxy-ticket')
-            if not ticket == 'undefined':
-                headers['proxy-ticket'] = ticket
-
         params.pop('proxy-ticket')
         if all(e == '' for e in list(params.values())):
             complete = False
 
-        logging.debug(list(params.values()))
-        logging.debug(complete)
+        # logging.debug(list(params.values()))
+        # logging.debug(complete)
 
+        maap = MAAP()
         # return all algorithms if malformed request
         if complete:
-            url = maap_api_url(self.request.host) +'/mas/algorithm/{algo_id}:{version}'.format(**params)
+            r = maap.describeAlgorithm('{algo_id}:{version}'.format(**params))
         else:
-            url = maap_api_url(self.request.host) +'/mas/algorithm'
+            r = maap.listAlgorithms()
 
-        logging.debug('request sent to {}'.format(url))
-        logging.debug('headers:')
-        logging.debug(headers)
-
-        r = requests.get(
-            url,
-            headers=headers
-        )
         # print(r.status_code)
         # print(r.text)
 
@@ -1136,38 +918,20 @@ class ExecuteInputsHandler(IPythonHandler):
         if all(e == '' for e in list(params.values())):
             complete = False
 
-        # print(params)
         params2 = copy.deepcopy(params)
         # params2.pop('identifier')
-        # print(params)
         logging.debug('params are')
         logging.debug(params)
 
         # ==================================
-        # Part 2: Build & Send Request
+        # Part 2: Build & Send Request (outsourced to maap-py lib)
         # ==================================
-        headers = {'Content-Type':'application/json'}
-
-        if 'proxy-ticket' in params.keys():
-            headers['proxy-ticket'] = params.get('proxy-ticket')
-
+        maap = MAAP()
         # return all algorithms if malformed request
         if complete:
-            url = maap_api_url(self.request.host) +'/mas/algorithm/{algo_id}:{version}'.format(**params2) 
+            r = maap.describeAlgorithm('{algo_id}:{version}'.format(**params))
         else:
-            url = maap_api_url(self.request.host) +'/mas/algorithm'
-
-        logging.debug('request sent to {}'.format(url))
-        logging.debug('headers:')
-        logging.debug(headers)
-        
-
-        r = requests.get(
-            url,
-            headers=headers
-        )
-        # print(r.status_code)
-        # print(r.text)
+            r = maap.listAlgorithms()
 
         # ==================================
         # Part 3: Check & Parse Response
@@ -1190,11 +954,6 @@ class ExecuteInputsHandler(IPythonHandler):
                     for (identifier,typ) in ins_req:
                         result += '{identifier}:\t{typ}\n'.format(identifier=identifier,typ=typ)
                     # print(result)
-
-                    # if len(ins_req) > 0 and result.strip() == '':
-                    # 	result = 'Bad Request\nThe provided parameters were\n\talgo_id:{}\n\tversion:{}\n'.format(params['algo_id'],params['version'])
-                    # 	self.finish({"status_code": 400, "result": result})
-                    # 	return
 
                     logging.debug(params)
                     logging.debug(ins_req)
@@ -1327,24 +1086,11 @@ class ListJobsHandler(IPythonHandler):
         logging.debug(params)
 
         # ==================================
-        # Part 2: Build & Send Request
+        # Part 2: Build & Send Request (outsourced to maap-py lib)
         # ==================================
-        url = maap_api_url(self.request.host) +'/dps/job/{username}/list'.format(**params)
-        headers = {'Content-Type':'application/xml'}
-
-        if 'proxy-ticket' in params.keys():
-            headers['proxy-ticket'] = params.get('proxy-ticket')
-
-        logging.debug('request sent to {}'.format(url))
-        logging.debug('headers:')
-        logging.debug(headers)
-
+        maap = MAAP()
         try:
-            r = requests.get(
-                url,
-                headers=headers
-            )
-
+            r = maap.listJobs(params['username'])
             # print(r.status_code)
             # print(r.text)
 
