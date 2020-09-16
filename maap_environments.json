@@ -5,6 +5,7 @@
         "api_server": "api.maap.xyz",
         "auth_server": "auth.nasa.maap.xyz",
         "mas_server": "repo.nasa.maap.xyz",
+        "edsc_server": "che-k8s.maap.xyz:3052",
         "default_host": true
     },
     {
@@ -13,6 +14,7 @@
         "api_server": "api.uat.maap-project.org",
         "auth_server": "auth.uat.maap-project.org",
         "mas_server": "mas.uat.maap-project.org",
+        "edsc_server": "ade.uat.maap-project.org:30052",
         "default_host": false
     },
     {
@@ -21,6 +23,7 @@
         "api_server": "api.maap-project.org",
         "auth_server": "auth.maap-project.org",
         "mas_server": "mas.maap-project.org",
+        "edsc_server": "ade.maap-project.org:3052",
         "default_host": false
     }
 ]
