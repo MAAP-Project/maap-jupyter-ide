@@ -132,27 +132,27 @@ export function noInputRequest(state: IStateDB, endpt:string,title:string) {
 }
 
 export async function algorithmExists(state: IStateDB, name:string,ver:string,env:string,ticket:string) {
-  var requestUrl = new URL(PageConfig.getBaseUrl() + 'hysds/' + 'describeProcess');
-  // add params
-  requestUrl.searchParams.append('algo_name', name+'_'+env);
-  requestUrl.searchParams.append('version', ver);
-  requestUrl.searchParams.append('proxy-ticket', ticket);
-  console.log(requestUrl.href);
+    var requestUrl = new URL(PageConfig.getBaseUrl() + 'hysds/' + 'describeProcess');
+    // add params
+    requestUrl.searchParams.append('algo_id', name+'_'+env);
+    requestUrl.searchParams.append('version', ver);
+    requestUrl.searchParams.append('proxy-ticket', ticket);
+    console.log(requestUrl.href);
 
-  // send request
-  return request('get',requestUrl.href).then((res: RequestResult) => {
-    if (res.ok) {
-      var json_response:any = res.json();
-      console.log(json_response);
-      if (json_response.status == 200) {
-        return true;
-      } else {
-        return false;
-      }
-    } else {
-      console.log('describeProcess not ok');
-      return false;
-    }
-  }); 
+    // send request
+    return request('get',requestUrl.href).then((res: RequestResult) => {
+        if (res.ok) {
+            var json_response:any = res.json();
+            console.log(json_response);
+            if (json_response.status == 200) {
+                return true;
+            } else {
+                return false;
+            }
+        } else {
+            console.log('describeProcess not ok');
+            return false;
+        }
+    }); 
 }
 

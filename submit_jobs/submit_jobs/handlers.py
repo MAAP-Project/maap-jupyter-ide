@@ -108,7 +108,7 @@ class RegisterAlgorithmHandler(IPythonHandler):
         # Part 1: Parse Required Arguments
         # ==================================
         # logging.debug('workdir is '+WORKDIR)
-        fields = ['config_path','memory']
+        fields = ['config_path', 'memory']
         params = {}
         for f in fields:
             try:
@@ -121,12 +121,29 @@ class RegisterAlgorithmHandler(IPythonHandler):
 
         # load register fields from config yaml
         config = {}
+        # check config exists
         os.path.exists(params['config_path'])
         with open(params['config_path'], 'r') as stream:
             config = yaml.load(stream)
 
+        if config['description'] in ['null', None]:
+            config['description'] = ''
+
+        if config['inputs'] in ['null', None]:
+            config['inputs'] = ''
+
         if 'memory' in params.keys():
             config['memory'] = params['memory']
+
+            # overwrite config yaml with memory
+            config_template = WORKDIR+"/submit_jobs/register.yaml"
+            new_config = ''
+            with open(config_template, 'r') as infile:
+                new_config = infile.read()
+                new_config = new_config.format(**config)
+                os.remove(params['config_path'])
+                with open(params['config_path'], 'w') as outfile:
+                    outfile.write(new_config)
 
         logging.debug('fields')
         logging.debug(fields)
@@ -220,6 +237,7 @@ class RegisterAlgorithmHandler(IPythonHandler):
         maap = MAAP()
         try:
             r = maap.registerAlgorithm(req_json)
+            logging.debug(r.text)
             if r.status_code == 200:
                 try:
                     # MAAP API response
@@ -1011,53 +1029,70 @@ class DefaultValuesHandler(IPythonHandler):
         proj_path = '/'.join(proj_path.split('/')[:-1])
         os.chdir(proj_path)
 
-        # get git remote url (req)
-        repo_url = ''
-        try:
-            repo_url = subprocess.check_output("git remote get-url origin", shell=True).decode('utf-8').strip()
-            logger.debug('repo url is {}'.format(repo_url))
-        #return error messsage if unable to get required values for registering
-        except:
-            self.finish({"status_code": 412, "reason":"Path provided was not a git repository. \n{}".format(proj_path)})
-            return
-
-        vals = {}
-        username = params['username']
-        code_path = params['code_path']
-        file_name = code_path.split('/')[-1]
-        algo_name = file_name.replace('/',':').replace(' ', '_').replace('"','').replace("'",'')
-        vals['algo_name'] = ('.').join(algo_name.split('.')[:-1])
-
-        # if tutorial repo, prepend demo-${username} to algo name
-        p = re.compile('https:\/\/repo\.nasa\.maap\.xyz\/.*\/hello-world')
-        m = p.search(repo_url)
-        if m is not None:
-            vals['algo_name'] = 'demo-{}-{}'.format(username,vals['algo_name'])
-
-        # version is branch name
-        branch_name = subprocess.check_output("git branch | grep '*' | awk '{print $2}'",shell=True).decode('utf-8').strip()
-        # logging.debug('branch is {}'.format(branch_name))
-        vals['version'] = branch_name
-        vals['description'] = ''
-        vals['repository_url'] = repo_url
-        # vals['environment'] = os.environ['ENVIRONMENT']
-        vals['environment'] = "ubuntu"
-
-        vals['docker_url'] = ''
-        try:
-            vals['docker_url'] = os.environ['DOCKERIMAGE_PATH']
-        except:
-            self.finish({"status_code":400, "reason":"Environment base image could not be found. \nAre you registering from within the Che environment?"})
-            return
-
-        vals['run_cmd'] = params['code_path']
-
-        vals['disk_space'] = "10GB"
-        vals['memory'] = "15GB"
-
         config_path = proj_path+"/algorithm_config.yaml"
         prev_config = os.path.exists(config_path)
         if not prev_config:
+            # get git remote url (req)
+            repo_url = ''
+            try:
+                repo_url = subprocess.check_output("git remote get-url origin", shell=True).decode('utf-8').strip()
+                logger.debug('repo url is {}'.format(repo_url))
+            #return error messsage if unable to get required values for registering
+            except:
+                self.finish({"status_code": 412, "reason":"Path provided was not a git repository. \n{}".format(proj_path)})
+                return
+
+            vals = {}
+            username = params['username']
+            code_path = params['code_path']
+            file_name = code_path.split('/')[-1]
+            algo_name = file_name.replace('/',':').replace(' ', '_').replace('"','').replace("'",'')
+            vals['algo_name'] = ('.').join(algo_name.split('.')[:-1])
+
+            # if tutorial repo, prepend demo-${username} to algo name
+            p = re.compile('https:\/\/repo\.nasa\.maap\.xyz\/.*\/hello-world')
+            m = p.search(repo_url)
+            if m is not None:
+                vals['algo_name'] = 'demo-{}-{}'.format(username,vals['algo_name'])
+
+            # version is branch name
+            branch_name = subprocess.check_output("git branch | grep '*' | awk '{print $2}'",shell=True).decode('utf-8').strip()
+            # logging.debug('branch is {}'.format(branch_name))
+            vals['version'] = branch_name
+            vals['description'] = ''
+            vals['disk_space'] = '10GB'
+            vals['repository_url'] = repo_url
+            # vals['environment'] = os.environ['ENVIRONMENT']
+            vals['environment'] = "ubuntu"
+
+            vals['docker_url'] = ''
+            try:
+                vals['docker_url'] = os.environ['DOCKERIMAGE_PATH']
+            except:
+                self.finish({"status_code":400, "reason":"Environment base image could not be found. \nAre you registering from within the Che environment?"})
+                return
+
+            vals['run_command'] = params['code_path']
+
+            vals['disk_space'] = "10GB"
+            vals['memory'] = "15GB"
+
+            # default example algo inputs
+            ins = ''
+            inputs = [{'name': 'path-number', 'download': False}, 
+                {'name': 'file-to-copy-in', 'download': True}]
+
+            ins_template = ''
+            with open(WORKDIR+'/submit_jobs/register_inputs.yaml') as f:
+                ins_template = f.read()
+
+            for i in inputs:
+                ins += ins_template.format(**i)
+            vals['inputs'] = ins
+
+            logger.debug('vals before reading')
+            logger.debug(vals)
+
             # read in config template and populate with default values
             config = ''
             config_template = WORKDIR+"/submit_jobs/register.yaml"
@@ -1069,14 +1104,17 @@ class DefaultValuesHandler(IPythonHandler):
             with open(config_path,'w') as outfile:
                 outfile.write(config)
 
-        logger.debug('vals before reading')
-        logger.debug(vals)
-
         settings = {}
         # repopulate vals with current config settings
         with open(config_path,'r') as stream:
             settings = yaml.load(stream)
         
+        if settings['description'] in ['null', None]:
+            settings['description'] = ''
+
+        if settings['inputs'] in ['null', None]:
+            settings['inputs'] = []
+
         logger.debug(settings)
 
         # outputs: algo_name, version, environment, repository_url, dockerfile_path
@@ -1180,16 +1218,12 @@ class ListJobsHandler(IPythonHandler):
 
 class GetQueuesHandler(IPythonHandler):
     def get(self):
-        url = maap_api_url(self.request.host) +'/mas/algorithm/resource'
-        headers = {'Content-Type':'application/json'}
-        logger.debug('request sent to {}'.format(url))	
-        logger.debug('headers:')	
-        logger.debug(headers)
-
-        r = requests.get(url)
+        maap = MAAP()
+        r = maap.getQueues()
         try:
             resp = json.loads(r.text)
-            result = [e[len('maap-worker-'):] for e in resp['queues'] if 'maap-worker' in e]
+            # result = [e[len('maap-worker-'):] for e in resp['queues'] if 'maap-worker' in e]
+            result = resp['queues']
             self.finish({"status_code": r.status_code, "result": result})
         except:
             self.finish({"status_code": r.status_code, "result": r.text})

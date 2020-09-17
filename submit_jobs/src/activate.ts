@@ -82,10 +82,10 @@ export function activateRegisterAlgorithm(
           let defaultValues = resp['default_values'] as Object;
           let prevConfig = resp['previous_config'] as boolean;
 
-          if (defaultValues['inputs'] == undefined) {
+          if (defaultValues['inputs'] === undefined) {
             defaultValues['inputs'] = [];
           }
-          if (defaultValues['description'] == undefined) {
+          if (defaultValues['description'] === undefined) {
             defaultValues['description'] = '';
           }
 

@@ -379,29 +379,31 @@ export class RegisterWidget extends InputWidget {
     for (let field of this.fields) {
         // textarea for inputs field in register
         if (field === 'inputs') {
-            let fieldLabel = document.createElement('Label');
-            fieldLabel.innerHTML = field;
-            this.node.appendChild(fieldLabel);
+            setTimeout(() => {  
+                let fieldLabel = document.createElement('Label');
+                fieldLabel.innerHTML = field;
+                this.node.appendChild(fieldLabel);
 
-            let fieldInputs = document.createElement('textarea');
-            fieldInputs.id = (field.toLowerCase() + '-input');
-            (<HTMLTextAreaElement>fieldInputs).cols = 40;
-            (<HTMLTextAreaElement>fieldInputs).rows = 6;
+                let fieldInputs = document.createElement('textarea');
+                fieldInputs.id = (field.toLowerCase() + '-input');
+                (<HTMLTextAreaElement>fieldInputs).cols = 40;
+                (<HTMLTextAreaElement>fieldInputs).rows = 6;
 
-            // show input names and dl
-            let ins = ''
-            for (let itm of (defaultValues['inputs'] as Array<{[k:string]:string}>)) {
-            ins = ins+itm['name'];
-            if (itm['download']) {
-                ins = ins+' (download)';
-            } else {
-                ins = ins+' (no download)';
-            }
-            ins = ins+'\n';
-            }
-            fieldInputs.value = ins;
-            fieldInputs.readOnly = true;
-            this.node.appendChild(fieldInputs);
+                // show input names and dl
+                let ins = ''
+                for (let itm of (defaultValues['inputs'] as Array<{[k:string]:string}>)) {
+                ins = ins+itm['name'];
+                if (itm['download']) {
+                    ins = ins+' (download)';
+                } else {
+                    ins = ins+' (no download)';
+                }
+                ins = ins+'\n';
+                }
+                fieldInputs.value = ins;
+                fieldInputs.readOnly = true;
+                this.node.appendChild(fieldInputs);
+            }, 500);
         
         } else if (field === 'memory') {
             let fieldLabel = document.createElement('Label');
