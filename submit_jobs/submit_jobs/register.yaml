@@ -5,16 +5,17 @@ version: {version}
 environment: {environment}
 repository_url: {repository_url}
 docker_url: {docker_url}
+# queue chosen when registering
+memory: {memory}
 
 # fill out these fields
 # explain what this algorithm does
 description: 
 # path to the wrapper script for running the algorithm
-run_command: {run_cmd}
+run_command: {run_command}
+# set a storage value in GB or MB or KB, e.g. "100GB", "20MB", "10KB"
+disk_space: {disk_space}
 inputs:
 # remove below this line if no inputs
 # rename and set algorithm input names accordingly
-  - name: path-number
-    download: false
-  - name: file-to-copy-in
-    download: true
+{inputs}
