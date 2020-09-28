@@ -9,7 +9,7 @@ import { popup, popupResult } from "./dialogs";
 import { IStateDB } from '@jupyterlab/statedb';
 
 // popup helper for register to select project
-export class ProjectSelector extends Widget {
+export class DropdownSelector extends Widget {
   type: string;
   _fields: string[];
   _username:string;
@@ -81,7 +81,7 @@ export class ProjectSelector extends Widget {
           }
           console.log('appending '+algo);
         }
-        this.node.appendChild(this._dropdown)
+        this.node.appendChild(this._dropdown);
       });
     }
   }
