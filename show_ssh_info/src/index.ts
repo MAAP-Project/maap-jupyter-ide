@@ -23,7 +23,6 @@ const extensionSsh: JupyterFrontEndPlugin<void> = {
 };
 
 function activateSSH(app: JupyterFrontEnd,
-  state: IStateDB,
   palette: ICommandPalette) {
 
       new InjectSSH();
@@ -81,7 +80,7 @@ const extensionMount: JupyterFrontEndPlugin<void> = {
   autoStart: true,
   requires: [ICommandPalette, IStateDB],
   optional: [],
-  activate: (app: JupyterFrontEnd, state: IStateDB, palette: ICommandPalette) => {
+  activate: (app: JupyterFrontEnd, palette: ICommandPalette, state: IStateDB) => {
     const open_command = 'sshinfo:mount';
 
     app.commands.addCommand(open_command, {
@@ -105,7 +104,7 @@ const extensionMountOrgBuckets: JupyterFrontEndPlugin<void> = {
   id: 'mount-che-org-buckets',
   requires: [ICommandPalette, IStateDB],
   autoStart: true,
-  activate: (app: JupyterFrontEnd, state: IStateDB, palette: ICommandPalette) => {
+  activate: (app: JupyterFrontEnd, palette: ICommandPalette, state: IStateDB) => {
     const open_command = 'sshinfo:orgs';
     app.commands.addCommand(open_command, {
       label: 'Che Org Workspace Mount',
