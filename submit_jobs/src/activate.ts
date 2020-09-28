@@ -7,7 +7,7 @@ import { IFileBrowserFactory } from "@jupyterlab/filebrowser";
 import { IMainMenu } from '@jupyterlab/mainmenu';
 import { Menu } from '@lumino/widgets';
 import { InputWidget, RegisterWidget, popupText } from './widgets';
-import { ProjectSelector } from './selector';
+import { DropdownSelector } from './selector';
 import { popup, popupResult } from './dialogs';
 import { getUsernameToken, noInputRequest, inputRequest, algorithmExists } from './funcs';
 import * as data from './fields.json';
@@ -82,10 +82,10 @@ export function activateRegisterAlgorithm(
           let defaultValues = resp['default_values'] as Object;
           let prevConfig = resp['previous_config'] as boolean;
 
-          if (defaultValues['inputs'] == undefined) {
+          if (defaultValues['inputs'] === undefined) {
             defaultValues['inputs'] = [];
           }
-          if (defaultValues['description'] == undefined) {
+          if (defaultValues['description'] === undefined) {
             defaultValues['description'] = '';
           }
 
@@ -120,7 +120,7 @@ export function activateRegisterAlgorithm(
             }
           });
         };
-        inputRequest(state, 'defaultValues','Register Algorithm',{'code_path':path},getValuesFn);
+        inputRequest(state, 'defaultValues','Register Algorithm',{'code_path':path,'username':uname},getValuesFn);
       });
     },
     isVisible: () =>
@@ -177,7 +177,7 @@ export function activatePublishAlgorithm(app: JupyterFrontEnd,
     isEnabled: () => true,
     execute: args => {
       getUsernameToken(state,profileId,function(uname:string,ticket:string) {
-        popupResult(new ProjectSelector('publishAlgorithm', publishAlgorithmFields, uname, ticket, state),"Select an Algorithm");
+        popupResult(new DropdownSelector('publishAlgorithm', publishAlgorithmFields, uname, ticket, state),"Select an Algorithm");
       })
     }
   });
@@ -193,7 +193,7 @@ export function activateDescribe(app: JupyterFrontEnd,
     isEnabled: () => true,
     execute: args => {
       getUsernameToken(state,profileId,function(uname:string,ticket:string) {
-        popupResult(new ProjectSelector('describeProcess', describeProcessFields, uname, ticket, state),"Select an Algorithm");
+        popupResult(new DropdownSelector('describeProcess', describeProcessFields, uname, ticket, state),"Select an Algorithm");
       });
     }
   });
@@ -209,7 +209,7 @@ export function activateExecute(app: JupyterFrontEnd,
     isEnabled: () => true,
     execute: args => {
       getUsernameToken(state,profileId,function(uname:string,ticket:string) {
-        popupResult(new ProjectSelector('executeInputs', executeInputsFields, uname, ticket, state),"Select an Algorithm");
+        popupResult(new DropdownSelector('executeInputs', executeInputsFields, uname, ticket, state),"Select an Algorithm");
       });
     }
   });
@@ -322,7 +322,7 @@ export function activateDeleteAlgorithm(app: JupyterFrontEnd,
     isEnabled: () => true,
     execute: args => {
       getUsernameToken(state,profileId,function(uname:string,ticket:string) {
-        popupResult(new ProjectSelector('deleteAlgorithm', deleteAlgorithmFields, uname, ticket, state),"Select an Algorithm to Delete");
+        popupResult(new DropdownSelector('deleteAlgorithm', deleteAlgorithmFields, uname, ticket, state),"Select an Algorithm to Delete");
       });
     }
   });

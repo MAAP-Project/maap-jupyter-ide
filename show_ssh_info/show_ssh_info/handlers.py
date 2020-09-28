@@ -287,12 +287,12 @@ class MountOrgBucketsHandler(IPythonHandler):
             org_bucket_dirs = []
 
             try:
-                # create 
+                # create
                 for org in top_orgs:
                     # local mount points
                     org_workspace = '/projects/{}'.format(org)
                     logging.debug('org_workspace {}'.format(org_workspace))
-                    org_bucket_dir = '{}:/{}'.format(bucket,org)
+                    org_bucket_dir = '{}:/{}'.format(bucket, org)
                     logging.debug('org_bucket_dir {}'.format(org_bucket_dir))
 
                     # create local mount points if they don't exist
@@ -302,7 +302,8 @@ class MountOrgBucketsHandler(IPythonHandler):
                     logging.debug('{} org workspace created'.format(org))
 
                     # check if already mounted
-                    check_status = subprocess.call('df -h | grep s3fs | grep {}'.format(org_workspace),shell=True)
+                    check_status = subprocess.call(
+                        'df -h | grep s3fs | grep {}'.format(org_workspace), shell=True)
                     logging.debug('check mounted is '+str(check_status))
 
                     if check_status == 0:
@@ -311,37 +312,51 @@ class MountOrgBucketsHandler(IPythonHandler):
 
                     else:
                         # mount whole bucket first
-                        mount_output = subprocess.check_output('s3fs -o passwd_file="/.passwd-s3fs" {} /projects/{}'.format(bucket,org), shell=True).decode('utf-8')
+                        mount_output = subprocess.check_output(
+                            's3fs -o passwd_file="/.passwd-s3fs" {} /projects/{}'.format(
+                                bucket, org),
+                            shell=True).decode('utf-8')
                         message = mount_output
                         logging.debug('mount log {}'.format(mount_output))
 
                         # create org's folder within s3 bucket if it doesn't already exist
-                        if not os.path.exists('{}/{}'.format(org_workspace,org)):
-                            os.mkdir('{}/{}'.format(org_workspace,org))
+                        if not os.path.exists('{}/{}'.format(org_workspace, org)):
+                            os.mkdir('{}/{}'.format(org_workspace, org))
 
                         # touch & rm file to register folder to filesystem
-                        touch_output = subprocess.check_output('touch {path}/{org}/testfile && rm {path}/{org}/testfile'.format(path=org_workspace,org=org), shell=True).decode('utf-8')
+                        touch_output = subprocess.check_output(
+                            'touch {path}/{org}/testfile && rm {path}/{org}/testfile'.format(
+                                path=org_workspace, org=org),
+                            shell=True).decode('utf-8')
                         message = touch_output
                         logging.debug('touch output {}'.format(touch_output))
 
                         # unmount bucket and mount org's subfolder
-                        umount_output = subprocess.check_output('umount {}'.format(org_workspace), shell=True).decode('utf-8')
+                        umount_output = subprocess.check_output(
+                            'umount {}'.format(org_workspace),
+                            shell=True).decode('utf-8')
                         message = umount_output
                         logging.debug('umount output {}'.format(umount_output))
 
-                        mountdir_output = subprocess.check_output('s3fs -o passwd_file="/.passwd-s3fs" {} {}'.format(org_bucket_dir,org_workspace), shell=True).decode('utf-8')
+                        # org folders are read-only (-o ro)
+                        readonly_opt = '-o ro ' if org == 'maap-users' else ''
+                        mountdir_output = subprocess.check_output(
+                            's3fs -o passwd_file="/.passwd-s3fs {}" {} {}'.format(
+                                readonly_opt, org_bucket_dir, org_workspace),
+                            shell=True).decode('utf-8')
                         message = mountdir_output
                         logging.debug('mountdir output {}'.format(mountdir_output))
 
                     org_workspaces.append(org_workspace)
                     org_bucket_dirs.append(org_bucket_dir)
 
-                # once top-level orgs mounted, sub-orgs don't need another mount point, just a subdirectory
+                # once top-level orgs mounted,
+                # sub-orgs don't need another mount point, just a subdirectory
                 for org in sub_orgs:
                     # local mount points
                     org_workspace = '/projects/{}'.format(org)
                     logging.debug('org_workspace {}'.format(org_workspace))
-                    org_bucket_dir = '{}:/{}'.format(bucket,org)
+                    org_bucket_dir = '{}:/{}'.format(bucket, org)
                     logging.debug('org_bucket_dir {}'.format(org_bucket_dir))
 
                     # create sub-org folders if they don't exist
@@ -351,7 +366,7 @@ class MountOrgBucketsHandler(IPythonHandler):
                     org_workspaces.append(org_workspace)
                     org_bucket_dirs.append(org_bucket_dir)
 
-                self.finish({"status_code":200, "message":message, "org_workspaces":org_workspaces,"org_bucket_dirs":org_bucket_dirs})
+                self.finish({"status_code":200, "message":message, "org_workspaces":org_workspaces, "org_bucket_dirs":org_bucket_dirs})
             except:
                 self.finish({"status_code":500, "message":message, "org_workspaces":org_workspaces,"org_bucket_dirs":org_bucket_dirs})
         except:
