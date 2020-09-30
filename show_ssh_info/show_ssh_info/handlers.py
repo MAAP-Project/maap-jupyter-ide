@@ -341,7 +341,7 @@ class MountOrgBucketsHandler(IPythonHandler):
                         # org folders are read-only (-o ro)
                         readonly_opt = '-o ro ' if org == 'maap-users' else ''
                         mountdir_output = subprocess.check_output(
-                            's3fs -o passwd_file="/.passwd-s3fs {}" {} {}'.format(
+                            's3fs -o passwd_file="/.passwd-s3fs" {} {} {}'.format(
                                 readonly_opt, org_bucket_dir, org_workspace),
                             shell=True).decode('utf-8')
                         message = mountdir_output
