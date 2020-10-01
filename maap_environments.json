@@ -23,7 +23,7 @@
         "api_server": "api.maap-project.org",
         "auth_server": "auth.maap-project.org",
         "mas_server": "mas.maap-project.org",
-        "edsc_server": "ade.maap-project.org:3052",
+        "edsc_server": "ade.maap-project.org:30052",
         "default_host": false
     }
 ]
