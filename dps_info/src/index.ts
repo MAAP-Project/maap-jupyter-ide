@@ -18,9 +18,10 @@ const extensionPanel: JupyterFrontEndPlugin<void> = {
     autoStart: true,
     requires: [ICommandPalette, IStateDB],
     activate: (app: JupyterFrontEnd, palette: ICommandPalette, state: IStateDB) => {
+
         getUsernameToken(state,profileId).then((res) => {
             let username = res[0];
-            let jPanel = new JobTable(username);
+            let jPanel = new JobTable(username, state);
             jPanel.id = 'job-cache-display';
         
             jPanel.title.label = 'Jobs';
@@ -49,7 +50,7 @@ const extensionTabUI: JupyterFrontEndPlugin<void> = {
     activate: (app: JupyterFrontEnd, palette: ICommandPalette, state: IStateDB) => {
         getUsernameToken(state,profileId).then((res) => {
             let username = res[0];
-            let content = new JobWidget(username);
+            let content = new JobWidget(username, state);
             const jobsWidget: MainAreaWidget<JobWidget> = new MainAreaWidget({content});
     
             app.commands.addCommand(jWidget_command, {

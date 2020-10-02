@@ -6,23 +6,26 @@ import { request, RequestResult } from './request';
 import { InputWidget, RegisterWidget } from './widgets';
 import { getAlgorithms, getDefaultValues, inputRequest } from './funcs';
 import { popup, popupResult } from "./dialogs";
+import { IStateDB } from '@jupyterlab/statedb';
 
 // popup helper for register to select project
-export class ProjectSelector extends Widget {
+export class DropdownSelector extends Widget {
   type: string;
   _fields: string[];
   _username:string;
   _ticket: string;
   public selection:string;
-  _dropdown:HTMLSelectElement;
+  _dropdown: HTMLSelectElement;
+  _state: IStateDB;
 
-  constructor(type,fields,uname,ticket) {
+  constructor(type, fields, uname, ticket, state) {
     super();
     this._fields = fields;
     this._username = uname;
     this._ticket = ticket;
     this.selection = '';
     this.type = type;
+    this._state = state;
 
     this._dropdown = <HTMLSelectElement>document.createElement("SELECT");
     this._dropdown.id = "project-dropdown";
@@ -59,7 +62,8 @@ export class ProjectSelector extends Widget {
     } else if (['describeProcess','publishAlgorithm','executeInputs','deleteAlgorithm'].includes(type)) {
       let me = this;
       console.log('getAlgorithms');
-      getAlgorithms(this._ticket).then((algo_lst:{[k:string]:Array<string>}) => {
+      
+      getAlgorithms(this._state, this._ticket).then((algo_lst:{[k:string]:Array<string>}) => {
         if (Object.keys(algo_lst).length == 0) {
           me.selection = "No algorithms available";
         }
@@ -77,7 +81,7 @@ export class ProjectSelector extends Widget {
           }
           console.log('appending '+algo);
         }
-        this.node.appendChild(this._dropdown)
+        this.node.appendChild(this._dropdown);
       });
     }
   }
@@ -155,11 +159,11 @@ export class ProjectSelector extends Widget {
           exec.popupTitle = algo_id+':'+version;
           popup(exec);
         }
-        inputRequest(this.type,algo_id,{'algo_id':algo_id,'version':version,'username':this._username,'proxy-ticket':this._ticket},fn);
+        inputRequest(this._state, this.type,algo_id,{'algo_id':algo_id,'version':version,'username':this._username,'proxy-ticket':this._ticket},fn);
 
         // no additional user action required after selection
       } else {
-        inputRequest(this.type,algo_id,{'algo_id':algo_id,'version':version,'username':this._username,'proxy-ticket':this._ticket});
+        inputRequest(this._state, this.type,algo_id,{'algo_id':algo_id,'version':version,'username':this._username,'proxy-ticket':this._ticket});
       }
 
     } else if (this.type == 'register') {

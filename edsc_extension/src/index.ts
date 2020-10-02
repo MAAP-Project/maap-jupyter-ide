@@ -7,6 +7,7 @@ import { PageConfig } from '@jupyterlab/coreutils'
 import { IDocumentManager } from '@jupyterlab/docmanager';
 import { IMainMenu } from '@jupyterlab/mainmenu';
 import { NotebookActions, NotebookPanel, INotebookTracker } from '@jupyterlab/notebook';
+import { request, RequestResult } from './request';
 
 
 /** phosphor imports **/
@@ -29,13 +30,15 @@ import { granulePermittedCmrKeys,
         collectionPermittedCmrKeys,
         collectionNonIndexedKeys } from "./searchKeys";
 
-let SEARCH_CLIENT_URL = '';
-if (document.location.hostname === 'localhost') {
-    SEARCH_CLIENT_URL = 'https://che-k8s.maap.xyz:3052/search'
-} else {
-    SEARCH_CLIENT_URL = document.location.origin + ':3052/search';
-}
-console.log("EDSC instance is", SEARCH_CLIENT_URL);
+let edsc_server = '';
+var valuesUrl = new URL(PageConfig.getBaseUrl() + 'maapsec/environment');
+
+request('get', valuesUrl.href).then((res: RequestResult) => {
+  if (res.ok) {
+    let environment = JSON.parse(res.data);
+    edsc_server = 'https://' + environment['edsc_server'];
+  }
+});
 
 ///////////////////////////////////////////////////////////////
 //
@@ -207,7 +210,7 @@ function activate(app: JupyterFrontEnd,
     execute: args => {
       // Only allow user to have one EDSC window
       if (widget == undefined) {
-          widget = new IFrameWidget(SEARCH_CLIENT_URL);
+          widget = new IFrameWidget(edsc_server);
           app.shell.add(widget, 'main');
           app.shell.activateById(widget.id);
       } else {

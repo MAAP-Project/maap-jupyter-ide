@@ -5,10 +5,21 @@ import { popupResultText } from './widgets';
 import { getUserInfo } from "./getKeycloak";
 import { request, RequestResult } from './request';
 
-export function getUsernameToken(state: IStateDB, profileId:string, callback) {
+let ade_server = '';
+var valuesUrl = new URL(PageConfig.getBaseUrl() + 'maapsec/environment');
+
+request('get', valuesUrl.href).then((res: RequestResult) => {
+  if (res.ok) {
+    let environment = JSON.parse(res.data);
+    ade_server = environment['ade_server'];
+  }
+});
+
+export async function getUsernameToken(state: IStateDB, profileId:string, callback) {
   let uname:string = 'anonymous';
   let ticket:string = '';
-  if (["https://che-k8s.maap.xyz","https://ade.maap-project.org"].includes(document.location.origin)) {
+
+  if ("https://" + ade_server === document.location.origin) {
     getUserInfo(function(profile: any) {
       if (profile['cas:username'] === undefined) {
         INotification.error("Get profile failed.");
@@ -32,7 +43,8 @@ export function getUsernameToken(state: IStateDB, profileId:string, callback) {
   }
 }
 
-export function getAlgorithms(ticket?:string) {
+export async function getAlgorithms(state: IStateDB, ticket?:string) {
+
   return new Promise<{[k:string]:Array<string>}>((resolve, reject) => {
     var algoSet: { [key: string]: Array<string>} = {}
 
@@ -55,7 +67,8 @@ export function getAlgorithms(ticket?:string) {
   });
 }
 
-export function getDefaultValues(code_path) {
+export async function getDefaultValues(code_path) {
+
   return new Promise<{[k:string]:string}>((resolve, reject) => {
     var defaultValues:{[k:string]:string}  = {}
 
@@ -77,9 +90,10 @@ export function getDefaultValues(code_path) {
 }
 
 // HySDS endpoints that require inputs
-export function inputRequest(endpt:string,title:string,inputs:{[k:string]:string},fn?:any) {
+export async function inputRequest(state: IStateDB, endpt:string,title:string,inputs:{[k:string]:string},fn?:any) {
   var requestUrl = new URL(PageConfig.getBaseUrl() + 'hysds/' + endpt);
   // add params
+  console.log(inputs);
   for (let key in inputs) {
     var fieldValue = inputs[key];
     // if(key !== 'proxy-ticket')
@@ -113,32 +127,32 @@ export function inputRequest(endpt:string,title:string,inputs:{[k:string]:string
 }
 
 // HySDS endpoints that don't require any inputs
-export function noInputRequest(endpt:string,title:string) {
-  inputRequest(endpt,title,{});
+export function noInputRequest(state: IStateDB, endpt:string,title:string) {
+    inputRequest(state, endpt,title,{});
 }
 
-export function algorithmExists(name:string,ver:string,env:string,ticket:string) {
-  var requestUrl = new URL(PageConfig.getBaseUrl() + 'hysds/' + 'describeProcess');
-  // add params
-  requestUrl.searchParams.append('algo_name', name+'_'+env);
-  requestUrl.searchParams.append('version', ver);
-  requestUrl.searchParams.append('proxy-ticket', ticket);
-  console.log(requestUrl.href);
+export async function algorithmExists(state: IStateDB, name:string,ver:string,env:string,ticket:string) {
+    var requestUrl = new URL(PageConfig.getBaseUrl() + 'hysds/' + 'describeProcess');
+    // add params
+    requestUrl.searchParams.append('algo_id', name+'_'+env);
+    requestUrl.searchParams.append('version', ver);
+    requestUrl.searchParams.append('proxy-ticket', ticket);
+    console.log(requestUrl.href);
 
-  // send request
-  return request('get',requestUrl.href).then((res: RequestResult) => {
-    if (res.ok) {
-      var json_response:any = res.json();
-      console.log(json_response);
-      if (json_response.status == 200) {
-        return true;
-      } else {
-        return false;
-      }
-    } else {
-      console.log('describeProcess not ok');
-      return false;
-    }
-  }); 
+    // send request
+    return request('get',requestUrl.href).then((res: RequestResult) => {
+        if (res.ok) {
+            var json_response:any = res.json();
+            console.log(json_response);
+            if (json_response.status == 200) {
+                return true;
+            } else {
+                return false;
+            }
+        } else {
+            console.log('describeProcess not ok');
+            return false;
+        }
+    }); 
 }
 

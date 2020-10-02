@@ -3,22 +3,33 @@ import requests
 from requests import get
 from notebook.base.handlers import IPythonHandler
 import subprocess
-import boto3
-from botocore.exceptions import ClientError
 import json
 import logging
+import functools
 
 logger = logging.getLogger()
 logger.setLevel(logging.DEBUG)
 
-# set base url based on ops/dev environment
-CHE_BASE_URL = "https://che-k8s.maap.xyz"
-DPS_BUCKET_NAME = "maap-dev-dataset"
+@functools.lru_cache(maxsize=128)
+def get_maap_config(host):
+    path_to_json = os.path.join(os.path.dirname(os.path.abspath(__file__)), '../..', 'maap_environments.json')
 
-if 'ENVIRONMENT' in os.environ.keys() and os.environ['ENVIRONMENT'] == 'OPS':
-    CHE_BASE_URL = "https://ade.maap-project.org"
-    DPS_BUCKET_NAME = "maap-ops-dataset"
+    with open(path_to_json) as f:
+        data = json.load(f)
 
+    match = next((x for x in data if host in x['ade_server']), None)
+    maap_config = next((x for x in data if x['default_host'] == True), None) if match is None else match
+    
+    return maap_config
+
+def maap_ade_url(host):
+	return 'https://{}'.format(get_maap_config(host)['ade_server'])
+
+def maap_api_url(host):
+	return 'https://{}'.format(get_maap_config(host)['api_server'])
+
+def dps_bucket_name(host):
+	return 'maap-{}-dataset'.format(get_maap_config(host)['environment'])
 
 class InjectKeyHandler(IPythonHandler):
     def get(self):
@@ -110,7 +121,7 @@ class CheckInstallersHandler(IPythonHandler):
         # self.finish({'status': True})
 
         che_machine_token = os.environ['CHE_MACHINE_TOKEN']
-        url = '{}/api/workspace/{}'.format(CHE_BASE_URL,os.environ.get('CHE_WORKSPACE_ID'))
+        url = '{}/api/workspace/{}'.format(maap_ade_url(self.request.host), os.environ.get('CHE_WORKSPACE_ID'))
         # --------------------------------------------------
         # TODO: FIGURE OUT AUTH KEY & verify
         # --------------------------------------------------
@@ -140,7 +151,7 @@ class InstallHandler(IPythonHandler):
     def get(self):
 
         che_machine_token = os.environ['CHE_MACHINE_TOKEN']
-        url = '{}/api/workspace/{}'.format(CHE_BASE_URL,os.environ.get('CHE_WORKSPACE_ID'))
+        url = '{}/api/workspace/{}'.format(maap_ade_url(self.request.host), os.environ.get('CHE_WORKSPACE_ID'))
         # --------------------------------------------------
         # TODO: FIGURE OUT AUTH KEY & verify
         # --------------------------------------------------
@@ -160,8 +171,6 @@ class InstallHandler(IPythonHandler):
         # Update workspace config with new installers
         workspace_config['config']['environments']["default"]["machines"]["ws/jupyter"]['installers'] = installers
 
-        put_url = 'https://ade.maap-project.org/api/workspace/' + os.environ.get('CHE_WORKSPACE_ID')
-
         r = requests.put(
             url,
             headers=headers,
@@ -178,7 +187,7 @@ class MountBucketHandler(IPythonHandler):
         try:
             # get bucket name and username
             username = self.get_argument('username','')
-            bucket = DPS_BUCKET_NAME
+            bucket = dps_bucket_name(self.request.host)
             logging.debug('username is '+username)
             logging.debug('bucket is '+bucket)
 
@@ -256,8 +265,8 @@ class MountOrgBucketsHandler(IPythonHandler):
         # Send request to Che API for list of user's orgs
         # ts pass keycloak token from window
         token = self.get_argument('token','')
-        bucket = DPS_BUCKET_NAME
-        url = '{}/api/organization'.format(CHE_BASE_URL)
+        bucket = dps_bucket_name(self.request.host)
+        url = '{}/api/organization'.format(maap_ade_url(self.request.host))
         headers = {
             'Accept':'application/json',
             'Authorization':'Bearer {token}'.format(token=token)
@@ -278,12 +287,12 @@ class MountOrgBucketsHandler(IPythonHandler):
             org_bucket_dirs = []
 
             try:
-                # create 
+                # create
                 for org in top_orgs:
                     # local mount points
                     org_workspace = '/projects/{}'.format(org)
                     logging.debug('org_workspace {}'.format(org_workspace))
-                    org_bucket_dir = '{}:/{}'.format(bucket,org)
+                    org_bucket_dir = '{}:/{}'.format(bucket, org)
                     logging.debug('org_bucket_dir {}'.format(org_bucket_dir))
 
                     # create local mount points if they don't exist
@@ -293,7 +302,8 @@ class MountOrgBucketsHandler(IPythonHandler):
                     logging.debug('{} org workspace created'.format(org))
 
                     # check if already mounted
-                    check_status = subprocess.call('df -h | grep s3fs | grep {}'.format(org_workspace),shell=True)
+                    check_status = subprocess.call(
+                        'df -h | grep s3fs | grep {}'.format(org_workspace), shell=True)
                     logging.debug('check mounted is '+str(check_status))
 
                     if check_status == 0:
@@ -302,37 +312,51 @@ class MountOrgBucketsHandler(IPythonHandler):
 
                     else:
                         # mount whole bucket first
-                        mount_output = subprocess.check_output('s3fs -o passwd_file="/.passwd-s3fs" {} /projects/{}'.format(bucket,org), shell=True).decode('utf-8')
+                        mount_output = subprocess.check_output(
+                            's3fs -o passwd_file="/.passwd-s3fs" {} /projects/{}'.format(
+                                bucket, org),
+                            shell=True).decode('utf-8')
                         message = mount_output
                         logging.debug('mount log {}'.format(mount_output))
 
                         # create org's folder within s3 bucket if it doesn't already exist
-                        if not os.path.exists('{}/{}'.format(org_workspace,org)):
-                            os.mkdir('{}/{}'.format(org_workspace,org))
+                        if not os.path.exists('{}/{}'.format(org_workspace, org)):
+                            os.mkdir('{}/{}'.format(org_workspace, org))
 
                         # touch & rm file to register folder to filesystem
-                        touch_output = subprocess.check_output('touch {path}/{org}/testfile && rm {path}/{org}/testfile'.format(path=org_workspace,org=org), shell=True).decode('utf-8')
+                        touch_output = subprocess.check_output(
+                            'touch {path}/{org}/testfile && rm {path}/{org}/testfile'.format(
+                                path=org_workspace, org=org),
+                            shell=True).decode('utf-8')
                         message = touch_output
                         logging.debug('touch output {}'.format(touch_output))
 
                         # unmount bucket and mount org's subfolder
-                        umount_output = subprocess.check_output('umount {}'.format(org_workspace), shell=True).decode('utf-8')
+                        umount_output = subprocess.check_output(
+                            'umount {}'.format(org_workspace),
+                            shell=True).decode('utf-8')
                         message = umount_output
                         logging.debug('umount output {}'.format(umount_output))
 
-                        mountdir_output = subprocess.check_output('s3fs -o passwd_file="/.passwd-s3fs" {} {}'.format(org_bucket_dir,org_workspace), shell=True).decode('utf-8')
+                        # org folders are read-only (-o ro)
+                        readonly_opt = '-o ro ' if org == 'maap-users' else ''
+                        mountdir_output = subprocess.check_output(
+                            's3fs -o passwd_file="/.passwd-s3fs" {} {} {}'.format(
+                                readonly_opt, org_bucket_dir, org_workspace),
+                            shell=True).decode('utf-8')
                         message = mountdir_output
                         logging.debug('mountdir output {}'.format(mountdir_output))
 
                     org_workspaces.append(org_workspace)
                     org_bucket_dirs.append(org_bucket_dir)
 
-                # once top-level orgs mounted, sub-orgs don't need another mount point, just a subdirectory
+                # once top-level orgs mounted,
+                # sub-orgs don't need another mount point, just a subdirectory
                 for org in sub_orgs:
                     # local mount points
                     org_workspace = '/projects/{}'.format(org)
                     logging.debug('org_workspace {}'.format(org_workspace))
-                    org_bucket_dir = '{}:/{}'.format(bucket,org)
+                    org_bucket_dir = '{}:/{}'.format(bucket, org)
                     logging.debug('org_bucket_dir {}'.format(org_bucket_dir))
 
                     # create sub-org folders if they don't exist
@@ -342,7 +366,7 @@ class MountOrgBucketsHandler(IPythonHandler):
                     org_workspaces.append(org_workspace)
                     org_bucket_dirs.append(org_bucket_dir)
 
-                self.finish({"status_code":200, "message":message, "org_workspaces":org_workspaces,"org_bucket_dirs":org_bucket_dirs})
+                self.finish({"status_code":200, "message":message, "org_workspaces":org_workspaces, "org_bucket_dirs":org_bucket_dirs})
             except:
                 self.finish({"status_code":500, "message":message, "org_workspaces":org_workspaces,"org_bucket_dirs":org_bucket_dirs})
         except:
@@ -351,48 +375,23 @@ class MountOrgBucketsHandler(IPythonHandler):
 class Presigneds3UrlHandler(IPythonHandler):
     def get(self):
         # get arguments
-        bucket = DPS_BUCKET_NAME
+        bucket = dps_bucket_name(self.request.host)
         key = self.get_argument('key','')
+        proxyTicket = self.get_argument('proxy-ticket','')
         logging.debug('bucket is '+bucket)
         logging.debug('key is '+key)
 
-        # expiration = '300' # 5 min in seconds
         expiration = '43200' # 12 hrs in seconds
         logging.debug('expiration is {} seconds'+expiration)
-        keys = subprocess.check_output('cat /.passwd-s3fs',shell=True).decode('utf-8').strip().split(':')
 
-        # check if provided key exists
-        try:
-            s3 = boto3.resource('s3',
-                aws_access_key_id=keys[0],
-                aws_secret_access_key=keys[1]
-            )
-            s3.Object(bucket,key).load()
-            logging.debug('key {} exists in bucket {}'.format(key,bucket))
-        # return with error if provided key doesn't exist
-        except ClientError as e:
-            if e.response['Error']['Code'] == "404":
-                logging.debug('s3 object {} does not exist in bucket {}'.format(key,bucket))
-                self.finish({"status_code":404, "message":"404 s3 object {} does not exist in bucket {}".format(key,bucket), "url":""})
-            else:
-                logging.error(e)
-                self.finish(json.dumps({"status_code":500, "message":e, "url":""}))
+        url = '{}/api/members/self/presignedUrlS3/{}/{}?exp={}'.format(maap_api_url(self.request.host), bucket, key, expiration)
+        
+        headers = {'Accept': 'application/json', 'proxy-ticket': proxyTicket}
+        r = requests.get(
+            url,
+            headers=headers,
+            verify=False
+        )
 
-        # continue if provided key exists
-        # create s3 client for creating url
-        try:
-            s3_client = boto3.client('s3',
-                aws_access_key_id=keys[0],
-                aws_secret_access_key=keys[1]
-            )
-            resp = s3_client.generate_presigned_url(
-                'get_object',
-                Params={'Bucket': bucket,'Key': key},
-                ExpiresIn=expiration
-            )
-            logging.debug('link is '+resp)
-        except ClientError as e:
-            logging.error(e)
-            self.finish(json.dumps({"status_code":500, "message":e, "url":""}))
-
-        self.finish({"status_code":200, "message": "success", "url":resp})
+        resp = json.loads(r.text)   
+        self.finish({"status_code":200, "message": "success", "url":resp['url']})

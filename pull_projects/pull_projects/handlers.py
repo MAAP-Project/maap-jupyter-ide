@@ -1,7 +1,7 @@
 import os.path
 import sys
 from notebook.base.handlers import IPythonHandler
-
+import functools
 import os
 import glob
 from pathlib import Path
@@ -11,23 +11,32 @@ from git import Repo
 import shutil
 import urllib
 
-# set base url based on ops/dev environment
-GITLAB_REPO = "repo.nasa.maap.xyz"
-if 'ENVIRONMENT' in os.environ.keys() and os.environ['ENVIRONMENT'] == 'OPS':
-    GITLAB_REPO = "mas.maap-project.org"
+@functools.lru_cache(maxsize=128)
+def get_maap_config(host):
+    path_to_json = os.path.join(os.path.dirname(os.path.abspath(__file__)), '../..', 'maap_environments.json')
 
-CHE_BASE_URL = "https://che-k8s.maap.xyz"
-if 'ENVIRONMENT' in os.environ.keys() and os.environ['ENVIRONMENT'] == 'OPS':
-    CHE_BASE_URL = "https://ade.maap-project.org"
+    with open(path_to_json) as f:
+        data = json.load(f)
 
+    match = next((x for x in data if host in x['ade_server']), None)
+    maap_config = next((x for x in data if x['default_host'] == True), None) if match is None else match
+    
+    return maap_config
+
+def maap_ade_url(host):
+	return 'https://{}'.format(get_maap_config(host)['ade_server'])
+
+def maap_mas_server(host):
+	return get_maap_config(host)['mas_server']
 
 # Set selected ADE Docker Image 
 class ListProjectsHandler(IPythonHandler):
     def get(self):
         # 'https://ade.maap-project.org/api/workspace/workspacetn41o4yl4a7kxclz'
-        workspace_id = os.environ['CHE_WORKSPACE_ID']
-        che_machine_token = os.environ['CHE_MACHINE_TOKEN']
-        url = '{base_url}/api/workspace/{workspace_id}'.format(base_url=CHE_BASE_URL,workspace_id=workspace_id)
+        workspace_id = os.environ['CHE_WORKSPACE_ID'] if 'CHE_WORKSPACE_ID' in os.environ else ''
+        che_machine_token = os.environ['CHE_MACHINE_TOKEN'] if 'CHE_MACHINE_TOKEN' in os.environ else ''
+
+        url = '{base_url}/api/workspace/{workspace_id}'.format(base_url=maap_ade_url(self.request.host),workspace_id=workspace_id)
         # --------------------------------------------------
         # TODO: FIGURE OUT AUTH KEY & verify
         # --------------------------------------------------
@@ -83,9 +92,11 @@ class GetAllProjectsHandler(IPythonHandler):
         # --------------------------------------------------
         # get list of projects      
         # --------------------------------------------------
-        workspace_id = os.environ['CHE_WORKSPACE_ID']
-        che_machine_token = os.environ['CHE_MACHINE_TOKEN']
-        url = '{base_url}/api/workspace/{workspace_id}'.format(base_url=CHE_BASE_URL,workspace_id=workspace_id)
+
+        workspace_id = os.environ['CHE_WORKSPACE_ID'] if 'CHE_WORKSPACE_ID' in os.environ else ''
+        che_machine_token = os.environ['CHE_MACHINE_TOKEN'] if 'CHE_MACHINE_TOKEN' in os.environ else ''
+
+        url = '{base_url}/api/workspace/{workspace_id}'.format(base_url=maap_ade_url(self.request.host),workspace_id=workspace_id)
         # --------------------------------------------------
         # TODO: FIGURE OUT AUTH KEY & verify
         # --------------------------------------------------
@@ -115,17 +126,17 @@ class GetAllProjectsHandler(IPythonHandler):
                 if src_type == 'git':
                     if not os.path.exists('/projects'+path):
 
-                        # Check if is stored on our gitlab (repo.nasa.maap.xyz) if so, use the users authentication
+                        # Check if is stored on our gitlab (e.g. mas.maap-project.org) if so, use the users authentication
                         # token to allow for the downloads of private repositories
-                        if GITLAB_REPO in location:
+                        if maap_mas_server(self.request.host) in location:
 
                             # If it is, get the authentication token and add to the location path
                             gitlab_token = self.get_argument('gitlab_token', '')
                             if gitlab_token == '':
                                 self.finish({"status": "project import failed. no gitlab token"})
 
-                            repo_path_on_gitlab = location.split(GITLAB_REPO)[-1]
-                            location = "https://oauth2:" + gitlab_token + "@" + GITLAB_REPO + repo_path_on_gitlab
+                            repo_path_on_gitlab = location.split(maap_mas_server(self.request.host))[-1]
+                            location = "https://oauth2:" + gitlab_token + "@" + maap_mas_server(self.request.host) + repo_path_on_gitlab
 
                         Repo.clone_from(location,dl_loc)
                 elif src_type == 'zip':
