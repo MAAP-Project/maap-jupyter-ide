@@ -1,7 +1,6 @@
 import { ICommandPalette } from '@jupyterlab/apputils';
 import { JupyterFrontEnd, JupyterFrontEndPlugin } from '@jupyterlab/application';
 import { ILauncher } from '@jupyterlab/launcher';
-
 import { ProjectsPull, ProjectsList } from './widgets'
 import { popup } from './popup'
 

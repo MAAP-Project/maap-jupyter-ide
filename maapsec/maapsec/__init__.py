@@ -3,7 +3,7 @@ import os
 import os.path
 from notebook.utils import url_path_join
 
-from .handlers import MaapLoginHandler
+from .handlers import MaapLoginHandler, MaapEnvironmentHandler
 
 def _jupyter_labextension_paths():
     return [{
@@ -25,6 +25,8 @@ def load_jupyter_server_extension(nb_server_app):
     """
     print('Initializing maapsec installation 0.2')
 
+
+
     web_app = nb_server_app.web_app
     base_url = web_app.settings['base_url']
     host_pattern = '.*$'
@@ -33,4 +35,5 @@ def load_jupyter_server_extension(nb_server_app):
     print('base_url is '+base_url)
 
     web_app.add_handlers(host_pattern, [(url_path_join(base_url, 'maapsec/login'), MaapLoginHandler)])
+    web_app.add_handlers(host_pattern, [(url_path_join(base_url, 'maapsec/environment'), MaapEnvironmentHandler)])
 

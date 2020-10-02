@@ -1,13 +1,15 @@
-import {request, RequestResult} from "./request";
 import {PageConfig} from "@jupyterlab/coreutils";
 import {Dialog, ICommandPalette, showDialog} from "@jupyterlab/apputils";
-import {getToken, getUserInfo} from "./getKeycloak";
+import {getToken, getUserInfo, getUserInfoAsyncWrapper} from "./getKeycloak";
 import {INotification} from "jupyterlab_toastify";
 import {JupyterFrontEnd} from "@jupyterlab/application";
 import {IFileBrowserFactory} from "@jupyterlab/filebrowser";
+import { IStateDB } from '@jupyterlab/statedb';
 import {Widget} from "@lumino/widgets";
-
+import { request, RequestResult } from './request';
 import { SshWidget, InstallSshWidget, UserInfoWidget } from './widgets'
+
+const profileId = 'maapsec-extension:IMaapProfile';
 
 export function popup(b:Widget,title:string): void {
   showDialog({
@@ -18,8 +20,7 @@ export function popup(b:Widget,title:string): void {
   });
 }
 
-export
-function checkSSH(): void {
+export async function checkSSH() {
     //
     // Check if SSH and Exec Installers have been activated
     //
@@ -68,8 +69,7 @@ function checkSSH(): void {
         });
 }
 
-export
-function checkUserInfo(): void {
+export function checkUserInfo(): void {
   getUserInfo(function(profile: any) {
     // console.log(profile);
     if (profile['cas:username'] === undefined) {
@@ -90,8 +90,8 @@ function checkUserInfo(): void {
   });
 }
 
-export
-function mountUserFolder() : void {
+export async function mountUserFolder(state: IStateDB) {
+
   getUserInfo(function(profile: any) {
     // get username from keycloak
     if (profile['cas:username'] === undefined) {
@@ -102,6 +102,7 @@ function mountUserFolder() : void {
     let username = profile['cas:username']
     var getUrl = new URL(PageConfig.getBaseUrl() + 'show_ssh_info/mountBucket');
     getUrl.searchParams.append('username',username);
+
     request('get', getUrl.href).then((res: RequestResult) => {
       if (res.ok) {
         let data:any = JSON.parse(res.data);
@@ -119,8 +120,7 @@ function mountUserFolder() : void {
   });
 }
 
-export
-function mountOrgFolders() : void {
+export async function mountOrgFolders(state: IStateDB) {
   // do something
   let token = getToken();
   var getUrl = new URL(PageConfig.getBaseUrl() + 'show_ssh_info/getOrgs');
@@ -140,13 +140,15 @@ function mountOrgFolders() : void {
   });
 }
 
-export
-function getPresignedUrl(key:string): Promise<string> {
+export async function getPresignedUrl(state: IStateDB, key:string): Promise<string> {
+  const profile = await getUsernameToken(state);  
+
   return new Promise<string>(async (resolve, reject) => {
     let presignedUrl = '';
 
     var getUrl = new URL(PageConfig.getBaseUrl() + 'show_ssh_info/getSigneds3Url');
     getUrl.searchParams.append('key',key);
+    getUrl.searchParams.append('proxy-ticket', profile.ticket);
     request('get', getUrl.href).then((res: RequestResult) => {
       if (res.ok) {
         let data:any = JSON.parse(res.data);
@@ -172,6 +174,7 @@ export function activateGetPresignedUrl(
   app: JupyterFrontEnd,
   palette: ICommandPalette,
   factory: IFileBrowserFactory,
+  state: IStateDB
 ): void {
   const { commands } = app;
   const { tracker } = factory;
@@ -192,7 +195,8 @@ export function activateGetPresignedUrl(
       }
 
       let path = item.path;
-      getPresignedUrl(path).then((url) => {
+
+      getPresignedUrl(state, path).then((url) => {
         let display = url;
         if (url.substring(0,5) == 'https'){
           display = '<a href='+url+' target="_blank" style="border-bottom: 1px solid #0000ff; color: #0000ff;">'+url+'</a>';
@@ -235,4 +239,37 @@ export function activateGetPresignedUrl(
   // if (palette) {
   //   palette.addItem({command:open_command, category: 'User'});
   // }
+}
+
+let ade_server = '';
+var valuesUrl = new URL(PageConfig.getBaseUrl() + 'maapsec/environment');
+
+request('get', valuesUrl.href).then((res: RequestResult) => {
+  if (res.ok) {
+    let environment = JSON.parse(res.data);
+    ade_server = environment['ade_server'];
+  }
+});
+
+export async function getUsernameToken(state: IStateDB) {
+  let defResult = {uname: 'anonymous', ticket: ''}
+
+  if ("https://" + ade_server === document.location.origin) {
+    let kcProfile = await getUserInfoAsyncWrapper();
+
+    if (kcProfile['cas:username'] === undefined) {
+      INotification.error("Get profile failed.");
+      return defResult
+    } else {
+      return {uname: kcProfile['cas:username'], ticket: kcProfile['proxyGrantingTicket']}
+    }
+
+  } else {
+    return state.fetch(profileId).then((profile) => {
+      let profileObj = JSON.parse(JSON.stringify(profile));
+      return {uname: profileObj.preferred_username, ticket: profileObj.proxyGrantingTicket}
+    }).catch((error) => {
+      return defResult
+    });
+  }
 }

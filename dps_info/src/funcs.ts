@@ -4,12 +4,23 @@ import { INotification } from 'jupyterlab_toastify';
 import { getUserInfo } from "./getKeycloak";
 import { request, RequestResult } from './request';
 
-export function getUsernameToken(state: IStateDB, profileId:string) {
+let ade_server = '';
+var valuesUrl = new URL(PageConfig.getBaseUrl() + 'maapsec/environment');
+
+request('get', valuesUrl.href).then((res: RequestResult) => {
+  if (res.ok) {
+    let environment = JSON.parse(res.data);
+    ade_server = environment['ade_server'];
+  }
+});
+
+export async function getUsernameToken(state: IStateDB, profileId:string) {
     let uname:string = 'anonymous';
     let ticket:string = '';
     let result:string[] = [uname, ticket];
+
     return new Promise<string[]> ((resolve,reject) => {
-        if (["https://che-k8s.maap.xyz","https://ade.maap-project.org"].includes(document.location.origin)) {
+        if ("https://" + ade_server === document.location.origin) {
             getUserInfo(function(profile: any) {
                 if (profile['cas:username'] === undefined) {
                     INotification.error("Get profile failed.");
@@ -40,73 +51,66 @@ export function getUsernameToken(state: IStateDB, profileId:string) {
     });
   }
 
-export async function DPSCall(endpoint:string, keywords:string[], kwargs:{[k:string]:string}) {
+export async function DPSCall(state: IStateDB, endpoint:string, keywords:string[], kwargs:{[k:string]:string}) {
     let requestUrl = new URL(PageConfig.getBaseUrl() + 'hysds/' + endpoint);
     for (let k of keywords) {
         requestUrl.searchParams.append(k,kwargs[k]);
     }
     console.log(requestUrl.href);
-
     const res = await request('get', requestUrl.href);
     return res; 
 }
 
-export async function getAlgoList(username:string): Promise<RequestResult> {
+export async function getAlgoList(state: IStateDB, username:string): Promise<RequestResult> {
     let requestUrl = new URL(PageConfig.getBaseUrl() + 'hysds/listAlgorithms');
     requestUrl.searchParams.append('username', username);
     console.log(requestUrl.href);
-
     const res = await request('get', requestUrl.href);
     return res;
 }
 
-export async function describeAlgo(algo:string, version:string, username:string): Promise<RequestResult> {
+export async function describeAlgo(state: IStateDB, algo:string, version:string, username:string): Promise<RequestResult> {
     let requestUrl = new URL(PageConfig.getBaseUrl() + 'hysds/describeProcess');
     requestUrl.searchParams.append('algo_id', algo);
     requestUrl.searchParams.append('version', version)
     requestUrl.searchParams.append('username', username);
     console.log(requestUrl.href);
-
     const res = await request('get', requestUrl.href);
     return res;
 }
 
-export async function executeInputs(algo:string, version:string, username:string): Promise<RequestResult> {
+export async function executeInputs(state: IStateDB, algo:string, version:string, username:string): Promise<RequestResult> {
     let requestUrl = new URL(PageConfig.getBaseUrl() + 'hysds/executeInputs');
     requestUrl.searchParams.append('algo_id', algo);
     requestUrl.searchParams.append('version', version)
     requestUrl.searchParams.append('username', username);
     console.log(requestUrl.href);
-
     const res = await request('get', requestUrl.href);
     return res;
 }
 
-export async function getJobs(username:string): Promise<RequestResult> {
+export async function getJobs(state: IStateDB, username:string): Promise<RequestResult> {
     let requestUrl = new URL(PageConfig.getBaseUrl() + 'hysds/listJobs');
     requestUrl.searchParams.append('username', username);
     console.log(requestUrl.href);
-
     const res = await request('get', requestUrl.href);
     return res;
 }
 
-export async function getResults(job_id: string, username:string): Promise<RequestResult> {
+export async function getResults(state: IStateDB, job_id: string, username:string): Promise<RequestResult> {
     let requestUrl = new URL(PageConfig.getBaseUrl() + 'hysds/getResult');
     requestUrl.searchParams.append('username', username);
     requestUrl.searchParams.append('job_id', job_id);
     console.log(requestUrl.href);
-
     const res = await request('get', requestUrl.href);
     return res;
 }
 
-export async function getMetrics(job_id: string, username:string): Promise<RequestResult> {
+export async function getMetrics(state: IStateDB, job_id: string, username:string): Promise<RequestResult> {
     let requestUrl = new URL(PageConfig.getBaseUrl() + 'hysds/getMetrics');
     requestUrl.searchParams.append('username', username);
     requestUrl.searchParams.append('job_id', job_id);
     console.log(requestUrl.href);
-
     const res = await request('get', requestUrl.href);
     return res;
 }

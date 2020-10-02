@@ -4,6 +4,7 @@ import { INotification } from 'jupyterlab_toastify';
 import { RequestResult } from './request';
 import { getAlgoList, describeAlgo, executeInputs, getJobs, getResults, getMetrics, onRowClick, DPSCall } from './funcs';
 import '../style/index.css';
+import { IStateDB } from '@jupyterlab/statedb';
 
 export const WIDGET_CLASS = 'jp-Widget';
 export const CONTENT_CLASS = 'jp-Inspector-content';
@@ -19,6 +20,7 @@ export class JobTable extends Widget {
     _table: string;
     _results: string;
     _metrics: string;
+    _state: IStateDB;
 
     JOBS: {[k:string]:string};
     DISPLAYS: {[k:string]:string};
@@ -26,13 +28,14 @@ export class JobTable extends Widget {
     _resultsTableName: string;
     _metricsTableName: string;
 
-    constructor(uname:string) {
+    constructor(uname:string, state:IStateDB) {
         super();
         this._username = uname;
         this._job_id = '';
         this._table = '';
         this._results = '';
         this._metrics = '';
+        this._state = state;
 
         this.addClass(CONTENT_CLASS);
         this._resultsTableName = 'job-result-display';
@@ -139,7 +142,7 @@ export class JobTable extends Widget {
 
     async _getJobList(me:JobTable) {
         // console.log(this._username);
-        const res:RequestResult = await getJobs(me._username);
+        const res:RequestResult = await getJobs(me._state, me._username);
         if(res.ok){
             let json_response:any = res.json();
             INotification.success("Get user jobs success.");
@@ -217,7 +220,7 @@ export class JobTable extends Widget {
             console.log('job not complete');
         } else {
             console.log('looking up job results');
-            const res:RequestResult = await getResults(this._job_id,this._username);
+            const res:RequestResult = await getResults(this._state, this._job_id,this._username);
             // console.log(res);
             if (res.ok) {
                 let json_response:any = res.json();
@@ -284,7 +287,7 @@ export class JobTable extends Widget {
             console.log('job not complete');
         } else {
             console.log('looking up job metrics');
-            const res:RequestResult = await getMetrics(this._job_id,this._username);
+            const res:RequestResult = await getMetrics(this._state, this._job_id,this._username);
             // console.log(res);
             if (res.ok) {
                 let json_response:any = res.json();
@@ -350,10 +353,12 @@ export class JobWidget extends Widget {
     _execute_params_id: string;
     _resultsTableName: string;
     _metricsTableName: string;
+    _state: IStateDB;
 
-    constructor(uname:string) {
+    constructor(uname:string, state: IStateDB) {
         super();
         this._username = uname;
+        this._state = state;
         this._algorithm = '';
         this._version = '';
         this._job_id = '';
@@ -403,6 +408,7 @@ export class JobWidget extends Widget {
     // RUN JOBS TAB ==============================================
 
     async _updateListCol(): Promise<void> {
+
         return new Promise<void>(async (resolve, reject) => {
             let listCell = document.getElementById('cell-algolist') as HTMLTableCellElement;
             if (listCell) {
@@ -454,7 +460,7 @@ export class JobWidget extends Widget {
                 }
                 
                 // gets algorithm list and calls helper function
-                const res:RequestResult =  await getAlgoList(this._username);
+                const res:RequestResult =  await getAlgoList(this._state, this._username);
                 if (res.ok) {
                     let json_response:any = res.json();
                     let algo_set = json_response['algo_set'];
@@ -524,7 +530,7 @@ export class JobWidget extends Widget {
             paramdiv.appendChild(inputsp);
         }
         // get params and populate table
-        const res:RequestResult = await executeInputs(this._algorithm, this._version, this._username);
+        const res:RequestResult = await executeInputs(this._state, this._algorithm, this._version, this._username);
         if (res.ok) {
             let json_response: any = res.json();
             // format [[param1,type1],[param2,type2]]
@@ -578,7 +584,7 @@ export class JobWidget extends Widget {
                 kwargs['username'] = me._username;
                 
                 // send execute request
-                const res:RequestResult = await DPSCall('execute', keywords, kwargs);
+                const res:RequestResult = await DPSCall(me._state, 'execute', keywords, kwargs);
                 if (res.ok){
                     let json_response:any = res.json();
                     p = p.concat(json_response['result']);
@@ -675,7 +681,7 @@ export class JobWidget extends Widget {
                         pre.innerText = 'No algorithm selected.';
                         resolve();
                     } else {
-                        const res: RequestResult = await describeAlgo(this._algorithm, this._version, this._username);
+                        const res: RequestResult = await describeAlgo(this._state, this._algorithm, this._version, this._username);
                         if (res.ok) {
                             let json_response:any = res.json();
                             let describe = json_response['result'];
@@ -697,7 +703,7 @@ export class JobWidget extends Widget {
                         resolve();
                     } else {
                         // populate div with describe call
-                        const res: RequestResult = await describeAlgo(this._algorithm, this._version, this._username);
+                        const res: RequestResult = await describeAlgo(this._state, this._algorithm, this._version, this._username);
                         if (res.ok) {
                             let json_response:any = res.json();
                             let describe = json_response['result'];
@@ -789,11 +795,12 @@ export class JobWidget extends Widget {
 
             let job_id = this._job_id;
             let uname = this._username;
+            let state = this._state;
 
             // Delete Job Button
             // redefine delete btn with current job_id
             let delete_fn = async function() {
-                const res:RequestResult = await DPSCall('delete',['job_id','username'],{'job_id':job_id,'username':uname});
+                const res:RequestResult = await DPSCall(state, 'delete',['job_id','username'],{'job_id':job_id,'username':uname});
                 if (res.ok) {
                     let json_response:any = res.json();
                     let result = json_response['result'];
@@ -840,7 +847,7 @@ export class JobWidget extends Widget {
             // Dismiss Job Button
             // redefine dismiss btn with current job_id
             let dismiss_fn = async function() {
-                const res:RequestResult = await DPSCall('dismiss',['job_id','username'],{'job_id':job_id,'username':uname});
+                const res:RequestResult = await DPSCall(state, 'dismiss',['job_id','username'],{'job_id':job_id,'username':uname});
                 if (res.ok) {
                     let json_response:any = res.json();
                     let result = json_response['result'];
@@ -906,7 +913,7 @@ export class JobWidget extends Widget {
             console.log('job not complete');
         } else {
             console.log('looking up job results');
-            const res:RequestResult = await getResults(this._job_id,this._username);
+            const res:RequestResult = await getResults(this._state, this._job_id,this._username);
             // console.log(res);
             if (res.ok) {
                 let json_response:any = res.json();
@@ -981,7 +988,7 @@ export class JobWidget extends Widget {
             console.log('job not complete');
         } else {
             console.log('looking up job metrics');
-            const res:RequestResult = await getMetrics(this._job_id,this._username);
+            const res:RequestResult = await getMetrics(this._state, this._job_id,this._username);
             // console.log(res);
             if (res.ok) {
                 let json_response:any = res.json();
@@ -1120,7 +1127,7 @@ export class JobWidget extends Widget {
     }
 
     async _getJobList(me:JobWidget) {
-        const res:RequestResult = await getJobs(this._username);
+        const res:RequestResult = await getJobs(this._state, this._username);
             if(res.ok){
                 let json_response:any = res.json();
                 INotification.success("Get user jobs success.");
