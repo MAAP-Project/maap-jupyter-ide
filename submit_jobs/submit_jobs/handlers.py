@@ -970,21 +970,19 @@ class ExecuteInputsHandler(IPythonHandler):
 
         if r.status_code == 200:
             try:
-                # print('200')
                 if complete:
-                    # print('complete')
                     # parse out capability names & request info
                     rt = ET.fromstring(r.text)
-                    attrib = [getParams(e) for e in rt[0][0]] 						# parse XML
-                    inputs = [e[1] for e in attrib[2:-1]]
-                    ins_req = [[e[1][1],e[2][1]] for e in inputs] 					# extract identifier & type for each input
-                    ins_req = list(filter(lambda e: e[0] != 'timestamp', ins_req)) 	# filter out automatic timestamp req input
-                    ins_req = list(filter(lambda e: e[0] != 'username', ins_req)) 	# filter out automatic username req input
+                    attrib = getParams(rt)  					                    # parse XML
+                    inputs = attrib[2][-1]                                         # identifier & type for each input
+                    ins_req = list(filter(lambda e: e[0] not in
+                        ['timestamp', 'username','queue_name'], inputs)) 	                    # filter out automatic timestamp,username req input
+                    queue_val = list(filter(lambda e: e[0] == 'queue_name', inputs))[0][1]
+                    params['queue_name'] = queue_val                                # add queue name to predefined parameters
 
                     result = ''
-                    for (identifier,typ) in ins_req:
-                        result += '{identifier}:\t{typ}\n'.format(identifier=identifier,typ=typ)
-                    # print(result)
+                    for (identifier, typ) in ins_req:
+                        result += '{identifier}:\t{typ}\n'.format(identifier=identifier, typ=typ)
 
                     logging.debug(params)
                     logging.debug(ins_req)
