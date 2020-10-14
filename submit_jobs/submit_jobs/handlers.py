@@ -26,14 +26,23 @@ WORKDIR = FILEPATH+'/..'
 sys.path.append(WORKDIR)
 
 # helper to parse out algorithm parameters for execute, describe
-def getParams(node):
-    tag = node.tag[node.tag.index('}')+1:]
-    if tag in ['Title','Identifier']:
-        return (tag,node.text)
-    elif tag == 'LiteralData':
-        return (node[1][1].tag.split('}')[-1],list(node[1][1].attrib.values())[0].split(':')[-1])
-    else:
-        return (tag,[getParams(e) for e in node])
+def getParams(rt):
+    process = rt[0][0]
+    attrib = []
+    inputs = []
+    for node in process:
+        tag = node.tag.split('}')[1]
+        if tag in ['Title', 'Identifier']:
+            attrib.append((tag, node.text))
+        elif tag == 'Input':
+            if node[0].text == 'queue_name':
+                queue_name = node[2][1][0][0].text
+                inputs.append(('queue_name', queue_name))
+            else:
+                typ = node[2][0].attrib['mimeType']
+                inputs.append((node[0].text, typ))
+    attrib.append(('Input', inputs))
+    return attrib
 
 # helper to parse out products of result
 def getProds(node):
@@ -860,29 +869,29 @@ class DescribeProcessHandler(IPythonHandler):
 
         if r.status_code == 200:
             algo_lst = []
+            queue_name = ''
             try:
                 if complete:
                     # parse out capability names & request info
                     rt = ET.fromstring(r.text)
-                    attrib = [getParams(e) for e in rt[0][0]]
+                    attrib = getParams(rt)
 
                     result = ''
-                    for (tag,txt) in attrib:
-                        if tag == 'Input':
-                            result += '{}\n'.format(tag)
-                            for (tag1,txt1) in txt:
-                                if tag1 != 'Identifier':
-                                    result += '\t{tag1}:\t{txt1}\n'.format(tag1=tag1,txt1=txt1)
-                                    if tag1 == 'Title:':
-                                        algo_lst.append(txt1)
-                            result += '\n'
+                    for tag, val in attrib:
+                        if tag == 'Identifier':
+                            algo_lst.append(val)
+                            algo,version = val.split(':')
+                            result += '{tag}:\t{val}\n'.format(tag='Algorithm', val=algo)
+                            result += '{tag}:\t{val}\n'.format(tag='Version', val=version)
 
-                        elif tag == 'Title':
-                            txt = txt.split(';')
-                            for itm in txt:
-                                result += '{}\n'.format(itm.strip())
-                        elif tag != 'Identifier':
-                            result += '{tag}:\t{txt}\n'.format(tag=tag,txt=txt)
+                        elif tag == 'Input':
+                            result += '{}:\n'.format(tag)
+                            for tag1, val1 in val:
+                                result += '\t{tag1}:\t{val1}\n'.format(tag1=tag1, val1=val1)
+                                if tag1 == 'queue_name':
+                                    queue_name = val1
+                        # result += '\n'
+
 
                 # if no algorithm passed, list all algorithms
                 else:
@@ -908,7 +917,7 @@ class DescribeProcessHandler(IPythonHandler):
                     return
 
                 # print(result)
-                self.finish({"status_code": r.status_code, "result": result, "algo_set": algo_lst})
+                self.finish({"status_code": r.status_code, "result": result, "algo_set": algo_lst, "queue": queue_name})
             except:
                 self.finish({"status_code": r.status_code, "result": r.text})
 
@@ -963,21 +972,19 @@ class ExecuteInputsHandler(IPythonHandler):
 
         if r.status_code == 200:
             try:
-                # print('200')
                 if complete:
-                    # print('complete')
                     # parse out capability names & request info
                     rt = ET.fromstring(r.text)
-                    attrib = [getParams(e) for e in rt[0][0]] 						# parse XML
-                    inputs = [e[1] for e in attrib[2:-1]]
-                    ins_req = [[e[1][1],e[2][1]] for e in inputs] 					# extract identifier & type for each input
-                    ins_req = list(filter(lambda e: e[0] != 'timestamp', ins_req)) 	# filter out automatic timestamp req input
-                    ins_req = list(filter(lambda e: e[0] != 'username', ins_req)) 	# filter out automatic username req input
+                    attrib = getParams(rt)  					                    # parse XML
+                    inputs = attrib[2][-1]                                         # identifier & type for each input
+                    ins_req = list(filter(lambda e: e[0] not in
+                        ['timestamp', 'username','queue_name'], inputs)) 	                    # filter out automatic timestamp,username req input
+                    queue_val = list(filter(lambda e: e[0] == 'queue_name', inputs))[0][1]
+                    params['queue_name'] = queue_val                                # add queue name to predefined parameters
 
                     result = ''
-                    for (identifier,typ) in ins_req:
-                        result += '{identifier}:\t{typ}\n'.format(identifier=identifier,typ=typ)
-                    # print(result)
+                    for (identifier, typ) in ins_req:
+                        result += '{identifier}:\t{typ}\n'.format(identifier=identifier, typ=typ)
 
                     logging.debug(params)
                     logging.debug(ins_req)
