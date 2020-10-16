@@ -144,15 +144,17 @@ class RegisterAlgorithmHandler(IPythonHandler):
         if 'memory' in params.keys():
             config['memory'] = params['memory']
 
-            # overwrite config yaml with memory
-            config_template = WORKDIR+"/submit_jobs/register.yaml"
-            new_config = ''
-            with open(config_template, 'r') as infile:
-                new_config = infile.read()
-                new_config = new_config.format(**config)
-                os.remove(params['config_path'])
-                with open(params['config_path'], 'w') as outfile:
-                    outfile.write(new_config)
+            # TODO: bug fix needed -- this mangles the input section of the config yaml
+            # Commenting out for now 
+            # # overwrite config yaml with memory
+            # config_template = WORKDIR+"/submit_jobs/register.yaml"
+            # new_config = ''
+            # with open(config_template, 'r') as infile:
+            #     new_config = infile.read()
+            #     new_config = new_config.format(**config)
+            #     os.remove(params['config_path'])
+            #     with open(params['config_path'], 'w') as outfile:
+            #         outfile.write(new_config)
 
         logging.debug('fields')
         logging.debug(fields)
