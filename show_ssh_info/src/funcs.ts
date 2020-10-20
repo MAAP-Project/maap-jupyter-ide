@@ -147,7 +147,9 @@ export async function getPresignedUrl(state: IStateDB, key:string): Promise<stri
     let presignedUrl = '';
 
     var getUrl = new URL(PageConfig.getBaseUrl() + 'show_ssh_info/getSigneds3Url');
-    getUrl.searchParams.append('key',key);
+    getUrl.searchParams.append('home_path', PageConfig.getOption('serverRoot'));
+    getUrl.searchParams.append('key', key);
+    getUrl.searchParams.append('username', profile.uname);
     getUrl.searchParams.append('proxy-ticket', profile.ticket);
     request('get', getUrl.href).then((res: RequestResult) => {
       if (res.ok) {
@@ -160,7 +162,7 @@ export async function getPresignedUrl(state: IStateDB, key:string): Promise<stri
           resolve(data.message);
         } else {
           INotification.error('Failed to get presigned s3 url');
-          resolve(presignedUrl);
+          resolve(data.url);
         }
       } else {
         INotification.error('Failed to get presigned s3 url');
@@ -200,6 +202,8 @@ export function activateGetPresignedUrl(
         let display = url;
         if (url.substring(0,5) == 'https'){
           display = '<a href='+url+' target="_blank" style="border-bottom: 1px solid #0000ff; color: #0000ff;">'+url+'</a>';
+        } else {
+            display = url
         }
 
         let body = document.createElement('div');
