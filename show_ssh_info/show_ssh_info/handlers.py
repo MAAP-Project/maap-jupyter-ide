@@ -194,7 +194,7 @@ class MountBucketHandler(IPythonHandler):
             # local mount points
             user_workspace = '/projects/{}'.format(username)
             logging.debug('user_workspace {}'.format(user_workspace))
-            user_bucket_dir = '{}:/{}'.format(bucket,username)
+            user_bucket_dir = '{}:/maap-users/{}'.format(bucket,username)
             logging.debug('user_bucket_dir {}'.format(user_bucket_dir))
 
             # create local mount points if they don't exist
@@ -419,6 +419,7 @@ class Presigneds3UrlHandler(IPythonHandler):
                     self.finish({"status_code": 412, "message": "error", "url": "Presigned S3 links can only be created for files in a mounted org or user folder"})
                     return
             else:
+                logging.debug(resp)
                 self.finish({"status_code": 500, "message": "error", "url": "Error retrieving user's organizations"})
                 return
         except:
