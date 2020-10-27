@@ -145,12 +145,13 @@ export async function getPresignedUrl(state: IStateDB, key:string): Promise<stri
 
   return new Promise<string>(async (resolve, reject) => {
     let presignedUrl = '';
+    let token = getToken();
 
     var getUrl = new URL(PageConfig.getBaseUrl() + 'show_ssh_info/getSigneds3Url');
     getUrl.searchParams.append('home_path', PageConfig.getOption('serverRoot'));
     getUrl.searchParams.append('key', key);
     getUrl.searchParams.append('username', profile.uname);
-    getUrl.searchParams.append('proxy-ticket', profile.ticket);
+    getUrl.searchParams.append('token', token);
     request('get', getUrl.href).then((res: RequestResult) => {
       if (res.ok) {
         let data:any = JSON.parse(res.data);
