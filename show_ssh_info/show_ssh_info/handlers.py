@@ -264,7 +264,7 @@ class MountOrgBucketsHandler(IPythonHandler):
     def get(self):
         # Send request to Che API for list of user's orgs
         # ts pass keycloak token from window
-        token = self.get_argument('token','')
+        token = self.get_argument('token', '')
         bucket = dps_bucket_name(self.request.host)
         url = '{}/api/organization'.format(maap_ade_url(self.request.host))
         headers = {
@@ -274,8 +274,8 @@ class MountOrgBucketsHandler(IPythonHandler):
         try:
             # send request
             resp = requests.get(
-                url, 
-                headers=headers, 
+                url,
+                headers=headers,
                 verify=False
             )
             logging.debug(resp)
@@ -375,17 +375,64 @@ class MountOrgBucketsHandler(IPythonHandler):
 class Presigneds3UrlHandler(IPythonHandler):
     def get(self):
         # get arguments
+        # token = self.get_argument('token','')
         bucket = dps_bucket_name(self.request.host)
-        key = self.get_argument('key','')
-        proxyTicket = self.get_argument('proxy-ticket','')
+        rt_path = os.path.expanduser(self.get_argument('home_path', ''))
+        key = self.get_argument('key', '')
+        abs_path = os.path.join(rt_path, key)
+        username = self.get_argument('username', '')
+        proxyTicket = self.get_argument('proxy-ticket', '')
+
         logging.debug('bucket is '+bucket)
         logging.debug('key is '+key)
+        logging.debug('full path is '+abs_path)
 
+        # -----------------------
+        # Checking for bad input
+        # -----------------------
+        # if directory, return error - dirs not supported
+        if os.path.isdir(abs_path):
+            self.finish({"status_code": 412, "message": "error", "url": "Presigned S3 links do not support folders"})
+            return
+
+        # check if file in valid folder (under org or personal folder)
+
+        # Get User Organizations
+        url = '{}/api/organization'.format(maap_ade_url(self.request.host))
+        headers = {
+            'Accept':'application/json',
+            'Authorization':'Bearer {token}'.format(token=proxyTicket)
+        }
+        resp = requests.get(
+            url,
+            headers=headers,
+            verify=False
+        )
+        logging.debug(resp)
+        try:
+            if resp.status_code == 200:
+                org_lst = [e['qualifiedName'] for e in eval(resp.text)]
+                top_orgs = list(filter(lambda x: '/' not in x, org_lst))
+                top_orgs.append(username)
+                mounted_dirs = ['/projects/{}'.format(org) for org in top_orgs]
+                if not any([mounted_dir in abs_path for mounted_dir in mounted_dirs]):
+                    self.finish({"status_code": 412, "message": "error", "url": "Presigned S3 links can only be created for files in a mounted org or user folder"})
+                    return
+            else:
+                self.finish({"status_code": 500, "message": "error", "url": "Error retrieving user's organizations"})
+                return
+        except:
+            self.finish({"status_code": 500, "message": "error", "url": "Error retrieving user's organizations"})
+            return
+
+        # -----------------------
+        # Generate S3 Link
+        # -----------------------
+        # if valid path, get presigned URL
         expiration = '43200' # 12 hrs in seconds
         logging.debug('expiration is {} seconds'+expiration)
 
         url = '{}/api/members/self/presignedUrlS3/{}/{}?exp={}'.format(maap_api_url(self.request.host), bucket, key, expiration)
-        
         headers = {'Accept': 'application/json', 'proxy-ticket': proxyTicket}
         r = requests.get(
             url,
@@ -393,5 +440,10 @@ class Presigneds3UrlHandler(IPythonHandler):
             verify=False
         )
 
-        resp = json.loads(r.text)   
-        self.finish({"status_code":200, "message": "success", "url":resp['url']})
+        try:
+            resp = json.loads(r.text)
+            self.finish({"status_code": 200, "message": "success", "url": resp['url']})
+            return
+        except:
+            self.finish({"status_code": 500, "message": "error", "url": "Error generating s3 link"})
+            return
