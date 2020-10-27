@@ -9,6 +9,7 @@ export JUPYTERLABLIBPATH=`find /opt/conda/lib/ -maxdepth 3 -type d -name "jupyte
 export JUPYTERLABSERVERLIBPATH=`find /opt/conda/lib/ -maxdepth 3 -type d -name "jupyterlab_server"`
 
 # Fixes to JupyterLab with base_url and Che proxying. Hack.
+perl -pi -e "s|nb_app.web_app.settings\['base_url'\]|'/'|g" $NOTEBOOKLIBPATH/terminal/__init__.py
 perl -pi -e "s|webapp.settings\['base_url'\]|'/'|g" $NOTEBOOKLIBPATH/terminal/__init__.py
 perl -pi -e "s|web_app.settings\['base_url'\]|'/'|g" $JUPYTERLABLIBPATH/extension.py
 perl -pi -e "s|web_app.settings\['base_url'\]|'/'|g" $JUPYTERLABSERVERLIBPATH/handlers.py
