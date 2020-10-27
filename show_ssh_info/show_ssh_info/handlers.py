@@ -194,7 +194,7 @@ class MountBucketHandler(IPythonHandler):
             # local mount points
             user_workspace = '/projects/{}'.format(username)
             logging.debug('user_workspace {}'.format(user_workspace))
-            user_bucket_dir = '{}:/maap-users/{}'.format(bucket,username)
+            user_bucket_dir = '{}:/{}'.format(bucket,username)
             logging.debug('user_bucket_dir {}'.format(user_bucket_dir))
 
             # create local mount points if they don't exist
