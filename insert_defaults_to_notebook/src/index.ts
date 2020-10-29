@@ -1,4 +1,5 @@
 import { JupyterFrontEnd, JupyterFrontEndPlugin } from '@jupyterlab/application';
+import { ICommandPalette } from '@jupyterlab/apputils';
 import { IDisposable, DisposableDelegate } from '@lumino/disposable';
 import { ToolbarButton } from '@jupyterlab/apputils';
 import { DocumentRegistry } from '@jupyterlab/docregistry';
@@ -16,64 +17,96 @@ const DEFAULT_CODE = 'from maap.maap import MAAP\n' +
 /**
  * A notebook widget extension that adds a button to the toolbar.
  */
-export
-class ButtonExtension implements DocumentRegistry.IWidgetExtension<NotebookPanel, INotebookModel> {
-  /**
-   * Create a new extension object.
-   */
-  createNew(panel: NotebookPanel, context: DocumentRegistry.IContext<INotebookModel>): IDisposable {
-    let callback = () => {
+export class ButtonExtension implements DocumentRegistry.IWidgetExtension<NotebookPanel, INotebookModel> {
+    /**
+     * Create a new extension object.
+     */
+    createNew(panel: NotebookPanel, context: DocumentRegistry.IContext<INotebookModel>): IDisposable {
+        let callback = () => {
 
-      // Select the first cell of the notebook
-      panel.content.activeCellIndex = 0;
-      panel.content.deselectAll();
-      ElementExt.scrollIntoViewIfNeeded(
-          panel.content.node,
-          panel.content.activeCell.node
-      );
+            // Select the first cell of the notebook
+            panel.content.activeCellIndex = 0;
+            panel.content.deselectAll();
+            ElementExt.scrollIntoViewIfNeeded(
+                panel.content.node,
+                panel.content.activeCell.node
+            );
 
-      // Check if already there
-      if (panel.content.activeCell.model.value.text == DEFAULT_CODE) {
-        INotification.error("MAAP defaults already imported to notebook.");
-      }
-      else {
-        // Insert code above selected first cell
-        NotebookActions.insertAbove(panel.content);
-        panel.content.activeCell.model.value.text = DEFAULT_CODE;
-      }
+            // Check if already there
+            if (panel.content.activeCell.model.value.text == DEFAULT_CODE) {
+            INotification.error("MAAP defaults already imported to notebook.");
+            }
+            else {
+            // Insert code above selected first cell
+            NotebookActions.insertAbove(panel.content);
+            panel.content.activeCell.model.value.text = DEFAULT_CODE;
+            }
 
-    };
+        };
 
-    let button = new ToolbarButton({
-      className: 'myButton',
-      iconClass: 'jp-MaapIcon foo jp-Icon jp-Icon-16 jp-ToolbarButtonComponent-icon',
-      onClick: callback,
-      tooltip: 'Import MAAP Libraries'
-    });
+        let button = new ToolbarButton({
+            className: 'myButton',
+            iconClass: 'jp-MaapIcon foo jp-Icon jp-Icon-16 jp-ToolbarButtonComponent-icon',
+            onClick: callback,
+            tooltip: 'Import MAAP Libraries'
+        });
 
-    panel.toolbar.insertItem(0,'insertDefaults', button);
-    return new DisposableDelegate(() => {
-      button.dispose();
-    });
-  }
+        panel.toolbar.insertItem(0,'insertDefaults', button);
+        return new DisposableDelegate(() => {
+            button.dispose();
+        });
+    }
 }
 
 /**
  * Activate the extension.
  */
-function activate(app: JupyterFrontEnd) {
-  app.docRegistry.addWidgetExtension('Notebook', new ButtonExtension());
-  console.log("insert defaults to notebook extension activated");
+function activateNbDefaults(app: JupyterFrontEnd) {
+    app.docRegistry.addWidgetExtension('Notebook', new ButtonExtension());
+    console.log("insert defaults to notebook extension activated");
 };
 
+function hidePanels() {
+    const leftPanelParent = document.querySelector('.p-TabBar-content');
+    const tabsPanel = leftPanelParent.querySelector('li[title="Open Tabs"]');
+    console.log('leftPanelParent');
+    console.log(leftPanelParent);
+    console.log('tabsPanel');
+    console.log(tabsPanel);
+    if (tabsPanel != null){
+        leftPanelParent.removeChild(tabsPanel);
+    }
+    console.log('removing panel!');
+}
 
 /**
  * Initialization data for the insert_defaults_to_notebook extension.
  */
-const extension: JupyterFrontEndPlugin<void> = {
-  id: 'insert_defaults_to_notebook',
-  autoStart: true,
-  activate: activate
+const extensionNbDefaults: JupyterFrontEndPlugin<void> = {
+    id: 'insert_defaults_to_notebook',
+    autoStart: true,
+    activate: activateNbDefaults
 };
 
-export default extension;
+const extensionHidePanels: JupyterFrontEndPlugin<void> = {
+    id: 'hide_unused_panels',
+    autoStart: true,
+    requires: [ICommandPalette],
+    activate: (app: JupyterFrontEnd, palette: ICommandPalette) => {
+        const open_command = 'defaults:removePanel';
+    
+        app.commands.addCommand(open_command, {
+          label: 'Hide Tabs',
+          isEnabled: () => true,
+          execute: args => {
+            hidePanels();
+          }
+        });
+    
+        palette.addItem({command:open_command,category:'User'});
+        hidePanels();   // automatically call function at startup
+        console.log('remove panels activated');
+      }
+};
+
+export default [extensionNbDefaults, extensionHidePanels];
