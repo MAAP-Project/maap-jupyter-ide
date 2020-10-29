@@ -101,7 +101,7 @@ export class MapCMCView extends DOMWidgetView {
     }
 
     render_cmc() {
-        let baseUrl = path.join(this.model.get('_workspace_base_url'), '/lab/static');
+        let baseUrl = path.join(this.model.get('_workspace_base_url'), '/static/lab');
         this.cmc = new CMC({ target: this.appDiv, base_url: baseUrl });
         this._syncCMC();
 
