@@ -293,16 +293,16 @@ export class JobTable extends Widget {
                 let json_response:any = res.json();
                 
                 if (json_response['status_code'] === 200) {
-                    INotification.success("Get user job metrics success.");
+                    //INotification.success("Get user job metrics success.");
                     this._metrics = json_response['result'];
                 } else {
                     console.log('get user job result != 200');
-                    INotification.error("Get user job metrics failed.");
+                    //INotification.error("Get user job metrics failed.");
                     this._results = '<p> Retrieving '+this._job_id+' metrics got'+json_response['status_code']+'</p>';
                 }
             } else {
                 console.log('unable to get user job metrics');
-                INotification.error("Get user job metrics failed.");
+                //INotification.error("Get user job metrics failed.");
             }
         }
         this._updateJobMetrics();
@@ -994,16 +994,16 @@ export class JobWidget extends Widget {
                 let json_response:any = res.json();
                 
                 if (json_response['status_code'] === 200) {
-                    INotification.success("Get user job metrics success.");
+                    //INotification.success("Get user job metrics success.");
                     this._metrics = json_response['result'];
                 } else {
                     console.log('get user job metrics != 200');
-                    INotification.error("Get user job metrics failed.");
+                    //INotification.error("Get user job metrics failed.");
                     this._metrics = '<p> Retrieving '+this._job_id+' result got'+json_response['status_code']+'</p>';
                 }
             } else {
                 console.log('unable to get user job metrics');
-                INotification.error("Get user job metrics failed.");
+                //INotification.error("Get user job metrics failed.");
             }
         }
         this._updateJobMetrics();
