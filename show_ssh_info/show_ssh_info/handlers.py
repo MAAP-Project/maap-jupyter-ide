@@ -434,7 +434,7 @@ class Presigneds3UrlHandler(IPythonHandler):
         logging.debug('expiration is {} seconds'+expiration)
 
         url = '{}/api/members/self/presignedUrlS3/{}/{}?exp={}'.format(maap_api_url(self.request.host), bucket, key, expiration)
-        headers = {'Accept': 'application/json', 'proxy-ticket': proxyTicket}
+        headers = {'Accept': 'application/json', 'proxy-ticket': token}
         r = requests.get(
             url,
             headers=headers,
