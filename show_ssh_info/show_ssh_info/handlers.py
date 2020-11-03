@@ -375,13 +375,13 @@ class MountOrgBucketsHandler(IPythonHandler):
 class Presigneds3UrlHandler(IPythonHandler):
     def get(self):
         # get arguments
-        # token = self.get_argument('token','')
         bucket = dps_bucket_name(self.request.host)
-        rt_path = os.path.expanduser(self.get_argument('home_path', ''))
         key = self.get_argument('key', '')
+        rt_path = os.path.expanduser(self.get_argument('home_path', ''))
         abs_path = os.path.join(rt_path, key)
         username = self.get_argument('username', '')
         token = self.get_argument('token', '')
+        proxy_ticket = self.get_argument('proxy-ticket','')
 
         logging.debug('bucket is '+bucket)
         logging.debug('key is '+key)
@@ -434,7 +434,7 @@ class Presigneds3UrlHandler(IPythonHandler):
         logging.debug('expiration is {} seconds'+expiration)
 
         url = '{}/api/members/self/presignedUrlS3/{}/{}?exp={}'.format(maap_api_url(self.request.host), bucket, key, expiration)
-        headers = {'Accept': 'application/json', 'proxy-ticket': token}
+        headers = {'Accept': 'application/json', 'proxy-ticket': proxy_ticket}
         r = requests.get(
             url,
             headers=headers,
