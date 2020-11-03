@@ -152,6 +152,7 @@ export async function getPresignedUrl(state: IStateDB, key:string): Promise<stri
     getUrl.searchParams.append('key', key);
     getUrl.searchParams.append('username', profile.uname);
     getUrl.searchParams.append('token', token);
+    getUrl.searchParams.append('proxy-ticket', profile.ticket);
     request('get', getUrl.href).then((res: RequestResult) => {
       if (res.ok) {
         let data:any = JSON.parse(res.data);
