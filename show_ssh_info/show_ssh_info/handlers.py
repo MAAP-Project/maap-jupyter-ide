@@ -431,7 +431,7 @@ class Presigneds3UrlHandler(IPythonHandler):
         # -----------------------
         # if valid path, get presigned URL
         expiration = '43200' # 12 hrs in seconds
-        logging.debug('expiration is {} seconds'+expiration)
+        logging.debug('expiration is {} seconds', expiration)
 
         url = '{}/api/members/self/presignedUrlS3/{}/{}?exp={}'.format(maap_api_url(self.request.host), bucket, key, expiration)
         headers = {'Accept': 'application/json', 'proxy-ticket': proxy_ticket}
@@ -440,6 +440,7 @@ class Presigneds3UrlHandler(IPythonHandler):
             headers=headers,
             verify=False
         )
+        logging.debug(r.text)
 
         try:
             resp = json.loads(r.text)
