@@ -381,7 +381,7 @@ class Presigneds3UrlHandler(IPythonHandler):
         key = self.get_argument('key', '')
         abs_path = os.path.join(rt_path, key)
         username = self.get_argument('username', '')
-        proxyTicket = self.get_argument('proxy-ticket', '')
+        token = self.get_argument('token', '')
 
         logging.debug('bucket is '+bucket)
         logging.debug('key is '+key)
@@ -401,7 +401,7 @@ class Presigneds3UrlHandler(IPythonHandler):
         url = '{}/api/organization'.format(maap_ade_url(self.request.host))
         headers = {
             'Accept':'application/json',
-            'Authorization':'Bearer {token}'.format(token=proxyTicket)
+            'Authorization':'Bearer {token}'.format(token=token)
         }
         resp = requests.get(
             url,
