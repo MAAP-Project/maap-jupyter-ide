@@ -396,7 +396,7 @@ class Presigneds3UrlHandler(IPythonHandler):
             return
 
         # check if file in valid folder (under mounted folder path)
-        resp = subprocess.check_output('df -h | grep s3fs', shell=True)
+        resp = subprocess.check_output('df -h | grep s3fs', shell=True).decode('utf-8')
         mounted_folders = resp.strip().split('\n')
         logging.debug(mounted_folders)
         if len(mounted_folders) == 0:
