@@ -395,35 +395,22 @@ class Presigneds3UrlHandler(IPythonHandler):
             self.finish({"status_code": 412, "message": "error", "url": "Presigned S3 links do not support folders"})
             return
 
-        # check if file in valid folder (under org or personal folder)
+        # check if file in valid folder (under mounted folder path)
+        resp = subprocess.check_output('df -h | grep s3fs', shell=True)
+        mounted_folders = resp.strip().split('\n')
+        logging.debug(mounted_folders)
+        if len(mounted_folders) == 0:
+            self.finish({"status_code": 412, "message": "error",
+                "url": "Presigned S3 links can only be created for files in a mounted org or user folder" +
+                    "\nMounted folders include:\n{}".format(resp)
+                })
+            return
 
-        # Get User Organizations
-        url = '{}/api/organization'.format(maap_ade_url(self.request.host))
-        headers = {
-            'Accept':'application/json',
-            'Authorization':'Bearer {token}'.format(token=token)
-        }
-        resp = requests.get(
-            url,
-            headers=headers,
-            verify=False
-        )
-        logging.debug(resp)
-        try:
-            if resp.status_code == 200:
-                org_lst = [e['qualifiedName'] for e in eval(resp.text)]
-                top_orgs = list(filter(lambda x: '/' not in x, org_lst))
-                top_orgs.append(username)
-                mounted_dirs = ['/projects/{}'.format(org) for org in top_orgs]
-                if not any([mounted_dir in abs_path for mounted_dir in mounted_dirs]):
-                    self.finish({"status_code": 412, "message": "error", "url": "Presigned S3 links can only be created for files in a mounted org or user folder"})
-                    return
-            else:
-                logging.debug(resp)
-                self.finish({"status_code": 500, "message": "error", "url": "Error retrieving user's organizations"})
-                return
-        except:
-            self.finish({"status_code": 500, "message": "error", "url": "Error retrieving user's organizations"})
+        if not any([mounted_dir in abs_path for mounted_dir in mounted_dirs]):
+            self.finish({"status_code": 412, "message": "error",
+                "url": "Presigned S3 links can only be created for files in a mounted org or user folder" +
+                    "\nMounted folders include:\n{}".format(resp)
+                })
             return
 
         # -----------------------
