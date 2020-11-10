@@ -1,24 +1,17 @@
-import {PageConfig} from "@jupyterlab/coreutils";
-import {Dialog, ICommandPalette, showDialog} from "@jupyterlab/apputils";
-import {getToken, getUserInfo, getUserInfoAsyncWrapper} from "./getKeycloak";
-import {INotification} from "jupyterlab_toastify";
-import {JupyterFrontEnd} from "@jupyterlab/application";
-import {IFileBrowserFactory} from "@jupyterlab/filebrowser";
+import { JupyterFrontEnd } from "@jupyterlab/application";
+import { PageConfig } from "@jupyterlab/coreutils";
+import { Dialog, ICommandPalette, showDialog } from "@jupyterlab/apputils";
+import { IFileBrowserFactory } from "@jupyterlab/filebrowser";
 import { IStateDB } from '@jupyterlab/statedb';
-import {Widget} from "@lumino/widgets";
+// import { Widget } from "@lumino/widgets";
+import { INotification } from "jupyterlab_toastify";
+import { getToken, getUserInfo, getUserInfoAsyncWrapper } from "./getKeycloak";
+import { SshWidget, InstallSshWidget, UserInfoWidget } from './widgets';
+import { DropdownSelector } from './selector';
+import { popupResult } from './dialogs';
 import { request, RequestResult } from './request';
-import { SshWidget, InstallSshWidget, UserInfoWidget } from './widgets'
 
 const profileId = 'maapsec-extension:IMaapProfile';
-
-export function popup(b:Widget,title:string): void {
-  showDialog({
-    title: title,
-    body: b,
-    focusNodeSelector: 'input',
-    buttons: [Dialog.okButton({ label: 'Ok' }), Dialog.cancelButton({ label : 'Cancel'})]
-  });
-}
 
 export async function checkSSH() {
     //
@@ -140,7 +133,7 @@ export async function mountOrgFolders(state: IStateDB) {
   });
 }
 
-export async function getPresignedUrl(state: IStateDB, key:string): Promise<string> {
+export async function getPresignedUrl(state: IStateDB, key:string, duration:string): Promise<string> {
   const profile = await getUsernameToken(state);  
 
   return new Promise<string>(async (resolve, reject) => {
@@ -153,6 +146,7 @@ export async function getPresignedUrl(state: IStateDB, key:string): Promise<stri
     getUrl.searchParams.append('username', profile.uname);
     getUrl.searchParams.append('token', token);
     getUrl.searchParams.append('proxy-ticket', profile.ticket);
+    getUrl.searchParams.append('duration', duration);
     request('get', getUrl.href).then((res: RequestResult) => {
       if (res.ok) {
         let data:any = JSON.parse(res.data);
@@ -200,33 +194,39 @@ export function activateGetPresignedUrl(
 
       let path = item.path;
 
-      getPresignedUrl(state, path).then((url) => {
-        let display = url;
-        if (url.substring(0,5) == 'https'){
-          display = '<a href='+url+' target="_blank" style="border-bottom: 1px solid #0000ff; color: #0000ff;">'+url+'</a>';
-        } else {
-            display = url
-        }
+      let expirationOptions = ['86400 (24 hours)','604800 (1 week)','2592000 (30 days)'];
+    //   let dropdownSelector = new DropdownSelector(expirationOptions, '86400 (24 hours)');
+      let dropdownSelector = new DropdownSelector(expirationOptions, '86400 (24 hours)', state, path);
+      popupResult(dropdownSelector, 'Select an Expiration Duration');
+    //   console.log(dropdownSelector);
+    //   console.log(dropdownSelector.selected);
+    //   getPresignedUrl(state, path, dropdownSelector.selected).then((url) => {
+    //     let display = url;
+    //     if (url.substring(0,5) == 'https'){
+    //       display = '<a href='+url+' target="_blank" style="border-bottom: 1px solid #0000ff; color: #0000ff;">'+url+'</a>';
+    //     } else {
+    //         display = url
+    //     }
 
-        let body = document.createElement('div');
-        body.style.display = 'flex';
-        body.style.flexDirection = 'column';
+    //     let body = document.createElement('div');
+    //     body.style.display = 'flex';
+    //     body.style.flexDirection = 'column';
 
-        var textarea = document.createElement("div");
-        textarea.id = 'result-text';
-        textarea.style.display = 'flex';
-        textarea.style.flexDirection = 'column';
-        textarea.innerHTML = "<pre>"+display+"</pre>";
+    //     var textarea = document.createElement("div");
+    //     textarea.id = 'result-text';
+    //     textarea.style.display = 'flex';
+    //     textarea.style.flexDirection = 'column';
+    //     textarea.innerHTML = "<pre>"+display+"</pre>";
 
-        body.appendChild(textarea);
+    //     body.appendChild(textarea);
 
-        showDialog({
-          title: 'Presigned Url',
-          body: new Widget({node:body}),
-          focusNodeSelector: 'input',
-          buttons: [Dialog.okButton({label: 'Ok'})]
-        });
-      });
+    //     showDialog({
+    //       title: 'Presigned Url',
+    //       body: new Widget({node:body}),
+    //       focusNodeSelector: 'input',
+    //       buttons: [Dialog.okButton({label: 'Ok'})]
+    //     });
+    //   });
     },
     isVisible: () =>
       tracker.currentWidget &&
