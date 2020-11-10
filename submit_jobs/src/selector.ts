@@ -23,7 +23,6 @@ export class DropdownSelector extends Widget {
     this._fields = fields;
     this._username = uname;
     this._ticket = ticket;
-    this.selection = '';
     this.type = type;
     this._state = state;
 
