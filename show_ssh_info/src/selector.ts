@@ -33,7 +33,7 @@ export class DropdownSelector extends Widget {
         this.selected = this._dropdown.value;
         let ind = this.selected.indexOf('(');
         if (ind > -1) {
-        this.selected = this.selected.substr(0,ind).trim();
+            this.selected = this.selected.substr(0,ind).trim();
         }
         
         // guarantee default value
@@ -47,7 +47,8 @@ export class DropdownSelector extends Widget {
         getPresignedUrl(this.state, this.path, this.selected).then((url) => {
             let display = url;
             if (url.substring(0,5) == 'https'){
-              display = '<a href='+url+' target="_blank" style="border-bottom: 1px solid #0000ff; color: #0000ff;">'+url+'</a>';
+                display = 'Link will expire in '+this._dropdown.value+'<br>';
+                display = display + '<a href='+url+' target="_blank" style="border-bottom: 1px solid #0000ff; color: #0000ff;">'+url+'</a>';
             } else {
                 display = url
             }
@@ -65,10 +66,10 @@ export class DropdownSelector extends Widget {
             body.appendChild(textarea);
     
             showDialog({
-              title: 'Presigned Url',
-              body: new Widget({node:body}),
-              focusNodeSelector: 'input',
-              buttons: [Dialog.okButton({label: 'Ok'})]
+                title: 'Presigned Url',
+                body: new Widget({node:body}),
+                focusNodeSelector: 'input',
+                buttons: [Dialog.okButton({label: 'Ok'})]
             });
           });
     }
