@@ -382,7 +382,7 @@ class Presigneds3UrlHandler(IPythonHandler):
         username = self.get_argument('username', '')
         token = self.get_argument('token', '')
         proxy_ticket = self.get_argument('proxy-ticket','')
-        expriation = self.get_argument('duration','86400') # default 24 hrs
+        expiration = self.get_argument('duration','86400') # default 24 hrs
 
         logging.debug('bucket is '+bucket)
         logging.debug('key is '+key)
