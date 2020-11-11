@@ -57,13 +57,28 @@ export class DropdownSelector extends Widget {
             body.style.display = 'flex';
             body.style.flexDirection = 'column';
     
-            var textarea = document.createElement("div");
+            let textarea = document.createElement("div");
             textarea.id = 'result-text';
             textarea.style.display = 'flex';
             textarea.style.flexDirection = 'column';
             textarea.innerHTML = "<pre>"+display+"</pre>";
+
+            // Copy URL to clipboard
+            let copyBtn = document.createElement('button');
+            copyBtn.id = 's3-link-copy-button';
+            copyBtn.className = 'jupyter-button';
+            copyBtn.innerHTML = 'Copy Link';
+            copyBtn.addEventListener('click', function() {
+                let dummy = document.createElement('textarea');
+                document.body.appendChild(dummy);
+                dummy.value = url;
+                dummy.select();
+                document.execCommand("copy");
+                document.body.removeChild(dummy);
+            }, false);
     
             body.appendChild(textarea);
+            body.appendChild(copyBtn);
     
             showDialog({
                 title: 'Presigned Url',
