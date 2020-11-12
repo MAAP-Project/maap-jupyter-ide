@@ -1,5 +1,5 @@
 import { Widget } from "@lumino/widgets";
-import { Dialog, showDialog } from "@jupyterlab/apputils";
+import { Clipboard, Dialog, showDialog } from "@jupyterlab/apputils";
 import { IStateDB } from '@jupyterlab/statedb';
 import { getPresignedUrl } from './funcs';
 
@@ -44,7 +44,7 @@ export class DropdownSelector extends Widget {
         console.log(this.selected);
         
         // send request to get url
-        getPresignedUrl(this.state, this.path, this.selected).then((url) => {
+        getPresignedUrl(this.state, this.path, this.selected).then((url:string) => {
             let display = url;
             if (url.substring(0,5) == 'https'){
                 display = 'Link will expire in '+this._dropdown.value+'<br>';
@@ -63,18 +63,13 @@ export class DropdownSelector extends Widget {
             textarea.style.flexDirection = 'column';
             textarea.innerHTML = "<pre>"+display+"</pre>";
 
-            // Copy URL to clipboard
+            // Copy URL to clipboard button
             let copyBtn = document.createElement('button');
             copyBtn.id = 's3-link-copy-button';
             copyBtn.className = 'jupyter-button';
             copyBtn.innerHTML = 'Copy Link';
             copyBtn.addEventListener('click', function() {
-                let dummy = document.createElement('textarea');
-                document.body.appendChild(dummy);
-                dummy.value = url;
-                dummy.select();
-                document.execCommand("copy");
-                document.body.removeChild(dummy);
+                Clipboard.copyToSystem(url);
             }, false);
     
             body.appendChild(textarea);
