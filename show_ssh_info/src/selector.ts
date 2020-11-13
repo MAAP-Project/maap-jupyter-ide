@@ -7,7 +7,6 @@ export class DropdownSelector extends Widget {
     private _dropdown: HTMLSelectElement;
     public selected: string;
 
-    // constructor(options:string[], private defaultOption:string) {
     constructor(options:string[], private defaultOption:string, private state: IStateDB, public path:string) {
         super();
         this._dropdown = <HTMLSelectElement>document.createElement("SELECT");
@@ -46,7 +45,9 @@ export class DropdownSelector extends Widget {
         // send request to get url
         getPresignedUrl(this.state, this.path, this.selected).then((url:string) => {
             let display = url;
+            let validUrl = false;
             if (url.substring(0,5) == 'https'){
+                validUrl = true;
                 display = 'Link will expire in '+this._dropdown.value+'<br>';
                 display = display + '<a href='+url+' target="_blank" style="border-bottom: 1px solid #0000ff; color: #0000ff;">'+url+'</a>';
             } else {
@@ -63,17 +64,21 @@ export class DropdownSelector extends Widget {
             textarea.style.flexDirection = 'column';
             textarea.innerHTML = "<pre>"+display+"</pre>";
 
-            // Copy URL to clipboard button
-            let copyBtn = document.createElement('button');
-            copyBtn.id = 's3-link-copy-button';
-            copyBtn.className = 'jupyter-button';
-            copyBtn.innerHTML = 'Copy Link';
-            copyBtn.addEventListener('click', function() {
-                Clipboard.copyToSystem(url);
-            }, false);
-    
             body.appendChild(textarea);
-            body.appendChild(copyBtn);
+
+            // Copy URL to clipboard button if url created
+            if (validUrl){
+                let copyBtn = document.createElement('button');
+                copyBtn.id = 's3-link-copy-button';
+                copyBtn.className = 'jupyter-button';
+                copyBtn.innerHTML = 'Copy Link';
+                copyBtn.style.width = "200px";
+                copyBtn.addEventListener('click', function() {
+                    Clipboard.copyToSystem(url);
+                }, false);
+                
+                body.appendChild(copyBtn);
+            }
     
             showDialog({
                 title: 'Presigned Url',
