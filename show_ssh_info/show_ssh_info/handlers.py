@@ -430,10 +430,17 @@ class Presigneds3UrlHandler(IPythonHandler):
         )
         logging.debug(r.text)
 
-        try:
-            resp = json.loads(r.text)
-            self.finish({"status_code": 200, "message": "success", "url": resp['url']})
-            return
-        except:
-            self.finish({"status_code": 500, "message": "error", "url": "Error generating s3 link"})
-            return
+        expiration = '43200' # 12 hrs in seconds
+        logging.debug('expiration is {} seconds'+expiration)
+
+        url = '{}/api/members/self/presignedUrlS3/{}/{}?exp={}'.format(maap_api_url(self.request.host), bucket, key, expiration)
+        
+        headers = {'Accept': 'application/json', 'proxy-ticket': proxyTicket}
+        r = requests.get(
+            url,
+            headers=headers,
+            verify=False
+        )
+
+        resp = json.loads(r.text)   
+        self.finish({"status_code":200, "message": "success", "url":resp['url']})
