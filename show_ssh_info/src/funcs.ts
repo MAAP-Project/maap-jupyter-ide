@@ -195,38 +195,8 @@ export function activateGetPresignedUrl(
       let path = item.path;
 
       let expirationOptions = ['86400 (24 hours)','604800 (1 week)','2592000 (30 days)'];
-    //   let dropdownSelector = new DropdownSelector(expirationOptions, '86400 (24 hours)');
       let dropdownSelector = new DropdownSelector(expirationOptions, '86400 (24 hours)', state, path);
       popupResult(dropdownSelector, 'Select an Expiration Duration');
-    //   console.log(dropdownSelector);
-    //   console.log(dropdownSelector.selected);
-    //   getPresignedUrl(state, path, dropdownSelector.selected).then((url) => {
-    //     let display = url;
-    //     if (url.substring(0,5) == 'https'){
-    //       display = '<a href='+url+' target="_blank" style="border-bottom: 1px solid #0000ff; color: #0000ff;">'+url+'</a>';
-    //     } else {
-    //         display = url
-    //     }
-
-    //     let body = document.createElement('div');
-    //     body.style.display = 'flex';
-    //     body.style.flexDirection = 'column';
-
-    //     var textarea = document.createElement("div");
-    //     textarea.id = 'result-text';
-    //     textarea.style.display = 'flex';
-    //     textarea.style.flexDirection = 'column';
-    //     textarea.innerHTML = "<pre>"+display+"</pre>";
-
-    //     body.appendChild(textarea);
-
-    //     showDialog({
-    //       title: 'Presigned Url',
-    //       body: new Widget({node:body}),
-    //       focusNodeSelector: 'input',
-    //       buttons: [Dialog.okButton({label: 'Ok'})]
-    //     });
-    //   });
     },
     isVisible: () =>
       tracker.currentWidget &&
