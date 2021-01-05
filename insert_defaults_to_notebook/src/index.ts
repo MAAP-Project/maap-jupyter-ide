@@ -6,13 +6,30 @@ import { DocumentRegistry } from '@jupyterlab/docregistry';
 import { NotebookActions, NotebookPanel, INotebookModel } from '@jupyterlab/notebook';
 import { ElementExt } from '@lumino/domutils';
 import { INotification } from "jupyterlab_toastify";
+import { PageConfig } from '@jupyterlab/coreutils'
+import { request, RequestResult } from './request';
 import '../style/index.css';
 
-const DEFAULT_CODE = 'from maap.maap import MAAP\n' +
+let DEFAULT_CODE = 'from maap.maap import MAAP\n' +
                      'maap = MAAP()\n\n' +
                      'import ipycmc\n' +
                      'w = ipycmc.MapCMC()\n' +
                      'w';
+
+let api_server = '';
+var valuesUrl = new URL(PageConfig.getBaseUrl() + 'maapsec/environment');
+
+request('get', valuesUrl.href).then((res: RequestResult) => {
+  if (res.ok) {
+    let environment = JSON.parse(res.data);
+    api_server = environment['api_server'];
+    DEFAULT_CODE = 'from maap.maap import MAAP\n' +
+                     'maap = MAAP(maap_host=\'' + api_server + '\')\n\n' +
+                     'import ipycmc\n' +
+                     'w = ipycmc.MapCMC()\n' +
+                     'w';
+  }
+}); 
 
 /**
  * A notebook widget extension that adds a button to the toolbar.
