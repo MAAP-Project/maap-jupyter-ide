@@ -22,6 +22,7 @@ w.load_layer_config(
     "wms/xml"
 )
 ```
+For loading 3D data, see documentation for [load_layer_config](#Class) below.
 
 ## API Documentation
 
@@ -88,7 +89,7 @@ w
 `.load_layer_config(url, handle_as, default_ops={})` - load a layer config into the mapping widget
  * `url`: _string_ - the url endpoint of the config (such as WMS or WMTS GetCapabilities endpoint)
  * `handle_as`: _string_ - ["json", "wmts/xml", "wms/xml"] the type of config endpoint to be loaded
- * `default_ops`: _dict_ - a dictionary of default options to apply to the loaded layers. If loading from a GIBS endpoint, you might use: `{"handleAs": "GIBS_raster"}`
+ * `default_ops`: _dict_ - a dictionary of default options to apply to the loaded layers. If loading from a GIBS endpoint, you might use: `{"handleAs": "GIBS_raster"}`.
 
 Example
 ```
@@ -98,7 +99,15 @@ w.load_layer_config(
     {"handleAs": "GIBS_raster"}
 )
 ```
+When loading 3D layers from MAAP's CMR you must include `"json"` and `{"handleAs": "vector-3d-tile"}`.
 
+Example
+```
+w.load_layer_config(
+    "https://cmr.maap-project.org/search/concepts/G1200354094-NASA_MAAP.json”, 
+    "json”,  
+    {“handleAs": "vector-3d-tile"})
+```
 ---
 
 `.set_date(date_str, format_str="")` - set the display date of the mapping widget
