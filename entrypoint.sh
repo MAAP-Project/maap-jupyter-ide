@@ -1,7 +1,15 @@
-#!/bin/bash
+#!/bin/bash 
   
 # Reconstruct Che preview url
-export PREVIEW_URL=`/usr/bin/printenv | grep $MACHINE_NAME | perl -slane 'if(/^(SERVER[^_]+_$mn)_SERVICE_PORT=(\d+)/) { $p=$2; print "/".lc($1=~s/_/-/rg)."/server-".$p; }' -- -mn=$MACHINE_NAME | uniq`
+THE_MACHINE=''
+
+if [[ -z "${MACHINE_NAME}" ]]; then
+  THE_MACHINE=`echo $CHE_MACHINE_NAME | tr 'a-z' 'A-Z' | tr '-' '_'`
+else
+  THE_MACHINE="${MACHINE_NAME}"
+fi
+
+export PREVIEW_URL=`/usr/bin/printenv | grep $THE_MACHINE | perl -slane 'if(/^(SERVER[^_]+_$mn)_SERVICE_PORT=(\d+)/) { $p=$2; print "/".lc($1=~s/_/-/rg)."/server-".$p; }' -- -mn=$THE_MACHINE | uniq`
 
 # Find the jupyter install in conda (because jlab may be installed in python3.6 or python3.7)
 export NOTEBOOKLIBPATH=`find /opt/conda/lib/ -maxdepth 3 -type d -name "notebook"`
