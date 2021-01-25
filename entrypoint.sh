@@ -3,6 +3,7 @@
 # Reconstruct Che preview url
 THE_MACHINE=''
 
+# Get the Che machine name from either MACHINE_NAME, used by Che v6, or CHE_MACHINE_NAME, used by Che v7 
 if [[ -z "${MACHINE_NAME}" ]]; then
   THE_MACHINE=`echo $CHE_MACHINE_NAME | tr 'a-z' 'A-Z' | tr '-' '_'`
 else
