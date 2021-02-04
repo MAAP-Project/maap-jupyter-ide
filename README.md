@@ -106,6 +106,8 @@ fetch the new image. (found in the stack's `Recipe` or `Raw Configuration`)
 - Any change pushed to `microk8s.docker push localhost:32000/che-jupyter-lab-ide ` will affect the default stacks
 on all user accounts. If you are testing something, you can create your own image and your own stack to play around with.
 
+## IMPORTANT VERSION UPDATE
+The upcoming v3 release of this project will make the information below deprecated. 
 
 ### Che Stacks
 To make your custom docker image available to users in Che, you need to make a new stack that creates workspaces using your image and make it available to users.
