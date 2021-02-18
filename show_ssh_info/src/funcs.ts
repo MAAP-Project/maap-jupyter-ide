@@ -6,7 +6,7 @@ import { IStateDB } from '@jupyterlab/statedb';
 // import { Widget } from "@lumino/widgets";
 import { INotification } from "jupyterlab_toastify";
 import { getToken, getUserInfo, getUserInfoAsyncWrapper } from "./getKeycloak";
-import { SshWidget, InstallSshWidget, UserInfoWidget } from './widgets';
+import { SshWidget, UserInfoWidget } from './widgets';
 import { DropdownSelector } from './selector';
 import { popupResult } from './dialogs';
 import { request, RequestResult } from './request';
@@ -14,57 +14,16 @@ import { request, RequestResult } from './request';
 const profileId = 'maapsec-extension:IMaapProfile';
 
 export async function checkSSH() {
-    //
-    // Check if SSH and Exec Installers have been activated
-    //
-    request('get', PageConfig.getBaseUrl() + "show_ssh_info/checkInstallers")
-        .then((res: RequestResult) => {
-            if(res.ok){
-                let json_results:any = res.json();
-                let status = json_results['status'];
-
-                //
-                // If installers have been activated, show ssh info
-                //
-                if (status) {
-                    showDialog({
-                        title: 'SSH Info:',
-                        body: new SshWidget(),
-                        focusNodeSelector: 'input',
-                        buttons: [Dialog.okButton({ label: 'Ok' })]
-                    });
-                }
-
-                //
-                // Otherwise, ask the user if they want to enable the installers
-                //
-                else {
-                    showDialog({
-                        title: 'SSH Info:',
-                        body: new InstallSshWidget(),
-                        focusNodeSelector: 'input',
-                        buttons: [Dialog.okButton({ label: 'Ok' }),]
-                        // buttons: [Dialog.okButton({ label: 'Activate SSH' }), Dialog.cancelButton()]
-                    }).then(result => {
-                        if (result.button.label === 'Activate SSH') {
-                            // Make Call To Activate
-                            request('get', PageConfig.getBaseUrl() + "show_ssh_info/install")
-                            // Restart workspace???
-                        }
-                        // User does not want to activate installers
-                        else {
-                            return;
-                        }
-                    });
-                }
-
-            }
-        });
+  showDialog({
+    title: 'SSH Info:',
+    body: new SshWidget(),
+    focusNodeSelector: 'input',
+    buttons: [Dialog.okButton({label: 'Ok'})]
+  });
 }
 
 export function checkUserInfo(): void {
   getUserInfo(function(profile: any) {
-    // console.log(profile);
     if (profile['cas:username'] === undefined) {
         INotification.error("Get user profile failed.");
         return;
@@ -93,7 +52,7 @@ export async function mountUserFolder(state: IStateDB) {
     }
     // send username to backend to create local mount point and mount s3 bucket
     let username = profile['cas:username']
-    var getUrl = new URL(PageConfig.getBaseUrl() + 'show_ssh_info/mountBucket');
+    let getUrl = new URL(PageConfig.getBaseUrl() + 'show_ssh_info/mountBucket');
     getUrl.searchParams.append('username',username);
 
     request('get', getUrl.href).then((res: RequestResult) => {
