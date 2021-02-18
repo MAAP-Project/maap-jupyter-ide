@@ -5,7 +5,7 @@
         "api_server": "api.maap.xyz",
         "auth_server": "auth.nasa.maap.xyz",
         "mas_server": "repo.nasa.maap.xyz",
-        "edsc_server": "ade.che7test.xyz:3052",
+        "edsc_server": "ade.che7test.xyz:30052",
         "default_host": false
     },
     {
