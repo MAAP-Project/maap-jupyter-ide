@@ -313,7 +313,7 @@ class MountOrgBucketsHandler(IPythonHandler):
                     else:
                         # mount whole bucket first
                         mount_output = subprocess.check_output(
-                            's3fs -o iam_role=auto {} /projects/{}'.format(
+                            's3fs -o iam_role=auto -o imdsv1only {} /projects/{}'.format(
                                 bucket, org),
                             shell=True).decode('utf-8')
                         message = mount_output
