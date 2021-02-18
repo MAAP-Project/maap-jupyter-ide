@@ -27,20 +27,6 @@ class SshWidget extends Widget {
 }
 
 export
-class InstallSshWidget extends Widget {
-  constructor() {
-    let body = document.createElement('div');
-    body.style.display = 'flex';
-    body.style.flexDirection = 'column';
-
-    let message = "SSH has not been enabled in your workspace. In order to enable SSH navigate to your workspace admin page. Under the tab Installers, turn on SSH and EXEC and click apply. NOTE: This will restart your workspace and take a few minutes.";
-    let contents = document.createTextNode(message);
-    body.appendChild(contents);
-    super({ node: body });
-  }
-}
-
-export
 class UserInfoWidget extends Widget {
   constructor(username:string,email:string,org:string) {
     let body = document.createElement('div');
