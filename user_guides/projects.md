@@ -1,5 +1,3 @@
-# Projects
-
 ## Creating a project
 
 The first step in getting started with projects in MAAP is going to MAAP's

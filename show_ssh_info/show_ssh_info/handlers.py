@@ -29,7 +29,7 @@ def maap_api_url(host):
 	return 'https://{}'.format(get_maap_config(host)['api_server'])
 
 def dps_bucket_name(host):
-	return 'maap-{}-dataset'.format(get_maap_config(host)['environment'])
+	return 'maap-{}-workspace'.format(get_maap_config(host)['environment'])
 
 class InjectKeyHandler(IPythonHandler):
     def get(self):
@@ -227,6 +227,7 @@ class MountBucketHandler(IPythonHandler):
 
                 # mount whole bucket first
                 mount_output = subprocess.check_output('s3fs -o iam_role=auto -o imdsv1only -o use_cache=/tmp/cache {} {}'.format(bucket,user_workspace), shell=True).decode('utf-8')
+
                 message = mount_output
                 logging.debug('mount log {}'.format(mount_output))
 
@@ -253,6 +254,7 @@ class MountBucketHandler(IPythonHandler):
                 logging.debug('umount output {}'.format(umount_output))
 
                 mountdir_output = subprocess.check_output('s3fs -o iam_role=auto -o imdsv1only -o use_cache=/tmp/cache {} {}'.format(user_bucket_dir,user_workspace), shell=True).decode('utf-8')
+
                 message = mountdir_output
                 logging.debug('mountdir output {}'.format(mountdir_output))
 
