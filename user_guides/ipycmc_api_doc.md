@@ -1,30 +1,3 @@
-# ipycmc
-
-`ipycmc` provides a data mapping and plotting package for datasets ingested into the MAAP ecosystem. With it you can create a widget in your python notebook where you can visualize and interact with rasterized geospatial data on a 2D and 3D map. From the widget you can select specific regions and time periods and retrieve dynamically calculated analyses and plot them inline with an interactive charting widget.
-
-## Getting Started
-
-*import the module* - This will load ipycmc into your notebook for use.
-```
-import ipycmc
-```
-
-*create a mapping widget* - This will create and display a widget inline in your notebook. This widget includes some controls for navigating the map, switching between 2D and 3D, changing the displayed time, and manipulating layer displays.
-```
-w = ipycmc.MapCMC()
-w
-```
-
-*load data into the mapping widget* - This will load all the layers specified in this WMS server's capabilities into the widget for display. You can then use the controls in the widget to display some of those layers on the map, then select an area and generate commands for plotting the data corresponding to your selection in the notebook below.
-```
-w.load_layer_config(
-    "http://geoserver.biomass-maap.com/geoserver/gwc/service/wms?REQUEST=GetCapabilities",
-    "wms/xml"
-)
-
-```
-For loading 3D data, see documentation for [load_layer_config](#Class) below.
-
 ## API Documentation
 
 ### Module: `ipycmc`
@@ -90,7 +63,7 @@ w
 `.load_layer_config(url, handle_as, default_ops={})` - load a layer config into the mapping widget
  * `url`: _string_ - the url endpoint of the config (such as WMS or WMTS GetCapabilities endpoint)
  * `handle_as`: _string_ - ["json", "wmts/xml", "wms/xml"] the type of config endpoint to be loaded
- * `default_ops`: _dict_ - a dictionary of default options to apply to the loaded layers. If loading from a GIBS endpoint, you might use: `{"handleAs": "GIBS_raster"}`.
+ * `default_ops`: _dict_ - a dictionary of default options to apply to the loaded layers. If loading from a GIBS endpoint, you might use: `{"handleAs": "GIBS_raster"}`
 
 Example
 ```
@@ -100,15 +73,7 @@ w.load_layer_config(
     {"handleAs": "GIBS_raster"}
 )
 ```
-When loading 3D layers from MAAP's CMR you must include `"json"` and `{"handleAs": "vector-3d-tile"}`.
 
-Example
-```
-w.load_layer_config(
-    "https://cmr.maap-project.org/search/concepts/G1200354094-NASA_MAAP.json”, 
-    "json”,  
-    {“handleAs": "vector-3d-tile"})
-```
 ---
 
 `.set_date(date_str, format_str="")` - set the display date of the mapping widget
