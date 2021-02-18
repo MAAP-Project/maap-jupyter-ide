@@ -29,7 +29,7 @@ def maap_api_url(host):
 	return 'https://{}'.format(get_maap_config(host)['api_server'])
 
 def dps_bucket_name(host):
-	return 'maap-{}-dataset'.format(get_maap_config(host)['environment'])
+	return 'maap-{}-workspace'.format(get_maap_config(host)['environment'])
 
 class InjectKeyHandler(IPythonHandler):
     def get(self):
