@@ -22,7 +22,7 @@
         "ade_server": "ade.uat.maap-project.org",
         "api_server": "api.uat.maap-project.org",
         "auth_server": "auth.uat.maap-project.org",
-        "mas_server": "mas.uat.maap-project.org",
+        "mas_server": "repo.uat.maap-project.org",
         "edsc_server": "ade.uat.maap-project.org:30052",
         "default_host": false
     },
