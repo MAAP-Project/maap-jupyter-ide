@@ -88,6 +88,7 @@ class GetHandler(IPythonHandler):
         host = os.environ.get('KUBERNETES_SERVICE_HOST')
         host_port = os.environ.get('KUBERNETES_PORT_443_TCP_PORT')
         workspace_id = os.environ.get('CHE_WORKSPACE_ID')
+        namespace = os.environ.get('CHE_WORKSPACE_NAMESPACE')
 
         with open ("/var/run/secrets/kubernetes.io/serviceaccount/token", "r") as t:
             token=t.read()
@@ -96,7 +97,7 @@ class GetHandler(IPythonHandler):
             'Authorization': 'Bearer ' + token,
         }
 
-        request_string = 'https://' + host + ':' + host_port + '/api/v1/namespaces/' + workspace_id + '/services/ws'
+        request_string = 'https://' + host + ':' + host_port + '/api/v1/namespaces/' + namespace + '-' + workspace_id + '/services/ws'
         response = requests.get(request_string, headers=headers, verify=False)
 
         data = response.json()
