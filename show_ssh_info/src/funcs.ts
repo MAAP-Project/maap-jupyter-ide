@@ -73,18 +73,21 @@ export async function mountUserFolder(state: IStateDB) {
 }
 
 export async function mountOrgFolders(state: IStateDB) {
-  var getUrl = new URL(PageConfig.getBaseUrl() + 'show_ssh_info/mountSharedBucket');
+  // do something
+  let token = getToken();
+  var getUrl = new URL(PageConfig.getBaseUrl() + 'show_ssh_info/getOrgs');
+  getUrl.searchParams.append('token',token);
   request('get', getUrl.href).then((res: RequestResult) => {
     if (res.ok) {
       let data:any = JSON.parse(res.data);
       if (data.status_code == 200) {
         console.log(data);
-        INotification.success('Successfully mounted shared workspaces folders')
+        INotification.success('Successfully mounted organization and sub-organization folders')
       } else {
-        INotification.error('Failed to get user\'s shared workspaces ');
+        INotification.error('Failed to get user\'s Che orgs');
       }
     } else {
-      INotification.error('Failed to get user\'s shared workspaces ');
+      INotification.error('Failed to get user\'s Che orgs');
     }
   });
 }

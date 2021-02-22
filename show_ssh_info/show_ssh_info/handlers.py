@@ -321,11 +321,8 @@ class MountOrgBucketsHandler(IPythonHandler):
                         message = umount_output
                         logging.debug('umount output {}'.format(umount_output))
 
-                        # org folders are read-only (-o ro)
-                        readonly_opt = '-o ro ' if org == 'maap-users' else ''
                         mountdir_output = subprocess.check_output(
-                            's3fs -o iam_role=auto -o imdsv1only {} {} {}'.format(
-                                readonly_opt, org_bucket_dir, org_workspace),
+                            's3fs -o iam_role=auto -o imdsv1only {} {}'.format(org_bucket_dir, org_workspace),
                             shell=True).decode('utf-8')
                         message = mountdir_output
                         logging.debug('mountdir output {}'.format(mountdir_output))
