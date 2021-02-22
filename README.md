@@ -178,18 +178,6 @@ In order for SSH-ing into the workspace to be possible, the `org.eclipse.che.exe
   "id": "stacktdo2q0ixhv7cge00"
 }
 ```
-#### Enabling Privileged Docker Containers
-1. Cluster Privileges
-- in `/var/snap/microk8s/current/args/kubelet` and `/var/snap/microk8s/current/args/kube-apiserver`, append `--allow-privileged`
-- restart both services:
-```
-sudo systemctl restart snap.microk8s.daemon-apiserver
-sudo systemctl restart snap.microk8s.daemon-kubelet
-```
-
-2. Che Permissions
-- in `che/dockerfiles/init/manifest/che.env`, set `CHE_DOCKER_PRIVILEGED=true` under the Privileged Mode section
-- restart Che
 
 #### Creating and Sharing Stacks
 To create a stack, you write a raw configuration with all the che and docker settings your workspace will require, including installers, volumes, docker run tags, docker images, etc. See the example above.
