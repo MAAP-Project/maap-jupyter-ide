@@ -41,4 +41,5 @@ env | grep _ >> /etc/environment
 export PATH=$PATH:/opt/conda/bin
 cp /root/.bashrc ~/.bash_profile
 
+service ssh start
 jupyter lab --ip=0.0.0.0 --port=3100 --allow-root --NotebookApp.token='' --LabApp.base_url=$PREVIEW_URL --no-browser --debug
