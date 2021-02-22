@@ -2,7 +2,7 @@ __version__ = '0.1.0'
 import os
 import os.path
 from notebook.utils import url_path_join
-from .handlers import GetHandler, CheckInstallersHandler, InstallHandler, InjectKeyHandler, MountBucketHandler, Presigneds3UrlHandler, MountOrgBucketsHandler
+from .handlers import GetHandler, CheckInstallersHandler, InstallHandler, InjectKeyHandler, MountBucketHandler, Presigneds3UrlHandler, MountOrgBucketsHandler, MountSharedBucketsHandler
 
 def _jupyter_server_extension_paths():
     return [{
