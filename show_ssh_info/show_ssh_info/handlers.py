@@ -105,7 +105,7 @@ class GetHandler(IPythonHandler):
 
 
         # Get external IP address
-        ip = get('https://api.ipify.org').text
+        ip = get_maap_config(host)['ade_server']
 
         self.finish({'ip': ip, 'port': port})
         return
