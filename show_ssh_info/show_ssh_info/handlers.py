@@ -226,7 +226,7 @@ class MountBucketHandler(IPythonHandler):
                 logging.debug('chmod tmp {}'.format(chtmp_output))
 
                 # mount whole bucket first
-                mount_output = subprocess.check_output('s3fs -o passwd_file="/.passwd-s3fs" -o use_cache=/tmp/cache {} {}'.format(bucket,user_workspace), shell=True).decode('utf-8')
+                mount_output = subprocess.check_output('s3fs -o iam_role=auto -o imdsv1only -o use_cache=/tmp/cache {} {}'.format(bucket,user_workspace), shell=True).decode('utf-8')
                 message = mount_output
                 logging.debug('mount log {}'.format(mount_output))
 
@@ -252,7 +252,7 @@ class MountBucketHandler(IPythonHandler):
                 message = umount_output
                 logging.debug('umount output {}'.format(umount_output))
 
-                mountdir_output = subprocess.check_output('s3fs -o passwd_file="/.passwd-s3fs" -o use_cache=/tmp/cache {} {}'.format(user_bucket_dir,user_workspace), shell=True).decode('utf-8')
+                mountdir_output = subprocess.check_output('s3fs -o iam_role=auto -o imdsv1only -o use_cache=/tmp/cache {} {}'.format(user_bucket_dir,user_workspace), shell=True).decode('utf-8')
                 message = mountdir_output
                 logging.debug('mountdir output {}'.format(mountdir_output))
 
@@ -364,7 +364,7 @@ class MountOrgBucketsHandler(IPythonHandler):
                     else:
                         # mount whole bucket first
                         mount_output = subprocess.check_output(
-                            's3fs -o passwd_file="/.passwd-s3fs" {} /projects/{}'.format(
+                            's3fs -o iam_role=auto -o imdsv1only {} /projects/{}'.format(
                                 bucket, org),
                             shell=True).decode('utf-8')
                         message = mount_output
