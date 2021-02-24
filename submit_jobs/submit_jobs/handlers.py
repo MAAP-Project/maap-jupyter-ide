@@ -115,7 +115,7 @@ class RegisterAlgorithmHandler(IPythonHandler):
         # Part 1: Parse Required Arguments
         # ==================================
         # logging.debug('workdir is '+WORKDIR)
-        fields = ['config_path', 'memory']
+        fields = ['config_path', 'queue']
         params = {}
         for f in fields:
             try:
@@ -139,12 +139,12 @@ class RegisterAlgorithmHandler(IPythonHandler):
         if config['inputs'] in ['null', None]:
             config['inputs'] = ''
 
-        if 'memory' in params.keys():
-            config['memory'] = params['memory']
+        if 'queue' in params.keys():
+            config['queue'] = params['queue']
 
             # TODO: bug fix needed -- this mangles the input section of the config yaml
             # Commenting out for now 
-            # # overwrite config yaml with memory
+            # # overwrite config yaml with queue
             # config_template = WORKDIR+"/submit_jobs/register.yaml"
             # new_config = ''
             # with open(config_template, 'r') as infile:
@@ -163,7 +163,7 @@ class RegisterAlgorithmHandler(IPythonHandler):
         json_file = WORKDIR+"/submit_jobs/register_url.json"
 
         # only description and inputs are allowed to be empty
-        for f in ['algo_name','version','environment','run_command','repository_url','memory','docker_url']:
+        for f in ['algo_name','version','environment','run_command','repository_url','queue','docker_url']:
             if config[f] == '' or config[f] == None:
                 self.finish({"status_code": 412, "result": "Error: Register field {} cannot be empty".format(f)})
                 return
@@ -1082,7 +1082,7 @@ class DefaultValuesHandler(IPythonHandler):
             vals['run_command'] = params['code_path']
 
             vals['disk_space'] = "10GB"
-            vals['memory'] = "15GB"
+            vals['queue'] = "15GB"
 
             # default example algo inputs
             ins = ''

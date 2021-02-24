@@ -6,7 +6,7 @@ environment: {environment}
 repository_url: {repository_url}
 docker_url: {docker_url}
 # queue chosen when registering
-memory: {memory}
+queue: {queue}
 
 # fill out these fields
 # explain what this algorithm does
