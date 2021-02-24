@@ -29,5 +29,6 @@ def load_jupyter_server_extension(nb_server_app):
     web_app.add_handlers(host_pattern, [(url_path_join(base_url, 'show_ssh_info/inject_public_key'), InjectKeyHandler)])
     web_app.add_handlers(host_pattern, [(url_path_join(base_url, 'show_ssh_info/mountBucket'), MountBucketHandler)])
     web_app.add_handlers(host_pattern, [(url_path_join(base_url, 'show_ssh_info/mountSharedBucket'), MountSharedBucketsHandler)])
+    web_app.add_handlers(host_pattern, [(url_path_join(base_url, 'show_ssh_info/getOrgs'), MountOrgBucketsHandler)])
     web_app.add_handlers(host_pattern, [(url_path_join(base_url, 'show_ssh_info/getSigneds3Url'), Presigneds3UrlHandler)])
 
