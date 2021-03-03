@@ -180,6 +180,7 @@ In order for SSH-ing into the workspace to be possible, the `org.eclipse.che.exe
 ```
 
 #### Creating and Sharing Stacks
+[TODO: Update with Che7 Devfile Registry info]
 To create a stack, you write a raw configuration with all the che and docker settings your workspace will require, including installers, volumes, docker run tags, docker images, etc. See the example above.
 
 To share a stack, you will need to be the owner (creator) of the stack.
