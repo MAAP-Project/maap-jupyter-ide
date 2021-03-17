@@ -65,5 +65,5 @@ if [[ $VERSION > '2' ]] && [[ $VERSION < '3' ]]; then
 elif [[ $VERSION > '3' ]] && [[ $VERSION < '4' ]]; then
     jupyter lab --ip=0.0.0.0 --port=3100 --allow-root --ServerApp.token='' --ServerApp.base_url=$PREVIEW_URL --no-browser --debug
 else
-    # error
+    echo "Error!"
 fi
