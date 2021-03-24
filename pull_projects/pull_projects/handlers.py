@@ -110,10 +110,16 @@ class GetAllProjectsHandler(IPythonHandler):
             verify=False
         )
         try:
-            resp = json.loads(r.text)               # JSON response to dict
-            project_list = resp['devfile']['projects'] if resp['devfile'] else []  # gets list of projects, each is dict with project properties
+            resp = json.loads(r.text)
+
+            try:
+                project_list = resp['devfile']['projects'] # gets list of projects, each is dict with project properties
+            except KeyError:
+                project_list = []
+                self.finish({"status": "no projects to import"})
 
             # get projects
+
             for project in project_list:
 
                 project_name = project['name']
