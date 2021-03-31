@@ -86,6 +86,10 @@ env | grep _ >> /etc/environment
 export PATH=$PATH:/opt/conda/bin
 cp /root/.bashrc ~/.bash_profile
 
+# Need to fix directory permissions for publickey authentication
+chmod 700 /projects
+mkdir -p /projects/.ssh/
+chmod 700 /projects/.ssh/
 service ssh start
 
 VERSION=$(jupyter lab --version)
