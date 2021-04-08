@@ -35,10 +35,14 @@ for endpoint in endpoints:
 END
 }
 
-PREVIEW_URL=$(get_workspace_url_prefix "$CHE_WORKSPACE_NAMESPACE-che") # Che 7 configuration where the (actual) namespace is "<username>-che"
+PREVIEW_URL=$(get_workspace_url_prefix "$CHE_WORKSPACE_NAMESPACE-che") # Che 7 OPS configuration where the (actual) namespace is "<username>-che"
 if test -z "$PREVIEW_URL" 
 then
-    PREVIEW_URL=$(get_workspace_url_prefix "$CHE_WORKSPACE_ID") # Che 6 configuration fallback where the default namespace is the workspace id
+    PREVIEW_URL=$(get_workspace_url_prefix "$CHE_WORKSPACE_NAMESPACE-$CHE_WORKSPACE_ID") # Che 7 UAT configuration fallback where the default namespace is "<username>-<workspaceid>", this will be deprecated
+fi
+if test -z "$PREVIEW_URL" 
+then
+    PREVIEW_URL=$(get_workspace_url_prefix "$CHE_WORKSPACE_ID") # Che 6 configuration fallback where the default namespace is the workspace id, this will be deprecated
 fi
 
 # Fix Jupyterlab for Che in `single-host` mode. In `single-host` mode, Che uses URL path prefixes
