@@ -42,56 +42,6 @@ export function checkUserInfo(): void {
   });
 }
 
-export async function mountUserFolder(state: IStateDB) {
-
-  getUserInfo(function(profile: any) {
-    // get username from keycloak
-    if (profile['cas:username'] === undefined) {
-      INotification.error("Get username failed, did not mount bucket.");
-      return;
-    }
-    // send username to backend to create local mount point and mount s3 bucket
-    let username = profile['cas:username']
-    let getUrl = new URL(PageConfig.getBaseUrl() + 'show_ssh_info/mountBucket');
-    getUrl.searchParams.append('username',username);
-
-    request('get', getUrl.href).then((res: RequestResult) => {
-      if (res.ok) {
-        let data:any = JSON.parse(res.data);
-        if (data.status_code == 200) {
-          let user_workspace = data.user_workspace;
-          let user_bucket_dir = data.user_bucket_dir;
-          INotification.success('Mounted user workspace '+user_workspace+' to '+user_bucket_dir);
-        } else {
-          INotification.error('Failed to mount user workspace to s3');
-        }
-      } else {
-        INotification.error('Failed to mount user workspace to s3');
-      }
-    });
-  });
-}
-
-export async function mountOrgFolders(state: IStateDB) {
-  // do something
-  let token = getToken();
-  var getUrl = new URL(PageConfig.getBaseUrl() + 'show_ssh_info/getOrgs');
-  getUrl.searchParams.append('token',token);
-  request('get', getUrl.href).then((res: RequestResult) => {
-    if (res.ok) {
-      let data:any = JSON.parse(res.data);
-      if (data.status_code == 200) {
-        console.log(data);
-        INotification.success('Successfully mounted organization and sub-organization folders')
-      } else {
-        INotification.error('Failed to get user\'s Che orgs');
-      }
-    } else {
-      INotification.error('Failed to get user\'s Che orgs');
-    }
-  });
-}
-
 export async function getPresignedUrl(state: IStateDB, key:string, duration:string): Promise<string> {
   const profile = await getUsernameToken(state);  
 
