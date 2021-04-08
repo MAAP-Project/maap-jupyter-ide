@@ -110,6 +110,10 @@ class GetHandler(IPythonHandler):
         self.finish({'ip': ip, 'port': port})
         return
 
+
+"""
+No longer in use. Mounting now is happening outside of the Jupyter container.
+"""
 class MountBucketHandler(IPythonHandler):
     def get(self):
         message = ''
@@ -193,6 +197,10 @@ class MountBucketHandler(IPythonHandler):
         except:
             self.finish({"status_code":500, "message":message, "user_workspace":user_workspace,"user_bucket_dir":user_bucket_dir})
 
+
+"""
+No longer in use. Mounting now is happening outside of the Jupyter container.
+"""
 class MountSharedBucketsHandler(IPythonHandler):
     def get(self):
         message = ''
@@ -244,6 +252,9 @@ class MountSharedBucketsHandler(IPythonHandler):
         except:
             self.finish({"status_code":500, "message":message, "shared_workspaces":shared_workspaces})
 
+"""
+No longer in use. Mounting now is happening outside of the Jupyter container.
+"""
 class MountOrgBucketsHandler(IPythonHandler):
     def get(self):
         # Send request to Che API for list of user's orgs
