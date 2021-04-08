@@ -4,7 +4,7 @@ import { IFileBrowserFactory } from '@jupyterlab/filebrowser';
 import { ILauncher } from '@jupyterlab/launcher';
 import { IStateDB } from '@jupyterlab/statedb';
 
-import { checkUserInfo, mountUserFolder, checkSSH, activateGetPresignedUrl, mountOrgFolders} from './funcs'
+import { checkUserInfo, checkSSH, activateGetPresignedUrl } from './funcs'
 import { InjectSSH } from './widgets'
 import { updateKeycloakToken } from "./getKeycloak";
 import '../style/index.css';
@@ -72,55 +72,6 @@ const extensionUser: JupyterFrontEndPlugin<void> = {
 
 ///////////////////////////////////////////////////////////////
 //
-// Mount user workspace extension
-//
-///////////////////////////////////////////////////////////////
-const extensionMount: JupyterFrontEndPlugin<void> = {
-  id: 'mount-s3-folder',
-  autoStart: true,
-  requires: [ICommandPalette, IStateDB],
-  optional: [],
-  activate: (app: JupyterFrontEnd, palette: ICommandPalette, state: IStateDB) => {
-    const open_command = 'sshinfo:mount';
-
-    app.commands.addCommand(open_command, {
-      label: 'User Workspace Mount',
-      isEnabled: () => true,
-      execute: args => {
-        mountUserFolder(state);
-      }
-    });
-    palette.addItem({command:open_command,category:'User'});
-    mountUserFolder(state); // automatically mount user folder on load
-  }
-};
-
-///////////////////////////////////////////////////////////////
-//
-// Mount org buckets extension
-//
-///////////////////////////////////////////////////////////////
-const extensionMountOrgBuckets: JupyterFrontEndPlugin<void> = {
-  id: 'mount-che-org-buckets',
-  requires: [ICommandPalette, IStateDB],
-  autoStart: true,
-  activate: (app: JupyterFrontEnd, palette: ICommandPalette, state: IStateDB) => {
-    const open_command = 'sshinfo:orgs';
-    app.commands.addCommand(open_command, {
-      label: 'Che Org Workspace Mount',
-      isEnabled: () => true,
-      execute: args => {
-        mountOrgFolders(state);
-      }
-    });
-    palette.addItem({command:open_command,category:'User'});
-    mountOrgFolders(state);
-  }
-};
-
-
-///////////////////////////////////////////////////////////////
-//
 // Presigned URL extension
 //
 ///////////////////////////////////////////////////////////////
@@ -154,7 +105,4 @@ const extensionRefreshToken: JupyterFrontEndPlugin<void> = {
   }
 };
 
-
-
-
-export default [extensionSsh, extensionUser, extensionMount, extensionPreSigneds3Url, extensionRefreshToken, extensionMountOrgBuckets];
+export default [extensionSsh, extensionUser, extensionPreSigneds3Url, extensionRefreshToken];
