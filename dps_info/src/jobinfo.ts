@@ -141,14 +141,12 @@ export class JobTable extends Widget {
     }
 
     async _getJobList(me:JobTable) {
-        // console.log(this._username);
         const res:RequestResult = await getJobs(me._state, me._username);
         if(res.ok){
             let json_response:any = res.json();
-            INotification.success("Get user jobs success.");
-            // console.log(json_response);
             if (json_response['status_code'] === 200){
-                // let resp = json_response['result'];
+                INotification.success("Get user jobs success.");
+
                 me._table = json_response['result'];
                 JOBS = json_response['jobs'];
                 DISPLAYS = json_response['displays'];
@@ -1130,8 +1128,9 @@ export class JobWidget extends Widget {
         const res:RequestResult = await getJobs(this._state, this._username);
             if(res.ok){
                 let json_response:any = res.json();
-                INotification.success("Get user jobs success.");
                 if (json_response['status_code'] === 200){
+                    INotification.success("Get user jobs success.");
+                    
                     me._table = json_response['table'];
                     JOBS = json_response['jobs'];
                     DISPLAYS = json_response['displays'];
