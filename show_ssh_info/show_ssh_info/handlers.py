@@ -84,31 +84,37 @@ class GetHandler(IPythonHandler):
     """
     def get(self):
 
-        # Get Port from Kubernetes
-        host = os.environ.get('KUBERNETES_SERVICE_HOST')
-        host_port = os.environ.get('KUBERNETES_PORT_443_TCP_PORT')
-        workspace_id = os.environ.get('CHE_WORKSPACE_ID')
-        namespace = os.environ.get('CHE_WORKSPACE_NAMESPACE')
+        try:
+            svc_host = os.environ.get('KUBERNETES_SERVICE_HOST')
+            svc_host_https_port = os.environ.get('KUBERNETES_SERVICE_PORT_HTTPS')
+            namespace = os.environ.get('CHE_WORKSPACE_NAMESPACE') + '-che'
+            che_workspace_id = os.environ.get('CHE_WORKSPACE_ID')
+            sshport_name = 'sshport'
 
-        with open ("/var/run/secrets/kubernetes.io/serviceaccount/token", "r") as t:
-            token=t.read()
+            ip = requests.get('https://api.ipify.org').text
 
-        headers = {
-            'Authorization': 'Bearer ' + token,
-        }
+            with open ("/var/run/secrets/kubernetes.io/serviceaccount/token", "r") as t:
+                token=t.read()
 
-        request_string = 'https://' + host + ':' + host_port + '/api/v1/namespaces/' + namespace + '-' + workspace_id + '/services/ws'
-        response = requests.get(request_string, headers=headers, verify=False)
+            headers = {
+                'Authorization': 'Bearer ' + token,
+            }
 
-        data = response.json()
-        port = data['spec']['ports'][0]['nodePort']
+            request_string = 'https://' + svc_host + ':' + svc_host_https_port + '/api/v1/namespaces/' + namespace +  '/services/'
+            response = requests.get(request_string, headers=headers, verify=False)
+            data = response.json()
+            endpoints = data['items']
 
+            # Ssh service is running on a seperate container from the user workspace. Query the kubernetes host service to find the container where the nodeport has been set.
+            for endpoint in endpoints:
+                if sshport_name in endpoint['metadata']['name']:
+                    if che_workspace_id == endpoint['metadata']['labels']['che.workspace_id']:
+                        port = endpoint['spec']['ports'][0]['nodePort']
+                        self.finish({'ip': ip, 'port': port})
 
-        # Get external IP address
-        ip = get_maap_config(host)['ade_server']
-
-        self.finish({'ip': ip, 'port': port})
-        return
+            self.finish({"status": 500, "message": "failed to get ip and port"})
+        except:
+            self.finish({"status": 500, "message": "failed to get ip and port"})
 
 
 """
