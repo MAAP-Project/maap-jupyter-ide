@@ -371,20 +371,20 @@ class MountOrgBucketsHandler(IPythonHandler):
             self.finish({"status_code":resp.status_code, "message":"error requesting Che organizations", "org_workspaces":[],"org_bucket_dirs":[]})
 
 class Presigneds3UrlHandler(IPythonHandler):
+
     def get(self):
         # get arguments
         bucket = dps_bucket_name(self.request.host)
         key = self.get_argument('key', '')
         rt_path = os.path.expanduser(self.get_argument('home_path', ''))
         abs_path = os.path.join(rt_path, key)
-        username = self.get_argument('username', '')
-        token = self.get_argument('token', '')
         proxy_ticket = self.get_argument('proxy-ticket','')
         expiration = self.get_argument('duration','86400') # default 24 hrs
+        che_ws_namespace = os.environ.get('CHE_WORKSPACE_NAMESPACE')
 
-        logging.debug('bucket is '+bucket)
-        logging.debug('key is '+key)
-        logging.debug('full path is '+abs_path)
+        logging.debug('bucket is '+bucket)     
+        logging.debug('key is '+key)        
+        logging.debug('full path is '+abs_path) 
 
         # -----------------------
         # Checking for bad input
@@ -419,7 +419,7 @@ class Presigneds3UrlHandler(IPythonHandler):
         # expiration = '43200' # 12 hrs in seconds
         logging.debug('expiration is {} seconds', expiration)
 
-        url = '{}/api/members/self/presignedUrlS3/{}/{}?exp={}'.format(maap_api_url(self.request.host), bucket, key, expiration)
+        url = '{}/api/members/self/presignedUrlS3/{}/{}?exp={}&ws={}'.format(maap_api_url(self.request.host), bucket, key, expiration, che_ws_namespace)
         headers = {'Accept': 'application/json', 'proxy-ticket': proxy_ticket}
         r = requests.get(
             url,
