@@ -36,7 +36,7 @@
         "auth_server": "auth.ops.maap-project.org",
         "mas_server": "mas.ops.maap-project.org",
         "edsc_server": "ade.ops.maap-project.org:30052",
-        "workspace_bucket": "maap-ops-dataset",
+        "workspace_bucket": "maap-ops-workspace",
         "default_host": false
     },
     {
