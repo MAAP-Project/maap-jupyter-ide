@@ -89,11 +89,6 @@ Input
 	DataType:	string
 
 Input
-	Title:	timestamp
-	Identifier:	timestamp
-	DataType:	string
-
-Input
 	Title:	username
 	Identifier:	username
 	DataType:	string

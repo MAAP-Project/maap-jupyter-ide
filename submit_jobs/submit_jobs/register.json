@@ -7,9 +7,5 @@
   "docker_container_url": "{docker_url}",
   "algorithm_params" : [
     {algo_inputs}
-    {{
-      "field": "timestamp",
-      "download": false
-    }}
   ]
 }}

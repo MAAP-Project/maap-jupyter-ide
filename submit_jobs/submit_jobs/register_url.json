@@ -10,9 +10,5 @@
     "queue": "{queue}",
     "algorithm_params" : [
         {algo_inputs}
-        {{
-            "field": "timestamp",
-            "download": false
-        }}
     ]
 }}
