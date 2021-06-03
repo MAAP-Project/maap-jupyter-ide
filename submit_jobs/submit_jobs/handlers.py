@@ -18,8 +18,6 @@ from .fields import getFields
 logger = logging.getLogger()
 logger.setLevel(logging.DEBUG)
 
-maap = MAAP()
-
 FILEPATH = os.path.dirname(os.path.abspath(__file__))
 WORKDIR = FILEPATH+'/..'
 # WORKDIR = os.getcwd()+'/../../submit_jobs'
@@ -107,8 +105,8 @@ def get_maap_config(host):
     
     return maap_config
 
-def maap_api_url(host):
-    return 'https://{}/api'.format(get_maap_config(host)['api_server'])
+def maap_api(host):
+    return get_maap_config(host)['api_server']
 
 # currently allows repos from both repo.nasa.maap and mas.maap-project
 class RegisterAlgorithmHandler(IPythonHandler):
@@ -117,7 +115,7 @@ class RegisterAlgorithmHandler(IPythonHandler):
         # Part 1: Parse Required Arguments
         # ==================================
         # logging.debug('workdir is '+WORKDIR)
-        fields = ['config_path', 'memory']
+        fields = ['config_path', 'queue']
         params = {}
         for f in fields:
             try:
@@ -141,12 +139,12 @@ class RegisterAlgorithmHandler(IPythonHandler):
         if config['inputs'] in ['null', None]:
             config['inputs'] = ''
 
-        if 'memory' in params.keys():
-            config['memory'] = params['memory']
+        if 'queue' in params.keys():
+            config['queue'] = params['queue']
 
             # TODO: bug fix needed -- this mangles the input section of the config yaml
             # Commenting out for now 
-            # # overwrite config yaml with memory
+            # # overwrite config yaml with queue
             # config_template = WORKDIR+"/submit_jobs/register.yaml"
             # new_config = ''
             # with open(config_template, 'r') as infile:
@@ -165,7 +163,7 @@ class RegisterAlgorithmHandler(IPythonHandler):
         json_file = WORKDIR+"/submit_jobs/register_url.json"
 
         # only description and inputs are allowed to be empty
-        for f in ['algo_name','version','environment','run_command','repository_url','memory','docker_url']:
+        for f in ['algo_name','version','environment','run_command','repository_url','queue','docker_url']:
             if config[f] == '' or config[f] == None:
                 self.finish({"status_code": 412, "result": "Error: Register field {} cannot be empty".format(f)})
                 return
@@ -179,7 +177,7 @@ class RegisterAlgorithmHandler(IPythonHandler):
         logging.debug('repo url is {}'.format(config['repository_url']))
 
         # check if repo is hosted on a MAAP GitLab instance
-        if (not ('repo.nasa.maap') in config['repository_url']) and (not ('mas.maap-project') in config['repository_url']):
+        if (not ('repo.nasa.maap') in config['repository_url']) and (not ('maap-project.org') in config['repository_url']):
             self.finish({"status_code": 412, "result": "Error: Your git repo is not from a supported host (e.g. mas.maap-project.org)"})
             return
 
@@ -245,7 +243,7 @@ class RegisterAlgorithmHandler(IPythonHandler):
         # ==================================
         # Part 4: Check Response
         # ==================================
-        maap = MAAP()
+        maap = MAAP(maap_api(self.request.host))
         try:
             r = maap.registerAlgorithm(req_json)
             logging.debug(r.text)
@@ -290,7 +288,7 @@ class DeleteAlgorithmHandler(IPythonHandler):
         # ==================================
         # Part 2: Build & Send Request (outsourced to maap-py lib)
         # ==================================
-        maap = MAAP()
+        maap = MAAP(maap_api(self.request.host))
         if complete:
             r = maap.deleteAlgorithm('{algo_id}:{version}'.format(**params))
         else:
@@ -357,7 +355,7 @@ class PublishAlgorithmHandler(IPythonHandler):
         # ==================================
         # Part 2: Build & Send Request (outsourced to maap-py lib)
         # ==================================
-        maap = MAAP()
+        maap = MAAP(maap_api(self.request.host))
         r = maap.publishAlgorithm('{algo_id}:{version}'.format(**params))
 
         # print(r.status_code)
@@ -406,7 +404,7 @@ class GetCapabilitiesHandler(IPythonHandler):
         # ==================================
         # Part 1: Build & Send Request (outsourced to maap-py lib)
         # ==================================
-        maap = MAAP()
+        maap = MAAP(maap_api(self.request.host))
         r = maap.getCapabilities()
 
         # ==================================
@@ -455,7 +453,7 @@ class ExecuteHandler(IPythonHandler):
     def get(self):
         # outsourced to maap-py lib
         kwargs = self.args_to_dict()
-        maap = MAAP()
+        maap = MAAP(maap_api(self.request.host))
         resp = maap.submitJob(**kwargs)
         logger.debug(resp)
         status_code = resp['http_status_code']
@@ -491,7 +489,7 @@ class GetStatusHandler(IPythonHandler):
         # ==================================
         # Part 2: Build & Send Request (outsourced to maap-py lib)
         # ==================================
-        maap = MAAP()
+        maap = MAAP(maap_api(self.request.host))
         try:
             r = maap.getJobStatus(params['job_id'])
             # print(r.status_code)
@@ -553,7 +551,7 @@ class GetMetricsHandler(IPythonHandler):
         # ==================================
         # Part 2: Build & Send Request (outsourced to maap-py lib)
         # ==================================
-        maap = MAAP()
+        maap = MAAP(maap_api(self.request.host))
         try:
             r = maap.getJobMetrics(params['job_id'])
             # print(r.status_code)
@@ -610,7 +608,7 @@ class GetResultHandler(IPythonHandler):
         # ==================================
         # Part 2: Build & Send Request (outsourced to maap-py lib)
         # ==================================
-        maap = MAAP()
+        maap = MAAP(maap_api(self.request.host))
         try:
             r = maap.getJobResult(params['job_id'])
             # print(r.status_code)
@@ -712,7 +710,7 @@ class DismissHandler(IPythonHandler):
         # ==================================
         # Part 2: Build & Send Request (outsourced to maap-py lib)
         # ==================================
-        maap = MAAP()
+        maap = MAAP(maap_api(self.request.host))
         try:
             r = maap.dismissJob(params['job_id'])
             # print(r.status_code)
@@ -784,7 +782,7 @@ class DeleteHandler(IPythonHandler):
         # ==================================
         # Part 2: Build & Send Request (outsourced to maap-py lib)
         # ==================================
-        maap = MAAP()
+        maap = MAAP(maap_api(self.request.host))
         try:
             r = maap.deleteJob(params['job_id'])
             # print(r.status_code)
@@ -853,7 +851,7 @@ class DescribeProcessHandler(IPythonHandler):
         # logging.debug(list(params.values()))
         # logging.debug(complete)
 
-        maap = MAAP()
+        maap = MAAP(maap_api(self.request.host))
         # return all algorithms if malformed request
         if complete:
             r = maap.describeAlgorithm('{algo_id}:{version}'.format(**params))
@@ -959,7 +957,7 @@ class ExecuteInputsHandler(IPythonHandler):
         # ==================================
         # Part 2: Build & Send Request (outsourced to maap-py lib)
         # ==================================
-        maap = MAAP()
+        maap = MAAP(maap_api(self.request.host))
         # return all algorithms if malformed request
         if complete:
             r = maap.describeAlgorithm('{algo_id}:{version}'.format(**params))
@@ -1084,7 +1082,7 @@ class DefaultValuesHandler(IPythonHandler):
             vals['run_command'] = params['code_path']
 
             vals['disk_space'] = "10GB"
-            vals['memory'] = "15GB"
+            vals['queue'] = "15GB"
 
             # default example algo inputs
             ins = ''
@@ -1150,7 +1148,7 @@ class ListJobsHandler(IPythonHandler):
         # ==================================
         # Part 2: Build & Send Request (outsourced to maap-py lib)
         # ==================================
-        maap = MAAP()
+        maap = MAAP(maap_api(self.request.host))
         try:
             r = maap.listJobs(params['username'])
             # print(r.status_code)
@@ -1227,7 +1225,7 @@ class ListJobsHandler(IPythonHandler):
 
 class GetQueuesHandler(IPythonHandler):
     def get(self):
-        maap = MAAP()
+        maap = MAAP(maap_api(self.request.host))
         r = maap.getQueues()
         try:
             resp = json.loads(r.text)

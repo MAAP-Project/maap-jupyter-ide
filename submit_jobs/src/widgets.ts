@@ -405,7 +405,7 @@ export class RegisterWidget extends InputWidget {
                 this.node.appendChild(fieldInputs);
             }, 500);
         
-        } else if (field === 'memory') {
+        } else if (field === 'queue') {
             let fieldLabel = document.createElement('Label');
             fieldLabel.innerHTML = field;
             this.node.appendChild(fieldLabel);
@@ -471,7 +471,7 @@ export class RegisterWidget extends InputWidget {
         let fieldElement:HTMLSelectElement = document.getElementById('queues-dropdown') as HTMLSelectElement;
         console.log(fieldElement);
         let opt:string = fieldElement.value;
-        getUrl.searchParams.append('memory', opt);
+        getUrl.searchParams.append('queue', opt);
         console.log(getUrl.href);
         console.log('done setting url');
         urllst.push(getUrl);

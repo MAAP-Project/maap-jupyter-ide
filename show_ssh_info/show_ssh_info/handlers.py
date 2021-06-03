@@ -84,101 +84,42 @@ class GetHandler(IPythonHandler):
     """
     def get(self):
 
-        # Get Port from Kubernetes
-        host = os.environ.get('KUBERNETES_SERVICE_HOST')
-        host_port = os.environ.get('KUBERNETES_PORT_443_TCP_PORT')
-        workspace_id = os.environ.get('CHE_WORKSPACE_ID')
+        try:
+            svc_host = os.environ.get('KUBERNETES_SERVICE_HOST')
+            svc_host_https_port = os.environ.get('KUBERNETES_SERVICE_PORT_HTTPS')
+            namespace = os.environ.get('CHE_WORKSPACE_NAMESPACE') + '-che'
+            che_workspace_id = os.environ.get('CHE_WORKSPACE_ID')
+            sshport_name = 'sshport'
 
-        with open ("/var/run/secrets/kubernetes.io/serviceaccount/token", "r") as t:
-            token=t.read()
+            ip = requests.get('https://api.ipify.org').text
 
-        headers = {
-            'Authorization': 'Bearer ' + token,
-        }
+            with open ("/var/run/secrets/kubernetes.io/serviceaccount/token", "r") as t:
+                token=t.read()
 
-        request_string = 'https://' + host + ':' + host_port + '/api/v1/namespaces/' + workspace_id + '/services/ws'
-        response = requests.get(request_string, headers=headers, verify=False)
+            headers = {
+                'Authorization': 'Bearer ' + token,
+            }
 
-        data = response.json()
-        port = data['spec']['ports'][0]['nodePort']
+            request_string = 'https://' + svc_host + ':' + svc_host_https_port + '/api/v1/namespaces/' + namespace +  '/services/'
+            response = requests.get(request_string, headers=headers, verify=False)
+            data = response.json()
+            endpoints = data['items']
+
+            # Ssh service is running on a seperate container from the user workspace. Query the kubernetes host service to find the container where the nodeport has been set.
+            for endpoint in endpoints:
+                if sshport_name in endpoint['metadata']['name']:
+                    if che_workspace_id == endpoint['metadata']['labels']['che.workspace_id']:
+                        port = endpoint['spec']['ports'][0]['nodePort']
+                        self.finish({'ip': ip, 'port': port})
+
+            self.finish({"status": 500, "message": "failed to get ip and port"})
+        except:
+            self.finish({"status": 500, "message": "failed to get ip and port"})
 
 
-        # Get external IP address
-        ip = get('https://api.ipify.org').text
-
-        self.finish({'ip': ip, 'port': port})
-        return
-
-class CheckInstallersHandler(IPythonHandler):
-    """
-    Check if SSH and exec Che Installers are enabled. If they are not, a user would not be able to ssh in becuase there
-    would be no SSH agent.
-    """
-    def get(self):
-        #
-        # TODO: DELTE THIS LINE!!!!! IT MAKES THE CHECK NOT HAPPEN!!!
-        #
-        # self.finish({'status': True})
-
-        che_machine_token = os.environ['CHE_MACHINE_TOKEN']
-        url = '{}/api/workspace/{}'.format(maap_ade_url(self.request.host), os.environ.get('CHE_WORKSPACE_ID'))
-        # --------------------------------------------------
-        # TODO: FIGURE OUT AUTH KEY & verify
-        # --------------------------------------------------
-        headers = {
-            'Accept': 'application/json',
-            'Authorization': 'Bearer {token}'.format(token=che_machine_token)
-        }
-        r = requests.get(
-            url,
-            headers=headers,
-            verify=False
-        )
-
-        resp = json.loads(r.text)               # JSON response to dict
-        installers = resp['config']['environments']["default"]["machines"]["ws/jupyter"]['installers']
-        # Check installers
-        if 'org.eclipse.che.ssh' in installers and 'org.eclipse.che.exec' in installers:
-            self.finish({'status': True})
-        else:
-            self.finish({'status': False})
-
-class InstallHandler(IPythonHandler):
-    """
-    Update workspace config to enable SSH and exec installers. Not sure if the workspace has to be maunually restarted
-    at this point or if I can restart it.
-    """
-    def get(self):
-
-        che_machine_token = os.environ['CHE_MACHINE_TOKEN']
-        url = '{}/api/workspace/{}'.format(maap_ade_url(self.request.host), os.environ.get('CHE_WORKSPACE_ID'))
-        # --------------------------------------------------
-        # TODO: FIGURE OUT AUTH KEY & verify
-        # --------------------------------------------------
-        headers = {
-            'Accept': 'application/json',
-            'Authorization': 'Bearer {token}'.format(token=che_machine_token)
-        }
-        r = requests.get(
-            url,
-            headers=headers,
-            verify=False
-        )
-
-        installers = ['org.eclipse.che.ssh', 'org.eclipse.che.exec']
-        workspace_config = json.loads(r.text)    # JSON response to dict
-
-        # Update workspace config with new installers
-        workspace_config['config']['environments']["default"]["machines"]["ws/jupyter"]['installers'] = installers
-
-        r = requests.put(
-            url,
-            headers=headers,
-            verify=False
-        )
-
-        self.finish(r.status_code)
-
+"""
+No longer in use. Mounting now is happening outside of the Jupyter container.
+"""
 class MountBucketHandler(IPythonHandler):
     def get(self):
         message = ''
@@ -227,6 +168,7 @@ class MountBucketHandler(IPythonHandler):
 
                 # mount whole bucket first
                 mount_output = subprocess.check_output('s3fs -o iam_role=auto -o imdsv1only -o use_cache=/tmp/cache {} {}'.format(bucket,user_workspace), shell=True).decode('utf-8')
+
                 message = mount_output
                 logging.debug('mount log {}'.format(mount_output))
 
@@ -253,6 +195,7 @@ class MountBucketHandler(IPythonHandler):
                 logging.debug('umount output {}'.format(umount_output))
 
                 mountdir_output = subprocess.check_output('s3fs -o iam_role=auto -o imdsv1only -o use_cache=/tmp/cache {} {}'.format(user_bucket_dir,user_workspace), shell=True).decode('utf-8')
+
                 message = mountdir_output
                 logging.debug('mountdir output {}'.format(mountdir_output))
 
@@ -260,6 +203,10 @@ class MountBucketHandler(IPythonHandler):
         except:
             self.finish({"status_code":500, "message":message, "user_workspace":user_workspace,"user_bucket_dir":user_bucket_dir})
 
+
+"""
+No longer in use. Mounting now is happening outside of the Jupyter container.
+"""
 class MountSharedBucketsHandler(IPythonHandler):
     def get(self):
         message = ''
@@ -311,11 +258,14 @@ class MountSharedBucketsHandler(IPythonHandler):
         except:
             self.finish({"status_code":500, "message":message, "shared_workspaces":shared_workspaces})
 
+"""
+No longer in use. Mounting now is happening outside of the Jupyter container.
+"""
 class MountOrgBucketsHandler(IPythonHandler):
     def get(self):
         # Send request to Che API for list of user's orgs
         # ts pass keycloak token from window
-        token = self.get_argument('token','')
+        token = self.get_argument('token', '')
         bucket = dps_bucket_name(self.request.host)
         url = '{}/api/organization'.format(maap_ade_url(self.request.host))
         headers = {
@@ -325,8 +275,8 @@ class MountOrgBucketsHandler(IPythonHandler):
         try:
             # send request
             resp = requests.get(
-                url, 
-                headers=headers, 
+                url,
+                headers=headers,
                 verify=False
             )
             logging.debug(resp)
@@ -421,25 +371,62 @@ class MountOrgBucketsHandler(IPythonHandler):
             self.finish({"status_code":resp.status_code, "message":"error requesting Che organizations", "org_workspaces":[],"org_bucket_dirs":[]})
 
 class Presigneds3UrlHandler(IPythonHandler):
+
     def get(self):
         # get arguments
         bucket = dps_bucket_name(self.request.host)
-        key = self.get_argument('key','')
-        proxyTicket = self.get_argument('proxy-ticket','')
-        logging.debug('bucket is '+bucket)
-        logging.debug('key is '+key)
+        key = self.get_argument('key', '')
+        rt_path = os.path.expanduser(self.get_argument('home_path', ''))
+        abs_path = os.path.join(rt_path, key)
+        proxy_ticket = self.get_argument('proxy-ticket','')
+        expiration = self.get_argument('duration','86400') # default 24 hrs
+        che_ws_namespace = os.environ.get('CHE_WORKSPACE_NAMESPACE')
 
-        expiration = '43200' # 12 hrs in seconds
-        logging.debug('expiration is {} seconds'+expiration)
+        logging.debug('bucket is '+bucket)     
+        logging.debug('key is '+key)        
+        logging.debug('full path is '+abs_path) 
 
-        url = '{}/api/members/self/presignedUrlS3/{}/{}?exp={}'.format(maap_api_url(self.request.host), bucket, key, expiration)
-        
-        headers = {'Accept': 'application/json', 'proxy-ticket': proxyTicket}
+        # -----------------------
+        # Checking for bad input
+        # -----------------------
+        # if directory, return error - dirs not supported
+        if os.path.isdir(abs_path):
+            self.finish({"status_code": 412, "message": "error", "url": "Presigned S3 links do not support folders"})
+            return
+
+        # check if file in valid folder (under mounted folder path)
+        resp = subprocess.check_output("df -h | grep s3fs | awk '{print $6}'", shell=True).decode('utf-8')
+        mounted_dirs = resp.strip().split('\n')
+        logging.debug(mounted_dirs)
+        if len(mounted_dirs) == 0:
+            self.finish({"status_code": 412, "message": "error",
+                "url": "Presigned S3 links can only be created for files in a mounted org or user folder" +
+                    "\nMounted folders include:\n{}".format(resp)
+                })
+            return
+
+        if not any([mounted_dir in abs_path for mounted_dir in mounted_dirs]):
+            self.finish({"status_code": 412, "message": "error",
+                "url": "Presigned S3 links can only be created for files in a mounted org or user folder" +
+                    "\nMounted folders include:\n{}".format(resp)
+                })
+            return
+
+        # -----------------------
+        # Generate S3 Link
+        # -----------------------
+        # if valid path, get presigned URL
+        # expiration = '43200' # 12 hrs in seconds
+        logging.debug('expiration is {} seconds', expiration)
+
+        url = '{}/api/members/self/presignedUrlS3/{}/{}?exp={}&ws={}'.format(maap_api_url(self.request.host), bucket, key, expiration, che_ws_namespace)
+        headers = {'Accept': 'application/json', 'proxy-ticket': proxy_ticket}
         r = requests.get(
             url,
             headers=headers,
             verify=False
         )
+        logging.debug(r.text)
 
         resp = json.loads(r.text)   
         self.finish({"status_code":200, "message": "success", "url":resp['url']})

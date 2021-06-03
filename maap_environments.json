@@ -24,9 +24,19 @@
         "ade_server": "ade.uat.maap-project.org",
         "api_server": "api.uat.maap-project.org",
         "auth_server": "auth.uat.maap-project.org",
-        "mas_server": "mas.uat.maap-project.org",
+        "mas_server": "repo.uat.maap-project.org",
         "edsc_server": "ade.uat.maap-project.org:30052",
         "workspace_bucket": "maap-uat-workspace",
+        "default_host": false
+    },
+    {
+        "environment": "pre-ops",
+        "ade_server": "ade.ops.maap-project.org",
+        "api_server": "api.ops.maap-project.org",
+        "auth_server": "auth.ops.maap-project.org",
+        "mas_server": "mas.ops.maap-project.org",
+        "edsc_server": "ade.ops.maap-project.org:30052",
+        "workspace_bucket": "maap-ops-workspace",
         "default_host": false
     },
     {

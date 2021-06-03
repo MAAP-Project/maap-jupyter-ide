@@ -53,10 +53,6 @@ url: https://api.maap.xyz/api/mas/algorithm
 			"download": false
 		},
 		{
-			"field": "timestamp",
-			"download": false
-		},
-		{
 	      "field": "username",
 	      "download": false
 	    }
@@ -126,11 +122,6 @@ url: http://api.maap.xyz/api/dps/job
 	<wps:Input id="pass_number">
 		<wps:Data>
 			<wps:LiteralValue>2</wps:LiteralValue>
-		</wps:Data>
-	</wps:Input>
-	<wps:Input id="timestamp">
-		<wps:Data>
-			<wps:LiteralValue>2018-03-26T00:00:01Z</wps:LiteralValue>
 		</wps:Data>
 	</wps:Input>
 	<wps:Output id="result" transmission="value"/>

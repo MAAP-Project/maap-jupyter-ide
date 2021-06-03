@@ -110,21 +110,26 @@ class GetAllProjectsHandler(IPythonHandler):
             verify=False
         )
         try:
-            resp = json.loads(r.text)               # JSON response to dict
-            project_list = resp['config']['projects']   # gets list of projects, each is dict with project properties
+            resp = json.loads(r.text)
+
+            try:
+                project_list = resp['devfile']['projects'] # gets list of projects, each is dict with project properties
+            except KeyError:
+                project_list = []
+                self.finish({"status": "no projects to import"})
 
             # get projects
+
             for project in project_list:
 
                 project_name = project['name']
-                path = project['path']
                 src_type = project['source']['type']
                 location = project['source']['location']
 
                 dl_loc = '/projects/'+project_name
 
                 if src_type == 'git':
-                    if not os.path.exists('/projects'+path):
+                    if not os.path.exists('/projects/'+project_name):
 
                         # Check if is stored on our gitlab (e.g. mas.maap-project.org) if so, use the users authentication
                         # token to allow for the downloads of private repositories

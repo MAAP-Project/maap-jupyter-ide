@@ -7,12 +7,8 @@
     "docker_container_url": "{docker_url}",
     "repo_url" : "{repository_url}",
     "disk_space": "10GB",
-    "memory": "{memory}",
+    "queue": "{queue}",
     "algorithm_params" : [
         {algo_inputs}
-        {{
-            "field": "timestamp",
-            "download": false
-        }}
     ]
 }}
