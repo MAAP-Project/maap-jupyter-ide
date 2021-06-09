@@ -16,6 +16,7 @@ from traitlets import (
     link, observe, default, validate, TraitError, Union
 )
 from ._frontend import module_name, module_version
+from . import loadGeotiff
 
 import os
 
@@ -51,6 +52,11 @@ class MapCMC(DOMWidget, InteractMixin):
 
     def load_layer_config(self, url, handle_as, default_ops = {}):
         self._argv = ["loadLayerConfig", url, handle_as, default_ops]
+
+    def load_geotiff(self, urls):
+        print("Hello")
+        #self._argv = ["loadGeotiff", urls]
+        loadGeotiff.printHello()
 
     def set_date(self, date_str, format_str=""):
         self._argv = ["setDate", date_str, format_str]
