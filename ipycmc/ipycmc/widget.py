@@ -54,9 +54,11 @@ class MapCMC(DOMWidget, InteractMixin):
         self._argv = ["loadLayerConfig", url, handle_as, default_ops]
 
     def load_geotiff(self, urls):
-        print("Hello")
-        #self._argv = ["loadGeotiff", urls]
-        loadGeotiff.printHello()
+        return_url = loadGeotiff.loadGeotiffs(urls)
+        print("Return url: "+return_url)
+        #load_layer_config(return_url, "wmts/xml", {"handleAs": "wmts_raster"})
+        self._argv = ["loadLayerConfig", return_url, "wmts/xml", {"handleAs": "wmts_raster"}]
+        #self._argv = ["loadLayerConfig", "https://baxpil3vd6.execute-api.us-east-1.amazonaws.com/cog/WMTSCapabilities.xml?tile_format=png&tile_scale=1&TileMatrixSetId=WebMercatorQuad&url=s3%3A%2F%2Fnasa-maap-data-store%2Ffile-staging%2Fnasa-map%2FSRTMGL1_COD___001%2FN45W101.SRTMGL1.tif&resampling_method=nearest&return_mask=true&rescale=0%2C1000", "wmts/xml", {"handleAs": "wmts_raster"}]
 
     def set_date(self, date_str, format_str=""):
         self._argv = ["setDate", date_str, format_str]
