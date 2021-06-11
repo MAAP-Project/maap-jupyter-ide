@@ -229,6 +229,8 @@ class RegisterAlgorithmHandler(IPythonHandler):
         ins = ''
         for name in inputs.keys():
             if len(name) > 0:
+                if len(ins) > 0:
+                    ins += ','
                 ins += ins_json.format(field_name=name, dl=inputs[name])
 
         # print(ins)
