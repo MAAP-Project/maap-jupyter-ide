@@ -135,6 +135,7 @@ def create_mosaic_json(urls):
                     [-102.00013888888888, 47.00013888888889]]]},
                 'properties': {'path': 's3://nasa-maap-data-store/file-staging/nasa-map/SRTMGL1_COD___001/N46W102.SRTMGL1.tif'},
                 'type': 'Feature'}]
+    #return features
     return MosaicJSON.from_features(features, minzoom=10, maxzoom=18).json()
 
 # Fuction provided by Development Seed. Creates the features for each geoTIFF in the mosaic JSON
