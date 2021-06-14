@@ -53,16 +53,14 @@ class MapCMC(DOMWidget, InteractMixin):
     def load_layer_config(self, url, handle_as, default_ops = {}):
         self._argv = ["loadLayerConfig", url, handle_as, default_ops]
 
-    def load_geotiff(self, urls):
-        return_url = loadGeotiff.loadGeotiffs(urls)
+    def load_geotiff(self, urls, default_ops = {}, handle_as = "wmts/xml", default_ops_load_layer = {"handleAs": "wmts_raster"}):
+        return_url = loadGeotiff.loadGeotiffs(urls, default_ops)
         print("Request url generated: " + str(return_url))
-        #load_layer_config(return_url, "wmts/xml", {"handleAs": "wmts_raster"})
         if return_url != None:
-            self._argv = ["loadLayerConfig", return_url, "wmts/xml", {"handleAs": "wmts_raster"}]
+            self._argv = ["loadLayerConfig", return_url, handle_as, default_ops_load_layer]
         else:
             print("Unable to fulfill your request due to the above error")
-        #self._argv = ["loadLayerConfig", "https://baxpil3vd6.execute-api.us-east-1.amazonaws.com/cog/WMTSCapabilities.xml?tile_format=png&tile_scale=1&TileMatrixSetId=WebMercatorQuad&url=s3%3A%2F%2Fnasa-maap-data-store%2Ffile-staging%2Fnasa-map%2FSRTMGL1_COD___001%2FN45W101.SRTMGL1.tif&resampling_method=nearest&return_mask=true&rescale=0%2C1000", "wmts/xml", {"handleAs": "wmts_raster"}]
-
+        
     def set_date(self, date_str, format_str=""):
         self._argv = ["setDate", date_str, format_str]
 

@@ -89,6 +89,7 @@ setup_args = dict(
         'ipywidgets>=7.2',
         'plotly==3.10.0',
         'requests',
+        'rio_tiler==2.1.0',
     ],
     extras_require = {
         'test': [
