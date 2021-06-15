@@ -6,8 +6,11 @@ defaults_tiler = {"tile_format": "png", "tile_scale":"1", "pixel_selection":"fir
 endpoints_tiler = {"maap-ops-workspace": "https://jqsd6bqdsf.execute-api.us-west-2.amazonaws.com", "maap-ops-dataset":"https://baxpil3vd6.execute-api.us-east-1.amazonaws.com", "maap-uat-workspace":"https://titiler.uat.maap-project.org", "maap-dev-dataset":"https://jqsd6bqdsf.execute-api.us-west-2.amazonaws.com"}
 tiler_extensions = {"single":"/cog/WMTSCapabilities.xml?", "multiple":"/mosaicjson/WMTSCapabilities.xml?"}
 endpoint_ops = endpoints_tiler.get("maap-ops-workspace") # Tiler endpoint used for published links
-errors_tiler = {"not recognized as a supported file format.":"You have entered an invalid file path that does not exist or the TiTiler does not have access to."}
+errors_tiler = {"not recognized as a supported file format.":"You have entered an invalid file path that does not exist or the TiTiler does not have access to.", "Access Denied":"The Tiler does not have access to the file path that you have provided, please give a maap s3 bucket or published data."}
 accepted_arguments_tiler = ["minzoom", "maxzoom", "bidx", "expression", "nodata", "unscale", "color_formula", "colormap_name", "colormap"]
+mosaicjson_file = "mosaicjson.json"
+tiler_general_error_beginning = "{\"detail\":"
+general_error_warning_tiler = "There was an error reading your link and Tiler gave the following error message: "
 
 
 import time
@@ -16,6 +19,7 @@ from concurrent import futures
 from rio_tiler.io import COGReader
 import requests
 import copy
+import boto3
 
 # Main function that returns a url or None in case of error back to widget.py and calls other functions in this file
 def loadGeotiffs(urls, default_ops):
@@ -25,13 +29,17 @@ def loadGeotiffs(urls, default_ops):
     if check_valid_arguments(urls) == False:
         return None
     
-    # Execute the functions for a single GeoTIFF to wmts tiles and pass to CMC
-    if isinstance(urls, str):
+    # If single GeoTIFF file, execute the functions for a single GeoTIFF to wmts tiles and pass to CMC
+    if isinstance(urls, str) and file_ending(urls):
         return create_request_single_geotiff(urls, default_ops)
+
+    # If folder of geoTiff links, execute the functions for a list or single GeoTIFF(s) to make a mosaic JSON
+    if isinstance(urls, str) and not file_ending(urls):
+        return create_request_folder_geotiffs(urls, default_ops)
 
     # Execute the functions for a list of GeoTIFF to make a mosaic JSON
     if isinstance(urls, list):
-        create_request_multiple_geotiffs(urls, default_ops)
+        return create_request_multiple_geotiffs(urls, default_ops)
 
 # Constructs the url to be passed to the Tiler to request the wmts tiles for a single GeoTIFF.
 # Returns None if an error was encountered when constructing this url. Appropriate error message will already be printed 
@@ -48,23 +56,42 @@ def create_request_single_geotiff(s3Url, default_ops):
         return None
     return newUrl
 
+# Constructs the url to be passed to the Tiler to request the wmts tiles for the GeoTIFF(s) in the given folder
+# Returns None if an error was encountered when constructing this url. Appropriate error message will already be printed 
+def create_request_folder_geotiffs(urls, default_ops):
+    geotiffs = extract_geotiff_links(urls)
+    if len(geotiffs) == 0:
+        print("No GeoTIFFs found in the given folder.")
+        return None
+    elif len(geotiffs) == 1:
+        return create_request_single_geotiff(geotiffs[0], default_ops)
+    else:
+        return create_request_multiple_geotiffs(geotiffs, default_ops)
+
 
 # Prints the appriopriate error message if error contained in the request url text and then returns True if errors exist
+# Try to keep track of the errors that I recognize, but might be another error that starts with "detail", so just print the given error
+# message from the Tiler even though it does not always make the most sense
 def check_errors_request_url(request_url):
     response = requests.get(request_url).text
     for error in errors_tiler:
         if error in response:
             print(errors_tiler[error])
             return True
+    if response[:len(tiler_general_error_beginning)] == tiler_general_error_beginning:
+        print(general_error_warning_tiler + response)
+        return True
     return False
 
 # Constructs the url to be passed to the Tiler to request the wmts tiles for a mosaic JSON created by multiple GeoTIFFs
 # Returns None if an error was encountered when constructing this url. Appropriate error message will already be printed 
 def create_request_multiple_geotiffs(urls, default_ops):
     endpoint_tiler = determine_environment_list(urls)
+    if not tiler_can_access_links(urls):
+        return None
     mosaic_json_url = create_mosaic_json_url(urls)
     if mosaic_json_url == None:
-        print("Code not set up so not working")
+        print("Code not set up for published links so not working")
         return None
     newUrl = endpoint_tiler + tiler_extensions.get("multiple") + "url=" + mosaic_json_url
     newUrl = add_defaults_url(newUrl, default_ops)
@@ -77,15 +104,50 @@ def create_request_multiple_geotiffs(urls, default_ops):
 # Returns the list for a mosaic JSON for the given s3 links. Returns None in case of error and prints the appropriate error message
 def create_mosaic_json_url(urls):
     mosaic_data = create_mosaic_json(urls)
-    print(mosaic_data)
-    # TODO Write the mosaic_data to a file or upload it somehow. Return that link
-    #print("About to write file")
-    #f = open("mosaicjson.txt", "w")
-    #f.write(mosaic_data)
-    #f.close()
-    #print("Done writing file")
-    #print("Mosaic generated: "+mosaic_data)
-    return ""
+    #print(mosaic_data)
+    
+    # TODO try writing to where the first link is?
+    f = open(mosaicjson_file, "w")
+    f.write(mosaic_data)
+    f.close()
+    
+    bucket_name = determine_valid_bucket(urls[0])
+    if bucket_name == None:
+        mosaic_data_link = None # TODO this means the data is published and it does not work for published data yet
+    else:
+        mosaic_data_link = required_start_s3_link_lowercase + bucket_name + get_file_path(urls[0]) + "/" + mosaicjson_file
+    return mosaic_data_link
+
+# Determine if the bucket name extracted is a valid bucket name. Returns the bucket name if it is a valid bucket and returns None otherwise
+def determine_valid_bucket(s3Url):
+    bucket_name = extract_bucket_name(s3Url)
+    if bucket_name == None:
+        return None
+    for key in endpoints_tiler:
+        # If the bucket is a valid environment, return that bucket name
+        if bucket_name == key:
+            return bucket_name
+    return None
+
+# Assumes that the file exists in a valid bucket and gives the file path without the s3://bucket-name from the url and the .tif file ending
+def get_file_path(url):
+    file_path = url[len(required_start_s3_link_lowercase):]
+    beginning_tif_file = file_path.rfind("/")
+    ending_bucket_name = file_path.find("/")
+    if (ending_bucket_name == beginning_tif_file):
+        # NOTE: might not be a problem?
+        print("Please place the file into your workspace and not directly in the environment.")
+        return None
+    file_path = file_path[ending_bucket_name:beginning_tif_file]
+    return file_path
+
+# Assumes that the folder exists in a valid bucket and gives the file path without the s3://bucket-name from the url 
+def get_file_path_folder(url):
+    file_path = url[len(required_start_s3_link_lowercase):]
+    ending_bucket_name = file_path.find("/")
+    file_path = file_path[ending_bucket_name+1:]
+    return file_path
+
 
 # Creates a variable representing a mosaic JSON to pass to the Tiler
 def create_mosaic_json(urls):
@@ -98,44 +160,25 @@ def create_mosaic_json(urls):
 
     with futures.ThreadPoolExecutor(max_workers=5) as executor:
         features = [r for r in executor.map(worker, files) if r]
-    
-    #print("Features: ")
-    #print(features)
-    #return features     
+
     if features == []:
         features = [{'geometry': {'type': 'Polygon',
-                'coordinates': [[[-101.00013888888888, 46.00013888888889],
-                    [-101.00013888888888, 44.999861111111116],
-                    [-99.9998611111111, 44.999861111111116],
-                    [-99.9998611111111, 46.00013888888889],
-                    [-101.00013888888888, 46.00013888888889]]]},
-                'properties': {'path': 's3://nasa-maap-data-store/file-staging/nasa-map/SRTMGL1_COD___001/N45W101.SRTMGL1.tif'},
-                'type': 'Feature'},
-                {'geometry': {'type': 'Polygon',
-                'coordinates': [[[-102.00013888888888, 46.00013888888889],
-                    [-102.00013888888888, 44.999861111111116],
-                    [-100.9998611111111, 44.999861111111116],
-                    [-100.9998611111111, 46.00013888888889],
-                    [-102.00013888888888, 46.00013888888889]]]},
-                'properties': {'path': 's3://nasa-maap-data-store/file-staging/nasa-map/SRTMGL1_COD___001/N45W102.SRTMGL1.tif'},
-                'type': 'Feature'},
-                {'geometry': {'type': 'Polygon',
-                'coordinates': [[[-101.00013888888888, 47.00013888888889],
-                    [-101.00013888888888, 45.999861111111116],
-                    [-99.9998611111111, 45.999861111111116],
-                    [-99.9998611111111, 47.00013888888889],
-                    [-101.00013888888888, 47.00013888888889]]]},
-                'properties': {'path': 's3://nasa-maap-data-store/file-staging/nasa-map/SRTMGL1_COD___001/N46W101.SRTMGL1.tif'},
-                'type': 'Feature'},
-                {'geometry': {'type': 'Polygon',
-                'coordinates': [[[-102.00013888888888, 47.00013888888889],
-                    [-102.00013888888888, 45.999861111111116],
-                    [-100.9998611111111, 45.999861111111116],
-                    [-100.9998611111111, 47.00013888888889],
-                    [-102.00013888888888, 47.00013888888889]]]},
-                'properties': {'path': 's3://nasa-maap-data-store/file-staging/nasa-map/SRTMGL1_COD___001/N46W102.SRTMGL1.tif'},
-                'type': 'Feature'}]
-    #return features
+            'coordinates': [[[-101.00013888888888, 46.00013888888889],
+                [-101.00013888888888, 44.999861111111116],
+                [-99.9998611111111, 44.999861111111116],
+                [-99.9998611111111, 46.00013888888889],
+                [-101.00013888888888, 46.00013888888889]]]},
+            'properties': {'path': 's3://nasa-maap-data-store/file-staging/nasa-map/SRTMGL1_COD___001/N45W101.SRTMGL1.tif'},
+            'type': 'Feature'},
+            {'geometry': {'type': 'Polygon',
+            'coordinates': [[[-102.00013888888888, 46.00013888888889],
+                [-102.00013888888888, 44.999861111111116],
+                [-100.9998611111111, 44.999861111111116],
+                [-100.9998611111111, 46.00013888888889],
+                [-102.00013888888888, 46.00013888888889]]]},
+            'properties': {'path': 's3://nasa-maap-data-store/file-staging/nasa-map/SRTMGL1_COD___001/N45W102.SRTMGL1.tif'},
+            'type': 'Feature'}]
+    
     return MosaicJSON.from_features(features, minzoom=10, maxzoom=18).json()
 
 # Fuction provided by Development Seed. Creates the features for each geoTIFF in the mosaic JSON
@@ -187,22 +230,25 @@ def add_defaults_url(url, default_ops):
     url = url + defaultValues
     return url
 
-# Given a string representing a s3 link, checks that the link begins with s3:// and ends with .tiff. If this is not true, prints appropriate error messages
-# and returns False
+# Determines if the Tiler can access the links by passing them link a single GeoTIFF into the file. The create_request_single_geotiff function only returns
+# None if the default ops are incorrect (impossible because we are passing an empty list) or the response of the request url contains errors
+def tiler_can_access_links(urls):
+    for url in urls:
+        if create_request_single_geotiff(url, {}) == None:
+            print("Invalid url: " + url + ".")
+            return False
+    return True
+
+
+# Given a string representing a s3 link, checks that the link begins with s3://. If this is not true, prints appropriate error messages
+# and returns False. Can add other checks in this function to check the s3 link. Check for ending with .tiff is elsewhere in the function
 def check_valid_s3_link(s3Link):  
-    # Prints multiple errors if multiple errors exist within the given S3 link
-    errors_found = True
     # Checks the beginning type of the s3 link is s3://
     if s3Link[:len(required_start_s3_link_lowercase)] != required_start_s3_link_lowercase and s3Link[:len(required_start_s3_link_uppercase)] != required_start_s3_link_uppercase:
         print("Invalid s3 link: "+s3Link+". Beginning "+s3Link[:len(required_start_s3_link_lowercase)]+ " does not match "+required_start_s3_link_lowercase +" or "+required_start_s3_link_uppercase+ ".")
-        errors_found = False
+        return False
         
-    # Checks that the ending type of the s3 link is .tiff
-    if s3Link[len(required_end_s3_link_lowercase)*-1:] != required_end_s3_link_lowercase and s3Link[len(required_end_s3_link_uppercase)*-1:] != required_end_s3_link_uppercase:
-        print("Invalid s3 link: "+s3Link+". Ending "+s3Link[len(required_end_s3_link_lowercase)*-1:]+ " does not match "+required_end_s3_link_lowercase +" or "+required_end_s3_link_uppercase+ ".")
-        errors_found = False
-        
-    return errors_found
+    return True
     
 # Returns False if arguments are invalid and prints appropriate error messages. Reasons that links can be invalid are:
 # String: Empty string, doesn't start with s3://, doesn't end with .tiff
@@ -274,7 +320,7 @@ def extract_bucket_name(s3Link):
     return s3Link[location_start_bucket_name:location_end_bucket_name]
 
 # Returns a string of a list of all the keys in the dictionary
-def get_list_from_dict(dictionary):
+def get_printable_list_from_dict(dictionary):
     to_return = ""
     for key in dictionary:
         to_return = to_return + key + ", "
@@ -283,7 +329,30 @@ def get_list_from_dict(dictionary):
 
 # Returns a string of the accepted argument types to the tiler
 def get_accepted_argument_types():
-    arguments = get_list_from_dict(defaults_tiler)
+    arguments = get_printable_list_from_dict(defaults_tiler)
     for argument in accepted_arguments_tiler:
         arguments = arguments + ", " + argument
     return arguments
+
+# Returns False if the ending type of the file is not .tif and True if it is
+def file_ending(s3Link):
+    return not (s3Link[len(required_end_s3_link_lowercase)*-1:] != required_end_s3_link_lowercase and s3Link[len(required_end_s3_link_uppercase)*-1:] != required_end_s3_link_uppercase)
+
+# Extracts the list of geotiff links from the folder path. Returns None if the folder path is not reachable and only returns the names of files that end in
+# required_end_s3_link_lowercase or required_end_s3_link_uppercase
+def extract_geotiff_links(folder_path):
+    bucket_name = determine_valid_bucket(folder_path)
+    if bucket_name == None:
+        print("The environment of the bucket you passed as a folder is not a valid environment type. The supported environments are: " + get_printable_list_from_dict(endpoints_tiler) + ".")
+        return []
+    file_path = get_file_path_folder(folder_path)
+
+    s3 = boto3.resource('s3')
+    bucket = s3.Bucket(bucket_name)
+    geotiff_links = []
+    for obj in bucket.objects.filter(Prefix=file_path):
+        if obj.size and file_ending(obj.key): 
+            geotiff_links.append(required_start_s3_link_lowercase + bucket_name + "/" + obj.key)
+
+    print("Geotiff links extracted from given folder are "+geotiff_links)
+    return geotiff_links

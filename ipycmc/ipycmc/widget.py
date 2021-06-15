@@ -53,7 +53,7 @@ class MapCMC(DOMWidget, InteractMixin):
     def load_layer_config(self, url, handle_as, default_ops = {}):
         self._argv = ["loadLayerConfig", url, handle_as, default_ops]
 
-    def load_geotiff(self, urls, default_ops = {}, handle_as = "wmts/xml", default_ops_load_layer = {"handleAs": "wmts_raster"}):
+    def load_geotiffs(self, urls, default_ops = {}, handle_as = "wmts/xml", default_ops_load_layer = {"handleAs": "wmts_raster"}):
         return_url = loadGeotiff.loadGeotiffs(urls, default_ops)
         print("Request url generated: " + str(return_url))
         if return_url != None:
