@@ -16,7 +16,7 @@ from traitlets import (
     link, observe, default, validate, TraitError, Union
 )
 from ._frontend import module_name, module_version
-from . import loadGeotiff
+from .loadGeotiffs import loadGeotiffs
 
 import os
 
@@ -54,12 +54,10 @@ class MapCMC(DOMWidget, InteractMixin):
         self._argv = ["loadLayerConfig", url, handle_as, default_ops]
 
     def load_geotiffs(self, urls, default_ops = {}, handle_as = "wmts/xml", default_ops_load_layer = {"handleAs": "wmts_raster"}):
-        return_url = loadGeotiff.loadGeotiffs(urls, default_ops)
+        return_url = loadGeotiffs.loadGeotiffs(urls, default_ops)
         print("Request url generated: " + str(return_url))
         if return_url != None:
             self._argv = ["loadLayerConfig", return_url, handle_as, default_ops_load_layer]
-        else:
-            print("Unable to fulfill your request due to the above error")
         
     def set_date(self, date_str, format_str=""):
         self._argv = ["setDate", date_str, format_str]

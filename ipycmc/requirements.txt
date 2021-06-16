@@ -1,2 +1,0 @@
-rio_tiler==2.1.0
-cogeo-mosaic==3.0.0
