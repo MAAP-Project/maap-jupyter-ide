@@ -104,11 +104,13 @@ mkdir -p /projects/.ssh/
 chmod 700 /projects/.ssh/
 service ssh start
 
+# TBD maap-py install
+
 VERSION=$(jupyter lab --version)
 if [[ $VERSION > '2' ]] && [[ $VERSION < '3' ]]; then
     jupyter lab --ip=0.0.0.0 --port=3100 --allow-root --NotebookApp.token='' --NotebookApp.base_url=$PREVIEW_URL --no-browser --debug
 elif [[ $VERSION > '3' ]] && [[ $VERSION < '4' ]]; then
     jupyter lab --ip=0.0.0.0 --port=3100 --allow-root --ServerApp.token='' --ServerApp.base_url=$PREVIEW_URL --no-browser --debug
 else
-    echo "Error!"
+    echo "Error! Jupyterlab version not supported."
 fi
