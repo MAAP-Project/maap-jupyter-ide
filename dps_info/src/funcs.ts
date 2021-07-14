@@ -55,8 +55,13 @@ export async function DPSCall(state: IStateDB, endpoint:string, keywords:string[
     let requestUrl = new URL(PageConfig.getBaseUrl() + 'hysds/' + endpoint);
     for (let k of keywords) {
         requestUrl.searchParams.append(k,kwargs[k]);
+        console.log(requestUrl.href)
     }
+    console.log("This is the url")
+    console.log(endpoint)
     console.log(requestUrl.href);
+    console.log(kwargs)
+    console.log(keywords)
     const res = await request('get', requestUrl.href);
     return res; 
 }
