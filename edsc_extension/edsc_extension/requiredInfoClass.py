@@ -10,12 +10,12 @@ from rio_tiler.colormap import cmap
 import os
 import sys
 
-json_file_name = "variables.json"
+path_variablesjson = "ipycmc/ipycmc/loadGeotiffs/variables.json"
 
 class RequiredInfoClass:
     def __init__(self, debug_mode):
         try:
-            f = open(os.path.abspath(__file__).replace(os.path.basename(__file__), json_file_name), "r")
+            f = open(os.path.abspath(__file__).replace("edsc_extension/edsc_extension/"+os.path.basename(__file__), path_variablesjson), "r")
             dictionary = json.loads(f.read())
         except KeyboardInterrupt:
             raise KeyboardInterrupt
@@ -49,10 +49,9 @@ class RequiredInfoClass:
             self.default_ops_load_layer_config = dictionary["default_ops_load_layer_config"]
             self.default_debug_mode = dictionary["default_debug_mode"]
             self.default_time_analysis = dictionary["default_time_analysis"]
-
         except KeyboardInterrupt:
             raise KeyboardInterrupt
-        except: 
+        except:
             print("Essential key missing from JSON file: " + str(sys.exc_info()[1]))
             self.setup_successful = False
             return
@@ -83,7 +82,7 @@ class RequiredInfoClass:
                 print(link + " in variables.json must start with one of " + (', '.join([str(web_start) for web_start in self.web_starts])) + " to be considered a link.")
                 self.setup_successful = False
 
-    # Prints all incorrect arguments if something went wrong
+# Prints all incorrect arguments if something went wrong
     # Not the prettiest but short circuiting hurts in this case if all in one statement because not everything will evaluate
     def check_correct_types_args(self):
         return1 = self.check_correct_class_arg(self.required_starts, "required_starts", list) 
@@ -109,7 +108,7 @@ class RequiredInfoClass:
             self.setup_successful = False
 
     def check_correct_class_arg(self, arg, arg_name, class_type):
-        if not isinstance(arg, class_type):
+        if arg and not isinstance(arg, class_type):
             print(arg_name + " should be a " + str(class_type) + " in variables.json")
             return False
         return True

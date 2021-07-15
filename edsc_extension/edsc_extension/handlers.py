@@ -8,6 +8,8 @@ import json
 import maap
 from maap.maap import MAAP
 
+from . import loadGeotiffsFcnCall
+
 @functools.lru_cache(maxsize=128)
 def get_maap_config(host):
     path_to_json = os.path.join(os.path.dirname(os.path.abspath(__file__)), '../..', 'maap_environments.json')
@@ -60,5 +62,32 @@ class GetQueryHandler(IPythonHandler):
         query_string = maap.getCallFromCmrUri(cmr_query, limit=limit, search=query_type)
         print("Response is: ", query_string)
         self.finish({"query_string": query_string})
+
+
+class VisualizeCMCHandler(IPythonHandler):
+    def get(self):
+        print("worked in python function")
+        maap = MAAP(maap_api(self.request.host))
+        cmr_query = self.get_argument('cmr_query', '')
+        limit = str(self.get_argument('limit', ''))
+        maap_var_name = self.get_argument('maapVarName', '')
+        print("cmr_query", cmr_query)
+
+        # TODO fix this line- should work when deployed
+        query_string = maap.getCallFromCmrUri(cmr_query, limit=limit)
+        query_string = "maap.searchGranule(limit=1)"
+        granules = eval(query_string)
+
+        # get list of granules to pass to load geotiffs 
+        urls = []
+        for res in granules:
+            if res.getDownloadUrl():
+                urls.append(res.getDownloadUrl())
+
+        print("urls are " +str(urls))
+        urls = ["s3://maap-ops-workspace/graceal/N45W101.SRTMGL1.tif", "maap-ops-dataset", "orange-business"]
+        
+        function_call, errors = loadGeotiffsFcnCall.create_function_call(urls, maap_var_name)
+        self.finish({"function_call": function_call, "errors":errors})
 
 

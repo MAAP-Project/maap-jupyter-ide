@@ -53,11 +53,11 @@ class MapCMC(DOMWidget, InteractMixin):
     def load_layer_config(self, url, handle_as, default_ops = {}):
         self._argv = ["loadLayerConfig", url, handle_as, default_ops]
 
-    def load_geotiffs(self, urls, default_ops = {}, handle_as = "wmts/xml", default_ops_load_layer = {"handleAs": "wmts_raster"}):
-        return_url = loadGeotiffs.loadGeotiffs(urls, default_ops)
-        print("Request url generated: " + str(return_url))
+    def load_geotiffs(self, urls, default_tiler_ops = {}, handle_as = "", default_ops_load_layer = {}, debug_mode = "", time_analysis = ""):
+        return_url,handle_as_varjson,default_ops_load_layer_varjson = loadGeotiffs.load_geotiffs(urls, default_tiler_ops, handle_as, 
+            default_ops_load_layer, debug_mode, time_analysis)
         if return_url != None:
-            self._argv = ["loadLayerConfig", return_url, handle_as, default_ops_load_layer]
+            self._argv = ["loadLayerConfig", return_url, handle_as_varjson, default_ops_load_layer_varjson]
         
     def set_date(self, date_str, format_str=""):
         self._argv = ["setDate", date_str, format_str]

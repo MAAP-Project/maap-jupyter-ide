@@ -16,7 +16,6 @@ import { ReadonlyJSONObject } from '@lumino/coreutils';
 
 /** other external imports **/
 import { INotification } from "jupyterlab_toastify";
-import * as $ from "jquery";
 
 /** internal imports **/
 import '../style/index.css';
@@ -52,7 +51,6 @@ const extension: JupyterFrontEndPlugin<WidgetTracker<IFrameWidget>> = {
   requires: [IDocumentManager, ICommandPalette, ILayoutRestorer, IMainMenu, INotebookTracker],
   activate: activate
 };
-
 
 function activate(app: JupyterFrontEnd,
                   docManager: IDocumentManager,
@@ -98,6 +96,56 @@ function activate(app: JupyterFrontEnd,
     return widget;
   }
 
+  function getMaapVarName(current, checkAbove) {
+     // If same content 3 times in a row, assume that you have reached the top (reaching the top is a top op)
+     var iterationsUp = 0;
+     var nameMaapVar = null; // default variable
+     var lastCellCode = "";
+     var cellCodesRepeatedLastIteration = false;
+     while(true) {
+       var cellCode = current.content.activeCell.model.value.text;
+       var index = cellCode.indexOf(".MapCMC()");
+       // If you found the variable name
+       if (index!=-1) {
+         cellCode = cellCode.substring(0, index);
+         nameMaapVar = cellCode.substring(cellCode.lastIndexOf("="), cellCode.lastIndexOf("\n")).trim();
+         break;
+       }
+       // If not, check to see if repeating
+       if (cellCode == lastCellCode) {
+         // Break because this means they have repeated 3 times in a row now, the var name will just default to w
+         if (cellCodesRepeatedLastIteration) {
+          iterationsUp -=2;
+           break;
+         } else {
+           cellCodesRepeatedLastIteration = true;
+         }
+       } else {
+         cellCodesRepeatedLastIteration = false;
+       }
+       lastCellCode = cellCode;
+       // Move the notebook selection one up or down
+       if (checkAbove) {
+        NotebookActions.selectAbove(current.content);
+        } else {
+          NotebookActions.selectBelow(current.content);
+        }
+        iterationsUp ++;
+     }
+
+     var count = 0;
+     while(count < iterationsUp) {
+        if (checkAbove) {
+          NotebookActions.selectBelow(current.content);
+        } else {
+        NotebookActions.selectAbove(current.content);
+        }
+        count++;
+     }
+
+     return nameMaapVar;
+  }
+
 
   // PASTE SEARCH INTO A NOTEBOOK
   function pasteSearch(args: any, result_type: any, query_type='granule') {
@@ -128,7 +176,7 @@ function activate(app: JupyterFrontEnd,
 
         xhr.onload = function() {
           if (xhr.status == 200) {
-              let response: any = $.parseJSON(xhr.response);
+              let response: any = JSON.parse(xhr.response);
               response_text = response.query_string;
               if (response_text == "") {
                   response_text = "No results found.";
@@ -168,7 +216,7 @@ function activate(app: JupyterFrontEnd,
 
       xhr.onload = function() {
           if (xhr.status == 200) {
-              let response: any = $.parseJSON(xhr.response);
+              let response: any = JSON.parse(xhr.response);
               let response_text: any = response.granule_urls;
               if (response_text == "") {
                   response_text = "No results found.";
@@ -197,6 +245,75 @@ function activate(app: JupyterFrontEnd,
     }
 
 
+  }
+
+  function visualizeCMC(args: any) {
+    const current = getCurrent(args);
+    // If no search is selected, send an error
+    // TODO check for if empty without causing error
+    //if (Object.keys(globals.granuleParams).length == 0) {
+    //  INotification.error("Error: No Search Selected.");
+    //  return;
+    //}
+    var getUrl = new URL(PageConfig.getBaseUrl() + 'edsc/visualizeCMC');
+    var maapVarNameAbove = getMaapVarName(current, true);
+    if (maapVarNameAbove != null) {
+      getUrl.searchParams.append("maapVarName", maapVarNameAbove);
+    } else {
+      var maapVarNameBelow = getMaapVarName(current, false);
+      if (maapVarNameBelow != null) {
+        getUrl.searchParams.append("maapVarName", maapVarNameBelow);
+      } else {
+        // if instance of maap cannot be found, paste it into a cell yourself
+        getUrl.searchParams.append("maapVarName", "w");
+        var cellContent = "from maap.maap import MAAP\nmaap = MAAP\n\nimport ipycmc\nw = ipycmc.MapCMC()\nw"
+        NotebookActions.insertBelow(current.content);
+        NotebookActions.paste(current.content);
+        current.content.mode = 'command';
+        current.content.activeCell.model.value.text = cellContent;
+        NotebookActions.run(current.content);
+      }
+    }
+
+    getUrl.searchParams.append("cmr_query", globals.granuleQuery);
+    getUrl.searchParams.append("limit", globals.limit);
+    // Make call to back end
+    var xhr = new XMLHttpRequest();
+    
+    xhr.onload = function() {
+        if (xhr.status == 200) {
+            let response: any = JSON.parse(xhr.response);
+            if (current) {
+              NotebookActions.insertBelow(current.content);
+              NotebookActions.paste(current.content);
+              current.content.mode = 'edit';
+              const insert_text = "# Results to post to CMC (unaccepted file types removed): " + "\n" + response.function_call;
+              current.content.activeCell.model.value.text = insert_text;
+
+              // Print error messages (only 5 max)
+              var errors = response.errors.split("|");
+              var iterations = 0;
+              for (let error of errors) {
+                INotification.info(error);
+                iterations++;
+                if (iterations >= 5) {
+                  break;
+                }
+              }
+            }
+        }
+        else {
+            console.log("Error making call to get results. Status is " + xhr.status);
+            INotification.error("Error making call to get search results. Have you selected valid search parameters?");
+        }
+    };
+
+    xhr.onerror = function() {
+      INotification.error("Error getting results from Data Search.");
+    };
+
+    xhr.open("GET", getUrl.href, true);
+    xhr.send(null);
   }
 
 
@@ -277,6 +394,52 @@ function activate(app: JupyterFrontEnd,
   });
   palette.addItem({command: set_limit_command, category: 'Search'});
 
+  const visualize_cmc_command = 'search:visualizeCMC';
+  app.commands.addCommand(visualize_cmc_command, {
+    label: 'Visualize Granule Results CMC',
+    isEnabled: () => true,
+    execute: args => {
+      visualizeCMC(args)
+    }
+  });
+  palette.addItem({command: visualize_cmc_command, category: 'Search'});
+      //visualize_CMC();
+      /*const spawn = require("child_process").spawn;
+      //const { spawn } = require('child_process');
+      const pythonProcess = spawn('python',["visualizeCMC.py"]);
+      pythonProcess.stdout.on('data', (data) => {
+        // Do something with the data returned from python script
+        alert("worked");
+      });*/
+      /*var jqXHR = $.ajax({
+        type: "POST",
+        url: "~/visualizeCMC.py",
+        data: { param: Text}
+      }).done(function() {
+        alert( "success" );
+      })
+      .fail(function() {
+        alert( "error" );
+      })
+      .always(function() {
+        alert( "complete" );
+      });
+      var jqXHR = $.ajax( "./visualizeCMC.py" )
+        .done(function() {
+          alert( "success" );
+        })
+        .fail(function() {
+          alert( "error" );
+        })
+        .always(function() {
+          alert( "complete" );
+        });
+        jqXHR.fail(function( jqXHR, textStatus, errorThrown ) {
+          alert(textStatus);
+          alert(errorThrown);
+        });*/
+  
+
 
 
   const { commands } = app;
@@ -288,7 +451,8 @@ function activate(app: JupyterFrontEnd,
     paste_collection_query_command,
     paste_granule_query_command,
     paste_results_command,
-    set_limit_command
+    set_limit_command,
+    visualize_cmc_command
   ].forEach(command => {
     searchMenu.addItem({ command });
   });
