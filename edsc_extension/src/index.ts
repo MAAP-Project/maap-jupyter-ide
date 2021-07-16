@@ -251,10 +251,10 @@ function activate(app: JupyterFrontEnd,
     const current = getCurrent(args);
     // If no search is selected, send an error
     // TODO check for if empty without causing error
-    //if (Object.keys(globals.granuleParams).length == 0) {
-    //  INotification.error("Error: No Search Selected.");
-    //  return;
-    //}
+    if (Object.keys(globals.granuleParams).length == 0) {
+      INotification.error("Error: No Search Selected.");
+      return;
+    }
     var getUrl = new URL(PageConfig.getBaseUrl() + 'edsc/visualizeCMC');
     var maapVarNameAbove = getMaapVarName(current, true);
     if (maapVarNameAbove != null) {
@@ -269,7 +269,7 @@ function activate(app: JupyterFrontEnd,
         var cellContent = "from maap.maap import MAAP\nmaap = MAAP\n\nimport ipycmc\nw = ipycmc.MapCMC()\nw"
         NotebookActions.insertBelow(current.content);
         NotebookActions.paste(current.content);
-        current.content.mode = 'command';
+        //current.content.mode = 'command';
         current.content.activeCell.model.value.text = cellContent;
         NotebookActions.run(current.content);
       }
@@ -403,44 +403,6 @@ function activate(app: JupyterFrontEnd,
     }
   });
   palette.addItem({command: visualize_cmc_command, category: 'Search'});
-      //visualize_CMC();
-      /*const spawn = require("child_process").spawn;
-      //const { spawn } = require('child_process');
-      const pythonProcess = spawn('python',["visualizeCMC.py"]);
-      pythonProcess.stdout.on('data', (data) => {
-        // Do something with the data returned from python script
-        alert("worked");
-      });*/
-      /*var jqXHR = $.ajax({
-        type: "POST",
-        url: "~/visualizeCMC.py",
-        data: { param: Text}
-      }).done(function() {
-        alert( "success" );
-      })
-      .fail(function() {
-        alert( "error" );
-      })
-      .always(function() {
-        alert( "complete" );
-      });
-      var jqXHR = $.ajax( "./visualizeCMC.py" )
-        .done(function() {
-          alert( "success" );
-        })
-        .fail(function() {
-          alert( "error" );
-        })
-        .always(function() {
-          alert( "complete" );
-        });
-        jqXHR.fail(function( jqXHR, textStatus, errorThrown ) {
-          alert(textStatus);
-          alert(errorThrown);
-        });*/
-  
-
-
 
   const { commands } = app;
   let searchMenu = new Menu({ commands });

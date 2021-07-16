@@ -75,7 +75,7 @@ class VisualizeCMCHandler(IPythonHandler):
 
         # TODO fix this line- should work when deployed
         query_string = maap.getCallFromCmrUri(cmr_query, limit=limit)
-        query_string = "maap.searchGranule(limit=1)"
+        #query_string = "maap.searchGranule(limit=1)"
         granules = eval(query_string)
 
         # get list of granules to pass to load geotiffs 
@@ -84,8 +84,8 @@ class VisualizeCMCHandler(IPythonHandler):
             if res.getDownloadUrl():
                 urls.append(res.getDownloadUrl())
 
-        print("urls are " +str(urls))
-        urls = ["s3://maap-ops-workspace/graceal/N45W101.SRTMGL1.tif", "maap-ops-dataset", "orange-business"]
+        #print("urls are " +str(urls))
+        #urls = ["s3://maap-ops-workspace/graceal/N45W101.SRTMGL1.tif", "maap-ops-dataset", "orange-business"]
         
         function_call, errors = loadGeotiffsFcnCall.create_function_call(urls, maap_var_name)
         self.finish({"function_call": function_call, "errors":errors})
