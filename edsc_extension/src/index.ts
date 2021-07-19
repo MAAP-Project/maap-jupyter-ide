@@ -291,13 +291,15 @@ function activate(app: JupyterFrontEnd,
               current.content.activeCell.model.value.text = insert_text;
 
               // Print error messages (only 5 max)
-              var errors = response.errors.split("|");
-              var iterations = 0;
-              for (let error of errors) {
-                INotification.info(error);
-                iterations++;
-                if (iterations >= 5) {
-                  break;
+              if (response.errors) {
+                var errors = response.errors.split("|");
+                var iterations = 0;
+                for (let error of errors) {
+                  INotification.info(error);
+                  iterations++;
+                  if (iterations >= 5) {
+                    break;
+                  }
                 }
               }
             }
