@@ -213,13 +213,13 @@ export class JobTable extends Widget {
         if (this._job_id === undefined || this._job_id === '') {
             this._results = '<p> Job ID not selected.</p>';
             console.log('job id undefined/empty');
-        } else if (JOBS[this._job_id]['status'] !== 'job-completed') {
+        } else if (JOBS[this._job_id]['status'] == 'job-started') {
             this._results = '<p> Job '+this._job_id+' not complete</p>';
             console.log('job not complete');
         } else {
             console.log('looking up job results');
             const res:RequestResult = await getResults(this._state, this._job_id,this._username);
-            // console.log(res);
+            console.log(res);
             if (res.ok) {
                 let json_response:any = res.json();
                 
@@ -264,6 +264,8 @@ export class JobTable extends Widget {
         }
 
         // update table
+        console.log("These are the metrics")
+        console.log(this._metrics)
         if (document.getElementById(this._metricsTableName) !== null) {
             (document.getElementById(this._metricsTableName) as HTMLTextAreaElement).innerHTML = this._metrics;
         } else {
@@ -280,13 +282,13 @@ export class JobTable extends Widget {
         if (this._job_id === undefined || this._job_id === '') {
             this._metrics = '<p> Job ID not selected.</p>';
             console.log('job id undefined/empty');
-        } else if (JOBS[this._job_id]['status'] !== 'job-completed') {
+        } else if (JOBS[this._job_id]['status'] == 'job-started') {
             this._metrics = '<p> Job '+this._job_id+' not complete</p>';
             console.log('job not complete');
         } else {
             console.log('looking up job metrics');
             const res:RequestResult = await getMetrics(this._state, this._job_id,this._username);
-            // console.log(res);
+            console.log(res);
             if (res.ok) {
                 let json_response:any = res.json();
                 
@@ -906,13 +908,13 @@ export class JobWidget extends Widget {
         if (this._job_id === undefined || this._job_id === '') {
             this._results = '<p> Job ID not selected.</p>';
             console.log('job id undefined/empty');
-        } else if (JOBS[this._job_id]['status'] !== 'job-completed') {
+        } else if (JOBS[this._job_id]['status'] == 'job-started') {
             this._results = '<p> Job '+this._job_id+' not complete.</p>';
             console.log('job not complete');
         } else {
             console.log('looking up job results');
             const res:RequestResult = await getResults(this._state, this._job_id,this._username);
-            // console.log(res);
+            console.log(res);
             if (res.ok) {
                 let json_response:any = res.json();
                 
@@ -981,19 +983,22 @@ export class JobWidget extends Widget {
         if (this._job_id === undefined || this._job_id === '') {
             this._metrics = '<p> Job ID not selected.</p>';
             console.log('job id undefined/empty');
-        } else if (JOBS[this._job_id]['status'] !== 'job-completed') {
+        } else if (JOBS[this._job_id]['status'] == 'job-started') {
             this._metrics = '<p> Job '+this._job_id+' not complete.</p>';
             console.log('job not complete');
         } else {
-            console.log('looking up job metrics');
+            console.log('looking up job metrics 2');
             const res:RequestResult = await getMetrics(this._state, this._job_id,this._username);
-            // console.log(res);
+            const res1:RequestResult = await getResults(this._state, this._job_id,this._username);
+            console.log(res);
+            console.log(res1)
             if (res.ok) {
                 let json_response:any = res.json();
                 
                 if (json_response['status_code'] === 200) {
                     //INotification.success("Get user job metrics success.");
                     this._metrics = json_response['result'];
+                    console.log(this._metrics)
                 } else {
                     console.log('get user job metrics != 200');
                     //INotification.error("Get user job metrics failed.");
@@ -1163,7 +1168,7 @@ export class JobWidget extends Widget {
         // jobtable below
         this._getJobList(this);
         
-        console.log('update UI');
+        console.log('update UI 2');
     }
 
     _clickTab(evt, section:string) {
