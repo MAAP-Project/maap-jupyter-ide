@@ -20,7 +20,33 @@ import sys
 json_file_name = "variables.json"
 global required_info
 
-def load_geotiffs(urls, default_tiler_ops, handle_as, default_ops_load_layer, debug_mode, time_analysis):
+def load_geotiffs(urls, default_tiler_ops, handle_as, default_ops_load_layer, debug_mode_given, time_analysis_given):
+    """
+    Function that takes in the users arguments, and calls the correct functions based on these arguments
+    (i.e. calls time analysis if the user passes time analysis as true). Catches all errors except KeyboardInterrupts
+    Parameters
+    ----------
+    urls : str or list
+        The locations of the files in s3 to read. Can be in the format of a single s3 link, list of s3 links, or folder with tif files
+    default_tiler_ops : dict
+        Default arguments to pass to the Tiler when making the wmts tiles. May be empty (passed by user)
+    handle_as : str
+        Default argument for the handle_as parameter in the load_layer_config function. May be empty (passed by user), assigned by user 
+    default_ops_load_layer : dict
+        Default argument for the default_ops parameter in the load_layer_config function. May be empty (passed by user)
+    debug_mode : bool
+        Parameter for putting this function into debug mode
+    time_analysis : bool
+        Parameter for conducting time analysis for this function to determine the speed of debug mode compared to non debug mode
+    
+    Returns
+    -------
+    str
+        a request url to be passed to load_layer_config or None in the case of error
+    """
+    varjson_valid, debug_mode, time_analysis = init_required_info(debug_mode_given, time_analysis_given)
+    if not varjson_valid:
+        return None, None, None
     try:
         if time_analysis:
             return_url,handle_as_varjson,default_ops_load_layer_varjson = timeAnalysis.conduct_time_analysis(urls, default_tiler_ops, handle_as, default_ops_load_layer, debug_mode, time_analysis)
@@ -42,21 +68,28 @@ def load_geotiffs(urls, default_tiler_ops, handle_as, default_ops_load_layer, de
         return None,None,None
 
 def load_geotiffs_base(urls, default_tiler_ops, handle_as, default_ops_load_layer, debug_mode, time_analysis):
-    """Main function that handles the users request
+    """
+    Main function that handles the users request for a single geotiff, multiple geotiff, or a folder
     Parameters
     ----------
     urls : str or list
         The locations of the files in s3 to read. Can be in the format of a single s3 link, list of s3 links, or folder with tif files
     default_tiler_ops : dict
-        Default arguments to pass to the Tiler when making the wmts tiles
+        Default arguments to pass to the Tiler when making the wmts tiles. May be empty (passed by user)
+    handle_as : str
+        Default argument for the handle_as parameter in the load_layer_config function. May be empty (passed by user)
+    default_ops_load_layer : dict
+        Default argument for the default_ops parameter in the load_layer_config function. May be empty (passed by user)
+    debug_mode : bool
+        Parameter for putting this function into debug mode. If was empty, was assigned to default
+    time_analysis : bool
+        Parameter for conducting time analysis for this function to determine the speed of debug mode compared to non debug mode
+    
     Returns
     -------
     str
         a request url to be passed to load_layer_config or None in the case of error
     """
-    if not init_required_info(debug_mode):
-        return None, None, None
-
     # Check the type and format of the URLs passed into the function
     if debug_mode and errorChecking.check_valid_arguments(urls, default_tiler_ops, handle_as, default_ops_load_layer, debug_mode, time_analysis) == False:
         return None, None, None
@@ -76,13 +109,16 @@ def load_geotiffs_base(urls, default_tiler_ops, handle_as, default_ops_load_laye
     return request_url, required_info.default_handle_as, required_info.default_ops_load_layer_config
 
 def create_request_single_geotiff(s3Url, default_tiler_ops, debug_mode):
-    """Creates the request url in the case of a single s3 geotiff link being passed
+    """
+    Creates the request url in the case of a single s3 geotiff link being passed
     Parameters
     ----------
     s3Url : str
         The location of the s3Url to pass to the Tiler to make tiles
     default_ops : dict
         Default arguments to pass to the Tiler when making the wmts tiles
+    debug_mode : bool
+        Determines if certain error checks should happen
     Returns
     -------
     str
@@ -99,13 +135,16 @@ def create_request_single_geotiff(s3Url, default_tiler_ops, debug_mode):
     return newUrl
 
 def create_request_folder_geotiffs(urls, default_tiler_ops, debug_mode):
-    """Creates the request url in the case of a folder with multiple geotiff files in it
+    """
+    Creates the request url in the case of a folder with multiple geotiff files in it
     Parameters
     ----------
     urls : str
         The location of the folder with Geotiff files
     default_tiler_ops : dict
         Default arguments to pass to the Tiler when making the wmts tiles
+    debug_mode : bool
+        Determines if certain error checks should happen
     Returns
     -------
     str
@@ -120,13 +159,16 @@ def create_request_folder_geotiffs(urls, default_tiler_ops, debug_mode):
         return create_request_multiple_geotiffs(geotiffs, default_tiler_ops, debug_mode)
 
 def create_request_multiple_geotiffs(urls, default_tiler_ops, debug_mode):
-    """Creates the request url in the case of a links of s3 links to Geotiff files
+    """
+    Creates the request url in the case of a links of s3 links to Geotiff files
     Parameters
     ----------
     urls : list
         The list of s3 urls to create a mosaic json
     default_tiler_ops : dict
         Default arguments to pass to the Tiler when making the wmts tiles
+    debug_mode : bool
+        Determines if certain error checks should happen
     Returns
     ------- 
     str
@@ -139,12 +181,37 @@ def create_request_multiple_geotiffs(urls, default_tiler_ops, debug_mode):
         return None
     return newUrl
 
-def init_required_info(debug_mode):
+def init_required_info(debug_mode_given, time_analysis_given):
+    """
+    Creates the request url in the case of a links of s3 links to Geotiff files
+    Parameters
+    ----------
+    debug_mode_given : bool or str (if empty)
+        debug_mode that is given by the user. If empty, assigned to the default_debug_mode in variables.json
+    time_analysis_given : bool or str (if empty)
+        time_analysis that is given by the user. If empty, assigned to the default_time_analysis in variables.json
+    Returns
+    ------- 
+    bool
+        Indicates True if the RequiredInfoClass successfully set up and False otherwise
+    bool
+        Represents debug_mode whether provided by the user or assigned from variables.json
+    bool
+        Represents time_analysis whether provided by the user or assigned from variables.json
+    """
     global required_info
-    required_info = requiredInfoClass.RequiredInfoClass(debug_mode)
+    required_info = requiredInfoClass.RequiredInfoClass(debug_mode_given)
     if not required_info.setup_successful:
-        return False
+        return False, False, False
+    if debug_mode_given == "":
+        debug_mode = required_info.default_debug_mode
+    else:
+        debug_mode = debug_mode_given
+    if time_analysis_given == "":
+        time_analysis = required_info.default_time_analysis
+    else:
+        time_analysis = time_analysis_given
     errorChecking.initialize_required_info(required_info)
     extractInfoLinks.initialize_required_info(required_info)
     createUrl.initialize_required_info(required_info)
-    return True
+    return True, debug_mode, time_analysis
