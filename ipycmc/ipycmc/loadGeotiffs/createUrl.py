@@ -65,54 +65,18 @@ def create_mosaic_json_url(urls, default_tiler_ops, debug_mode):
         return newUrl
     else:
         return None
-
-# Creates a variable representing a mosaic JSON to pass to the Tiler
-def create_mosaic_json(urls):
-    files = [
-        dict(
-            path=l,
-        )
-        for l in urls
-    ]
-
-    with futures.ThreadPoolExecutor(max_workers=5) as executor:
-        features = [r for r in executor.map(worker, files) if r]
-    if features == []:
-        print("Features created is empty which is most likely a permissions error.")
-        return None
-    mosaic_data = MosaicJSON.from_features(features, minzoom=10, maxzoom=18).json()
-    return json.loads(mosaic_data)
     
 def create_mosaic_json_from_urls(urls):
-    os.environ['CURL_CA_BUNDLE']='/etc/ssl/certs/ca-certificates.crt'
-    mosaicJson = MosaicJSON.from_urls(urls).json()
-    return json.loads(mosaicJson)
-
-# Fuction provided by Development Seed. Creates the features for each geoTIFF in the mosaic JSON
-def worker(meta):
     try:
-        with COGReader(meta["path"]) as cog:
-            wgs_bounds = cog.bounds
+        os.environ['CURL_CA_BUNDLE']='/etc/ssl/certs/ca-certificates.crt'
+        mosaicJson = MosaicJSON.from_urls(urls).json()
+        mosaicJson = json.loads(mosaicJson)
+        return mosaicJson
     except KeyboardInterrupt:
         raise KeyboardInterrupt
     except:
-        return {}
-    return {
-        "geometry": {
-            "type": "Polygon",
-            "coordinates": [
-                [
-                    [wgs_bounds[0], wgs_bounds[3]],
-                    [wgs_bounds[0], wgs_bounds[1]],
-                    [wgs_bounds[2], wgs_bounds[1]],
-                    [wgs_bounds[2], wgs_bounds[3]],
-                    [wgs_bounds[0], wgs_bounds[3]]
-                ]
-            ]
-        },
-        "properties": meta,
-        "type": "Feature"
-    }
+        print("Error creating the mosaic json using MosaicJSON.from_urls. This is likely because of a permissions error.")
+        return None
 
 # Adds the specified defaults onto the url taking user input into account. Returns None if errors in the user-given default arguments
 def add_defaults_url(url, default_tiler_ops, debug_mode):
