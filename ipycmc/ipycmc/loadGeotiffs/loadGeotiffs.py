@@ -24,6 +24,7 @@ def load_geotiffs(urls, default_tiler_ops, handle_as, default_ops_load_layer, de
     """
     Function that takes in the users arguments, and calls the correct functions based on these arguments
     (i.e. calls time analysis if the user passes time analysis as true). Catches all errors except KeyboardInterrupts
+
     Parameters
     ----------
     urls : str or list
@@ -70,6 +71,7 @@ def load_geotiffs(urls, default_tiler_ops, handle_as, default_ops_load_layer, de
 def load_geotiffs_base(urls, default_tiler_ops, handle_as, default_ops_load_layer, debug_mode, time_analysis):
     """
     Main function that handles the users request for a single geotiff, multiple geotiff, or a folder
+
     Parameters
     ----------
     urls : str or list
@@ -111,6 +113,7 @@ def load_geotiffs_base(urls, default_tiler_ops, handle_as, default_ops_load_laye
 def create_request_single_geotiff(s3Url, default_tiler_ops, debug_mode):
     """
     Creates the request url in the case of a single s3 geotiff link being passed
+
     Parameters
     ----------
     s3Url : str
@@ -119,6 +122,7 @@ def create_request_single_geotiff(s3Url, default_tiler_ops, debug_mode):
         Default arguments to pass to the Tiler when making the wmts tiles
     debug_mode : bool
         Determines if certain error checks should happen
+
     Returns
     -------
     str
@@ -137,6 +141,7 @@ def create_request_single_geotiff(s3Url, default_tiler_ops, debug_mode):
 def create_request_folder_geotiffs(urls, default_tiler_ops, debug_mode):
     """
     Creates the request url in the case of a folder with multiple geotiff files in it
+
     Parameters
     ----------
     urls : str
@@ -145,6 +150,7 @@ def create_request_folder_geotiffs(urls, default_tiler_ops, debug_mode):
         Default arguments to pass to the Tiler when making the wmts tiles
     debug_mode : bool
         Determines if certain error checks should happen
+
     Returns
     -------
     str
@@ -161,6 +167,7 @@ def create_request_folder_geotiffs(urls, default_tiler_ops, debug_mode):
 def create_request_multiple_geotiffs(urls, default_tiler_ops, debug_mode):
     """
     Creates the request url in the case of a links of s3 links to Geotiff files
+
     Parameters
     ----------
     urls : list
@@ -169,6 +176,7 @@ def create_request_multiple_geotiffs(urls, default_tiler_ops, debug_mode):
         Default arguments to pass to the Tiler when making the wmts tiles
     debug_mode : bool
         Determines if certain error checks should happen
+
     Returns
     ------- 
     str
@@ -184,12 +192,14 @@ def create_request_multiple_geotiffs(urls, default_tiler_ops, debug_mode):
 def init_required_info(debug_mode_given, time_analysis_given):
     """
     Creates the request url in the case of a links of s3 links to Geotiff files
+    
     Parameters
     ----------
     debug_mode_given : bool or str (if empty)
         debug_mode that is given by the user. If empty, assigned to the default_debug_mode in variables.json
     time_analysis_given : bool or str (if empty)
         time_analysis that is given by the user. If empty, assigned to the default_time_analysis in variables.json
+
     Returns
     ------- 
     bool

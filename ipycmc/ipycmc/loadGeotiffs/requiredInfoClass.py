@@ -1,5 +1,7 @@
 """
-This class holds all the parameters that are necessary to operate the load_geotiffs function
+This class holds all the parameters that are necessary to operate the load_geotiffs function. It reads the variables from variables.json. 
+If debug_mode is True, then checks these variables to make sure that they are valid. All files that make up the load_geotiffs function have
+copies of the RequiredInfoClass
 
 Written by Grace Llewellyn
 """
@@ -79,6 +81,7 @@ class RequiredInfoClass:
         """
         Searches each link in the list of links to see if it begins with web_starts. If one does not begin with one of web_starts, 
         then setup_successful is set to False. All links that are invalid have an error message printed.
+        
         Parameters
         ----------
         links : list
@@ -116,6 +119,7 @@ class RequiredInfoClass:
     def check_correct_class_arg(self, arg, arg_name, class_type):
         """
         Creates the request url in the case of a folder with multiple geotiff files in it
+
         Parameters
         ----------
         arg : any
@@ -124,6 +128,7 @@ class RequiredInfoClass:
             Name of the given argument as shown in variables.json (used to show error message to user)
         class_type : any
             Class that arg should be or error printed
+
         Returns
         -------
         bool
