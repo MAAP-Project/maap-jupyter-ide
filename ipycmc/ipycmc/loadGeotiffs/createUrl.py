@@ -5,8 +5,6 @@ Written by Grace Llewellyn
 """
 
 from cogeo_mosaic.mosaic import MosaicJSON
-from concurrent import futures
-from rio_tiler.io import COGReader
 import copy
 from . import errorChecking
 import os
@@ -29,23 +27,30 @@ def initialize_required_info(required_info_given):
 
 # Returns the list for a mosaic JSON for the given s3 links. Returns None in case of error and prints the appropriate error message
 def create_mosaic_json_url(urls, default_tiler_ops, debug_mode):
-    # TODO error check in this function and potentially return None, remember to get None in loadGeotiffs
+    """
+    Creates a mosaic json, then posts the mosaic JSON to a TiTiler endpoints, then generates a request url to the TiTiler by 
+    adding on the default arguments.
+
+    Parameters
+    ----------
+    urls : list
+        List of geotiffs to create a mosaic json from
+    default_tiler_ops : dict
+        User-given defaults to add to the request url to TiTiler ops, if this is empty, defaults from variables.json are used
+    debug_mode : bool
+        Determines if certain error checks and print statements should happen
+    
+    Returns
+    -------
+    str
+        Request url to pass to TiTiler with mosaic json, None returned in case of error
+    """
     mosaic_data_json = create_mosaic_json_from_urls(urls)
     if mosaic_data_json == None:
         return None
-    posting_endpoint = required_info.posting_tiler_endpoint
-    
-    # Post the mosaic json
-    r = requests.post(
-        url=f"{posting_endpoint}/mosaicjson/mosaics",
-        headers={
-            "Content-Type": "application/vnd.titiler.mosaicjson+json",
-        },
-        json=mosaic_data_json).json()
-    # NOTE this should be temporary because Dev seed should get back with an all in one endpoint
+    r = post_mosaic_json(mosaic_data_json)
     # TODO fix this so doesn't recall 
-    env_same, bucket_name = errorChecking.get_environment_list(urls)
-    # If the data is published or in pilot ops
+    bucket_name = errorChecking.get_environment_list(urls)[1]
     if (bucket_name == None or bucket_name=="maap-ops-dataset"):
         try:
             xml_endpoint = eval(required_info.getting_wmts_endpoint)
@@ -66,7 +71,43 @@ def create_mosaic_json_url(urls, default_tiler_ops, debug_mode):
     else:
         return None
     
+def post_mosaic_json(mosaic_data_json):
+    """
+    Posts the mosaic JSON as a request to a TiTiler
+
+    Parameters
+    ----------
+    mosaic_data_json : dict
+        Mosaic JSON to post
+    
+    Returns
+    -------
+    dict
+        Response to request
+    """
+    r = requests.post(
+        url=f"{required_info.posting_tiler_endpoint}/mosaicjson/mosaics",
+        headers={
+            "Content-Type": "application/vnd.titiler.mosaicjson+json",
+        },
+        json=mosaic_data_json).json()
+    return r 
+
+    
 def create_mosaic_json_from_urls(urls):
+    """
+    Creates the mosaic json from using MosaicJSON.from_urls()
+
+    Parameters
+    ----------
+    urls : list
+        Geotiffs to create into mosaic json
+    
+    Returns
+    -------
+    dict
+        Mosaic json
+    """
     try:
         os.environ['CURL_CA_BUNDLE']='/etc/ssl/certs/ca-certificates.crt'
         mosaicJson = MosaicJSON.from_urls(urls).json()
@@ -80,6 +121,25 @@ def create_mosaic_json_from_urls(urls):
 
 # Adds the specified defaults onto the url taking user input into account. Returns None if errors in the user-given default arguments
 def add_defaults_url(url, default_tiler_ops, debug_mode):
+    """
+    Adds the defaults for the TiTiler to the request url. Even if the user does not pass arguments for the TiTiler, the defaults
+    are still added to the request url because the tiles may not show up on CMC without these defaults, especially the rescale parameter.
+    Whichever keys the user doesn't provide in default_tiler_ops, required_info.defaults_tiler gives.
+
+    Parameters
+    ----------
+    url : str
+        Request url to add TiTiler default to
+    default_tiler_ops : dict
+        User-given defaults for the TiTiler, may be empty. Checked for errors if in debug mode
+    debug_mode : bool
+        Determines if certain error checks and print statements should happen
+    
+    Returns
+    -------
+    str
+        Request url ready to pass to the TiTiler
+    """
     if debug_mode and (not errorChecking.check_valid_default_arguments(default_tiler_ops)):
         return None
 
