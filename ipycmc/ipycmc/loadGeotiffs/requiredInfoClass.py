@@ -81,7 +81,7 @@ class RequiredInfoClass:
         """
         Searches each link in the list of links to see if it begins with web_starts. If one does not begin with one of web_starts, 
         then setup_successful is set to False. All links that are invalid have an error message printed.
-        
+
         Parameters
         ----------
         links : list
@@ -118,7 +118,7 @@ class RequiredInfoClass:
 
     def check_correct_class_arg(self, arg, arg_name, class_type):
         """
-        Creates the request url in the case of a folder with multiple geotiff files in it
+        Determines if the given argument is the correct, given class type
 
         Parameters
         ----------

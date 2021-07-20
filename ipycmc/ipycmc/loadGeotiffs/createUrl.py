@@ -1,5 +1,5 @@
 """
-This file has all the load_geotiffs helper methods that help create
+This file has all the load_geotiffs helper functions that help create the mosaic json request url to pass to the TiTiler
 
 Written by Grace Llewellyn
 """
@@ -16,6 +16,14 @@ import json
 global required_info
 
 def initialize_required_info(required_info_given):
+    """
+    Initializes required_info for use throughout the file
+
+    Parameters
+    ----------
+    required_info_given : RequiredInfoClass
+        Instance of RequiredInfoClass created in loadGeotiffs.py with all the variables from variables.json
+    """
     global required_info
     required_info = required_info_given
 
@@ -35,7 +43,8 @@ def create_mosaic_json_url(urls, default_tiler_ops, debug_mode):
         },
         json=mosaic_data_json).json()
     # NOTE this should be temporary because Dev seed should get back with an all in one endpoint
-    bucket_name = errorChecking.determine_valid_bucket(urls[0])
+    # TODO fix this so doesn't recall 
+    env_same, bucket_name = errorChecking.get_environment_list(urls)
     # If the data is published or in pilot ops
     if (bucket_name == None or bucket_name=="maap-ops-dataset"):
         try:

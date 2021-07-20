@@ -40,7 +40,7 @@ def extract_geotiff_links(folder_path, debug_mode):
     list
         list of the geotiffs extracted from the folder. None in case of error
     """
-    bucket_name = errorChecking.determine_valid_bucket(folder_path)
+    endpoint, bucket_name = determine_environment(folder_path)
     if bucket_name == None:
         print("The environment of the bucket you passed as a folder is not a valid environment type. The supported environments are: " +  
             (', '.join([str(key) for key in required_info.endpoints_tiler])) + ".")
@@ -131,15 +131,17 @@ def determine_environment(s3Link):
     Returns
     -------
     str
-        endpoint of the TiTiler to pass geotiff or mosaic to 
+        Endpoint of the TiTiler to pass geotiff or mosaic to 
+    str
+        Represents the bucket name, None is returned if cannot find bucket name or published data (this value should not be used then)
     """
     bucket_name = extract_bucket_name(s3Link)
     if bucket_name == None:
-        return required_info.endpoint_published_data
+        return required_info.endpoint_published_data, None
     endpoint_tiler = required_info.endpoints_tiler.get(bucket_name)
     if endpoint_tiler == None:
-        return required_info.endpoint_published_data
-    return endpoint_tiler
+        return required_info.endpoint_published_data, None
+    return endpoint_tiler, bucket_name
 
 def file_ending(s3Link):
     """

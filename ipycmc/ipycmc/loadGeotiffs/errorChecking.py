@@ -1,3 +1,9 @@
+"""
+This file error checks the user given arguments to determine if they are valid and prints the appropriate error message/
+Most of these functions will not be called if debug_mode is False
+
+Written by: Grace Llewellyn
+"""
 import json
 from . import loadGeotiffs
 from . import extractInfoLinks
@@ -17,25 +23,31 @@ def initialize_required_info(required_info_given):
     global required_info
     required_info = required_info_given
 
-# Should print all errors that the user has with the arguments
 def check_valid_arguments(urls, default_tiler_ops, handle_as, default_ops_load_layer, debug_mode, time_analysis):
-    urls_valid = check_valid_arguments_urls(urls)
-    args_valid = check_correct_classes_args(default_tiler_ops, handle_as, default_ops_load_layer, debug_mode, time_analysis)
-    return urls_valid and args_valid
+    """
+    Checks if the user given arguments are valid. For the urls, checks that the variable is not empty, all the environments are the same,
+    and the file ending is valid. Checks that the class types of the other arguments provided by the user are the correct class type
 
-def check_correct_classes_args(default_tiler_ops, handle_as, default_ops_load_layer, debug_mode, time_analysis):
-    return check_correct_class_arg(default_tiler_ops, "default_tiler_ops", dict) and check_correct_class_arg(handle_as, "handle_as", str) and check_correct_class_arg(default_ops_load_layer, "default_ops_load_layer", dict) and check_correct_class_arg(debug_mode, "debug_mode", bool) and check_correct_class_arg(time_analysis, "time_analysis", bool)
-
-def check_correct_class_arg(arg, arg_name, class_type):
-    if arg and not isinstance(arg, class_type):
-        print(arg_name + " should be a " + str(class_type))
-        return False
-    return True
-
-# Returns False if arguments are invalid and prints appropriate error messages. Reasons that links can be invalid are:
-# String: Empty string, doesn't start with s3://, doesn't end with .tiff
-# List: Empty list, one of links doesn't start with s3://, one of links doesn't end with .tiff, not all links are from the same environment
-def check_valid_arguments_urls(urls):
+    Parameters
+    ----------
+    urls : str or list
+        The locations of the files in s3 to read. Can be in the format of a single s3 link, list of s3 links, or folder with tif files
+    default_tiler_ops : dict
+        Default arguments to pass to the Tiler when making the wmts tiles. May be empty (passed by user)
+    handle_as : str
+        Default argument for the handle_as parameter in the load_layer_config function. May be empty (passed by user)
+    default_ops_load_layer : dict
+        Default argument for the default_ops parameter in the load_layer_config function. May be empty (passed by user)
+    debug_mode : bool
+        Parameter for putting this function into debug mode. If was empty, was assigned to default
+    time_analysis : bool
+        Parameter for conducting time analysis for this function to determine the speed of debug mode compared to non debug mode
+    
+    Returns
+    -------
+    bool
+        True if all the arguments are valid and False if not
+    """
     if isinstance(urls, str):
         if not urls:
             print("You have provided an empty string. Please provide s3 link(s).")
@@ -45,7 +57,8 @@ def check_valid_arguments_urls(urls):
         if not urls:
             print("You have provided an empty list. Please provide s3 link(s).")
             return False
-        if check_environments_same(urls) == False:
+        # Check that all environment same in list
+        if get_environment_list(urls)[0] == False:
             return False
         for url in urls:
             if check_valid_s3_link(url) == False:
@@ -53,15 +66,29 @@ def check_valid_arguments_urls(urls):
             if extractInfoLinks.file_ending(url) == False:
                 print(url + " doesn't end in one of " + (', '.join([str(elem) for elem in required_info.required_ends])) + ".")
                 return False
-        return True
+        return required_info.check_correct_class_arg(default_tiler_ops, "default_tiler_ops", dict) and required_info.check_correct_class_arg(handle_as, "handle_as", str) and required_info.check_correct_class_arg(default_ops_load_layer, "default_ops_load_layer", dict) and required_info.check_correct_class_arg(debug_mode, "debug_mode", bool) and required_info.check_correct_class_arg(time_analysis, "time_analysis", bool)
     else:
         print("The variable you passed for urls is " +str(type(urls)) + ". The only accepted types for this function are a string or list.")
         return False
 
-# Prints the appriopriate error message if error contained in the request url text and then returns True if errors exist
-# Try to keep track of the errors that I recognize, but might be another error that starts with "detail", so just print the given error
-# message from the Tiler even though it does not always make the most sense
 def check_errors_request_url(request_url):
+    """
+    Checks if there are errors in the request url. This means that instead of returning an XML object, the link contains a JSON object with
+    an error message. Sometimes these error messages are not the most detailed, so if the JSON object contains an one of required_info.errors_tiler, 
+    then I inform the user what the error means and a potential fix. If content of the request url does not begin with required_info.correct_wmts_beginning
+    which is < since that is the beginning of an XML file, then I just show the error message to the user. Note that this function can take a little to run
+    and is only called if the user is in debug mode
+
+    Parameters
+    ----------
+    request_url : str
+        Request url to send to the TiTiler. This request url may contain an error message for the user
+    
+    Returns
+    -------
+    bool
+        True if there is an error message in the request url and False otherwise
+    """
     response = requests.get(request_url).text
     for error in required_info.errors_tiler:
         if error in response:
@@ -72,53 +99,73 @@ def check_errors_request_url(request_url):
         return True
     return False
 
-# Determine if the bucket name extracted is a valid bucket name. Returns the bucket name if it is a valid bucket and returns None otherwise
-def determine_valid_bucket(s3Url):
-    bucket_name = extractInfoLinks.extract_bucket_name(s3Url)
-    if bucket_name == None:
-        return None
-    for key in required_info.endpoints_tiler:
-        # If the bucket is a valid environment, return that bucket name
-        if bucket_name == key:
-            return bucket_name
-    return None
+def check_valid_s3_link(s3Link):
+    """
+    Checks if the given links begins with one of required_info.required_starts which means that it's a valid link
 
-# Given a string representing a s3 link, checks that the link begins with s3://. If this is not true, prints appropriate error messages
-# and returns False. Can add other checks in this function to check the s3 link. Check for ending with .tiff is elsewhere in the function
-def check_valid_s3_link(s3Link):  
-    # Checks the beginning type of the s3 link is s3://
+    Parameters
+    ----------
+    s3Link : str
+        s3 link to check if it begins with required_info.required_starts (s3://)
+    
+    Returns
+    -------
+    bool
+        True if s3Links begins with one of required_info.required_starts, and False otherwise
+    """
     for valid_start in required_info.required_starts:
         if s3Link[:len(valid_start)] == valid_start:
             return True
     print("Invalid s3 link: "+s3Link+". Beginning does not match any of "+(', '.join([str(elem) for elem in required_info.required_starts]))+ ".")
     return False
 
-# Returns True if all the environments are the same in the list of urls and False otherwise. If one of the environments is not in supported list, assumed to be published.
-# Published environments may be combined with a single s3 bucket. Prints appropriate error message if necessary.
-def check_environments_same(urls):
-    environment = ""
+def get_environment_list(urls):
+    """
+    Checks if the environments are the same. If bucket name not found or not in required_info.endpoints_tiler, then assumed to be published data.
+    Links can be any combination of one maap ade environment and published data. Prints appropriate error message if necessary. 
+
+    Parameters
+    ----------
+    urls : list
+        List of urls to check that environments are the same of
+    
+    Returns
+    -------
+    bool
+        True if all the environments are the same or some mix of one environment and published data, False otherwise
+    str 
+        Returns the current bucket name of the list, or None if the environments were different 
+    """
+    current_environment = None
     for url in urls:
-        env = extractInfoLinks.determine_environment(url) 
+        env, bucket_name = extractInfoLinks.determine_environment(url) 
         # If not the first go and environments don't match and url is not published, then they provided 2 different s3 buckets 
-        if environment != "" and env != required_info.endpoint_published_data and required_info.endpoints_tiler.get(environment) != env:
+        if current_environment != None and bucket_name != None and current_environment != bucket_name:
             print("Not all environments for your s3 links are the same. You provided environments " + environment + " and " + extractInfoLinks.extract_bucket_name(url) +
              " which differ.")
-            return False
+            return False, None
         # Only change the environment if it has not been set and the url is in a s3 bucket
-        if environment == "" and env != required_info.endpoint_published_data:
-            environment = extractInfoLinks.extract_bucket_name(url)
-    return True
-
-# Returns a string of a list of all the keys in the dictionary
-def get_printable_list_from_dict(dictionary):
-    to_return = ""
-    for key in dictionary:
-        to_return = to_return + key + ", "
-    to_return = to_return[:len(to_return)-2]
-    return to_return  
+        if current_environment == None and bucket_name != None:
+            current_environment = extractInfoLinks.extract_bucket_name(url)
+    return True, current_environment
 
 # Returns False if the arguments passed with the default ops is not an accepted argument for that key and True otherwise
 def check_valid_default_arguments(default_tiler_ops):
+    """
+    Checks if the user passed valid arguments in default_tiler_ops. Checks that they did not pass a key that TiTiler doesn't accept, 
+    did not pass a value that's outside the allowed values for certain keys, the argument they passed is the class expected (and the 
+    class expected is a valid class)
+
+    Parameters
+    ----------
+    default_tiler_ops : dict
+        User-given dictionary for default arguments for TiTiler
+    
+    Returns
+    -------
+    bool
+        False if there is an error in default_tiler_ops
+    """
     for key in default_tiler_ops:
         try:
             if (not key in required_info.defaults_tiler) and (not key in required_info.accepted_parameters_tiler):
@@ -126,9 +173,8 @@ def check_valid_default_arguments(default_tiler_ops):
                 (', '.join([str(key) for key in required_info.defaults_tiler])) + ", " + (', '.join([str(elem) for elem in required_info.accepted_arguments_tiler])) + ".")
                 return False
             elif (key in required_info.accepted_arguments_default_ops) and (default_tiler_ops[key] not in required_info.accepted_arguments_default_ops[key]):
-                accepted_args = required_info.accepted_arguments_default_ops[key]
                 print("The argument you are passing for " + key + " is not an accepted argument for that key. Try one of these instead: " +
-                ', '.join([str(elem) for elem in accepted_args]))
+                ', '.join([str(elem) for elem in required_info.accepted_arguments_default_ops[key]]))
                 return False
             elif not isinstance(default_tiler_ops[key], eval(required_info.required_class_types_args_tiler[key])): 
                 print("The argument you are passing for " + key + " is not a valid class for this key. The class " + str(required_info.required_class_types_args_tiler[key]) + 
@@ -141,11 +187,24 @@ def check_valid_default_arguments(default_tiler_ops):
             return False 
     return True
 
-# Determines if the Tiler can access the links by passing them link a single GeoTIFF into the file. The create_request_single_geotiff function only returns
-# None if the default ops are incorrect (impossible because we are passing an empty list) or the response of the request url contains errors
-def tiler_can_access_links(urls, debug_mode):
+def tiler_can_access_links(urls):
+    """
+    Tests if the TiTiler can access all the given links by creating a request url as if each individual link was a single geotiff passed to the function.
+    The create_request_single_geotiff function only returns None if the default ops are incorrect (impossible because we are passing an empty list)
+    or the response of the request url contains errors
+
+    Parameters
+    ----------
+    urls : list
+        Links to verify that TiTiler can access
+    
+    Returns
+    -------
+    bool
+        True if TiTiler can access all links and False otherwise
+    """
     for url in urls:
-        if loadGeotiffs.create_request_single_geotiff(url, {}, debug_mode) == None:
+        if loadGeotiffs.create_request_single_geotiff(url, {}, True) == None:
             print("Invalid url: " + url + ".")
             return False
     return True
