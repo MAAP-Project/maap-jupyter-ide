@@ -129,9 +129,6 @@ def create_request_single_geotiff(s3Url, default_tiler_ops, debug_mode):
         a request url to be passed to load_layer_config or None in the case of error
     """
     endpoint_tiler = extractInfoLinks.determine_environment(s3Url)
-    # None being returns means that the link is published, use the Tiler ops endpoint as a default
-    if endpoint_tiler == None:
-        endpoint_tiler = required_info.endpoint_published_data
     newUrl = endpoint_tiler + required_info.tiler_extensions.get("single") + "url=" + s3Url
     newUrl = createUrl.add_defaults_url(newUrl, default_tiler_ops, debug_mode)
     if newUrl == None or (debug_mode and errorChecking.check_errors_request_url(newUrl)):
@@ -192,7 +189,7 @@ def create_request_multiple_geotiffs(urls, default_tiler_ops, debug_mode):
 def init_required_info(debug_mode_given, time_analysis_given):
     """
     Creates the request url in the case of a links of s3 links to Geotiff files
-    
+
     Parameters
     ----------
     debug_mode_given : bool or str (if empty)

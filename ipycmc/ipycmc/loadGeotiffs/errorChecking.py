@@ -6,6 +6,14 @@ import requests
 global required_info
 
 def initialize_required_info(required_info_given):
+    """
+    Initializes required_info for use throughout the file
+
+    Parameters
+    ----------
+    required_info_given : RequiredInfoClass
+        Instance of RequiredInfoClass created in loadGeotiffs.py with all the variables from variables.json
+    """
     global required_info
     required_info = required_info_given
 
@@ -90,13 +98,14 @@ def check_valid_s3_link(s3Link):
 def check_environments_same(urls):
     environment = ""
     for url in urls:
+        env = extractInfoLinks.determine_environment(url) 
         # If not the first go and environments don't match and url is not published, then they provided 2 different s3 buckets 
-        if environment != "" and extractInfoLinks.determine_environment(url) != None and required_info.endpoints_tiler.get(environment) != extractInfoLinks.determine_environment(url):
+        if environment != "" and env != required_info.endpoint_published_data and required_info.endpoints_tiler.get(environment) != env:
             print("Not all environments for your s3 links are the same. You provided environments " + environment + " and " + extractInfoLinks.extract_bucket_name(url) +
              " which differ.")
             return False
         # Only change the environment if it has not been set and the url is in a s3 bucket
-        if environment == "" and extractInfoLinks.determine_environment(url) != None:
+        if environment == "" and env != required_info.endpoint_published_data:
             environment = extractInfoLinks.extract_bucket_name(url)
     return True
 
