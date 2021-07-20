@@ -53,7 +53,6 @@ To build additional extensions for the project, it is recommended to start from
 a [cookie-cutter](https://github.com/jupyterlab/extension-cookiecutter-ts) or off a previously built extension.
 
 Some Jupyter Extensions/Resources we have found helpful:
-* [xkcd tutorial](https://jupyterlab.readthedocs.io/en/stable/developer/xkcd_extension_tutorial.html) Great place to start for extending JupyterLab
 * [pizzabutton](https://github.com/peterskipper/pizzabutton) Implements a basic server extension and connects it with UI
 * [cookie-cutter-ts](https://github.com/jupyterlab/extension-cookiecutter-ts) Base to build UI extensions off of
 * [jupyterlab_autoversion](https://github.com/timkpaine/jupyterlab_autoversion)
