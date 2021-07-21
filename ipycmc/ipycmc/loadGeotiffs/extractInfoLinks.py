@@ -45,10 +45,10 @@ def extract_geotiff_links(folder_path, debug_mode):
         print("The environment of the bucket you passed as a folder is not a valid environment type. The supported environments are: " +  
             (', '.join([str(key) for key in required_info.endpoints_tiler])) + ".")
         return None
-    return extract_geotiff_links_from_folder(bucket_name, (get_file_path_folder(folder_path) + "/"), debug_mode)
+    return extract_geotiff_links_from_folder(bucket_name, (get_file_path_folder(folder_path) + "/"), folder_path, debug_mode)
     
 
-def extract_geotiff_links_from_folder(bucket_name, file_path, debug_mode):
+def extract_geotiff_links_from_folder(bucket_name, file_path, folder_path, debug_mode):
     """
     Extracts the geotiff links by finding all files with the prefix file_path and adding that to the list along with the s3 start and
     bucket_name
@@ -76,21 +76,20 @@ def extract_geotiff_links_from_folder(bucket_name, file_path, debug_mode):
             if obj.size and file_ending(obj.key) and (obj.key[len(file_path)+1:].find("/") == -1): 
                 # If looking in s3 bucket, then can hard code in s3:// because that must be the beginning
                 geotiff_links.append("s3://" + bucket_name + "/" + obj.key)
-        return geotiff_links
     except KeyboardInterrupt:
         raise KeyboardInterrupt
     except:
         print("Error reading file contents from bucket. This is likely a permissions error.")
         return None
-
-    if debug_mode:
-        print("Geotiff links extracted from given folder are: "+str(geotiff_links))
     if len(geotiff_links) == 0:
         if not os.path.isdir(folder_path):
-            print("The folder path you provided may not be a valid directory.")
+            print("No GeoTIFFs found in the given folder. The folder path (" + folder_path + ") you provided may not be a valid directory.")
         else:
             print("No GeoTIFFs found in the given folder.")
         return None
+    if debug_mode:
+        print("Geotiff links extracted from given folder are: "+str(geotiff_links))
+    return geotiff_links
 
 def extract_bucket_name(s3Link):
     """
@@ -137,7 +136,7 @@ def determine_environment(s3Link):
     """
     bucket_name = extract_bucket_name(s3Link)
     if bucket_name == None:
-        return required_info.endpoint_published_data, None
+        return None, None
     endpoint_tiler = required_info.endpoints_tiler.get(bucket_name)
     if endpoint_tiler == None:
         return required_info.endpoint_published_data, None

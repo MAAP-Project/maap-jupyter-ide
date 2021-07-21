@@ -22,7 +22,7 @@ def initialize_required_info(required_info_given):
     """
     global required_info
     required_info = required_info_given
-
+    
 def check_valid_arguments(urls, default_tiler_ops, handle_as, default_ops_load_layer, debug_mode, time_analysis):
     """
     Checks if the user given arguments are valid. For the urls, checks that the variable is not empty, all the environments are the same,
@@ -48,6 +48,28 @@ def check_valid_arguments(urls, default_tiler_ops, handle_as, default_ops_load_l
     bool
         True if all the arguments are valid and False if not
     """
+    list_variables = [[default_tiler_ops, "default_tiler_ops", dict], [handle_as, "handle_as", str],[default_ops_load_layer, "default_ops_load_layer", dict],
+                      [debug_mode, "debug_mode", bool], [time_analysis, "time_analysis", bool]]
+    successful = True
+    for var in list_variables:
+        successful = required_info.check_correct_class_arg(var[0], var[1], var[2]) and successful 
+    return check_valid_arguments_urls(urls) and successful
+
+def check_valid_arguments_urls(urls):
+    """
+    Checks if the user given arguments are valid. For the urls, checks that the variable is not empty, all the environments are the same,
+    and the file ending is valid. Checks that the class types of the other arguments provided by the user are the correct class type
+
+    Parameters
+    ----------
+    urls : str or list
+        The locations of the files in s3 to read. Can be in the format of a single s3 link, list of s3 links, or folder with tif files
+    
+    Returns
+    -------
+    bool
+        True if all the arguments are valid and False if not
+    """
     if isinstance(urls, str):
         if not urls:
             print("You have provided an empty string. Please provide s3 link(s).")
@@ -66,7 +88,7 @@ def check_valid_arguments(urls, default_tiler_ops, handle_as, default_ops_load_l
             if extractInfoLinks.file_ending(url) == False:
                 print(url + " doesn't end in one of " + (', '.join([str(elem) for elem in required_info.required_ends])) + ".")
                 return False
-        return required_info.check_correct_class_arg(default_tiler_ops, "default_tiler_ops", dict) and required_info.check_correct_class_arg(handle_as, "handle_as", str) and required_info.check_correct_class_arg(default_ops_load_layer, "default_ops_load_layer", dict) and required_info.check_correct_class_arg(debug_mode, "debug_mode", bool) and required_info.check_correct_class_arg(time_analysis, "time_analysis", bool)
+        return True
     else:
         print("The variable you passed for urls is " +str(type(urls)) + ". The only accepted types for this function are a string or list.")
         return False
@@ -93,6 +115,7 @@ def check_errors_request_url(request_url):
     for error in required_info.errors_tiler:
         if error in response:
             print(required_info.errors_tiler[error])
+            print("Error: " + response)
             return True
     if response[0] != required_info.correct_wmts_beginning:
         print(required_info.general_error_warning_tiler + response)
@@ -138,10 +161,12 @@ def get_environment_list(urls):
     """
     current_environment = None
     for url in urls:
-        env, bucket_name = extractInfoLinks.determine_environment(url) 
+        env, bucket_name = extractInfoLinks.determine_environment(url)
+        if env == None:
+            return False, None
         # If not the first go and environments don't match and url is not published, then they provided 2 different s3 buckets 
         if current_environment != None and bucket_name != None and current_environment != bucket_name:
-            print("Not all environments for your s3 links are the same. You provided environments " + environment + " and " + extractInfoLinks.extract_bucket_name(url) +
+            print("Not all environments for your s3 links are the same. You provided environments " + current_environment + " and " + bucket_name +
              " which differ.")
             return False, None
         # Only change the environment if it has not been set and the url is in a s3 bucket
@@ -170,7 +195,7 @@ def check_valid_default_arguments(default_tiler_ops):
         try:
             if (not key in required_info.defaults_tiler) and (not key in required_info.accepted_parameters_tiler):
                 print("The key you are trying to pass as a default argument key to the Tiler, " + key + " is not an accepted default type. The accepted argument types are: " + 
-                (', '.join([str(key) for key in required_info.defaults_tiler])) + ", " + (', '.join([str(elem) for elem in required_info.accepted_arguments_tiler])) + ".")
+                (', '.join([str(key) for key in required_info.defaults_tiler])) + ", " + (', '.join([str(elem) for elem in required_info.accepted_parameters_tiler])) + ".")
                 return False
             elif (key in required_info.accepted_arguments_default_ops) and (default_tiler_ops[key] not in required_info.accepted_arguments_default_ops[key]):
                 print("The argument you are passing for " + key + " is not an accepted argument for that key. Try one of these instead: " +
@@ -203,8 +228,9 @@ def tiler_can_access_links(urls):
     bool
         True if TiTiler can access all links and False otherwise
     """
+    to_return = True
     for url in urls:
         if loadGeotiffs.create_request_single_geotiff(url, {}, True) == None:
             print("Invalid url: " + url + ".")
-            return False
-    return True
+            to_return = False
+    return to_return

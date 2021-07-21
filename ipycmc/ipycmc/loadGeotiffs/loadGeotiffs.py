@@ -7,6 +7,7 @@ If the user passes a s3 folder or list of s3 links, then a mosaic JSON is create
 with wmts tile to pass to load_layer_config
 This function also provides extensive error checking for the user input arguments so that user's understand the mistakes they are making in their input.
 Only certain MAAP s3 environments are permitted at the moment. 
+
 Written by Grace Llewellyn
 """
 
@@ -64,7 +65,11 @@ def load_geotiffs(urls, default_tiler_ops, handle_as, default_ops_load_layer, de
     except KeyboardInterrupt:
         raise KeyboardInterrupt
     except:
-        print("Your function call failed for an unknown reason. Please set debugging to True to get more information.")
+        if debug_mode:
+            # In theory, this should never happen
+            print("Your function call failed for an unknown reason. Please see the readme for more details.")
+        else:
+            print("Your function call failed for an unknown reason. Please set debugging to True to get more information.")
         print("Error message: " + str(sys.exc_info()))
         return None,None,None
 
@@ -129,6 +134,8 @@ def create_request_single_geotiff(s3Url, default_tiler_ops, debug_mode):
         a request url to be passed to load_layer_config or None in the case of error
     """
     endpoint_tiler, bucket_name = extractInfoLinks.determine_environment(s3Url)
+    if endpoint_tiler == None:
+        return None
     newUrl = endpoint_tiler + required_info.tiler_extensions.get("single") + "url=" + s3Url
     newUrl = createUrl.add_defaults_url(newUrl, default_tiler_ops, debug_mode)
     if newUrl == None or (debug_mode and errorChecking.check_errors_request_url(newUrl)):

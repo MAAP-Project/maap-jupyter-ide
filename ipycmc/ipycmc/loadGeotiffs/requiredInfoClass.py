@@ -60,7 +60,7 @@ class RequiredInfoClass:
             return
 
         self.setup_successful = True
-        if debug_mode:
+        if (debug_mode == "" and self.default_debug_mode) or debug_mode:
             self.check_non_empty_all()
             self.other_error_checking([self.posting_tiler_endpoint, self.endpoint_published_data] + list(self.endpoints_tiler.values()))
             self.check_correct_types_args()
@@ -107,11 +107,10 @@ class RequiredInfoClass:
         [self.required_class_types_args_tiler, "required_class_types_args_tiler", dict], [self.correct_wmts_beginning, "correct_wmts_beginning", str], 
         [self.accepted_arguments_default_ops.get("tile_format_args"), "tile_format_args", list], [self.accepted_arguments_default_ops.get("pixel_selection_args"), "pixel_selection_args", list],
         [self.getting_wmts_endpoint, "getting_wmts_endpoint", str], [self.web_starts, "web_starts", list], [self.default_handle_as, "default_handle_as", str], 
-        [self.default_ops_load_layer_config, "default_ops_load_layer_config", dict], [self.default_debug_mode, "default_debug_mode", bool], [self.default_time_analysis, "default_time_analysis", bool]
+        [self.default_ops_load_layer_config, "default_ops_load_layer_config", dict], [self.default_debug_mode, "default_debug_mode", bool], [self.default_time_analysis, "default_time_analysis", bool]]
         
         successful = True
         for var in list_variables:
-            print ("checking: " + var[0] + var[1] + var[2])
             successful = self.check_correct_class_arg(var[0], var[1], var[2]) and successful 
         if not successful:
             self.setup_successful = False
