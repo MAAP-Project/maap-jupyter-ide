@@ -26,7 +26,7 @@ def create_function_call(urls, maap_var_name):
     function_call = function_call+required_info.default_handle_as+"\", default_ops_load_layer="+str(required_info.default_ops_load_layer_config)
     function_call = function_call+", debug_mode="+str(required_info.default_debug_mode)+", time_analysis="+str(required_info.default_time_analysis)
 
-    print(error_message)
+    print("error message: "+error_message)
     return function_call + ")", error_message[1:-1]
 
 def import_variablesjson():

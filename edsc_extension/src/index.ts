@@ -100,10 +100,13 @@ function activate(app: JupyterFrontEnd,
      // If same content 3 times in a row, assume that you have reached the top (reaching the top is a top op)
      var iterationsUp = 0;
      var nameMaapVar = null; // default variable
-     var lastCellCode = "";
-     var cellCodesRepeatedLastIteration = false;
+     //var lastCellCode = "";
+     //var consecutiveCellRepeats = 0;
+     //var maxRepeatsCell = 10;
+     var lastCellId = 0;
      while(true) {
        var cellCode = current.content.activeCell.model.value.text;
+       INotification.info(current.content.activeCell.id);
        var index = cellCode.indexOf(".MapCMC()");
        // If you found the variable name
        if (index!=-1) {
@@ -112,25 +115,35 @@ function activate(app: JupyterFrontEnd,
          break;
        }
        // If not, check to see if repeating
-       if (cellCode == lastCellCode) {
+       /*if (cellCode == lastCellCode) {
          // Break because this means they have repeated 3 times in a row now, the var name will just default to w
-         if (cellCodesRepeatedLastIteration) {
-          iterationsUp -=2;
-           break;
-         } else {
-           cellCodesRepeatedLastIteration = true;
+         if (consecutiveCellRepeats >= maxRepeatsCell ){
+          iterationsUp -=maxRepeatsCell;
+          break;
          }
+         consecutiveCellRepeats++;
        } else {
-         cellCodesRepeatedLastIteration = false;
+        consecutiveCellRepeats = 0;
        }
-       lastCellCode = cellCode;
+       lastCellCode = cellCode;*/
+       /*if (current.content.activeCell.id == lastCellCode) {
+        INotification.info("end found at: " + current.content.activeCell.model.value.text);
+        break;
+       }*/
+       if (current.content.activeCell.model.id == lastCellId) {
+        INotification.info("for model.id end found at: " + current.content.activeCell.model.value.text);
+        break;
+       }
+       //lastCellCode = current.content.activeCell.id;
+       lastCellId = current.content.activeCell.model.id;
+       INotification.info(current.content.activeCell.model.id);
        // Move the notebook selection one up or down
-       if (checkAbove) {
+      if (checkAbove) {
         NotebookActions.selectAbove(current.content);
-        } else {
-          NotebookActions.selectBelow(current.content);
-        }
-        iterationsUp ++;
+      } else {
+        NotebookActions.selectBelow(current.content);
+      }
+      iterationsUp ++;
      }
 
      var count = 0;
@@ -251,10 +264,11 @@ function activate(app: JupyterFrontEnd,
     const current = getCurrent(args);
     // If no search is selected, send an error
     // TODO check for if empty without causing error
-    if (Object.keys(globals.granuleParams).length == 0) {
-      INotification.error("Error: No Search Selected.");
-      return;
-    }
+    // TODO: comment back in!!
+    //if (Object.keys(globals.granuleParams).length == 0) {
+    //  INotification.error("Error: No Search Selected.");
+    //  return;
+    //}
     var getUrl = new URL(PageConfig.getBaseUrl() + 'edsc/visualizeCMC');
     var maapVarNameAbove = getMaapVarName(current, true);
     if (maapVarNameAbove != null) {
@@ -275,8 +289,9 @@ function activate(app: JupyterFrontEnd,
       }
     }
 
-    getUrl.searchParams.append("cmr_query", globals.granuleQuery);
-    getUrl.searchParams.append("limit", globals.limit);
+    // TODO: comment back in!!
+    //getUrl.searchParams.append("cmr_query", globals.granuleQuery);
+    //getUrl.searchParams.append("limit", globals.limit);
     // Make call to back end
     var xhr = new XMLHttpRequest();
     
@@ -302,6 +317,7 @@ function activate(app: JupyterFrontEnd,
                   }
                 }
               }
+              
             }
         }
         else {
