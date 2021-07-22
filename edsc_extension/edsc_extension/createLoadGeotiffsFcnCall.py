@@ -12,22 +12,26 @@ global required_info
 
 def create_function_call(urls, maap_var_name):
     # Filter out all urls that do not have the correct ending type
-    global required_info
-    required_info = import_variablesjson()
-    if not required_info.setup_successful:
-        return "# Error evaluating variables.json"
-    newUrls, error_message = filter_out_invalid_urls(urls)
+    try:
+        global required_info
+        required_info = import_variablesjson()
+        if not required_info.setup_successful:
+            return "# Error evaluating variables.json"
+        newUrls, error_message = filter_out_invalid_urls(urls)
 
-    # Add urls
-    function_call, valid = add_urls((maap_var_name + ".load_geotiffs(urls="), newUrls)
-    if not valid:
-        return function_call, error_message[1:-1]
-    function_call = function_call + ", default_tiler_ops="+ str(required_info.defaults_tiler) + ", handle_as=\""
-    function_call = function_call+required_info.default_handle_as+"\", default_ops_load_layer="+str(required_info.default_ops_load_layer_config)
-    function_call = function_call+", debug_mode="+str(required_info.default_debug_mode)+", time_analysis="+str(required_info.default_time_analysis)
+        # Add urls
+        function_call, valid = add_urls((maap_var_name + ".load_geotiffs(urls="), newUrls)
+        if not valid:
+            return function_call, error_message[1:-1]
+        function_call = function_call + ", default_tiler_ops="+ str(required_info.defaults_tiler) + ", handle_as=\""
+        function_call = function_call+required_info.default_handle_as+"\", default_ops_load_layer="+str(required_info.default_ops_load_layer_config)
+        function_call = function_call+", debug_mode="+str(required_info.default_debug_mode)+", time_analysis="+str(required_info.default_time_analysis)
 
-    print("error message: "+error_message)
-    return function_call + ")", error_message[1:-1]
+        print("error message: "+error_message)
+        return function_call + ")", error_message[1:-1]
+    except:
+        print("Error message: " + str(sys.exc_info()))
+        return None, None
 
 def import_variablesjson():
     # TODO fix this to call the right required info
