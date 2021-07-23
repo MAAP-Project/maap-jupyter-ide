@@ -52,7 +52,18 @@ class GetGranulesHandler(IPythonHandler):
 
 
 class GetQueryHandler(IPythonHandler):
+    def testing():
+        self.finish({"testing": "testing"})
     def get(self):
+        try:
+            if self.get_argument('visualizeCMC', ''):
+                self.testing()
+                return
+            if self.get_argument('visualizeCMC', '') == "true":
+                self.testing()
+                return
+        except:
+            testing = 0
         maap = MAAP(maap_api(self.request.host))
         cmr_query = self.get_argument('cmr_query', '')
         limit = str(self.get_argument('limit', ''))
@@ -62,6 +73,8 @@ class GetQueryHandler(IPythonHandler):
         query_string = maap.getCallFromCmrUri(cmr_query, limit=limit, search=query_type)
         print("Response is: ", query_string)
         self.finish({"query_string": query_string})
+
+
 
 
 class VisualizeCMCHandler(IPythonHandler):
@@ -86,7 +99,3 @@ class VisualizeCMCHandler(IPythonHandler):
         
         function_call, errors = createLoadGeotiffsFcnCall.create_function_call(urls, maap_var_name)
         self.finish({"function_call": function_call, "errors":errors})
-
-class TestingHandler():
-    def get(self):
-        self.finish({"testing": "testing"})

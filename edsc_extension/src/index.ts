@@ -212,15 +212,17 @@ function activate(app: JupyterFrontEnd,
       INotification.error("Error: No Search Selected.");
       return;
     }
-    var getUrl = new URL(PageConfig.getBaseUrl() + 'edsc/visualizeCMC');
+    var getUrl = new URL(PageConfig.getBaseUrl() + 'edsc/getQuery');
+    getUrl.searchParams.append("visualizeCMC", "true");
     /*getUrl.searchParams.append("cmr_query", globals.granuleQuery);
     getUrl.searchParams.append("limit", globals.limit);
-    getUrl.searchParams.append("maapVarName", );*/
+    getUrl.searchParams.append("maapVarName", getMaapVarName(current));*/
     getMaapVarName(current);
     var xhr = new XMLHttpRequest();
     
     xhr.onload = function() {
         if (xhr.status == 200) {
+            INotification.error("successfully 200");
             let response: any = JSON.parse(xhr.response);
             if (current) {
               /*NotebookActions.insertBelow(current.content);
