@@ -86,3 +86,7 @@ class VisualizeCMCHandler(IPythonHandler):
         
         function_call, errors = createLoadGeotiffsFcnCall.create_function_call(urls, maap_var_name)
         self.finish({"function_call": function_call, "errors":errors})
+
+class TestingHandler():
+    def get(self):
+        self.finish({"testing": "testing"})

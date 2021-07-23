@@ -213,26 +213,27 @@ function activate(app: JupyterFrontEnd,
       return;
     }
     var getUrl = new URL(PageConfig.getBaseUrl() + 'edsc/visualizeCMC');
-    getUrl.searchParams.append("cmr_query", globals.granuleQuery);
+    /*getUrl.searchParams.append("cmr_query", globals.granuleQuery);
     getUrl.searchParams.append("limit", globals.limit);
-    getUrl.searchParams.append("maapVarName", getMaapVarName(current));
+    getUrl.searchParams.append("maapVarName", );*/
+    getMaapVarName(current);
     var xhr = new XMLHttpRequest();
     
     xhr.onload = function() {
         if (xhr.status == 200) {
             let response: any = JSON.parse(xhr.response);
             if (current) {
-              NotebookActions.insertBelow(current.content);
+              /*NotebookActions.insertBelow(current.content);
               NotebookActions.paste(current.content);
               current.content.mode = 'edit';
               const insert_text = "# Results to post to CMC (unaccepted file types removed): " + "\n" + response.function_call;
-              current.content.activeCell.model.value.text = insert_text;
+              current.content.activeCell.model.value.text = insert_text;*/
               printInfoMessages(response);
             }
         }
         else {
             console.log("Error making call to get results. Status is " + xhr.status);
-            INotification.error("Error making call to get search results. Have you selected valid search parameters?");
+            INotification.error("Error making call to get search results. Have you selected valid search parameters?"+xhr.status);
         }
     };
 
@@ -240,6 +241,7 @@ function activate(app: JupyterFrontEnd,
       INotification.error("Error getting results from Data Search.");
     };
 
+    INotification.error("About to try to get link");
     xhr.open("GET", getUrl.href, true);
     xhr.send(null);
   }

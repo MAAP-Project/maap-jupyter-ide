@@ -123,7 +123,9 @@ function findMaapVarName(current: any, checkAbove: boolean) {
   */
  export function printInfoMessages(response: any) {
      // Print error messages (only 5 max)
-     if (response.errors) {
+     INotification.error("worked");
+     INotification.error(response.testing);
+     /*if (response.errors) {
         var errors = response.errors.split("|");
         var iterations = 0;
         for (let error of errors) {
@@ -133,5 +135,5 @@ function findMaapVarName(current: any, checkAbove: boolean) {
             break;
           }
         }
-      }
+      }*/
  }

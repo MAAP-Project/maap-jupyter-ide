@@ -43,4 +43,5 @@ def load_jupyter_server_extension(nb_server_app):
 
     web_app.add_handlers(host_pattern, [(url_path_join(base_url, 'edsc/getGranules'), GetGranulesHandler)])
     web_app.add_handlers(host_pattern, [(url_path_join(base_url, 'edsc/getQuery'), GetQueryHandler)])
-    web_app.add_handlers(host_pattern, [(url_path_join(base_url, 'edsc/visualizeCMC'), VisualizeCMCHandler)])
+    #web_app.add_handlers(host_pattern, [(url_path_join(base_url, 'edsc/visualizeCMC'), VisualizeCMCHandler)])
+    web_app.add_handlers(host_pattern, [(url_path_join(base_url, 'edsc/visualizeCMC'), TestingHandler)])
