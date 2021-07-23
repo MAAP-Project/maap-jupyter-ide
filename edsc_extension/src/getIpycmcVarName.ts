@@ -14,6 +14,7 @@ import { INotification } from "jupyterlab_toastify";
 
 var defaultIpycmcVarName = "w";
 var defaultMaapIpycmcImport = "from maap.maap import MAAP\nmaap = MAAP\n\nimport ipycmc\nw = ipycmc.MapCMC()\n" + defaultIpycmcVarName;
+var ipycmcVarIdentifier = ".MapCMC()";
 
 
 /**
@@ -65,7 +66,7 @@ function findMaapVarName(current: any, checkAbove: boolean) {
     var lastCellId = 0;
     while(true) {
       var cellCode = current.content.activeCell.model.value.text;
-      var index = cellCode.indexOf(".MapCMC()");
+      var index = cellCode.indexOf(ipycmcVarIdentifier);
       // If you found the variable name
       if (index!=-1) {
         cellCode = cellCode.substring(0, index);
