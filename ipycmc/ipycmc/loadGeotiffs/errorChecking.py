@@ -2,7 +2,7 @@
 This file error checks the user given arguments to determine if they are valid and prints the appropriate error message/
 Most of these functions will not be called if debug_mode is False
 
-Written by: Grace Llewellyn
+Written by: Grace Llewellyn, grace.a.llewellyn@jpl.nasa.gov
 """
 import json
 from . import loadGeotiffs

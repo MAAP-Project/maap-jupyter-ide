@@ -2,13 +2,11 @@
 This file extracts information from the links that the user passed to load_geotiffs. Some of the functionality of these functions include
 extracting the geotiff links from a folder, extracting the bucket name, and extracting the file ending from links.
 
-Written by: Grace Llewellyn
+Written by: Grace Llewellyn, grace.a.llewellyn@jpl.nasa.gov
 """
 
 import boto3
-from . import errorChecking
 import os
-import sys
 
 global required_info
 
@@ -40,7 +38,7 @@ def extract_geotiff_links(folder_path, debug_mode):
     list
         list of the geotiffs extracted from the folder. None in case of error
     """
-    endpoint, bucket_name = determine_environment(folder_path)
+    bucket_name = determine_environment(folder_path)[1]
     if bucket_name == None:
         print("The environment of the bucket you passed as a folder is not a valid environment type. The supported environments are: " +  
             (', '.join([str(key) for key in required_info.endpoints_tiler])) + ".")
@@ -74,8 +72,7 @@ def extract_geotiff_links_from_folder(bucket_name, file_path, folder_path, debug
         for obj in bucket.objects.filter(Prefix=file_path):
             # Check makes sure that geotiffs below file path are not added
             if obj.size and file_ending(obj.key) and (obj.key[len(file_path)+1:].find("/") == -1): 
-                # If looking in s3 bucket, then can hard code in s3:// because that must be the beginning
-                geotiff_links.append("s3://" + bucket_name + "/" + obj.key)
+                geotiff_links.append(required_info.s3_beginning + bucket_name + "/" + obj.key)
     except KeyboardInterrupt:
         raise KeyboardInterrupt
     except:

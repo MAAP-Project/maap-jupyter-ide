@@ -3,7 +3,7 @@ This class holds all the parameters that are necessary to operate the load_geoti
 If debug_mode is True, then checks these variables to make sure that they are valid. All files that make up the load_geotiffs function have
 copies of the RequiredInfoClass
 
-Written by Grace Llewellyn
+Written by Grace Llewellyn, grace.a.llewellyn@jpl.nasa.gov
 """
 import json
 import requests
@@ -51,6 +51,7 @@ class RequiredInfoClass:
             self.default_ops_load_layer_config = dictionary["default_ops_load_layer_config"]
             self.default_debug_mode = dictionary["default_debug_mode"]
             self.default_time_analysis = dictionary["default_time_analysis"]
+            self.s3_beginning = dictionary["s3_beginning"]
 
         except KeyboardInterrupt:
             raise KeyboardInterrupt
@@ -62,7 +63,7 @@ class RequiredInfoClass:
         self.setup_successful = True
         if (debug_mode == "" and self.default_debug_mode) or debug_mode:
             self.check_non_empty_all()
-            self.other_error_checking([self.posting_tiler_endpoint, self.endpoint_published_data] + list(self.endpoints_tiler.values()))
+            self.check_links_valid([self.posting_tiler_endpoint, self.endpoint_published_data] + list(self.endpoints_tiler.values()))
             self.check_correct_types_args()
         
     def check_non_empty_all(self):
@@ -77,7 +78,7 @@ class RequiredInfoClass:
                 print("Cannot pass an empty value for " + key + " in variables.json file.")
                 self.setup_successful = False
     
-    def other_error_checking(self, links):
+    def check_links_valid(self, links):
         """
         Searches each link in the list of links to see if it begins with web_starts. If one does not begin with one of web_starts, 
         then setup_successful is set to False. All links that are invalid have an error message printed.
@@ -107,13 +108,12 @@ class RequiredInfoClass:
         [self.required_class_types_args_tiler, "required_class_types_args_tiler", dict], [self.correct_wmts_beginning, "correct_wmts_beginning", str], 
         [self.accepted_arguments_default_ops.get("tile_format_args"), "tile_format_args", list], [self.accepted_arguments_default_ops.get("pixel_selection_args"), "pixel_selection_args", list],
         [self.getting_wmts_endpoint, "getting_wmts_endpoint", str], [self.web_starts, "web_starts", list], [self.default_handle_as, "default_handle_as", str], 
-        [self.default_ops_load_layer_config, "default_ops_load_layer_config", dict], [self.default_debug_mode, "default_debug_mode", bool], [self.default_time_analysis, "default_time_analysis", bool]]
+        [self.default_ops_load_layer_config, "default_ops_load_layer_config", dict], [self.default_debug_mode, "default_debug_mode", bool], [self.default_time_analysis, "default_time_analysis", bool],
+        [self.defaults_tiler, "defaults_tiler", dict], [self.s3_beginning, "s3_beginning", str]]
         
-        successful = True
         for var in list_variables:
-            successful = self.check_correct_class_arg(var[0], var[1], var[2]) and successful 
-        if not successful:
-            self.setup_successful = False
+            if not self.check_correct_class_arg(var[0], var[1], var[2]):
+                self.setup_successful = False
 
     def check_correct_class_arg(self, arg, arg_name, class_type):
         """

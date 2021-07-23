@@ -2,7 +2,7 @@
 This file runs load_geotiffs in debug mode and not in debug mode and compares the time difference for completing those 2 functins. 
 The time difference only includes running load_geotiffs and not load_layer_config. 
 
-Written by Grace Llewellyn
+Written by Grace Llewellyn, grace.a.llewellyn@jpl.nasa.gov
 """
 import time 
 

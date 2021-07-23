@@ -8,7 +8,7 @@ with wmts tile to pass to load_layer_config
 This function also provides extensive error checking for the user input arguments so that user's understand the mistakes they are making in their input.
 Only certain MAAP s3 environments are permitted at the moment. 
 
-Written by Grace Llewellyn
+Written by Grace Llewellyn, grace.a.llewellyn@jpl.nasa.gov
 """
 
 from . import errorChecking
@@ -170,7 +170,8 @@ def create_request_folder_geotiffs(urls, default_tiler_ops, debug_mode):
 
 def create_request_multiple_geotiffs(urls, default_tiler_ops, debug_mode):
     """
-    Creates the request url in the case of a links of s3 links to Geotiff files
+    Creates the request url in the case of a links of s3 links to Geotiff files. If the list happens to only have one geotiff, 
+    just call the single geotiff function because it will be faster and not have to create a mosaic json
 
     Parameters
     ----------
@@ -186,6 +187,8 @@ def create_request_multiple_geotiffs(urls, default_tiler_ops, debug_mode):
     str
         a request url to be passed to load_layer_config or None in the case of error
     """
+    if len(urls) == 1:
+        return create_request_single_geotiff(urls[0], default_tiler_ops, debug_mode)
     if debug_mode and (not errorChecking.tiler_can_access_links(urls)):
         return None
     newUrl = createUrl.create_mosaic_json_url(urls, default_tiler_ops, debug_mode)

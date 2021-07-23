@@ -1,7 +1,7 @@
 """
 This file has all the load_geotiffs helper functions that help create the mosaic json request url to pass to the TiTiler
 
-Written by Grace Llewellyn
+Written by Grace Llewellyn, grace.a.llewellyn@jpl.nasa.gov
 """
 
 from cogeo_mosaic.mosaic import MosaicJSON

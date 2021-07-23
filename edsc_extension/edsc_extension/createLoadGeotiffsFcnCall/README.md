@@ -1,0 +1,1 @@
+# README for Visualize Granule Results in CMC option on Data Search tab

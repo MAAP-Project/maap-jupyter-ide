@@ -8,7 +8,7 @@ import json
 import maap
 from maap.maap import MAAP
 
-from . import createLoadGeotiffsFcnCall
+from .createLoadGeotiffsFcnCall import createLoadGeotiffsFcnCall
 
 @functools.lru_cache(maxsize=128)
 def get_maap_config(host):
@@ -65,17 +65,17 @@ class GetQueryHandler(IPythonHandler):
 
 
 class VisualizeCMCHandler(IPythonHandler):
+    """
+    Gets the parameters from index.ts and creates a list of granules. Then makes a call to the python script that creates the function call
+    and passes that back to the index.ts along with info messages to display to the user
+    """
     def get(self):
-        print("worked in python function")
         maap = MAAP(maap_api(self.request.host))
         cmr_query = self.get_argument('cmr_query', '')
         limit = str(self.get_argument('limit', ''))
         maap_var_name = self.get_argument('maapVarName', '')
-        print("cmr_query", cmr_query)
 
-        # TODO fix this line- should work when deployed
         query_string = maap.getCallFromCmrUri(cmr_query, limit=limit)
-        #query_string = "maap.searchGranule(limit=1)"
         granules = eval(query_string)
 
         # get list of granules to pass to load geotiffs 
@@ -83,9 +83,6 @@ class VisualizeCMCHandler(IPythonHandler):
         for res in granules:
             if res.getDownloadUrl():
                 urls.append(res.getDownloadUrl())
-
-        #print("urls are " +str(urls))
-        #urls = ["s3://maap-ops-workspace/graceal/N45W101.SRTMGL1.tif", "s3://maap-ops-workspace/graceal/N45W101.SRTMGL1.tif"]
         
         function_call, errors = createLoadGeotiffsFcnCall.create_function_call(urls, maap_var_name)
         self.finish({"function_call": function_call, "errors":errors})
