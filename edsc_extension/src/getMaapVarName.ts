@@ -1,21 +1,5 @@
-/**
-   * This file extracts the name of the ipycmc.MapCMC() object object for the loag_geotiffs function call. It does this by searches up 
-   * the notebook first cell by cell and then down the notebook if no variable was found up the notebook. It looks for an occurrence of 
-   * .MapCMC() because the user can change the name of the ipycmc import. If the variable is not found, defaultMaapIpycmcImport is added
-   * to the notebook and w is used for the default variable name. This function also shows the user the info messages from creating the
-   * load_geotiffs function call
-   * 
-   * @author Grace Llewellyn, grace.a.llewellyn@jpl.nasa.gov
-   */
-
-
 import { NotebookActions } from '@jupyterlab/notebook';
 import { INotification } from "jupyterlab_toastify";
-
-var defaultIpycmcVarName = "w";
-var defaultMaapIpycmcImport = "from maap.maap import MAAP\nmaap = MAAP\n\nimport ipycmc\nw = ipycmc.MapCMC()\n" + defaultIpycmcVarName;
-var ipycmcVarIdentifier = ".MapCMC()";
-
 
 /**
    * The goal of this function is to return the variable name of ipycmc.MapCMC(). It does this by calling the function
@@ -39,9 +23,9 @@ export function getMaapVarName(current: any) {
         // if instance of maap cannot be found, paste it into a cell yourself
         NotebookActions.insertBelow(current.content);
         NotebookActions.paste(current.content);
-        current.content.activeCell.model.value.text = defaultMaapIpycmcImport;
+        current.content.activeCell.model.value.text = "from maap.maap import MAAP\nmaap = MAAP\n\nimport ipycmc\nw = ipycmc.MapCMC()\nw";
         NotebookActions.run(current.content);
-        return defaultIpycmcVarName;
+        return "w";
       }
     }
 }
@@ -66,7 +50,7 @@ function findMaapVarName(current: any, checkAbove: boolean) {
     var lastCellId = 0;
     while(true) {
       var cellCode = current.content.activeCell.model.value.text;
-      var index = cellCode.indexOf(ipycmcVarIdentifier);
+      var index = cellCode.indexOf(".MapCMC()");
       // If you found the variable name
       if (index!=-1) {
         cellCode = cellCode.substring(0, index);
@@ -121,11 +105,9 @@ function findMaapVarName(current: any, checkAbove: boolean) {
   * @param response Response from the createLoadGeotiffsFcnCall file that contains the info messages to show to the user
   *                 about why certain files were excluded when creating the load_geotiffs function call 
   */
- export function printInfoMessages(response: any) {
+ export function printInfoMessage(response: any) {
      // Print error messages (only 5 max)
-     INotification.error("worked");
-     INotification.error(response.testing);
-     /*if (response.errors) {
+     if (response.errors) {
         var errors = response.errors.split("|");
         var iterations = 0;
         for (let error of errors) {
@@ -135,5 +117,5 @@ function findMaapVarName(current: any, checkAbove: boolean) {
             break;
           }
         }
-      }*/
+      }
  }
