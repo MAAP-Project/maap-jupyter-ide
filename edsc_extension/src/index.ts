@@ -339,7 +339,6 @@ function printInfoMessage(response: any) {
               current.content.mode = 'edit';
               const insert_text = "# Results to post to CMC (unaccepted file types removed): " + "\n" + response.function_call;
               current.content.activeCell.model.value.text = insert_text;
-              INotification.error("Type of response: "+(typeof response));
               printInfoMessage(response);
             }
         }
