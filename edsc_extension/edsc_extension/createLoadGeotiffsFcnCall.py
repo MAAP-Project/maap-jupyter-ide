@@ -53,7 +53,7 @@ def create_function_call(urls, maap_var_name):
         function_call = function_call+", debug_mode="+str(required_info.default_debug_mode)+", time_analysis="+str(required_info.default_time_analysis)
         return function_call + ")", info_message[1:-1]
     except:
-        return ("# Error creating function call\nError message: " + str(sys.exc_info())), ""
+        return ("# Error creating function call\n# Error message: " + str(sys.exc_info())), ""
 
 def filter_out_invalid_urls(urls):
     """
