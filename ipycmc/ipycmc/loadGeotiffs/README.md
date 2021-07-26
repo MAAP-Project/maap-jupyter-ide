@@ -36,9 +36,9 @@ w.load_geotiffs(urls="", default_tiler_ops={"colormap_name":"autumn", "pixel_sel
    
    __For more documentation about these arguments, please visit: [https://h9su0upami.execute-api.us-east-1.amazonaws.com/docs#](https://h9su0upami.execute-api.us-east-1.amazonaws.com/docs#)__
    
- * `handle\_as`
+ * `handle_as`
     * Default is "wmts/xml", but this can be changed by modifying `default_handle_as` in variables.json 
-  * `default\_ops\_load\_layer`
+  * `default_ops_load_layer`
   	* Default is `{"handleAs": "wmts_raster"}`, but this can be changed by modifying `default_ops_load_layer` in variables.json
   * `debug_mode`
     * Default is `True`. This provides checks and detailed descriptions of the error that occurred as well as potential fixes. If you receive an unknown error please run in debug mode.
