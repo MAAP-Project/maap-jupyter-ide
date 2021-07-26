@@ -317,7 +317,6 @@ function printInfoMessage(response: any) {
   function visualizeCMC(args: any) {
     const current = getCurrent(args);
     // If no search is selected, send an error
-    // TODO: comment back in!!
     if (Object.keys(globals.granuleParams).length == 0) {
       INotification.error("Error: No Search Selected.");
       return;
@@ -325,7 +324,6 @@ function printInfoMessage(response: any) {
     var getUrl = new URL(PageConfig.getBaseUrl() + 'edsc/visualizeCMC');
     getUrl.searchParams.append("maapVarName", getMaapVarName(current));
     
-    // TODO: comment back in!!
     getUrl.searchParams.append("cmr_query", globals.granuleQuery);
     getUrl.searchParams.append("limit", globals.limit);
     var xhr = new XMLHttpRequest();
