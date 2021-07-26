@@ -1,6 +1,5 @@
 # README for load\_geotiff function
-## Arguments
-Function definition: 
+## Function definition: 
 ```
 load_geotiffs(urls, default_tiler_ops = {}, handle_as = "", default_ops_load_layer = {}, debug_mode = True, time_analysis = False)
 ```
@@ -10,6 +9,7 @@ w = ipycmc.MapCMC()
 w
 w.load_geotiffs(urls="", default_tiler_ops={"colormap_name":"autumn", "pixel_selection":"mean"}, handle_as="wmts/xml", default_ops_load_layer={"handleAs": "wmts_raster"}, debug_mode = True, time_analysis = False)
 ```
+### Arguments
 * `urls`, where urls must be:
 	*  a string consisting of a single link to a geotiff in an s3 bucket in the MAAP ade (private or bucket bucket will suffice). Currently, this string must start with "s3://" and end with ".tif" or ".tiff". However, this can be changed by modifying the `required_start` and `required_end` lists in variables.json. Even if these arguments are changed, if the beginning and ending types of the links do not comply with the TiTiler requirements, an error message will be returned.
     * a list consisting of links to geotiffs where each link follows all the guidlines listed above 
@@ -23,7 +23,7 @@ w.load_geotiffs(urls="", default_tiler_ops={"colormap_name":"autumn", "pixel_sel
    * `return_mask`: Add mask to the output data, `boolean`
    * `rescale`
    
-    __Additional arguments you can add that are not typically added as defaults (Note: you can change the defaults by modifying `defaults_tiler` in variables.json:)__
+    #### Additional arguments you can add that are not typically added as defaults (Note: you can change the defaults by modifying `defaults_tiler` in variables.json:)
    * `minzoom`:  Overwrite default minzoom, `integer`
    * `maxzoom`: Overwrite default maxzoom, `integer`
    * `bidx`: comma (',') delimited band indexes, `string`
@@ -91,7 +91,10 @@ Put the bucket name and key name together in the form of `s3://bucket-name/key-n
 ##### Errors with multiple s3 links
 * Any one of the individual s3 links cannot be correctly completed in a single geotiff TiTiler request (this is likely an access denied error, but the exact TiTiler error message will be printed)
 
-## Documentation for variables.json
+## Documentation for variables.json 
+Variables.json is located at `maap-jupyter-ide/ipycmc/ipycmc/loadGeotiffs`
+
+#### Explanation of values
 * `required_starts`: How the urls must begin in order for function to complete successfully
 * `required_ends`: Hows the urls must end in order for function to complete successfully. Note that in the case of a folder for urls, the folder should not end in one of `required_ends`, but the contents of the folder should end in one of `required_ends`
  * `defaults_tiler`: The default values to pass in the request url to the TiTiler represented as a dictionary where the key is the name of a variable that the TiTiler accepts and the value is the value of that variable. Note that these values can be provided by the user. If these values are not provided by the user, they will be passed into the request url as is from this variable. This is because the tiles may not display without these defaults, especially the `rescale` option.
@@ -114,6 +117,9 @@ Put the bucket name and key name together in the form of `s3://bucket-name/key-n
  * `default_time_analysis`: Dictates if `load_geotiffs` will run with time analysis or not if the user doesn't specifiy `time_analysis`. `False` currently (recommended setting)
  * `esa_data_location`: Indicates where ESA keeps their data because there will likely be permission errors for TiTiler or `load_layer_config`. Currently ESA hosts their data at `orange-business`.
  * `s3_beginning`: How the NASA data is stored in s3 buckets. This variable is currently `s3://`, but note that if the location of NASA's data changes needs to change, changing this variable might not be enough
+
+#### Changing content of variables.json
+Note that only technical users should change the content of variables.json because the code must be redeployed in order for the changes to take effect. 
    
 ### Debug mode
 Running not in debug mode is a risk if you do not understand how the function works since there is minimal error checking and you are not provided with detailed responses. If you receive an error message you do not understand, run the problem in debug mode. Debug mode is enabled by default, but this can be changed in `variables.json`.
