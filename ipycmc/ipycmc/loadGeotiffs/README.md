@@ -53,7 +53,16 @@ The goal of `load_geotiffs` is to take in the location of a geotiff in a MAAP ad
 * h9su TiTiler: [https://h9su0upami.execute-api.us-east-1.amazonaws.com](https://h9su0upami.execute-api.us-east-1.amazonaws.com)
 * jqsd TiTiler: [https://jqsd6bqdsf.execute-api.us-west-2.amazonaws.com](https://jqsd6bqdsf.execute-api.us-west-2.amazonaws.com)
 
-## Error checking performed by load\_geotiffs
+### Creating s3 link to pass to `load_geotiffs` from your s3 bucket
+The s3 link(s) passed to `load_geotiffs` should be in the form of `s3://bucket-name/key-name`. The bucket name and key name can be found by:
+1. Right clicking on a file in your s3 bucket
+2. Clicking "Get Presigned s3 Url"
+3. Look between "https://" and "s3.*Region*.amazonaws.com" to find the bucket name. For more details visit [https://docs.aws.amazon.com/AmazonS3/latest/userguide/access-bucket-intro.html](https://docs.aws.amazon.com/AmazonS3/latest/userguide/access-bucket-intro.html). For example, in the presigned url `https://maap-ops-workspace.s3.amazonaws.com`, `maap-ops-workspace` is the bucket name.
+4. After finding the bucket name, find the key name by looking after "s3.*Region*.amazonaws.com" and before the "?" in the presigned s3 url. The key name should include your maap username as well as the file path to your file (including your file name and ending type). 
+
+Put the bucket name and key name together in the form of `s3://bucket-name/key-name`. An example of this would be `s3://maap-ops-workspace/graceal/geoTiffs/N46W102.SRTMGL1.tif`
+
+## Error checking performed by `load_geotiffs`
 ##### Variables.json
 * All required keys are present in variables.json. Required keys can be found in the file `loadGeotiffs/requiredInfoClass.py`.
 * All of the required keys are non-empty.
