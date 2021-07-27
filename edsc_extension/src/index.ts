@@ -181,7 +181,7 @@ function activate(app: JupyterFrontEnd,
           }
           else {
               console.log("Error making call to get results. Status is " + xhr.status);
-               INotification.error("Error making call to get search results. Have you selected valid search parameters?");
+              INotification.error("Error making call to get search results with status "+ xhr.status +". Have you selected valid search parameters?");
           }
       };
 
