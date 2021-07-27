@@ -1,3 +1,11 @@
+/**
+ * File contains functionality to determine if the declaration of ipycmc.MapCMC() is present in the user's 
+ * Notebook. It also extracts the variable name of the declaration of ipycmc.MapCMC() if it is present.
+ * Lastly, it prints info messages to the user's Notebook. 
+ * 
+ * @author Grace Llewellyn, grace.a.llewellyn@jpl.nasa.gov
+ */
+
 import { NotebookActions } from '@jupyterlab/notebook';
 import { INotification } from "jupyterlab_toastify";
 
