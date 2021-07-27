@@ -1,6 +1,7 @@
 """
 This class holds all the parameters that are necessary to create the function call to load_geotiffs mostly by knowing what
 urls to remove from the list of urls that the user gives (i.e. checks the file endings type and starting type as specified in variables.json)
+
 Written by Grace Llewellyn, grace.a.llewellyn@jpl.nasa.gov
 """
 import json

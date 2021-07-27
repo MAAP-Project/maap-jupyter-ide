@@ -66,6 +66,10 @@ class GetQueryHandler(IPythonHandler):
 
 class VisualizeCMCHandler(IPythonHandler):
     def get(self):
+        """
+        Gets the parameters from index.ts and creates a list of granules. Then makes a call to the python script that creates the function call
+        and passes that back to the index.ts along with info messages to display to the user
+        """
         maap = MAAP(maap_api(self.request.host))
         cmr_query = self.get_argument('cmr_query', '')
         limit = str(self.get_argument('limit', ''))
