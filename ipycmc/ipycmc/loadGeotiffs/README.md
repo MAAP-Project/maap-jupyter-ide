@@ -1,4 +1,12 @@
 # README for load\_geotiff function
+## Objective of this function
+The goal of `load_geotiffs` is to take in the location of a geotiff in a MAAP ade s3 bucket and create a request url to a TiTiler endpoint (depending on MAAP environment). This request url points to an XML file that represents a WMTS capabilities file for the geotiff. This is passed to `load_layer_config`. A layer is loaded into CMC in a single seamless function call that can handle multiple geotiffs. In order for CMC to correctly display the tile request, certain default arguments need to be added onto this request url. In the case of a single geotiff, this is simple as the s3 link is added to the request url as a argument along with the default arguments. However, in the case of multiple geotiffs, a mosaic JSON must be created. The mosaic JSON is created through the `from_urls` or `from_features` methods in the `cogeo_mosaic` library created by Development seed. The mosaic JSON is then posted to a TiTiler endpoint where a WMTS capabilities link is returned. The default arguments are added to this WMTS capabilities link and then passed to `load_layer_config` as the request url. A user can always change the default arguments as described above. 
+
+### Workflow diagram
+![Workflow Diagram](workflowDiagram.png)
+* h9su TiTiler: [https://h9su0upami.execute-api.us-east-1.amazonaws.com](https://h9su0upami.execute-api.us-east-1.amazonaws.com)
+* jqsd TiTiler: [https://jqsd6bqdsf.execute-api.us-west-2.amazonaws.com](https://jqsd6bqdsf.execute-api.us-west-2.amazonaws.com
+
 ## Function definition: 
 ```
 load_geotiffs(urls, default_tiler_ops = {}, handle_as = "", default_ops_load_layer = {}, debug_mode = True, time_analysis = False)
@@ -44,14 +52,7 @@ w.load_geotiffs(urls="", default_tiler_ops={"colormap_name":"autumn", "pixel_sel
     * Default is `True`. This provides checks and detailed descriptions of the error that occurred as well as potential fixes. If you receive an unknown error please run in debug mode.
   * `time_analysis`
   	* Default is `False`. The intent of this parameter is to show the speed of the function and running the function in debug mode or not. This only shows the time to complete load\_geotiffs and not a call to `load_layer_config`. The function call to `load_geotiffs` that is mapped on CMC is the one with the given `debug_mode` or `True` if not provided.
-    
-## Objective of this function
-The goal of `load_geotiffs` is to take in the location of a geotiff in a MAAP ade s3 bucket and create a request url to a TiTiler endpoint (depending on MAAP environment). This request url points to an XML file that represents a WMTS capabilities file for the geotiff. This is passed to `load_layer_config`. A layer is loaded into CMC in a single seamless function call that can handle multiple geotiffs. In order for CMC to correctly display the tile request, certain default arguments need to be added onto this request url. In the case of a single geotiff, this is simple as the s3 link is added to the request url as a argument along with the default arguments. However, in the case of multiple geotiffs, a mosaic JSON must be created. The mosaic JSON is created through the `from_urls` or `from_features` methods in the `cogeo_mosaic` library created by Development seed. The mosaic JSON is then posted to a TiTiler endpoint where a WMTS capabilities link is returned. The default arguments are added to this WMTS capabilities link and then passed to `load_layer_config` as the request url. A user can always change the default arguments as described above. 
 
-### Workflow diagram
-![Workflow Diagram](workflowDiagram.png)
-* h9su TiTiler: [https://h9su0upami.execute-api.us-east-1.amazonaws.com](https://h9su0upami.execute-api.us-east-1.amazonaws.com)
-* jqsd TiTiler: [https://jqsd6bqdsf.execute-api.us-west-2.amazonaws.com](https://jqsd6bqdsf.execute-api.us-west-2.amazonaws.com)
 
 ### Creating s3 link to pass to `load_geotiffs` from your s3 bucket
 The s3 link(s) passed to `load_geotiffs` should be in the form of `s3://bucket-name/key-name`. The bucket name and key name can be found by:
