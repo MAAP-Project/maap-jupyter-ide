@@ -8,7 +8,7 @@ import json
 import maap
 from maap.maap import MAAP
 
-from . import createLoadGeotiffsFcnCall
+from .createLoadGeotiffsFcnCall import createLoadGeotiffsFcnCall
 
 @functools.lru_cache(maxsize=128)
 def get_maap_config(host):

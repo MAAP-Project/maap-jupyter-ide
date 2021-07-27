@@ -12,7 +12,7 @@ path_variablesjson = "ipycmc/ipycmc/loadGeotiffs/variables.json"
 class RequiredInfoClass:
     def __init__(self, debug_mode):
         try:
-            f = open(os.path.abspath(__file__).replace("edsc_extension/edsc_extension/"+os.path.basename(__file__), path_variablesjson), "r")
+            f = open(os.path.abspath(__file__).replace("edsc_extension/edsc_extension/createLoadGeotiffsFcnCall/"+os.path.basename(__file__), path_variablesjson), "r")
             dictionary = json.loads(f.read())
         except KeyboardInterrupt:
             raise KeyboardInterrupt
