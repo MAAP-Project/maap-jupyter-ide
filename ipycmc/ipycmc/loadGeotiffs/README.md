@@ -122,6 +122,9 @@ Running not in debug mode is a risk if you do not understand how the function wo
 ### Time analysis
 The only difference in setting this parameter to True is that the function call is done twice (once with debug mode and once without) and the results are printed. The request url generated for the given parameters including the given `debug_mode` are sent to `load_layer_config` as the function normally does. This function takes longer to run and the only purpose of it is to show the effects of `debug_mode` so that users can decide if they would like to run in that mode. Note that `time_analysis` is False by default, but this can be changed in `variables.json`.
 
+### DemoLoadGeotiffs Jupyter notebook
+There is a Jupyter notebook in this directory that demonstrates the capabilities of the `load_geotiffs` function. Published data was attempted to be used as much as possible in this example to reduce permission errors. The notebook is well commented for readers and displays many of the features described above if there is still confusion.
+
 ### Troubleshooting
 * Rerun the `load_geotiffs` function if the map layer does not show up the first time.
 * If a layer loads, but you cannot see any tiles, this is likely a CORS policy error and you do not have permission to the data. Another reason this could occur is if you incorrectly add a default argument to the TiTiler such as `bidx` or `rescale`. The default values for `rescale` of "0,1" is HIGHLY recommended.

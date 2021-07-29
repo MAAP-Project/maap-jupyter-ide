@@ -250,9 +250,7 @@ def check_data_present(s3Link):
             else:
                 return True, ("Error when attempting to receive data at " + s3Link + " with status code " + str(status_code) + ".")
         except botocore.exceptions.ClientError as error:
-            if error.response["ResponseMetadata"]["HTTPStatusCode"] == 404:
-                return True, ("Error when attempting to receive data at " + s3Link + " with status code " + str(404) + ".")
-            else:
-                return False, None
+            status_code = error.response["ResponseMetadata"]["HTTPStatusCode"]
+            return True, ("Error when attempting to receive data at " + s3Link + " with status code " + str(status_code) + ".")
     except:
         return False, None
