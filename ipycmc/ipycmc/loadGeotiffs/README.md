@@ -124,5 +124,5 @@ The only difference in setting this parameter to True is that the function call 
 
 ### Troubleshooting
 * Rerun the `load_geotiffs` function if the map layer does not show up the first time.
-* If a layer loads, but you cannot see any tiles, this is likely a CORS policy error and you do not have permission to the data
+* If a layer loads, but you cannot see any tiles, this is likely a CORS policy error and you do not have permission to the data. Another reason this could occur is if you incorrectly add a default argument to the TiTiler such as `bidx` or `rescale`
 * If the tile shows up and is all white with no details, then that is an error with the rescale value passed to the TiTiler

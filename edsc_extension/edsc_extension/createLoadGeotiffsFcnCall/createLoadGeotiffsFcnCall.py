@@ -23,6 +23,7 @@ def create_function_call(urls, maap_var_name):
     and the file ending is valid. Checks that the class types of the other arguments provided by the user are the correct class type
     Filters out all urls that do not have the correct ending type, starting type, contain orange-business (all read from variables.json),
     or if a boto3 head request cannot access the data (404 status)
+    
     Parameters
     ----------
     urls : list or str
@@ -58,6 +59,7 @@ def create_function_call(urls, maap_var_name):
 def filter_out_invalid_urls(urls):
     """
     Filters out all urls that do not have the correct ending type, starting type, or contain orange-business (all read from variables.json in case they change)
+
     Parameters
     ----------
     urls : list
@@ -90,6 +92,7 @@ def determine_single_url_valid(url):
     """
     Determines if the given url is valid by checking its beginning and ending types, and also checking that the data is not esa data because
     permission errors with ESA data in NASA maap. Note that only one error message will be shown to the user for a url that is filtered out.
+
     Parameters
     ----------
     urls : str
@@ -119,6 +122,7 @@ def determine_single_url_valid(url):
 def check_invalid_ending(url):
     """
     Determines if the given url is valid by checking its ending type and making sure that it's in required_info.required_ends
+
     Parameters
     ----------
     urls : str
@@ -139,6 +143,7 @@ def check_invalid_ending(url):
 def check_invalid_start(url):
     """
     Determines if the given url is valid by checking its start type and making sure that it's in required_info.required_start
+
     Parameters
     ----------
     urls : str
@@ -160,6 +165,7 @@ def check_esa_data(url):
     """
     Determines if the given url is valid by checking if it contains required_info.esa_data_location which is likely orange-business and means
     that nasa maap will have trouble accessing this data. 
+
     Parameters
     ----------
     urls : str
@@ -179,6 +185,7 @@ def check_esa_data(url):
 def add_urls(function_call, newUrls):
     """
     Adds the urls onto the function call. If there are no urls, makes the function call a comment telling the user why no urls were able to be found.
+
     Parameters
     ----------
     function_call : str
@@ -207,6 +214,7 @@ def check_data_present(s3Link):
     code is not 200 and when the head request fails with a 404 status code. All of this function is in a try except so that if another
     error occurs the url is just not filtered out because another problem might be at play. If there really is a problem with that url,
     then the load_geotiffs function will tell the user
+
     Parameters
     ----------
     s3Link : str
@@ -226,6 +234,7 @@ def check_data_present(s3Link):
             return False, None
         s3Link_mod = s3Link[len(required_info.s3_beginning):]
         end_bucket_name = s3Link_mod.find("/")
+        # If the bucket name is not found
         if end_bucket_name == -1:
             return False, None
         bucket_name = s3Link_mod[:end_bucket_name]
