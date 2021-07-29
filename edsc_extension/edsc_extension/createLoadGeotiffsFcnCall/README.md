@@ -1,4 +1,4 @@
-# README for Visualize Granule Results in CMC option for Data Search Tab
+# README for Visualize Granule Results in map option for Data Search Tab
 ![Screenshot of Data Search Tab](screenshotTab.png)
 ## Objective of the function
 The objective of the function is to allow the user to easily visualize the results from their granule search from EarthData Search. Once the user runs a search in EarthData search and clicks on a granule, they can press the "Visualize Granule Results in map" button shown above in order to create a function call to `load_geotiffs` with the urls from their granule search results. The urls extracted abide by the user setting the results limit and they are filtered based on certain criteria
