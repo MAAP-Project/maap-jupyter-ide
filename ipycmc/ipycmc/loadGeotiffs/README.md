@@ -1,6 +1,6 @@
 # README for load\_geotiff function
 ## Objective of this function
-The goal of `load_geotiffs` is to take in the location of a geotiff in a MAAP ade s3 bucket and create a request url to a TiTiler endpoint (depending on MAAP environment). This request url points to an XML file that represents a WMTS capabilities file for the geotiff. This is passed to `load_layer_config`. A layer is loaded into CMC in a single seamless function call that can handle multiple geotiffs. In order for CMC to correctly display the tile request, certain default arguments need to be added onto this request url. In the case of a single geotiff, this is simple as the s3 link is added to the request url as an argument along with the default arguments. However, in the case of multiple geotiffs, a mosaic JSON must be created. The mosaic JSON is created through the `from_urls` or `from_features` methods in the `cogeo_mosaic` library created by Development seed. The mosaic JSON is then posted to a TiTiler endpoint where a WMTS capabilities link is returned. The default arguments are added to this WMTS capabilities link and then passed to `load_layer_config` as the request url. A user can always change the default arguments as described above. 
+The goal of `load_geotiffs` is to take in the location of a geotiff in a MAAP ade s3 bucket and create a request url to a TiTiler endpoint (depending on MAAP environment). This request url points to an XML file that represents a WMTS capabilities file for the geotiff. This is passed to `load_layer_config`. A layer is loaded into CMC in a single seamless function call that can handle multiple geotiffs. In order for CMC to correctly display the tile request, certain default arguments need to be added onto this request url. In the case of a single geotiff, this is simple as the s3 link is added to the request url as an argument along with the default arguments. However, in the case of multiple geotiffs, a mosaic JSON must be created. The mosaic JSON is created through the `from_urls` or `from_features` methods in the `cogeo_mosaic` library created by Development seed. The mosaic JSON is then posted to a TiTiler endpoint where a WMTS capabilities link is returned. The default arguments are added to this WMTS capabilities link and then passed to `load_layer_config` as the request url. A user can always change the default arguments as described below. 
 
 ### Workflow diagram
 ![Workflow Diagram](workflowDiagram.png)
@@ -11,25 +11,25 @@ The goal of `load_geotiffs` is to take in the location of a geotiff in a MAAP ad
 ```
 load_geotiffs(urls, default_tiler_ops = {}, handle_as = "", default_ops_load_layer = {}, debug_mode = True, time_analysis = False)
 ```
-Function call must be on a MapCMC object. For example, 
+Function call must be on an IpyCMC.MapCMC object. For example, 
 ```
 w = ipycmc.MapCMC()
 w
 w.load_geotiffs(urls="", default_tiler_ops={"colormap_name":"autumn", "pixel_selection":"mean"}, handle_as="wmts/xml", default_ops_load_layer={"handleAs": "wmts_raster"}, debug_mode = True, time_analysis = False)
 ```
 ### Arguments
-* `urls`, where urls must be:
-	*  a string consisting of a single link to a geotiff in an s3 bucket in the MAAP ade (private or bucket bucket will suffice). Currently, this string must start with "s3://" and end with ".tif" or ".tiff". However, this can be changed by modifying the `required_start` and `required_end` lists in variables.json. Even if these arguments are changed, if the beginning and ending types of the links do not comply with the TiTiler requirements, an error message will be returned.
+* `urls`: where urls must be:
+	*  a string consisting of a single link to a geotiff in an s3 bucket in the MAAP ade (private or bucket bucket will suffice). Currently, this string must start with "s3://" and end with ".tif" or ".tiff". However, this can be changed by modifying the `required_starts` and `required_ends` lists in variables.json. Even if these arguments are changed, if the beginning and ending types of the links do not comply with the TiTiler requirements, an error message will be returned and tiles cannot be generated.
     * a list consisting of links to geotiffs where each link follows all the guidelines listed above 
-    * a string pointing to a folder in an s3 bucket. All files in this folder will be added to a list as long as they end in one of `required_end`
-* `default_tiler_ops`, Arguments to be passed to the request url to the TiTiler. This variable must be a dictionary where the key is one of the parameters below and the value is the argument to be passed for that parameter. Below are the descriptions provided by Development Seed.
+    * a string pointing to a folder in an s3 bucket. All files in this folder will be added to a list as long as they end in one of `required_ends`
+* `default_tiler_ops`: Arguments to be passed to the request url to the TiTiler. This variable must be a dictionary where the key is one of the parameters below and the value is the argument to be passed for that parameter. Below are the descriptions provided by Development Seed.
    * `tile_format`: Output image type, `string`. Can only be certain value specified in `variables.json`
    * `tile_scale`: Tile size scale. 1=256x256, 2=512x512..., `integer`
    * `pixel_selection`: Pixel selection method, `string`. Can only be certain values specified in `variables.json`. Primarily used for mosaic json (i.e. multiple geotiffs at once)
    * `TileMatrixSetId`: TileMatrixSet Name (set values that represent a projection), `string`. Can only be certain value specified in `variables.json`
    * `resampling_method`: Resampling method, `string`. Can only be certain value specified in `variables.json`
    * `return_mask`: Add mask to the output data, `boolean`
-   * `rescale`
+   * `rescale`: comma (',') delimited Min,Max bounds, `string`
    
     #### Additional arguments you can add that are not typically added as defaults (Note: you can change the defaults by modifying `defaults_tiler` in variables.json:)
    * `minzoom`:  Overwrite default minzoom, `integer`
@@ -44,14 +44,10 @@ w.load_geotiffs(urls="", default_tiler_ops={"colormap_name":"autumn", "pixel_sel
    
    __For more documentation about these arguments, please visit: [https://h9su0upami.execute-api.us-east-1.amazonaws.com/docs#](https://h9su0upami.execute-api.us-east-1.amazonaws.com/docs#)__
    
- * `handle_as`
-    * Default is "wmts/xml", but this can be changed by modifying `default_handle_as` in variables.json 
-  * `default_ops_load_layer`
-  	* Default is `{"handleAs": "wmts_raster"}`, but this can be changed by modifying `default_ops_load_layer` in variables.json
-  * `debug_mode`
-    * Default is `True`. This provides checks and detailed descriptions of the error that occurred as well as potential fixes. If you receive an unknown error please run in debug mode.
-  * `time_analysis`
-  	* Default is `False`. The intent of this parameter is to show the speed of the function when running the function in debug mode or not. This only shows the time to complete `load_geotiffs` and not a call to `load_layer_config`. The function call to `load_geotiffs` that is mapped on CMC is the one with the given `debug_mode` or `True` if not provided.
+ * `handle_as`: Default is "wmts/xml", but this can be changed by modifying `default_handle_as` in variables.json 
+  * `default_ops_load_layer`: Default is `{"handleAs": "wmts_raster"}`, but this can be changed by modifying `default_ops_load_layer` in variables.json
+  * `debug_mode`: Default is `True`. This provides checks and detailed descriptions of the error that occurred as well as potential fixes. If you receive an unknown error please run in debug mode. The default value of `debug_mode` can be changed by modifying `variables.json`.
+  * `time_analysis`: Default is `False`. The intent of this parameter is to show the speed of the function when running the function in debug mode or not. This only shows the time to complete `load_geotiffs` and not a call to `load_layer_config`. The function call to `load_geotiffs` that is mapped on CMC is the one with the given `debug_mode` or `True` if not provided. The default value of `time_analysis` can be changed by modifying `variables.json`.
 
 
 ### Creating s3 link to pass to `load_geotiffs` from your s3 bucket
@@ -72,13 +68,11 @@ Put the bucket name and key name together in the form of `s3://bucket-name/key-n
 * Urls is either string or list
 * Urls is non-empty
 * Urls (and every element if list) begins with one of `required_starts`
-* If list of urls, each element has the same s3 bucket name
+* If list of urls, each element has the same s3 bucket name or the data is published
 * One of the keys passed for `default_tiler_ops` is not found as a valid key in `defaults_tiler` or `accepted_arguments_tiler`
 * One of the parameters passed for `default_tiler_ops` is not the correct class type 
-* One of the parameters passed for `default_tiler_ops` is not one of the values accepted for the finite list of accepted arguments (i.e. for the parameters. This can be specified in `variables.json`.
-*  `TileMatrixSetId`, `resampling_method`, `colormap_name`, `tile_format`, and `pixel_selection`). This can be specified in `variables.json`.
-
-##### More advanced argument error checking
+* One of the parameters passed for `default_tiler_ops` is not one of the values accepted for the finite list of accepted arguments (i.e. for the parameters. This can be specified in `variables.json`
+*  `TileMatrixSetId`, `resampling_method`, `colormap_name`, `tile_format`, and `pixel_selection`). This can be specified in `variables.json`
 * s3 bucket name of s3 link is not one of `endpoints_tiler.keys()`
 * The bucket name cannot be found in the s3 link because of incorrect amount of "/"s
 
@@ -110,7 +104,7 @@ Variables.json is located at `maap-jupyter-ide/ipycmc/ipycmc/loadGeotiffs`
  * `required_class_types_args_tiler`: For all parameters that the TiTiler endpoint accepts, this variable checks to make sure that the argument that the user passes is the correct class type that complies with what the TiTiler is expecting.
  * `tile_format_args`: This list represents the accepted arguments for the `tile_format` variable. If TiTiler changes then this variable might need to change as well. 
  * `pixel_selection_args`: This list represents the accepted arguments for the `pixel_selection` variable. If TiTiler changes then this variable might need to change as well. 
-  * `getting_xml_endpoint`: This is the code that executes to extract the wmts endpoint from the mosaic json request post. For this code to execute correctly, the request variable needs to be named r. If the formatting of TiTiler endpoint request posts changes, then this variable may need to change as well. 
+  * `getting_xml_endpoint`: This is the code that executes to extract the wmts endpoint from the mosaic json request post. For this code to execute correctly, the request variable needs to be named r. If the formatting of TiTiler endpoint request post changes, then this variable may need to change as well. 
   * `web_starts`: All TiTiler endpoints (`posting_tiler_endpoint`, `endpoint_published_data`, `endpoints_tiler.values()`) are required to start with one of these `web_starts`. This variable may be changed if you only want secure endpoints, i.e. change this to just a list of https://. Links starting with s3:// fall into a separate category than the TiTiler endpoints
  * `default_handle_as`: Default `handle_as` argument for `load_layer_config`. For more on documentation see [https://github.com/MAAP-Project/maap-jupyter-ide/blob/develop/user\_guides/ipycmc.md#class-mapcmc](https://github.com/MAAP-Project/maap-jupyter-ide/blob/develop/user_guides/ipycmc.md#class-mapcmc)
  * `default_ops_load_layer_config`: Default `default_ops` argument for `load_layer_config`. For more on documentation see [https://github.com/MAAP-Project/maap-jupyter-ide/blob/develop/user\_guides/ipycmc.md#class-mapcmc](https://github.com/MAAP-Project/maap-jupyter-ide/blob/develop/user_guides/ipycmc.md#class-mapcmc)
@@ -131,3 +125,4 @@ The only difference in setting this parameter to True is that the function call 
 ### Troubleshooting
 * Rerun the `load_geotiffs` function if the map layer does not show up the first time.
 * If a layer loads, but you cannot see any tiles, this is likely a CORS policy error and you do not have permission to the data
+* If the tile shows up and is all white with no details, then that is an error with the rescale value passed to the TiTiler
