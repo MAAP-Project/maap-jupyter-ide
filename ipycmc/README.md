@@ -20,7 +20,7 @@ npm run build
 pip install -e .
 jupyter nbextension install --py --symlink --sys-prefix ipycmc
 jupyter nbextension enable --py --sys-prefix ipycmc
-jupyter labextension install .
+jupyter labextension install ipycmc
 ```
 
 ### Uninstall

@@ -14,6 +14,7 @@ const CMC = CMC_Module.CMC;
 require('maap-common-mapping-client/dist/bundle.css');
 require('maap-common-mapping-client/dist/assets/mapskin/css/mapskin.min.css');
 
+
 function importAll(r: any) {
     r.keys().forEach(r);
 }
