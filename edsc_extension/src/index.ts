@@ -20,7 +20,7 @@ import { INotification } from "jupyterlab_toastify";
 /** internal imports **/
 import '../style/index.css';
 import { IFrameWidget } from './widgets';
-import { setResultsLimit, displaySearchParams } from './popups'
+import { setResultsLimit, displaySearchParams, promptLoadGeotiffDefaults } from './popups'
 import globals = require("./globals");
 import { decodeUrlParams } from "./urlParser";
 import { buildCmrQuery } from "./buildCmrQuery";
@@ -28,7 +28,6 @@ import { granulePermittedCmrKeys,
         granuleNonIndexedKeys,
         collectionPermittedCmrKeys,
         collectionNonIndexedKeys } from "./searchKeys";
-import { getMaapVarName, printInfoMessage } from "./getMaapVarName";
 
 let edsc_server = '';
 var valuesUrl = new URL(PageConfig.getBaseUrl() + 'maapsec/environment');
@@ -181,7 +180,7 @@ function activate(app: JupyterFrontEnd,
           }
           else {
               console.log("Error making call to get results. Status is " + xhr.status);
-              INotification.error("Error making call to get search results. Have you selected valid search parameters?");
+               INotification.error("Error making call to get search results. Have you selected valid search parameters?");
           }
       };
 
@@ -194,46 +193,6 @@ function activate(app: JupyterFrontEnd,
     }
 
 
-  }
-
-  function visualizeCMC(args: any) {
-    const current = getCurrent(args);
-    // If no search is selected, send an error
-    if (Object.keys(globals.granuleParams).length == 0) {
-      INotification.error("Error: No Search Selected.");
-      return;
-    }
-    var getUrl = new URL(PageConfig.getBaseUrl() + 'edsc/visualizeCMC');
-    getUrl.searchParams.append("maapVarName", getMaapVarName(current));
-    
-    getUrl.searchParams.append("cmr_query", globals.granuleQuery);
-    getUrl.searchParams.append("limit", globals.limit);
-    var xhr = new XMLHttpRequest();
-    
-    xhr.onload = function() {
-        if (xhr.status == 200) {
-            let response: any = JSON.parse(xhr.response);
-            if (current) {
-              NotebookActions.insertBelow(current.content);
-              NotebookActions.paste(current.content);
-              current.content.mode = 'edit';
-              const insert_text = "# Results to post to CMC (unaccepted file types removed): " + "\n" + response.function_call;
-              current.content.activeCell.model.value.text = insert_text;
-              printInfoMessage(response);
-            }
-        }
-        else {
-            console.log("Error making call to get results. Status is " + xhr.status);
-            INotification.error("Error making call to get search results. Have you selected valid search parameters?");
-        }
-    };
-
-    xhr.onerror = function() {
-      INotification.error("Error getting results from Data Search.");
-    };
-
-    xhr.open("GET", getUrl.href, true);
-    xhr.send(null);
   }
 
 
@@ -319,7 +278,7 @@ function activate(app: JupyterFrontEnd,
     label: 'Visualize Granule Results in map',
     isEnabled: () => true,
     execute: args => {
-      visualizeCMC(args)
+      promptLoadGeotiffDefaults(getCurrent(args));
     }
   });
   palette.addItem({command: visualize_cmc_command, category: 'Search'});

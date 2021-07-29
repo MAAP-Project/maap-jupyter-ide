@@ -1,5 +1,5 @@
 import {Dialog, showDialog} from "@jupyterlab/apputils";
-import {LimitPopupWidget, ParamsPopupWidget} from "./widgets";
+import {LimitPopupWidget, ParamsPopupWidget, LoadGeotiffsWidget} from "./widgets";
 import globals = require("./globals");
 
 export function setResultsLimit() {
@@ -16,6 +16,15 @@ export function displaySearchParams() {
   showDialog({
         title: 'Current Search Parameters:',
         body: new ParamsPopupWidget(),
+        focusNodeSelector: 'input',
+        buttons: [Dialog.okButton({ label: 'Ok' })]
+    });
+}
+
+export function promptLoadGeotiffDefaults(current) {
+    showDialog({
+        title: 'Function call to load_geotiffs:',
+        body: new LoadGeotiffsWidget(current),
         focusNodeSelector: 'input',
         buttons: [Dialog.okButton({ label: 'Ok' })]
     });
