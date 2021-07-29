@@ -16,6 +16,7 @@ import { ReadonlyJSONObject } from '@lumino/coreutils';
 
 /** other external imports **/
 import { INotification } from "jupyterlab_toastify";
+import * as $ from "jquery";
 
 /** internal imports **/
 import '../style/index.css';
@@ -53,6 +54,7 @@ const extension: JupyterFrontEndPlugin<WidgetTracker<IFrameWidget>> = {
   activate: activate
 };
 
+
 function activate(app: JupyterFrontEnd,
                   docManager: IDocumentManager,
                   palette: ICommandPalette,
@@ -65,6 +67,7 @@ function activate(app: JupyterFrontEnd,
 
   const namespace = 'tracker-iframe';
   let instanceTracker = new WidgetTracker<IFrameWidget>({ namespace });
+
 
   //
   // Listen for messages being sent by the iframe - parse the url and set as parameters for search
@@ -96,6 +99,7 @@ function activate(app: JupyterFrontEnd,
     return widget;
   }
 
+
   // PASTE SEARCH INTO A NOTEBOOK
   function pasteSearch(args: any, result_type: any, query_type='granule') {
     const current = getCurrent(args);
@@ -125,7 +129,7 @@ function activate(app: JupyterFrontEnd,
 
         xhr.onload = function() {
           if (xhr.status == 200) {
-              let response: any = JSON.parse(xhr.response);
+              let response: any = $.parseJSON(xhr.response);
               response_text = response.query_string;
               if (response_text == "") {
                   response_text = "No results found.";
@@ -165,7 +169,7 @@ function activate(app: JupyterFrontEnd,
 
       xhr.onload = function() {
           if (xhr.status == 200) {
-              let response: any = JSON.parse(xhr.response);
+              let response: any = $.parseJSON(xhr.response);
               let response_text: any = response.granule_urls;
               if (response_text == "") {
                   response_text = "No results found.";
@@ -235,7 +239,6 @@ function activate(app: JupyterFrontEnd,
     xhr.open("GET", getUrl.href, true);
     xhr.send(null);
   }
-
 
   /******** Set commands for command palette and main menu *********/
 

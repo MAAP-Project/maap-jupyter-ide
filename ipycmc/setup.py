@@ -91,7 +91,7 @@ setup_args = dict(
         'requests',
         'numpy==1.20.3',
         'rio_tiler==2.1.0',
-        'cogeo_mosaic==3.0.1'
+        'cogeo_mosaic==3.0.1',
     ],
     extras_require = {
         'test': [

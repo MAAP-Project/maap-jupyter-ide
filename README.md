@@ -100,6 +100,3 @@ development. I recommend taking a look at [this](https://jupyterlab.readthedocs.
   - Here is some magic that fixes it (add this line and replace with the path to where your `load_jupyter_server_extension` function is)
         ```bash
         perl -pi -e "s|web_app.settings\['base_url'\]|'/'|g" /show_ssh_info/show_ssh_info/__init__.py
-# maap-jupyter-ide-testing
-# maap-jupyter-ide-testing
-# maap-jupyter-ide-testing
