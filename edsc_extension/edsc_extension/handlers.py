@@ -63,7 +63,6 @@ class GetQueryHandler(IPythonHandler):
         print("Response is: ", query_string)
         self.finish({"query_string": query_string})
 
-
 class VisualizeCMCHandler(IPythonHandler):
     def get(self):
         """
