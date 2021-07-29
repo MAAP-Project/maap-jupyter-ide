@@ -1,5 +1,5 @@
-## Notes to potentially add to Readme about installing IPYCMC for local development on Windows:
-If you are installing ipycmc on a Microsoft Windows Operating System, it is advised to download Windows Subsystem for Linux (WSL). If you chose not to download WSL, you may encounter file path problems in the webpack.config.js file. <br>
+## Notes about doing local development with `maap-jupyter-ide` on Windows:
+If you are installing ipycmc on a Microsoft Windows Operating System, it is advised to download Windows Subsystem for Linux (WSL). If you chose not to download WSL, you may encounter file path problems in the `ipycmc/webpack.config.js file`. <br>
 Follow these instructions for downloading Windows Subsystem for Linux: <br>
 [https://docs.microsoft.com/en-us/windows/wsl/install-win10](https://docs.microsoft.com/en-us/windows/wsl/install-win10) <br>
 After you install your Linux distribution, you must install conda. Follow these instructions: <br>
@@ -20,3 +20,4 @@ If you would like to modify your code in Visual Studio Code, then follow the ste
   * Make sure the box next to Windows Subsystem for Linux is clicked
 
 * If conda still does not work, try exporting the path: `export PATH=/home/USER/anaconda3/bin:$PATH`
+* Enable Virtualization in your BOIS [https://www.virtualmetric.com/blog/how-to-enable-hardware-virtualization](https://www.virtualmetric.com/blog/how-to-enable-hardware-virtualization)
