@@ -5,7 +5,7 @@ The goal of `load_geotiffs` is to take in the location of a geotiff in a MAAP ad
 ### Workflow diagram
 ![Workflow Diagram](workflowDiagram.png)
 * h9su TiTiler: [https://h9su0upami.execute-api.us-east-1.amazonaws.com](https://h9su0upami.execute-api.us-east-1.amazonaws.com)
-* jqsd TiTiler: [https://jqsd6bqdsf.execute-api.us-west-2.amazonaws.com](https://jqsd6bqdsf.execute-api.us-west-2.amazonaws.com
+* jqsd TiTiler: [https://jqsd6bqdsf.execute-api.us-west-2.amazonaws.com](https://jqsd6bqdsf.execute-api.us-west-2.amazonaws.com)
 
 ## Function definition: 
 ```
