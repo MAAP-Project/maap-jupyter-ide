@@ -1,12 +1,12 @@
 # README for Visualize Granule Results in CMC option for Data Search Tab
 ![Screenshot of Data Search Tab](screenshotTab.png)
 ## Objective of the function
-The objective of the function is to allow the user to easily visualize the results from their granule search from EarthData Search. Once the user runs a search in EarthData search and clicks on a granule, they can press the "Visualize Granule Results in CMC" button shown above in order to create a function call to `load_geotiffs` with the urls from their granule search results. The urls extracted abide by the user setting the results limit and they are filtered based on certain criteria
+The objective of the function is to allow the user to easily visualize the results from their granule search from EarthData Search. Once the user runs a search in EarthData search and clicks on a granule, they can press the "Visualize Granule Results in map" button shown above in order to create a function call to `load_geotiffs` with the urls from their granule search results. The urls extracted abide by the user setting the results limit and they are filtered based on certain criteria
 
 ###  Criteria for filtering Granule Search Results
 1. The url must begin with an s3 beginning (s3://- specified in`variables.json` in variable `required_starts`)
 2. The url must end in a TIFF ending (.tif, .tiff- specified in `variables.json` in variable `required_ends`)
-3. The url must not contain "orange-business" (specified in `variables.json` in variable `esa_data_location`). This is because there are permission issues when trying to access ESA data in NASA maap and orange business is where ESA hosts their data. 
+3. The url must not contain "orange-business" (specified in `variables.json` in variable `esa_data_location`). This is because there are permission issues when trying to access ESA data in NASA maap and orange business is where ESA hosts their data
 4. The head request using boto3 has a status code of 200 when trying to access the data at the link 
 
 ### Additional functionality

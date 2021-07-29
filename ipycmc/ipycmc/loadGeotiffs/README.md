@@ -29,7 +29,7 @@ w.load_geotiffs(urls="", default_tiler_ops={"colormap_name":"autumn", "pixel_sel
    * `TileMatrixSetId`: TileMatrixSet Name (set values that represent a projection), `string`. Can only be certain value specified in `variables.json`
    * `resampling_method`: Resampling method, `string`. Can only be certain value specified in `variables.json`
    * `return_mask`: Add mask to the output data, `boolean`
-   * `rescale`: comma (',') delimited Min,Max bounds, `string`
+   * `rescale`: comma (',') delimited Min,Max bounds, `string`. Values greater than 10 cannot be passed for the max bound
    
     #### Additional arguments you can add that are not typically added as defaults (Note: you can change the defaults by modifying `defaults_tiler` in variables.json:)
    * `minzoom`:  Overwrite default minzoom, `integer`
@@ -125,4 +125,4 @@ The only difference in setting this parameter to True is that the function call 
 ### Troubleshooting
 * Rerun the `load_geotiffs` function if the map layer does not show up the first time.
 * If a layer loads, but you cannot see any tiles, this is likely a CORS policy error and you do not have permission to the data. Another reason this could occur is if you incorrectly add a default argument to the TiTiler such as `bidx` or `rescale`
-* If the tile shows up and is all white with no details, then that is an error with the rescale value passed to the TiTiler
+* If the tile shows up and is all white or all black with no details, then it is likely an error with the rescale value passed to the TiTiler
