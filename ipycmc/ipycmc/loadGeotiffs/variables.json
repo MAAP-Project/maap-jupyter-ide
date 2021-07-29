@@ -1,6 +1,6 @@
 {"required_starts":["s3://", "S3://"], 
     "required_ends":[".tif", ".TIF", ".tiff", ".TIFF"],
-    "defaults_tiler":{"tile_format":"png", "tile_scale":1, "pixel_selection":"first", "TileMatrixSetId":"WebMercatorQuad", "resampling_method":"nearest", "return_mask":true, "rescale":"0%2C1000"},
+    "defaults_tiler":{"tile_format":"png", "tile_scale":1, "pixel_selection":"first", "TileMatrixSetId":"WebMercatorQuad", "resampling_method":"nearest", "return_mask":true, "rescale":"0,1"},
     "endpoints_tiler":{"maap-ops-workspace":"https://jqsd6bqdsf.execute-api.us-west-2.amazonaws.com", "maap-ops-dataset":"https://h9su0upami.execute-api.us-east-1.amazonaws.com"},
     "tiler_extensions":{"single":"/cog/WMTSCapabilities.xml?","multiple":"/mosaicjson/WMTSCapabilities.xml?"},
     "endpoint_published_data": "https://jqsd6bqdsf.execute-api.us-west-2.amazonaws.com",
@@ -19,5 +19,6 @@
     "default_debug_mode":true,
     "default_time_analysis":false,
     "esa_data_location": "orange-business",
-    "s3_beginning":"s3://"
+    "s3_beginning":"s3://",
+    "escape_sequences":{",":"%2C"}
    }

@@ -25,7 +25,6 @@ def initialize_required_info(required_info_given):
     global required_info
     required_info = required_info_given
 
-# Returns the list for a mosaic JSON for the given s3 links. Returns None in case of error and prints the appropriate error message
 def create_mosaic_json_url(urls, default_tiler_ops, debug_mode):
     """
     Creates a mosaic json, then posts the mosaic JSON to a TiTiler endpoints, then generates a request url to the TiTiler by 
@@ -49,7 +48,7 @@ def create_mosaic_json_url(urls, default_tiler_ops, debug_mode):
     if mosaic_data_json == None:
         return None
     r = post_mosaic_json(mosaic_data_json)
-    # TODO fix this so doesn't recall 
+    
     bucket_name = errorChecking.get_environment_list(urls)[1]
     if (bucket_name == None or bucket_name=="maap-ops-dataset"):
         try:
@@ -119,7 +118,6 @@ def create_mosaic_json_from_urls(urls):
         print("Error creating the mosaic json using MosaicJSON.from_urls. This is likely because of a permissions error.")
         return None
 
-# Adds the specified defaults onto the url taking user input into account. Returns None if errors in the user-given default arguments
 def add_defaults_url(url, default_tiler_ops, debug_mode):
     """
     Adds the defaults for the TiTiler to the request url. Even if the user does not pass arguments for the TiTiler, the defaults
@@ -147,13 +145,40 @@ def add_defaults_url(url, default_tiler_ops, debug_mode):
     temp_defaults_tiler = copy.copy(required_info.defaults_tiler)
     # If given no default_tiler_ops, this for loop will not run and all the rest of the default values will just be added
     for key in default_tiler_ops:
-        defaultValues = defaultValues + "&" + key + "=" + str(default_tiler_ops[key])
+        defaultValues = defaultValues + "&" + key + "=" + add_escape_sequences(str(default_tiler_ops[key]), key)
         if key in temp_defaults_tiler:
             temp_defaults_tiler.pop(key, None)
             
     # When finished with user's arguments, add the rest of the default values
     for key in temp_defaults_tiler:
-        defaultValues = defaultValues + "&" + key + "=" + str(required_info.defaults_tiler[key])
+        defaultValues = defaultValues + "&" + key + "=" + add_escape_sequences(str(required_info.defaults_tiler[key]), key)
                     
     url = url + defaultValues
     return url
+
+def add_escape_sequences(value, tiler_key):
+    """
+    Adds escape sequences onto the tiler argument. This is mostly for the rescale value which needs to be formatted in a certain manner
+    for the tiles to show up correctly
+
+    Parameters
+    ----------
+    value : str
+        Value to add the default values onto
+    tiler_key : str
+        Key to the tiler used to identify if the value is for the rescale tiler parameter
+    
+    Returns
+    -------
+    str
+        Updated value with escape sequences added
+    """
+    for key in required_info.escape_sequences:
+        index_escape_seq = value.find(key)
+        if index_escape_seq != -1:
+            value = value[:index_escape_seq] + required_info.escape_sequences[key] + value[index_escape_seq+1:]
+            # This is not elegant, but for some reason rescale must have 3 0s added to the end
+            if tiler_key == "rescale":
+                value = value + "000"
+            return value
+    return value 

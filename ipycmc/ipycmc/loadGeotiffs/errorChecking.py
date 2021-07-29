@@ -205,6 +205,9 @@ def check_valid_default_arguments(default_tiler_ops):
                 print("The argument you are passing for " + key + " is not a valid class for this key. The class " + str(required_info.required_class_types_args_tiler[key]) + 
                 " is accepted, but you passed " + str(type(default_tiler_ops[key])) + ".")
                 return False
+            elif key == "rescale" and (not "," in default_tiler_ops[key]):
+                print("The rescale parameter must contain a comma. Please provide 2 values separated by a comma.")
+                return False
         except KeyboardInterrupt:
             raise KeyboardInterrupt
         except:
