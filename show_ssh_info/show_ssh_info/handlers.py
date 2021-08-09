@@ -35,36 +35,37 @@ class InjectKeyHandler(IPythonHandler):
     def get(self):
         public_key = self.get_argument('key', '')
 
-        print("=== Injecting SSH KEY ===")
+        if public_key:
+            print("=== Injecting SSH KEY ===")
 
-        # Check if .ssh directory exists, if not create it
-        os.chdir('/projects')
-        if not os.path.exists(".ssh"):
-            os.makedirs(".ssh")
+            # Check if .ssh directory exists, if not create it
+            os.chdir('/projects')
+            if not os.path.exists(".ssh"):
+                os.makedirs(".ssh")
 
-        # Check if authorized_keys file exits, if not create it
-        if not os.path.exists(".ssh/authorized_keys"):
-            with open(".ssh/authorized_keys", 'w'):
-                pass
+            # Check if authorized_keys file exits, if not create it
+            if not os.path.exists(".ssh/authorized_keys"):
+                with open(".ssh/authorized_keys", 'w'):
+                    pass
 
-        # Check if key already in file
-        with open('.ssh/authorized_keys', 'r') as f:
-            linelist = f.readlines()
+            # Check if key already in file
+            with open('.ssh/authorized_keys', 'r') as f:
+                linelist = f.readlines()
 
-        found = False
-        for line in linelist:
-            if public_key in line:
-                print("Key already in authorized_keys")
-                found = True
+            found = False
+            for line in linelist:
+                if public_key in line:
+                    print("Key already in authorized_keys")
+                    found = True
 
-        # If not in file, inject key into authorized keys
-        if not found:
-            cmd = "echo " + public_key + " >> .ssh/authorized_keys && chmod 700 /projects && chmod 700 .ssh/ && chmod 600 .ssh/authorized_keys"
-            print(cmd)
-            subprocess.check_output(cmd, shell=True)
-            print("=== INJECTED KEY ===")
-        else:
-            print("=== KEY ALREADY PRESENT ===")
+            # If not in file, inject key into authorized keys
+            if not found:
+                cmd = "echo " + public_key + " >> .ssh/authorized_keys && chmod 700 /projects && chmod 700 .ssh/ && chmod 600 .ssh/authorized_keys"
+                print(cmd)
+                subprocess.check_output(cmd, shell=True)
+                print("=== INJECTED KEY ===")
+            else:
+                print("=== KEY ALREADY PRESENT ===")
 
         print("=== Checking for existence of MAAP_PGT ===")
 
