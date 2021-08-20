@@ -1,15 +1,5 @@
 [    
     {
-        "environment": "devche7",
-        "ade_server": "ade.che7test.xyz",
-        "api_server": "api.maap.xyz",
-        "auth_server": "auth.nasa.maap.xyz",
-        "mas_server": "repo.nasa.maap.xyz",
-        "edsc_server": "ade.che7test.xyz:30052",
-        "workspace_bucket": "maap-dev-dataset",
-        "default_host": false
-    },
-    {
         "environment": "dev",
         "ade_server": "che-k8s.maap.xyz",
         "api_server": "api.maap.xyz",
@@ -17,6 +7,16 @@
         "mas_server": "repo.nasa.maap.xyz",
         "edsc_server": "che-k8s.maap.xyz:3052",
         "workspace_bucket": "maap-dev-dataset",
+        "default_host": false
+    },
+    {
+        "environment": "dit",
+        "ade_server": "ade.dit.maap-project.org",
+        "api_server": "api.dit.maap-project.org",
+        "auth_server": "auth.dit.maap-project.org",
+        "mas_server": "repo.dit.maap-project.org",
+        "edsc_server": "ade.dit.maap-project.org:30052",
+        "workspace_bucket": "maap-dit-workspace",
         "default_host": false
     },
     {
@@ -30,7 +30,7 @@
         "default_host": false
     },
     {
-        "environment": "pre-ops",
+        "environment": "pilot-ops",
         "ade_server": "ade.ops.maap-project.org",
         "api_server": "api.ops.maap-project.org",
         "auth_server": "auth.ops.maap-project.org",
