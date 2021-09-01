@@ -9,7 +9,7 @@ import json
 import urllib3
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
-namespace = "$1" # 
+namespace = "$1".replace('.', '-')
 svc_host = os.environ.get('KUBERNETES_SERVICE_HOST')
 svc_host_https_port = os.environ.get('KUBERNETES_SERVICE_PORT_HTTPS')
 che_workspace_id = os.environ.get('CHE_WORKSPACE_ID')
