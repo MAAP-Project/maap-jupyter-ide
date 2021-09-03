@@ -7,9 +7,14 @@ import os
 import requests
 import json
 import urllib3
+import re
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
-namespace = "$1".replace('.', '-')
+namespace = "$1"
+# Replicate Che's namespace converter policy
+# by substituting any non-alphanumeric characters with hyphens.
+namespace = re.sub("[^0-9a-zA-Z-]+", "-", namespace)
+
 svc_host = os.environ.get('KUBERNETES_SERVICE_HOST')
 svc_host_https_port = os.environ.get('KUBERNETES_SERVICE_PORT_HTTPS')
 che_workspace_id = os.environ.get('CHE_WORKSPACE_ID')
