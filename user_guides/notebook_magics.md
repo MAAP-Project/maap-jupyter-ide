@@ -25,7 +25,7 @@ Output:<br>
 Pass the argument "help" to a command for more specific instructions on how to use it:<br>
 `%execute help`<br>
 Output:<br>
-![execute_help_menu](./images/execute_help.png)
+![execute_help_menu](https://raw.github.com/MAAP-Project/maap-jupyter-ide/master/user_guides/images/execute_help.png)
 
 ### List
 Cell:<br>
