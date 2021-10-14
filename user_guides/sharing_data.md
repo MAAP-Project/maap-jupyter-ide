@@ -11,7 +11,7 @@ The intention of this mounted folder is that you can use this to share data with
 want to access across different workspaces. It is not intended that you do all of your work in this directory. Because
 this directory is mounted to s3, you will notice that processes are slower when working in this directory.
 
-![s3-hosted folder](./images/s3folder.png)
+![s3-hosted folder](https://raw.github.com/MAAP-Project/maap-jupyter-ide/master/user_guides/images/s3folder.png)
 
 ### Generating a shareable link to s3-hosted files
 
@@ -19,6 +19,6 @@ Users can create a shareable link for any files in their folder that is hosted o
 `Command Palette` -> `User` -> `Get Presigned S3 URL` and enter the relative path to the file you want to share.  
 The link will expire after 12 hours.
 
-![s3-link-gif](./images/presignedurl.gif)
+![s3-link-gif](https://raw.github.com/MAAP-Project/maap-jupyter-ide/master/user_guides/images/presignedurl.gif)
 
 See [Notebook Magics](./notebook_magics.md) for how to get the presigned s3 url from an inline notebook command.

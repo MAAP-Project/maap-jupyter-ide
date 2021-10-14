@@ -6,8 +6,8 @@ command `Display SSH Info` (you can easily search for ssh) which will display th
 SSH key that you added to your account will be added to any workspace you create. If you did not upload an SSH key
 to your profile, you will not be able to SSH in and must use the jupyter interface.
 
-![Search for SSH](./images/search_ssh.png)
-![Display SSH info](./images/ssh_info.png)
+![Search for SSH](https://raw.github.com/MAAP-Project/maap-jupyter-ide/master/user_guides/images/search_ssh.png)
+![Display SSH info](https://raw.github.com/MAAP-Project/maap-jupyter-ide/master/user_guides/images/ssh_info.png)
 
 ---
 In the workspace administration section of che, you will see and SSH tab, nothing you do here will affect your workspace,

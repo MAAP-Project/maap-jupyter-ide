@@ -7,10 +7,10 @@ Next, the user will be prompted to enter the required inputs for the selected al
 
 Note: The `Job Submissions` must be manually reloaded to show the newly submitted job.
 
-![Execute Job - Command Palette](./images/execute1.png)
+![Execute Job - Command Palette](https://raw.github.com/MAAP-Project/maap-jupyter-ide/master/user_guides/images/execute1.png)
 
-![Execute Job - Select Algorithm](./images/execute2.png)
+![Execute Job - Select Algorithm](https://raw.github.com/MAAP-Project/maap-jupyter-ide/master/user_guides/images/execute2.png)
 
-![Execute Job - Enter Parameters](./images/execute3.png)
+![Execute Job - Enter Parameters](https://raw.github.com/MAAP-Project/maap-jupyter-ide/master/user_guides/images/execute3.png)
 
-![Execute Job - Return Job ID](./images/execute4.png)
+![Execute Job - Return Job ID](https://raw.github.com/MAAP-Project/maap-jupyter-ide/master/user_guides/images/execute4.png)

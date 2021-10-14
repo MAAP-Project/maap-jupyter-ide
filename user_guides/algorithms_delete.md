@@ -2,9 +2,9 @@
 
 Go to `Command Palette` -> `DPS` -> `Delete Algorithm`.  The user is show a dropdown menu with available containerized algorithms to remove.
 
-![List Algorithms - Command Palette](./images/delete1.png)
-![List Algorithms - Select Algorithm](./images/delete2.png)
-![List Algorithms - Deleted Algorithm](./images/delete3.png)
+![List Algorithms - Command Palette](https://raw.github.com/MAAP-Project/maap-jupyter-ide/master/user_guides/images/delete1.png)
+![List Algorithms - Select Algorithm](https://raw.github.com/MAAP-Project/maap-jupyter-ide/master/user_guides/images/delete2.png)
+![List Algorithms - Deleted Algorithm](https://raw.github.com/MAAP-Project/maap-jupyter-ide/master/user_guides/images/delete3.png)
 
 ---
 If at any point the user does not get the expected output or behavior, it is possible that user's session cookie has expired and will need to refresh the page.
