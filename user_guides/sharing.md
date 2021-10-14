@@ -23,7 +23,7 @@ work with often.
 To add a user to your personal organization, use the `Add Member` button. Now you can share
 any workspace in your personal organization with them!
 
-![Adding a user to a personal organization](./images/add_user_to_my_org.png)
+![Adding a user to a personal organization](https://raw.github.com/MAAP-Project/maap-jupyter-ide/master/user_guides/images/add_user_to_my_org.png)
 
 To create a group of users you want to share with, create a sub-organization in your
 personal organization. In order to add someone to your sub-organization, you first must
