@@ -3,7 +3,9 @@
 Go to `Command Palette` -> `DPS` -> `Delete Algorithm`.  The user is show a dropdown menu with available containerized algorithms to remove.
 
 ![List Algorithms - Command Palette](https://raw.github.com/MAAP-Project/maap-jupyter-ide/master/user_guides/images/delete1.png)
+
 ![List Algorithms - Select Algorithm](https://raw.github.com/MAAP-Project/maap-jupyter-ide/master/user_guides/images/delete2.png)
+
 ![List Algorithms - Deleted Algorithm](https://raw.github.com/MAAP-Project/maap-jupyter-ide/master/user_guides/images/delete3.png)
 
 ---

@@ -13,7 +13,9 @@ commit message, and click the check. Now you need to push your changes by select
 push changes button on the toolbar.
 
 ![Stage/Add changed file](https://raw.github.com/MAAP-Project/maap-jupyter-ide/master/user_guides/images/git_changed_file_highlight.png)
+
 ![Stage and commit](https://raw.github.com/MAAP-Project/maap-jupyter-ide/master/user_guides/images/stage_and_commit_highlighted.png)
+
 ![Push changes](https://raw.github.com/MAAP-Project/maap-jupyter-ide/master/user_guides/images/push_changes_highlighted.png)
 
 If you want to check your commit history, look at branches, and confirm your
