@@ -1061,7 +1061,7 @@ class DefaultValuesHandler(IPythonHandler):
             vals['algo_name'] = ('.').join(algo_name.split('.')[:-1])
 
             # if tutorial repo, prepend demo-${username} to algo name
-            p = re.compile('https:\/\/(oauth2:)?.*(@)?repo\.nasa\.maap\.xyz\/.*\/hello-world')
+            p = re.compile('https:\/\/(oauth2:)?.*(@)?repo\\.maap-project\.org\/.*\/hello-world')
             m = p.search(repo_url)
             if m is not None:
                 vals['algo_name'] = 'demo-{}-{}'.format(username,vals['algo_name'])
