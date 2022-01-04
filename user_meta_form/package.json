@@ -22,9 +22,9 @@
     "watch": "tsc -w"
   },
   "dependencies": {
-    "@jupyterlab/application": "^3.2.5",
-    "@jupyterlab/apputils": "^3.2.5",
-    "@jupyterlab/coreutils": "^5.2.5",
+    "@jupyterlab/application": "^2.1.2",
+    "@jupyterlab/apputils": "^2.1.2",
+    "@jupyterlab/coreutils": "^4.1.0",
     "@lumino/widgets": "^1.13.2",
     "@types/node": "^14.0.14",
     "bufferutil": "^4.0.1",
