@@ -12,25 +12,6 @@ class InjectKeyHandler(IPythonHandler):
     def get(self):
         public_key = self.get_argument('key', '')
 
-        # che_machine_token = os.environ['CHE_MACHINE_TOKEN']
-        # url = 'https://che-k8s.maap.xyz/api/profile'
-        # # --------------------------------------------------
-        # # TODO: FIGURE OUT AUTH KEY & verify
-        # # --------------------------------------------------
-        # headers = {
-        #     'Accept':'application/json',
-        #     'Authorization':'Bearer {token}'.format(token=che_machine_token)
-        # }
-        # r = requests.get(
-        #     url,
-        #     headers=headers,
-        #     verify=False
-        # )
-        # print("====== IN SSH INJECT ========")
-        # resp = json.loads(r.text)               # JSON response to dict
-        # public_key = resp['attributes']['public_ssh_keys']   # gets ssh key from dict
-
-
         os.chdir('/root')
         if not os.path.exists(".ssh"):
             os.makedirs(".ssh")

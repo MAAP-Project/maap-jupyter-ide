@@ -2,7 +2,7 @@
 
 The first step in getting started with projects in MAAP is going to MAAP's
 GitLab and creating a new project. When you create a MAAP account, an account is
-automatically configured for you on MAAP's (GitLab instance)[https://repo.nasa.maap.xyz/].
+automatically configured for you on MAAP's (GitLab instance)[https://repo.maap-project.org/].
 
 To sign in, click on `Sign in with CAS`, then use your URS or ESA login. This will direct
 you to your projects.

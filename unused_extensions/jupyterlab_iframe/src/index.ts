@@ -213,7 +213,7 @@ function activate(app: JupyterLab, docManager: IDocumentManager, palette: IComma
     label: 'Open EarthData Search',
     isEnabled: () => true,
     execute: args => {
-      widget = new IFrameWidget('https://che-k8s.maap.xyz:3052/search');
+      widget = new IFrameWidget('https://ade.maap-project.org:3052/search');
       app.shell.addToMainArea(widget);
       app.shell.activateById(widget.id);
     }
