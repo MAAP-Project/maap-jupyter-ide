@@ -1,15 +1,5 @@
 [    
     {
-        "environment": "dev",
-        "ade_server": "che-k8s.maap.xyz",
-        "api_server": "api.maap.xyz",
-        "auth_server": "auth.nasa.maap.xyz",
-        "mas_server": "repo.nasa.maap.xyz",
-        "edsc_server": "che-k8s.maap.xyz:3052",
-        "workspace_bucket": "maap-dev-dataset",
-        "default_host": false
-    },
-    {
         "environment": "dit",
         "ade_server": "ade.dit.maap-project.org",
         "api_server": "api.dit.maap-project.org",

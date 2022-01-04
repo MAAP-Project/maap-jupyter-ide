@@ -32,11 +32,10 @@ Provided by Jupyter UI:
 
 
 Other:
-- docker_container_url (docker_url), currently hardcoded to `registry.nasa.maap.xyz/root/dps_plot:master`
-	- will be pre-populated as environment variable when solution is found for running without wrapper script
+- docker_container_url (docker_url), defaults to `repo.maap-project.org/root/dps_plot:master`
 
 ### Example POST Request
-url: https://api.maap.xyz/api/mas/algorithm
+url: https://api.maap-project.org/api/mas/algorithm
 
 ```
 {
@@ -45,8 +44,8 @@ url: https://api.maap.xyz/api/mas/algorithm
 	"code_version": "master",
 	"algorithm_description" : "Plot Algo",
 	"environment_name": "ubuntu",
-	"docker_container_url": "registry.nasa.maap.xyz/root/dps_plot:master",
-	"repo_url" : "https://repo.nasa.maap.xyz/root/dps_plot.git",
+	"docker_container_url": "repo.maap-project.org/root/dps_plot:master",
+	"repo_url" : "https://repo.maap-project.org/root/dps_plot.git",
 	"algorithm_params" : [
 		{
 			"field": "pass_number",
@@ -67,7 +66,7 @@ Required by API:
 - algorithm version (version)
 
 ### Example POST Request
-url: https://api.maap.xyz/api/mas/algorithm/<algo_id>:<version>
+url: https://api.-project.org/api/mas/algorithm/<algo_id>:<version>
 <br>
 no body
 
@@ -76,14 +75,14 @@ no body
 no parameters
 
 ### Example GET Request
-url: https://api.maap.xyz/api/dps/job
+url: https://api.-project.org/api/dps/job
 
 ## List Algorithms
 ### Parameters
 no parameters
 
 ### Example GET Request
-url: https://api.maap.xyz/api/mas/algorithm
+url: https://api.-project.org/api/mas/algorithm
 
 ## Describe Process
 ### Parameters
@@ -92,7 +91,7 @@ Required in URL:
 - algorithm version (version)
 
 ### Example GET Request
-url: https://api.maap.xyz/api/mas/algorithm/<algo_id>:<version>
+url: https://api.-project.org/api/mas/algorithm/<algo_id>:<version>
 
 ## Execute
 ### Parameters
@@ -101,7 +100,7 @@ Required by API:
 - optional: input
 
 ### Example POST Request
-url: http://api.maap.xyz/api/dps/job
+url: http://api.-project.org/api/dps/job
 <br>
 ```
 <wps:Execute
@@ -134,7 +133,7 @@ Required in URL:
 - job id (job_id)
 
 ### Example GET Request
-url: http://api.maap.xyz/api/dps/job/<job_id>/status
+url: http://api.-project.org/api/dps/job/<job_id>/status
 
 ## Get Result
 ### Parameters
@@ -142,7 +141,7 @@ Required in URL:
 - job id (job_id)
 
 ### Example GET Request
-url: https://api.maap.xyz/api/dps/job/<job_id>
+url: https://api.-project.org/api/dps/job/<job_id>
 
 ## List Jobs
 ### Parameters
@@ -150,7 +149,7 @@ Required in URL:
 - username (username)
 
 ### Example GET Request
-url: http://api.maap.xyz/api/dps/job/<username>/list
+url: http://api.-project.org/api/dps/job/<username>/list
 
 ## Dismiss
 not implemented
