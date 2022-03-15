@@ -171,6 +171,9 @@ class RegisterAlgorithmHandler(IPythonHandler):
         if not 'inputs' in config.keys():
             config['inputs'] = {}
 
+        if not 'build_command' in config.keys():
+            config['build_command'] = {}
+
         # replace spaces in algorithm name
         config['algo_name'] = config['algo_name'].replace(' ', '_')
 
