@@ -8,6 +8,7 @@
     "repo_url" : "{repository_url}",
     "disk_space": "10GB",
     "queue": "{queue}",
+    "build_command": "{build_command}",
     "algorithm_params" : [
         {algo_inputs}
     ]

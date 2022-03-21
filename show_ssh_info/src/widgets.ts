@@ -50,11 +50,13 @@ export class InjectSSH {
 
     getUserInfo(function(profile: any) {
 
+        let key = '';
+        
         if (profile['public_ssh_keys'] === undefined) {
             INotification.warning("User's SSH Key undefined. SSH service unavailable.");
-            return;
+        } else {
+            key = profile['public_ssh_keys'];
         }
-        let key = profile['public_ssh_keys'];
 
         let getUrl = new URL(PageConfig.getBaseUrl() + "show_ssh_info/inject_public_key");
         getUrl.searchParams.append("key", key);
@@ -66,7 +68,7 @@ export class InjectSSH {
         // Make call to back end
         let xhr = new XMLHttpRequest();
         xhr.onload = function() {
-            console.log("Checked for/injected user's public key");
+            console.log("Checked for/injected user's public key and PGT");
         };
         xhr.open("GET", getUrl.href, true);
         xhr.send(null);

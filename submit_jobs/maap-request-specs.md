@@ -32,7 +32,7 @@ Provided by Jupyter UI:
 
 
 Other:
-- docker_container_url (docker_url), defaults to `registry.maap-project.org/root/dps_plot:master`
+- docker_container_url (docker_url), defaults to `repo.maap-project.org/root/dps_plot:master`
 
 ### Example POST Request
 url: https://api.maap-project.org/api/mas/algorithm
@@ -44,7 +44,7 @@ url: https://api.maap-project.org/api/mas/algorithm
 	"code_version": "master",
 	"algorithm_description" : "Plot Algo",
 	"environment_name": "ubuntu",
-	"docker_container_url": "registry.maap-project.org/root/dps_plot:master",
+	"docker_container_url": "repo.maap-project.org/root/dps_plot:master",
 	"repo_url" : "https://repo.maap-project.org/root/dps_plot.git",
 	"algorithm_params" : [
 		{

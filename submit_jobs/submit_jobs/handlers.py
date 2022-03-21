@@ -171,6 +171,9 @@ class RegisterAlgorithmHandler(IPythonHandler):
         if not 'inputs' in config.keys():
             config['inputs'] = {}
 
+        if not 'build_command' in config.keys():
+            config['build_command'] = {}
+
         # replace spaces in algorithm name
         config['algo_name'] = config['algo_name'].replace(' ', '_')
 
@@ -229,6 +232,8 @@ class RegisterAlgorithmHandler(IPythonHandler):
         ins = ''
         for name in inputs.keys():
             if len(name) > 0:
+                if len(ins) > 0:
+                    ins += ','
                 ins += ins_json.format(field_name=name, dl=inputs[name])
 
         # print(ins)
@@ -652,12 +657,14 @@ class GetResultHandler(IPythonHandler):
 
                         url_lst = p[1]
 
-                        ## make the last link clickable
+                        ## make the last link clickable if is not the traceback
                         lnk = url_lst[-1]
-                        url_lst[-1] = '<a href="{}" target="_blank" style="border-bottom: 1px solid #0000ff; color: #0000ff;">{}</a>'.format(lnk, lnk)
-
-                        urls_str = '•&nbsp'+('<br>•&nbsp;').join(url_lst)
-                        result += '<tr><td>{}: </td><td style="text-align:left">{}</td></tr>'.format('Locations', urls_str)
+                        if (product_name == "traceback"):
+                            result += '<tr><td>{}: </td><td style="text-align:left">{}</td></tr>'.format('Traceback', lnk)
+                        else:
+                            url_lst[-1] = '<a href="{}" target="_blank" style="border-bottom: 1px solid #0000ff; color: #0000ff;">{}</a>'.format(lnk, lnk)
+                            urls_str = '•&nbsp'+('<br>•&nbsp;').join(url_lst)
+                            result += '<tr><td>{}: </td><td style="text-align:left">{}</td></tr>'.format('Locations', urls_str)
 
                         result += '</tbody>'
                         result += '</table>'
@@ -1057,7 +1064,7 @@ class DefaultValuesHandler(IPythonHandler):
             vals['algo_name'] = ('.').join(algo_name.split('.')[:-1])
 
             # if tutorial repo, prepend demo-${username} to algo name
-            p = re.compile('https:\/\/(oauth2:)?.*(@)?repo\.maap-project\.org\/.*\/hello-world')
+            p = re.compile('https:\/\/(oauth2:)?.*(@)?repo\\.maap-project\.org\/.*\/hello-world')
             m = p.search(repo_url)
             if m is not None:
                 vals['algo_name'] = 'demo-{}-{}'.format(username,vals['algo_name'])

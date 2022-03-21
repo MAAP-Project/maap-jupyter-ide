@@ -7,9 +7,14 @@ import os
 import requests
 import json
 import urllib3
+import re
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
-namespace = "$1" # 
+namespace = "$1"
+# Replicate Che's namespace converter policy
+# by substituting any non-alphanumeric characters with hyphens.
+namespace = re.sub("[^0-9a-zA-Z-]+", "-", namespace)
+
 svc_host = os.environ.get('KUBERNETES_SERVICE_HOST')
 svc_host_https_port = os.environ.get('KUBERNETES_SERVICE_PORT_HTTPS')
 che_workspace_id = os.environ.get('CHE_WORKSPACE_ID')
@@ -104,11 +109,13 @@ mkdir -p /projects/.ssh/
 chmod 700 /projects/.ssh/
 service ssh start
 
+# TBD maap-py install
+
 VERSION=$(jupyter lab --version)
 if [[ $VERSION > '2' ]] && [[ $VERSION < '3' ]]; then
     jupyter lab --ip=0.0.0.0 --port=3100 --allow-root --NotebookApp.token='' --NotebookApp.base_url=$PREVIEW_URL --no-browser --debug
 elif [[ $VERSION > '3' ]] && [[ $VERSION < '4' ]]; then
     jupyter lab --ip=0.0.0.0 --port=3100 --allow-root --ServerApp.token='' --ServerApp.base_url=$PREVIEW_URL --no-browser --debug
 else
-    echo "Error!"
+    echo "Error! Jupyterlab version not supported."
 fi
