@@ -66,7 +66,7 @@ Required by API:
 - algorithm version (version)
 
 ### Example POST Request
-url: https://api.-project.org/api/mas/algorithm/<algo_id>:<version>
+url: https://api.maap-project.org/api/mas/algorithm/<algo_id>:<version>
 <br>
 no body
 
@@ -75,14 +75,14 @@ no body
 no parameters
 
 ### Example GET Request
-url: https://api.-project.org/api/dps/job
+url: https://api.maap-project.org/api/dps/job
 
 ## List Algorithms
 ### Parameters
 no parameters
 
 ### Example GET Request
-url: https://api.-project.org/api/mas/algorithm
+url: https://api.maap-project.org/api/mas/algorithm
 
 ## Describe Process
 ### Parameters
@@ -91,7 +91,7 @@ Required in URL:
 - algorithm version (version)
 
 ### Example GET Request
-url: https://api.-project.org/api/mas/algorithm/<algo_id>:<version>
+url: https://api.maap-project.org/api/mas/algorithm/<algo_id>:<version>
 
 ## Execute
 ### Parameters
@@ -100,7 +100,7 @@ Required by API:
 - optional: input
 
 ### Example POST Request
-url: http://api.-project.org/api/dps/job
+url: http://api.maap-project.org/api/dps/job
 <br>
 ```
 <wps:Execute
@@ -133,7 +133,7 @@ Required in URL:
 - job id (job_id)
 
 ### Example GET Request
-url: http://api.-project.org/api/dps/job/<job_id>/status
+url: http://api.maap-project.org/api/dps/job/<job_id>/status
 
 ## Get Result
 ### Parameters
@@ -141,7 +141,7 @@ Required in URL:
 - job id (job_id)
 
 ### Example GET Request
-url: https://api.-project.org/api/dps/job/<job_id>
+url: https://api.maap-project.org/api/dps/job/<job_id>
 
 ## List Jobs
 ### Parameters
@@ -149,7 +149,7 @@ Required in URL:
 - username (username)
 
 ### Example GET Request
-url: http://api.-project.org/api/dps/job/<username>/list
+url: http://api.maap-project.org/api/dps/job/<username>/list
 
 ## Dismiss
 not implemented
