@@ -7,7 +7,7 @@ automatically configured for you on MAAP's (GitLab instance)[https://repo.maap-p
 To sign in, click on `Sign in with CAS`, then use your URS or ESA login. This will direct
 you to your projects.
 
-![Welcome screen](https://raw.github.com/MAAP-Project/maap-jupyter-ide/master/user_guides/images/log_on.png)
+![Welcome screen](./images/log_on.png)
 
 Click on `Create a project`. Name your project and select it's visibility level:
 - Projects will default to `private`, meaning only you can see it, and if you want to allow another
@@ -19,12 +19,12 @@ allow them to make changes.**
 - Projects set to `public` can be seen by anyone, regardless of whether they are a MAAP
 user or not.
 
-![Settings for your new project](https://raw.github.com/MAAP-Project/maap-jupyter-ide/master/user_guides/images/first_project.png)
+![Settings for your new project](./images/first_project.png)
 
 Once you have created a project, copy the https url for the project the can be found under 
 the clone button's dropdown. You will use this to add your project to you Che workspace.
 
-![Git clone url dropdown](https://raw.github.com/MAAP-Project/maap-jupyter-ide/master/user_guides/images/git_clone.png)
+![Git clone url dropdown](./images/git_clone.png)
 
 ## Adding a project to your workspace
 
@@ -32,8 +32,8 @@ Projects can be added to a workspace during or after workspace creation. If a pr
 added after a workspace exists, the workspace must be restarted when the projects are added.
 After restart, your projects will automatically appear in your workspace.
 
-![Add project on workspace creation](https://raw.github.com/MAAP-Project/maap-jupyter-ide/master/user_guides/images/add_to_new.png) 
-![Add project to existing workspace](https://raw.github.com/MAAP-Project/maap-jupyter-ide/master/user_guides/images/add_to_existing.png)
+![Add project on workspace creation](./images/add_to_new.png) 
+![Add project to existing workspace](./images/add_to_existing.png)
 
 ## Updating your project from inside your workspace
 
@@ -49,11 +49,11 @@ Add the files you want to change to the list of list of staged changes. Then wri
 commit message, and click the check. Now you need to push your changes by selecting the
 push changes button on the toolbar.
 
-![Stage/Add changed file](https://raw.github.com/MAAP-Project/maap-jupyter-ide/master/user_guides/images/git_changed_file_highlight.png)
-![Stage and commit](https://raw.github.com/MAAP-Project/maap-jupyter-ide/master/user_guides/images/stage_and_commit_highlighted.png)
-![Push changes](https://raw.github.com/MAAP-Project/maap-jupyter-ide/master/user_guides/images/push_changes_highlighted.png)
+![Stage/Add changed file](./images/git_changed_file_highlight.png)
+![Stage and commit](./images/stage_and_commit_highlighted.png)
+![Push changes](./images/push_changes_highlighted.png)
 
 If you want to check your commit history, look at branches, and confirm your
 updates have been pushed, you can see this on the history tab.
 
-![Check git history](https://raw.github.com/MAAP-Project/maap-jupyter-ide/master/user_guides/images/check_history.png)
+![Check git history](./images/check_history.png)

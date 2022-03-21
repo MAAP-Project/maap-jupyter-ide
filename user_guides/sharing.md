@@ -12,7 +12,7 @@ Users can be in multiple organizations, but there is one organization, called `m
 all users are in. This allows for users to be able to see all the possible MAAP users to
 share with.
 
-![User's organizations](https://raw.github.com/MAAP-Project/maap-jupyter-ide/master/user_guides/images/my_orgs.png)
+![User's organizations](./images/my_orgs.png)
 
 #### All users have their own personal organization they can customize
 
@@ -23,7 +23,7 @@ work with often.
 To add a user to your personal organization, use the `Add Member` button. Now you can share
 any workspace in your personal organization with them!
 
-![Adding a user to a personal organization](https://raw.github.com/MAAP-Project/maap-jupyter-ide/master/user_guides/images/add_user_to_my_org.png)
+![Adding a user to a personal organization](./images/add_user_to_my_org.png)
 
 To create a group of users you want to share with, create a sub-organization in your
 personal organization. In order to add someone to your sub-organization, you first must
@@ -50,13 +50,13 @@ different organization.**
 To specify which organization you want a workspace to be a part of, specify using the
 dropdown on workspace creation.
 
-![Select organization in workspace creation](https://raw.github.com/MAAP-Project/maap-jupyter-ide/master/user_guides/images/create_workspace_in_org.png)
+![Select organization in workspace creation](./images/create_workspace_in_org.png)
 
 Once a workspace is created, it is not inherent that all memebers of that organization
 are able to see it. You must share with them after it is created. This can be found in
 workspace's `Share` tab.
 
-![Share workspace with organization members](https://raw.github.com/MAAP-Project/maap-jupyter-ide/master/user_guides/images/share_my_workspace.png)
+![Share workspace with organization members](./images/share_my_workspace.png)
 
 
 #### More documentation
@@ -77,7 +77,7 @@ The intention of this mounted folder is that you can use this to share data with
 want to access across different workspaces. It is not intended that you do all of your work in this directory. Because
 this directory is mounted to s3, you will notice that processes are slower when working in this directory.
 
-![s3-hosted folder](https://raw.github.com/MAAP-Project/maap-jupyter-ide/master/user_guides/images/s3folder.png)
+![s3-hosted folder](./images/s3folder.png)
 
 ### Generating a shareable link to s3-hosted files
 
@@ -85,7 +85,7 @@ Users can create a shareable link for any files in their folder that is hosted o
 `Command Palette` -> `User` -> `Get Presigned S3 URL` and enter the relative path to the file you want to share.  
 The link will expire after 12 hours.
 
-![s3-link-gif](https://raw.github.com/MAAP-Project/maap-jupyter-ide/master/user_guides/images/presignedurl.gif)
+![s3-link-gif](./images/presignedurl.gif)
 
 See [Notebook Magics](./notebook_magics.md) for how to get the presigned s3 url from an inline notebook command.
 

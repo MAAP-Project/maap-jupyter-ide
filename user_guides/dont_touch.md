@@ -9,7 +9,7 @@ If you happen to mess with one of these things, you'll probably be fine - you'll
 of errors you don't understand or just nothing happening when you click a button.
 
 ## Side Panel
-![side panel options](https://raw.github.com/MAAP-Project/maap-jupyter-ide/master/user_guides/images/side_panel_options.png)
+![side panel options](./images/side_panel_options.png)
 
 What's relevant: Workspaces, Organizations.
 
@@ -27,11 +27,11 @@ Use the wrong stack. For now, only run the stack ` maap-jupyter-ide stable build
 
 When adding projects, only add projects with the `Git` tab. Do not use any of the other project tabs.
 
-![Add_project_options](https://raw.github.com/MAAP-Project/maap-jupyter-ide/master/user_guides/images/add_proj_options.png)
+![Add_project_options](./images/add_proj_options.png)
 
 ## Managing a workspace
 
-![Workspace admin tabs](https://raw.github.com/MAAP-Project/maap-jupyter-ide/master/user_guides/images/workspace_admin.png)
+![Workspace admin tabs](./images/workspace_admin.png)
 
 Here are the features allowed/not allowed on all of the workspace administration tabs.
 
