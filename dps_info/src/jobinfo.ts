@@ -264,8 +264,8 @@ export class JobTable extends Widget {
         }
 
         // update table
-        console.log("These are the metrics")
-        console.log(this._metrics)
+        console.log("These are the metrics");
+        console.log(this._metrics);
         if (document.getElementById(this._metricsTableName) !== null) {
             (document.getElementById(this._metricsTableName) as HTMLTextAreaElement).innerHTML = this._metrics;
         } else {
@@ -998,7 +998,7 @@ export class JobWidget extends Widget {
                 if (json_response['status_code'] === 200) {
                     //INotification.success("Get user job metrics success.");
                     this._metrics = json_response['result'];
-                    console.log(this._metrics)
+                    console.log(this._metrics);
                 } else {
                     console.log('get user job metrics != 200');
                     //INotification.error("Get user job metrics failed.");
