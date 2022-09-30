@@ -1,0 +1,5 @@
+{
+  "dependencies": {
+    "jupyterlab_toastify": "^3.0.0"
+  }
+}
