@@ -15,11 +15,11 @@ Create a new Conda environment and install common dependencies and versions:
 ``` bash
 conda create --name maap-ade
 conda activate maap-ade
-conda install conda=4.7.12 jupyterlab=2.1.4 nodejs=10.13.0 gitpython=3.0.2
-jupyter labextension install jupyterlab_toastify@3.0.0
-npm i jupyterlab_toastify@3.0.0
+conda install conda=4.8.5 jupyterlab=3.4.7 nodejs=15.8.0 gitpython=3.0.2
+jlpm add jupyterlab_toastify@4.2.1
+npm i jupyterlab_toastify@4.2.1
 pip install plotly==4.0.0
-jupyter labextension install @jupyter-widgets/jupyterlab-manager@2.0
+jupyter labextension install @jupyter-widgets/jupyterlab-manager@5.0.3
 ```
 
 ## Extension Installation Order

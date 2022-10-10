@@ -1,0 +1,36 @@
+Arguments: 
+  /opt/miniconda3/envs/upgradev3_1/bin/node /opt/miniconda3/envs/upgradev3_1/lib/python3.9/site-packages/jupyterlab/staging/yarn.js add jupyterlab_toastify==4.1.2
+
+PATH: 
+  /opt/miniconda3/envs/upgradev3_1/bin:/opt/miniconda3/bin:/Users/graceal/.nvm/versions/node/v10.24.1/bin:/opt/miniconda3/condabin:/Library/Frameworks/Python.framework/Versions/2.7/bin:/Library/Frameworks/Python.framework/Versions/3.9/bin:/opt/homebrew/bin:/opt/homebrew/sbin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin
+
+Yarn version: 
+  1.21.1
+
+Node version: 
+  15.8.0
+
+Platform: 
+  darwin arm64
+
+Trace: 
+  Error: https://registry.yarnpkg.com/jupyterlab_toastify==4.1.2: Not found
+      at Request.params.callback [as _callback] (/opt/miniconda3/envs/upgradev3_1/lib/python3.9/site-packages/jupyterlab/staging/yarn.js:78477:18)
+      at Request.self.callback (/opt/miniconda3/envs/upgradev3_1/lib/python3.9/site-packages/jupyterlab/staging/yarn.js:135083:22)
+      at Request.emit (node:events:378:20)
+      at Request.<anonymous> (/opt/miniconda3/envs/upgradev3_1/lib/python3.9/site-packages/jupyterlab/staging/yarn.js:136055:10)
+      at Request.emit (node:events:378:20)
+      at IncomingMessage.<anonymous> (/opt/miniconda3/envs/upgradev3_1/lib/python3.9/site-packages/jupyterlab/staging/yarn.js:135977:12)
+      at Object.onceWrapper (node:events:484:28)
+      at IncomingMessage.emit (node:events:390:22)
+      at endReadableNT (node:internal/streams/readable:1307:12)
+      at processTicksAndRejections (node:internal/process/task_queues:81:21)
+
+npm manifest: 
+  No manifest
+
+yarn manifest: 
+  No manifest
+
+Lockfile: 
+  No lockfile

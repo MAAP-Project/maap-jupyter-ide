@@ -7,8 +7,8 @@
 A Jupyter Lab widget for embedding the Common Mapping Client into a Python Jupyter Notebook.
 
 ## Requirements
-* JupyterLab >= 2.1.4
-* nodejs >= 10.13.0
+* JupyterLab >= 3.4.7
+* nodejs >= 15.8.0
 * maap-common-mapping-client `stable-pub`
 * see `package.json` for package dependencies
 
@@ -17,10 +17,10 @@ A Jupyter Lab widget for embedding the Common Mapping Client into a Python Jupyt
 cd maap-jupyter-ide/ipycmc 
 npm install 
 npm run build
-pip install -e .
+sudo pip install -e .
 jupyter nbextension install --py --symlink --sys-prefix ipycmc
 jupyter nbextension enable --py --sys-prefix ipycmc
-jupyter labextension install ipycmc
+jupyter labextension install --no-build
 ```
 
 ### Uninstall
@@ -28,6 +28,9 @@ jupyter labextension install ipycmc
 jupyter labextension uninstall ipycmc
 jupyter nbextension disable --py --sys-prefix ipycmc
 ```
+
+### Launching jupyter lab
+If you see "Error displaying widget: model not found" or a javascript error, you need to give the build a minute complete.
 
 ## NOTES
  * `jupyter labextension install @jupyter-widgets/jupyterlab-manager`

@@ -48,8 +48,8 @@
         "everything": "npm install && npm run clean && npm run build && jupyter labextension link ."
     },
     "dependencies": {
-        "@jupyter-widgets/base": "^3.0.0",
-        "@jupyterlab/notebook": "^2.1.2",
+        "@jupyter-widgets/base": "^3.0.0 || ^4.0.0",
+        "@jupyterlab/notebook": "^3.4.7",
         "@lumino/application": "^1.10.2",
         "@lumino/widgets": "^1.13.2",
         "maap-common-mapping-client": "MAAP-Project/maap-ade-common-mapping-client#stable-pub"
@@ -84,6 +84,12 @@
         "webpack-cli": "^3.3.6"
     },
     "jupyterlab": {
-        "extension": "lib/plugin"
+        "extension": "lib/plugin",
+        "sharedPackages": {
+            "@jupyter-widgets/base": {
+                "bundled": false,
+                "singleton": true
+            }
+        }
     }
 }
