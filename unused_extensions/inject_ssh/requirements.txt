@@ -1,2 +1,2 @@
-jupyterlab==0.35.4
+jupyterlab==1.2.21
 jupyter-nbextensions-configurator==0.4.0
