@@ -89,6 +89,9 @@ setup_args = dict(
         'ipywidgets>=7.2',
         'plotly==3.10.0',
         'requests',
+        'numpy==1.20.3',
+        'rio_tiler==2.1.0',
+        'cogeo_mosaic==3.0.1',
     ],
     extras_require = {
         'test': [

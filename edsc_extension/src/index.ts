@@ -29,6 +29,7 @@ import { granulePermittedCmrKeys,
         granuleNonIndexedKeys,
         collectionPermittedCmrKeys,
         collectionNonIndexedKeys } from "./searchKeys";
+import { getMaapVarName, printInfoMessage } from "./getMaapVarName";
 
 let edsc_server = '';
 var valuesUrl = new URL(PageConfig.getBaseUrl() + 'maapsec/environment');
@@ -184,7 +185,7 @@ function activate(app: JupyterFrontEnd,
           }
           else {
               console.log("Error making call to get results. Status is " + xhr.status);
-               INotification.error("Error making call to get search results. Have you selected valid search parameters?");
+              INotification.error("Error making call to get search results. Have you selected valid search parameters?");
           }
       };
 
@@ -199,6 +200,45 @@ function activate(app: JupyterFrontEnd,
 
   }
 
+  function visualizeCMC(args: any) {
+    const current = getCurrent(args);
+    // If no search is selected, send an error
+    if (Object.keys(globals.granuleParams).length == 0) {
+      INotification.error("Error: No Search Selected.");
+      return;
+    }
+    var getUrl = new URL(PageConfig.getBaseUrl() + 'edsc/visualizeCMC');
+    getUrl.searchParams.append("maapVarName", getMaapVarName(current));
+    
+    getUrl.searchParams.append("cmr_query", globals.granuleQuery);
+    getUrl.searchParams.append("limit", globals.limit);
+    var xhr = new XMLHttpRequest();
+    
+    xhr.onload = function() {
+        if (xhr.status == 200) {
+            let response: any = JSON.parse(xhr.response);
+            if (current) {
+              NotebookActions.insertBelow(current.content);
+              NotebookActions.paste(current.content);
+              current.content.mode = 'edit';
+              const insert_text = "# Results to post to CMC (unaccepted file types removed): " + "\n" + response.function_call;
+              current.content.activeCell.model.value.text = insert_text;
+              printInfoMessage(response);
+            }
+        }
+        else {
+            console.log("Error making call to get results. Status is " + xhr.status);
+            INotification.error("Error making call to get search results. Have you selected valid search parameters?");
+        }
+    };
+
+    xhr.onerror = function() {
+      INotification.error("Error getting results from Data Search.");
+    };
+
+    xhr.open("GET", getUrl.href, true);
+    xhr.send(null);
+  }
 
   /******** Set commands for command palette and main menu *********/
 
@@ -277,7 +317,15 @@ function activate(app: JupyterFrontEnd,
   });
   palette.addItem({command: set_limit_command, category: 'Search'});
 
-
+  const visualize_cmc_command = 'search:visualizeCMC';
+  app.commands.addCommand(visualize_cmc_command, {
+    label: 'Visualize Granule Results in notebook',
+    isEnabled: () => true,
+    execute: args => {
+      visualizeCMC(args)
+    }
+  });
+  palette.addItem({command: visualize_cmc_command, category: 'Search'});
 
   const { commands } = app;
   let searchMenu = new Menu({ commands });
@@ -288,7 +336,8 @@ function activate(app: JupyterFrontEnd,
     paste_collection_query_command,
     paste_granule_query_command,
     paste_results_command,
-    set_limit_command
+    set_limit_command,
+    visualize_cmc_command
   ].forEach(command => {
     searchMenu.addItem({ command });
   });

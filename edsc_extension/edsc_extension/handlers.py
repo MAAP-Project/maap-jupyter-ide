@@ -8,6 +8,8 @@ import json
 import maap
 from maap.maap import MAAP
 
+from .createLoadGeotiffsFcnCall import createLoadGeotiffsFcnCall
+
 @functools.lru_cache(maxsize=128)
 def get_maap_config(host):
     path_to_json = os.path.join(os.path.dirname(os.path.abspath(__file__)), '../..', 'maap_environments.json')
@@ -61,4 +63,25 @@ class GetQueryHandler(IPythonHandler):
         print("Response is: ", query_string)
         self.finish({"query_string": query_string})
 
+class VisualizeCMCHandler(IPythonHandler):
+    def get(self):
+        """
+        Gets the parameters from index.ts and creates a list of granules. Then makes a call to the python script that creates the function call
+        and passes that back to the index.ts along with info messages to display to the user
+        """
+        maap = MAAP(maap_api(self.request.host))
+        cmr_query = self.get_argument('cmr_query', '')
+        limit = str(self.get_argument('limit', ''))
+        maap_var_name = self.get_argument('maapVarName', '')
 
+        query_string = maap.getCallFromCmrUri(cmr_query, limit=limit)
+        granules = eval(query_string)
+
+        # get list of granules to pass to load geotiffs 
+        urls = []
+        for res in granules:
+            if res.getDownloadUrl():
+                urls.append(res.getDownloadUrl())
+        
+        function_call, errors = createLoadGeotiffsFcnCall.create_function_call(urls, maap_var_name)
+        self.finish({"function_call": function_call, "errors":errors})
