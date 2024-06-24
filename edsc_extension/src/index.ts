@@ -16,7 +16,6 @@ import { ReadonlyJSONObject } from '@lumino/coreutils';
 
 /** other external imports **/
 import { INotification } from "jupyterlab_toastify";
-import * as $ from "jquery";
 
 /** internal imports **/
 import '../style/index.css';
@@ -128,7 +127,7 @@ function activate(app: JupyterFrontEnd,
 
         xhr.onload = function() {
           if (xhr.status == 200) {
-              let response: any = $.parseJSON(xhr.response);
+              let response: any = JSON.parse(xhr.response);
               response_text = response.query_string;
               if (response_text == "") {
                   response_text = "No results found.";
@@ -168,7 +167,7 @@ function activate(app: JupyterFrontEnd,
 
       xhr.onload = function() {
           if (xhr.status == 200) {
-              let response: any = $.parseJSON(xhr.response);
+              let response: any = JSON.parse(xhr.response);
               let response_text: any = response.granule_urls;
               if (response_text == "") {
                   response_text = "No results found.";
